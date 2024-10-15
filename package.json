@@ -1,0 +1,19 @@
+{
+  "name": "pye",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Abbytec <gpsmurfs@gmail.com>",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@google/generative-ai": "^0.17.1",
+    "@napi-rs/canvas": "^0.1.55",
+    "discord.js": "^14.16.1",
+    "dotenv": "^16.4.5",
+    "mongoose": "^8.6.3"
+  }
+}
