@@ -1,20 +1,30 @@
 // src/deploy-commands.ts
 import dotenv from "dotenv";
-dotenv.config({ path: "./.env" });
+const isDevelopment = process.env.NODE_ENV === "development";
+if (isDevelopment) {
+	dotenv.config({ path: "./.env.development" });
+} else {
+	dotenv.config({ path: "./.env" });
+}
 
 import { REST, Routes } from "discord.js";
 import fs from "node:fs";
 import path from "node:path";
-import { Command } from "./types/command"; // Asegúrate de tener esta interfaz
+import { Command } from "./types/command.ts"; // Asegúrate de tener esta interfaz
 import { pathToFileURL } from "node:url";
 
-const token = process.env.tokenBot;
-const clientId = process.env.clientId;
-const guildId = process.env.guildId;
-const commands: any[] = [];
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const token = process.env.TOKEN_BOT;
+const clientId = process.env.CLIENT_ID;
+const guildId = process.env.GUILD_ID;
+const commands: any[] = [];
+const extension = isDevelopment ? ".ts" : ".js";
 if (!token || !clientId || !guildId) {
-	throw new Error("Las variables de entorno tokenBot, clientId y guildId deben estar definidas.");
+	throw new Error("Las variables de entorno TOKEN_BOT, CLIENT_ID y GUILD_ID deben estar definidas.");
 }
 
 // Obtiene todas las carpetas de comandos
@@ -24,7 +34,7 @@ const commandFolders = fs.readdirSync(foldersPath);
 for (const folder of commandFolders) {
 	// Obtiene todos los archivos de comandos dentro de cada carpeta
 	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
+	const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(extension));
 
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
@@ -47,7 +57,7 @@ const rest = new REST({ version: "10" }).setToken(token);
 		console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
 		// Usa 'applicationGuildCommands' para comandos de servidor específico
-		const data = await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands }) as any;
+		const data = (await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands })) as any;
 
 		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
 	} catch (error) {

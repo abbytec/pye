@@ -1,15 +1,18 @@
 {
 	"compilerOptions": {
-		"module": "ESNext",
+		"module": "NodeNext",
 		"target": "ES2020",
-		"moduleResolution": "node",
+		"moduleResolution": "NodeNext",
 		"outDir": "./dist",
 		"rootDir": "./src",
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
 		"skipLibCheck": true,
 		"strict": true,
-		"types": ["node"]
+		"types": ["node"],
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
+		"declaration": true
 	},
 	"include": ["src"],
 	"exclude": ["node_modules", "**/*.spec.ts"]

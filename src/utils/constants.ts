@@ -25,6 +25,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	chatProgramadores: "1142244181587263511",
 	ofreceServicios: "1144133135475425320",
 	puntos: "1144159059247898657",
+	sugerencias: "1296190631026233348",
 };
 
 export function getChannel(channel: keyof typeof CHANNELS): string {
@@ -103,16 +104,4 @@ const COLORS = {
 
 const EMOJIS = {
 	thumbsUp: ":thumbsup:",
-};
-
-module.exports = {
-	CHANNELS_DEV,
-	CHANNELS,
-	USERS,
-	COLORS,
-	EMOJIS,
-	ROLES,
-	REP_ROLES_BY_ORDER,
-	REP_ROLES_IMG_NAMES,
-	ROLES_REP_RANGE,
 };

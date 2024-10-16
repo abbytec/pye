@@ -1,6 +1,6 @@
 // src/Client.ts
 import { Client, Collection, GatewayIntentBits } from "discord.js";
-import { Command } from "./types/command"; // Asegúrate de definir la interfaz Command
+import { Command } from "./types/command.ts"; // Asegúrate de definir la interfaz Command
 
 export class ExtendedClient extends Client {
 	public commands: Collection<string, Command>;

@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandOptionsOnlyBuilder } from "discord.js";
+import { ChatInputCommandInteraction, Message, SlashCommandOptionsOnlyBuilder } from "discord.js";
 
 /**
  * Interfaz que define la estructura de un comando.
@@ -14,4 +14,6 @@ export interface Command {
 	 * @param interaction - La interacción de comando.
 	 */
 	execute(interaction: ChatInputCommandInteraction): Promise<void>;
+
+	executePrefix?(msg: Message, arg: string): Promise<void>;
 }

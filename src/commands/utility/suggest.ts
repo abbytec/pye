@@ -1,6 +1,6 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, TextChannel } from "discord.js";
-import { Command } from "../../types/command";
-import { getChannel } from "../../utils/constants";
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, TextChannel, Message } from "discord.js";
+import { Command } from "../../types/command.ts";
+import { getChannel } from "../../utils/constants.ts";
 
 const data = new SlashCommandBuilder()
 	.setName("sugerir")
@@ -8,10 +8,14 @@ const data = new SlashCommandBuilder()
 	.addStringOption((option) =>
 		option.setName("sugerencia").setDescription("qué tienes en mente para el servidor").setMinLength(40).setRequired(true)
 	);
-async function execute(interaction: ChatInputCommandInteraction) {
-	const args = interaction.options.getString("sugerencia");
-	let canal = interaction.client.channels.resolve(getChannel("sugerencias")) as TextChannel | null;
 
+async function sugerir(canal: TextChannel | null, sugerencia: string | null, interaction: ChatInputCommandInteraction | Message) {
+	if (!sugerencia) {
+		await interaction.reply({
+			content: "Por favor, proporciona una sugerencia.",
+			ephemeral: true,
+		});
+	}
 	if (!canal?.isTextBased()) {
 		await interaction.reply({
 			content: "No se pudo encontrar el canal de sugerencias. Por favor, contacta al administrador.",
@@ -20,13 +24,17 @@ async function execute(interaction: ChatInputCommandInteraction) {
 		return;
 	}
 
+	console.log(sugerencia, interaction);
+
 	let suggest = new EmbedBuilder()
 		.setColor(0x1414b8)
-		.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
 		.setTitle("Nueva sugerencia !")
-		.setDescription(args)
+		.setDescription(sugerencia)
 		.setTimestamp()
 		.setFooter({ text: "Puedes votar a favor o en contra de esta sugerencia" });
+	if (interaction instanceof ChatInputCommandInteraction)
+		suggest.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() });
+	else suggest.setAuthor({ name: interaction.member?.user.username ?? "Anonimo", iconURL: interaction.member?.user.displayAvatarURL() });
 
 	interaction.reply("<:check:1282933528580849664> - Se ha enviado tu sugerencia correctamente.");
 
@@ -38,17 +46,31 @@ async function execute(interaction: ChatInputCommandInteraction) {
 			message.react("1282933528580849664").catch(() => null);
 			message.react("1282933529566511155").catch(() => null);
 			message
-				.startThread({ name: `Sugerencia por ${interaction.user.username}` })
-				.then((c: any) => c.send(`<@${interaction.user.id}>`))
+				.startThread({ name: `Sugerencia por ${interaction.member?.user.username}` })
+				.then((c: any) => c.send(`<@${interaction.member?.user.id}>`))
 				.catch(() => null);
 		})
 		.catch(() => null);
+}
+
+async function execute(interaction: ChatInputCommandInteraction) {
+	const args = interaction.options.getString("sugerencia");
+	const canal = interaction.client.channels.resolve(getChannel("sugerencias")) as TextChannel | null;
+
+	await sugerir(canal, args, interaction);
+}
+
+async function executePrefix(msg: Message, arg: string) {
+	const canal = msg.client.channels.resolve(getChannel("sugerencias")) as TextChannel | null;
+
+	await sugerir(canal, arg, msg);
 }
 
 // Exportar el comando implementando la interfaz Command
 const sugerirCommand: Command = {
 	data,
 	execute,
+	executePrefix,
 };
 
 export default sugerirCommand;

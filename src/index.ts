@@ -1,21 +1,31 @@
 import dotenv from "dotenv";
-dotenv.config({ path: "./.env" });
+const isDevelopment = process.env.NODE_ENV === "development";
+
+if (isDevelopment) {
+	dotenv.config({ path: "./.env.development" });
+} else {
+	dotenv.config({ path: "./.env" });
+}
 import { readdirSync } from "node:fs";
 import path, { join } from "node:path";
-import { ExtendedClient } from "./client";
+import { ExtendedClient } from "./client.ts";
 import { Collection } from "discord.js";
 import { connect } from "mongoose";
-import { Command } from "./types/command";
+import { Command } from "./types/command.ts";
 import { pathToFileURL } from "node:url";
+
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const client = new ExtendedClient();
 client.commands = new Collection();
-const isDevelopment = process.env.NODE_ENV === "development";
+const extension = isDevelopment ? ".ts" : ".js";
 
-const commandFolders = readdirSync("./commands");
+const commandFolders = readdirSync(__dirname + "/commands");
 for (const folder of commandFolders) {
 	const commandsPath = path.join(__dirname, "commands", folder);
-	const extension = isDevelopment ? ".ts" : ".js";
 	const commandFiles = readdirSync(commandsPath).filter((file) => file.endsWith(extension));
 
 	for (const file of commandFiles) {
@@ -26,6 +36,7 @@ for (const folder of commandFolders) {
 
 			if (command.data) {
 				client.commands.set(command.data.name, command);
+				console.log(`Comando cargado: ${command.data.name}`);
 			} else {
 				console.log(`[ADVERTENCIA] El comando en ${filePath} carece de la propiedad "data".`);
 			}
@@ -37,13 +48,14 @@ for (const folder of commandFolders) {
 
 //event handler, manejador de eventos
 const eventsPath = join(__dirname, "events");
-const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
-
+const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith(extension));
 for (const file of eventFiles) {
 	const filePath = join(eventsPath, file);
 	try {
 		const eventModule = await import(pathToFileURL(filePath).href);
-		const event = eventModule.default;
+		const event = eventModule.default || eventModule;
+
+		console.log(`Cargando evento: ${event.name}`);
 
 		if (event.once) {
 			client.once(event.name, (...args: any[]) => event.execute(...args));
@@ -57,10 +69,13 @@ for (const file of eventFiles) {
 
 //conectar la base de datos con mongoose
 async function main() {
-	await connect(process.env.MONGO_URI ?? "http://127.0.0.1:27017/");
+	await connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/");
 	console.log("conectado papi");
 }
 main().catch((err) => console.log(err));
 
 // Log in to Discord with your client's token
-client.login(process.env.tokenBot);
+client
+	.login(process.env.TOKEN_BOT)
+	.then(() => console.log("bot listo papi"))
+	.catch((err) => console.log(err));
