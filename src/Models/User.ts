@@ -141,7 +141,7 @@ userSchema.pre("updateMany", function (this: any, next: () => void) {
 		update: this.getUpdate(),
 	};
 	// Guardar el contexto en el objeto de consulta
-	(this as any)._updateContext = context;
+	this._updateContext = context;
 	next();
 });
 
