@@ -1,3 +1,4 @@
+import { Channel, Client } from "discord.js";
 const CHANNELS = {
 	ayuda: "916353103534632964",
 	bansanciones: "844385995352047646",
@@ -28,12 +29,15 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	sugerencias: "1296190631026233348",
 };
 
-export function getChannel(channel: keyof typeof CHANNELS): string {
-	if (process.env.NODE_ENV === "development") {
-		return CHANNELS_DEV[channel] ?? "";
-	} else {
-		return CHANNELS[channel];
-	}
+const isDevelopment = process.env.NODE_ENV === "development";
+
+function getChannelFromEnv(channel: keyof typeof CHANNELS): string {
+	return isDevelopment ? CHANNELS_DEV[channel] ?? "" : CHANNELS[channel];
+}
+
+export function getChannel(client: Client, channel: keyof typeof CHANNELS): Channel | null {
+	getChannelFromEnv(channel);
+	return client.channels.resolve(getChannelFromEnv(channel));
 }
 
 const USERS = {
@@ -57,33 +61,50 @@ const ROLES = {
 	staff: "994980515335643267",
 	granApostador: "884160604275892234",
 	muted: "1193708756345827409",
+	moderador: "1289416128652771358",
+	moderadorVoz: "1290753880191271007",
 };
 
-/** if you modify the order it will have impact. */
-const REP_ROLES_BY_ORDER = [
-	ROLES.novatos,
-	ROLES.iniciante,
-	ROLES.regular,
-	ROLES.avanzado,
-	ROLES.veterano,
-	ROLES.sabio,
-	ROLES.experto,
-	ROLES.adalovelace,
-	ROLES.alanturing,
-];
-
-/** related to reputation and also utils/images/reputation */
-const REP_ROLES_IMG_NAMES = {
-	[ROLES.novatos]: "novato",
-	[ROLES.iniciante]: "iniciante",
-	[ROLES.regular]: "regular",
-	[ROLES.avanzado]: "avanzado",
-	[ROLES.veterano]: "veterano",
-	[ROLES.sabio]: "sabio",
-	[ROLES.experto]: "experto",
-	[ROLES.adalovelace]: "adalovelace",
-	[ROLES.alanturing]: "alanturing",
+const DEV_ROLES: Record<keyof typeof ROLES, string> = {
+	repatidorDeRep: "1296190630648610818",
+	staff: "1296190630724370498",
+	moderador: "1296190630724370497",
+	moderadorVoz: "1296190630724370496",
+	novatos: "",
+	iniciante: "1296190630678233111",
+	avanzado: "",
+	regular: "",
+	veterano: "",
+	sabio: "",
+	experto: "",
+	adalovelace: "",
+	alanturing: "",
+	perms: "",
+	restringido: "",
+	granApostador: "",
+	muted: "",
 };
+
+export function getRepRolesByOrder(): string[] {
+	let roles = isDevelopment ? DEV_ROLES : ROLES;
+	/** if you modify the order it will have impact. */
+	return [
+		roles.novatos,
+		roles.iniciante,
+		roles.regular,
+		roles.avanzado,
+		roles.veterano,
+		roles.sabio,
+		roles.experto,
+		roles.adalovelace,
+		roles.alanturing,
+	];
+}
+
+export function getRoleName(roleId: string): string {
+	const roles = isDevelopment ? DEV_ROLES : ROLES;
+	return (Object.keys(roles) as Array<keyof typeof roles>).find((key) => roles[key] === roleId) ?? "";
+}
 
 /** Minimum points needed to be X */
 const ROLES_REP_RANGE = {

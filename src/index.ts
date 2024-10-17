@@ -1,21 +1,14 @@
-import dotenv from "dotenv";
+import loadEnvVariables from "./utils/environment.ts";
 const isDevelopment = process.env.NODE_ENV === "development";
 
-if (isDevelopment) {
-	dotenv.config({ path: "./.env.development" });
-} else {
-	dotenv.config({ path: "./.env" });
-}
+loadEnvVariables();
 import { readdirSync } from "node:fs";
-import path, { join } from "node:path";
+import path, { dirname, join } from "node:path";
 import { ExtendedClient } from "./client.ts";
 import { Collection } from "discord.js";
 import { connect } from "mongoose";
 import { Command } from "./types/command.ts";
-import { pathToFileURL } from "node:url";
-
-import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -35,8 +28,8 @@ for (const folder of commandFolders) {
 			const command: Command = commandModule.default || commandModule;
 
 			if (command.data) {
+				console.log(`Cargando comando: ${command.data.name}`);
 				client.commands.set(command.data.name, command);
-				console.log(`Comando cargado: ${command.data.name}`);
 			} else {
 				console.log(`[ADVERTENCIA] El comando en ${filePath} carece de la propiedad "data".`);
 			}

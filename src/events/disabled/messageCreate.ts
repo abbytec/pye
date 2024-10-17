@@ -1,6 +1,6 @@
 import { Events, Message } from "discord.js";
-import { ExtendedClient } from "../client.ts";
-import { Command } from "../types/command.ts"; // Interfaz del comando
+import { ExtendedClient } from "../../client.ts";
+import { Command } from "../../types/command.ts"; // Interfaz del comando
 
 const PREFIX = "h!"; // Define tu prefijo
 

@@ -24,8 +24,6 @@ async function sugerir(canal: TextChannel | null, sugerencia: string | null, int
 		return;
 	}
 
-	console.log(sugerencia, interaction);
-
 	let suggest = new EmbedBuilder()
 		.setColor(0x1414b8)
 		.setTitle("Nueva sugerencia !")
@@ -55,13 +53,13 @@ async function sugerir(canal: TextChannel | null, sugerencia: string | null, int
 
 async function execute(interaction: ChatInputCommandInteraction) {
 	const args = interaction.options.getString("sugerencia");
-	const canal = interaction.client.channels.resolve(getChannel("sugerencias")) as TextChannel | null;
+	const canal = getChannel(interaction.client, "sugerencias") as TextChannel | null;
 
 	await sugerir(canal, args, interaction);
 }
 
 async function executePrefix(msg: Message, arg: string) {
-	const canal = msg.client.channels.resolve(getChannel("sugerencias")) as TextChannel | null;
+	const canal = getChannel(msg.client, "sugerencias") as TextChannel | null;
 
 	await sugerir(canal, arg, msg);
 }

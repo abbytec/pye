@@ -1,20 +1,13 @@
 // src/deploy-commands.ts
-import dotenv from "dotenv";
 const isDevelopment = process.env.NODE_ENV === "development";
-if (isDevelopment) {
-	dotenv.config({ path: "./.env.development" });
-} else {
-	dotenv.config({ path: "./.env" });
-}
+import loadEnvVariables from "./utils/environment.ts";
+loadEnvVariables();
 
 import { REST, Routes } from "discord.js";
 import fs from "node:fs";
-import path from "node:path";
+import path, { dirname } from "node:path";
 import { Command } from "./types/command.ts"; // Asegúrate de tener esta interfaz
-import { pathToFileURL } from "node:url";
-
-import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

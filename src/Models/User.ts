@@ -1,7 +1,7 @@
 // src/models/User.ts
 import { Schema, model, Document } from "mongoose";
-import client from "../redis";
-import { IUser } from "../interfaces/IUser";
+import client from "../redis.ts";
+import { IUser } from "../interfaces/IUser.ts";
 
 export interface IUserModel extends IUser, Document {
 	id: string;
@@ -59,10 +59,6 @@ const userSchema = new Schema<IUserModel>(
 			ref: "Shop",
 		},
 		caps: {
-			type: Number,
-			default: 0,
-		},
-		total: {
 			type: Number,
 			default: 0,
 		},

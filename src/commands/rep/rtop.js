@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, ActionRowBuilder, EmbedBuilder } = require('discord.js')
-const { HelperPoint } = require('../../Models/HelpPoints')
+const { HelperPoint } = require('../../Models/HelperPoint')
 
 
 module.exports = {
