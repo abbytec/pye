@@ -44,7 +44,7 @@ const threadsHelp = async function (tittle: string, pregunta: string, m: ThreadC
 			`el contexto es: "${tittle}" si no lo entiendes no le des importancia. el prompt es: \n "${pregunta}" intenta resolver y ayudar con el prompt de manera clara y simple`.toString();
 		const result = await model.generateContent(prompt);
 
-		const response = await result.response.text();
+		const response = result.response.text();
 		m.send(
 			`hola <@${m.ownerId}> \n\n ${response} \n\n **Fue útil mi respuesta? 🦾👀 |  Recuerda que de todos modos puedes esperar que otros usuarios te ayuden!** 😉`
 		);
@@ -58,7 +58,7 @@ export default {
 	execute: async function (thread: ThreadChannel) {
 		if (thread.parent?.type == ChannelType.GuildForum) {
 			//Enviar advertencia de nuevo thread.
-			const canal = getChannel(thread.guild.client, "sugerencias") as TextChannel;
+			const canal = (await getChannel(thread.guild, "sugerencias", true)) as TextChannel;
 			canal.send({
 				embeds: [
 					new EmbedBuilder()
@@ -81,11 +81,9 @@ export default {
 			// GEMINI Api para responder threads.
 			thread.fetchStarterMessage().then(async (msg) => {
 				thread.sendTyping();
-				try {
-					threadsHelp(thread.name, msg?.content ?? "", thread);
-				} catch (err) {
+				await threadsHelp(thread.name, msg?.content ?? "", thread).catch((err) => {
 					console.log(err);
-				}
+				});
 			});
 		}
 	},

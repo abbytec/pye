@@ -9,20 +9,8 @@ const data = new SlashCommandBuilder()
 		option.setName("sugerencia").setDescription("qué tienes en mente para el servidor").setMinLength(40).setRequired(true)
 	);
 
-async function sugerir(canal: TextChannel | null, sugerencia: string | null, interaction: ChatInputCommandInteraction | Message) {
-	if (!sugerencia) {
-		await interaction.reply({
-			content: "Por favor, proporciona una sugerencia.",
-			ephemeral: true,
-		});
-	}
-	if (!canal?.isTextBased()) {
-		await interaction.reply({
-			content: "No se pudo encontrar el canal de sugerencias. Por favor, contacta al administrador.",
-			ephemeral: true,
-		});
-		return;
-	}
+async function sugerir(sugerencia: string | null, interaction: ChatInputCommandInteraction | Message) {
+	const canal = (await getChannel(interaction, "sugerencias", true)) as TextChannel | null;
 
 	let suggest = new EmbedBuilder()
 		.setColor(0x1414b8)
@@ -53,15 +41,18 @@ async function sugerir(canal: TextChannel | null, sugerencia: string | null, int
 
 async function execute(interaction: ChatInputCommandInteraction) {
 	const args = interaction.options.getString("sugerencia");
-	const canal = getChannel(interaction.client, "sugerencias") as TextChannel | null;
-
-	await sugerir(canal, args, interaction);
+	await sugerir(args, interaction);
 }
 
 async function executePrefix(msg: Message, arg: string) {
-	const canal = getChannel(msg.client, "sugerencias") as TextChannel | null;
+	if (!arg) {
+		await msg.reply({
+			content: "Por favor, proporciona una sugerencia.",
+		});
+		return;
+	}
 
-	await sugerir(canal, arg, msg);
+	await sugerir(arg, msg);
 }
 
 // Exportar el comando implementando la interfaz Command

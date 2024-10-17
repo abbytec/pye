@@ -1,4 +1,4 @@
-import { Channel, Client } from "discord.js";
+import { Channel, ChatInputCommandInteraction, Client, Guild, Message } from "discord.js";
 const CHANNELS = {
 	ayuda: "916353103534632964",
 	bansanciones: "844385995352047646",
@@ -27,17 +27,31 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	ofreceServicios: "1144133135475425320",
 	puntos: "1144159059247898657",
 	sugerencias: "1296190631026233348",
+	logPuntos: "1296190632317943914",
 };
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
-function getChannelFromEnv(channel: keyof typeof CHANNELS): string {
+export function getChannelFromEnv(channel: keyof typeof CHANNELS): string {
 	return isDevelopment ? CHANNELS_DEV[channel] ?? "" : CHANNELS[channel];
 }
 
-export function getChannel(client: Client, channel: keyof typeof CHANNELS): Channel | null {
+export async function getChannel(
+	interaction: ChatInputCommandInteraction | Message | Guild,
+	channel: keyof typeof CHANNELS,
+	textBased?: boolean
+): Promise<Channel | undefined> {
 	getChannelFromEnv(channel);
-	return client.channels.resolve(getChannelFromEnv(channel));
+
+	const canal = interaction.client.channels.resolve(getChannelFromEnv(channel));
+	if (textBased && !canal?.isTextBased() && !(interaction instanceof Guild)) {
+		await interaction.reply({
+			content: "No se pudo encontrar el canal de sugerencias. Por favor, contacta al administrador.",
+			ephemeral: true,
+		});
+		return undefined;
+	}
+	return canal ?? undefined;
 }
 
 const USERS = {
@@ -85,6 +99,14 @@ const DEV_ROLES: Record<keyof typeof ROLES, string> = {
 	muted: "",
 };
 
+export function getRoleFromEnv(role: keyof typeof ROLES): string {
+	return (isDevelopment ? DEV_ROLES : ROLES)[role] ?? "";
+}
+
+export function getRoles(...roles: (keyof typeof ROLES)[]): string[] {
+	return roles.map((role) => getRoleFromEnv(role));
+}
+
 export function getRepRolesByOrder(): string[] {
 	let roles = isDevelopment ? DEV_ROLES : ROLES;
 	/** if you modify the order it will have impact. */
@@ -107,16 +129,16 @@ export function getRoleName(roleId: string): string {
 }
 
 /** Minimum points needed to be X */
-const ROLES_REP_RANGE = {
-	[ROLES.novatos]: 0,
-	[ROLES.iniciante]: 1,
-	[ROLES.regular]: 16,
-	[ROLES.avanzado]: 32,
-	[ROLES.veterano]: 64,
-	[ROLES.sabio]: 128,
-	[ROLES.experto]: 256,
-	[ROLES.adalovelace]: 512,
-	[ROLES.alanturing]: 1024,
+export const ROLES_REP_RANGE = {
+	novatos: 0,
+	iniciante: 1,
+	regular: 16,
+	avanzado: 32,
+	veterano: 64,
+	sabio: 128,
+	experto: 256,
+	adalovelace: 512,
+	alanturing: 1024,
 };
 
 const COLORS = {
