@@ -42,9 +42,7 @@ export default {
 		const avatar = await loadImage(member.displayAvatarURL({ extension: "png", forceStatic: true }));
 		const name = member.username.length > 9 ? member.username.substring(0, 8).trim() + "..." : member.username;
 		const role = getRole(guildMember);
-		console.log(role);
 		if (!role) return;
-		console.log("B");
 		const background = await loadImage(path.join(__dirname, `../../utils/Images/reputation/${getRoleName(role.id)}.jpg`));
 
 		const canvas = getRender({
