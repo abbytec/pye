@@ -10,8 +10,8 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 
 export default {
 	data: new SlashCommandBuilder()
-		.setName("add-rep")
-		.setDescription("Agrega puntos de ayuda.")
+		.setName("remove-rep")
+		.setDescription("Resta puntos de ayuda.")
 		.addUserOption((option) => option.setName("usuario").setDescription("selecciona el usuario").setRequired(true)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles(getRoles("staff", "repatidorDeRep")), deferInteraction],
@@ -23,7 +23,9 @@ export default {
 					embeds: [
 						new EmbedBuilder()
 							.setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
-							.setDescription("<:cross_custom:913093934832578601> - No puedo darle puntos a los bots.\nUso: `add-rep [@Usuario]`")
+							.setDescription(
+								"<:cross_custom:913093934832578601> - No puedo quitarle puntos a los bots.\nUso: `add-rep [@Usuario]`"
+							)
 							.setColor(0xef5250)
 							.setTimestamp(),
 					],
@@ -35,7 +37,7 @@ export default {
 			let data = await HelperPoint.findOne({ _id: user.id }).exec();
 
 			if (!data) data = await HelperPoint.create({ _id: user.id });
-			data.points += 1;
+			data.points -= 1;
 			let newData = await data.save();
 
 			return {
@@ -44,10 +46,10 @@ export default {
 				finalMessages: [
 					{
 						channel: getChannelFromEnv("logPuntos"),
-						content: `**${interaction.user.tag}** le ha dado un rep al usuario: \`${user.tag}\``,
+						content: `**${interaction.user.tag}** le ha quitado un rep al usuario: \`${user.tag}\``,
 					},
 				],
-				reactOkMessage: `se le ha dado un rep al usuario: \`${user.tag}\``,
+				reactOkMessage: `se le ha quitado un rep al usuario: \`${user.tag}\``,
 			};
 		},
 		[updateRepRoles, sendFinalMessages, replyOkToMessage]

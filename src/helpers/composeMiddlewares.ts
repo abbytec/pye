@@ -14,7 +14,7 @@ export const composeMiddlewares = (
 	finalHandler: (interaction: ChatInputCommandInteraction) => Promise<void> | void | Promise<any>,
 	postHandlers?: Finalware[]
 ) => {
-	return async (interaction: ChatInputCommandInteraction & { postHandleable?: any }) => {
+	return async (interaction: ChatInputCommandInteraction & PostHandleable) => {
 		// Índice para rastrear el middleware actual
 		let index = -1;
 
@@ -27,12 +27,12 @@ export const composeMiddlewares = (
 			if (middleware) {
 				await middleware(interaction, () => dispatch(i + 1));
 			} else {
-				// Si no hay más middlewares, llama al handler final
-				let result = { ...interaction, ...((await finalHandler(interaction)) || {}) };
+				// Si no hay más middlewares, llama al handler
+				let result = (await finalHandler(interaction)) || {};
 				// Después de ejecutar el handler final, ejecutamos los postHandlers si existen
 				if (postHandlers) {
 					for (const postHandler of postHandlers) {
-						await postHandler(result);
+						await postHandler(interaction, result);
 					}
 				}
 			}

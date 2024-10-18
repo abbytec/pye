@@ -8,7 +8,7 @@ export default {
 		// Verifica si la interacción es un comando de texto
 		if (!interaction.isChatInputCommand()) return;
 
-		const command = (interaction.client as ExtendedClient).commands.get(interaction.commandName) as Command | undefined;
+		const command = (interaction.client as ExtendedClient).commands.get(interaction.commandName);
 
 		if (!command) {
 			console.error(`No command matching ${interaction.commandName} was found.`);
@@ -17,7 +17,7 @@ export default {
 
 		// Ejecutar el comando
 		try {
-			await command.execute(interaction as ChatInputCommandInteraction);
+			await command.execute(interaction);
 		} catch (error) {
 			console.error(error);
 			if (interaction.replied || interaction.deferred) {

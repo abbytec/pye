@@ -9,7 +9,8 @@ export interface PostHandleable {
 		channel: string;
 		content: string;
 	}[];
+	reactOkMessage?: string;
 }
 
 export type Middleware = (interaction: ChatInputCommandInteraction, next: () => Promise<void>) => Promise<void>;
-export type Finalware = (interaction: ChatInputCommandInteraction & Partial<PostHandleable>) => Promise<void>;
+export type Finalware = (interaction: ChatInputCommandInteraction, result: Partial<PostHandleable>) => Promise<void>;

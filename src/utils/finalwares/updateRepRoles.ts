@@ -13,10 +13,10 @@ const rep = {
 	quinientos: "ROLE_ID_QUINIENTOS",
 };
 
-export const updateRepRoles: Finalware = async (postHandleableInteraction) => {
+export const updateRepRoles: Finalware = async (postHandleableInteraction, result) => {
 	// Aseguramos que interaction tenga el tipo PostHandleable
 
-	const { helperPoint, guildMember } = postHandleableInteraction;
+	const { helperPoint, guildMember } = result;
 
 	if (!helperPoint) {
 		console.warn("No se encontró helperPoint en la interacción.");
