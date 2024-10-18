@@ -28,6 +28,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	puntos: "1144159059247898657",
 	sugerencias: "1296190631026233348",
 	logPuntos: "1296190632317943914",
+	bansanciones: "1296190632317943909",
 };
 
 const isDevelopment = process.env.NODE_ENV === "development";
@@ -54,7 +55,7 @@ export async function getChannel(
 	return canal ?? undefined;
 }
 
-const USERS = {
+export const USERS = {
 	disboard: "302050872383242240",
 	maby: "602240617862660096",
 };

@@ -6,6 +6,7 @@ import { getRepRolesByOrder, getRoleName } from "../../utils/constants.ts";
 import path from "path";
 import { fileURLToPath } from "url";
 import { getRender } from "../../utils/canvas/card-render.ts";
+import { replyError } from "../../utils/messages/replyError.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,10 +23,8 @@ export default {
 
 		// validate bot
 		if (member.bot) {
-			const embed = new EmbedBuilder()
-				.setColor(0xff0000)
-				.setDescription("<:cross_custom:913093934832578601> - Los bots no pueden tener puntos de ayuda.");
-			return msg.reply({ embeds: [embed], ephemeral: true }); // 'ephemeral' hace que el mensaje sea visible solo para el usuario que ejecutó el comando
+			replyError(msg, "Los bots no pueden tener puntos de ayuda.");
+			return;
 		}
 
 		// get data

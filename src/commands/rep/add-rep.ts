@@ -7,6 +7,7 @@ import { updateRepRoles } from "../../utils/finalwares/updateRepRoles.ts";
 import { HelperPoint } from "../../Models/HelperPoint.ts";
 import { replyOkToMessage, sendFinalMessages } from "../../utils/finalwares/sendFinalMessages.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
+import { replyError } from "../../utils/messages/replyError.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -19,16 +20,7 @@ export default {
 			const user = interaction.options.getUser("usuario", true);
 
 			if (user.bot) {
-				interaction.reply({
-					embeds: [
-						new EmbedBuilder()
-							.setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
-							.setDescription("<:cross_custom:913093934832578601> - No puedo darle puntos a los bots.\nUso: `add-rep [@Usuario]`")
-							.setColor(0xef5250)
-							.setTimestamp(),
-					],
-					ephemeral: true,
-				});
+				replyError(interaction, "No puedo darle puntos a los bots.\nUso: `add-rep [@Usuario]`");
 				return;
 			}
 

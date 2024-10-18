@@ -5,7 +5,7 @@ interface IHelperPoint {
 	points: number;
 }
 
-export interface IHelperPointModel extends IHelperPoint, Document {
+export interface IHelperPointDocument extends IHelperPoint, Document {
 	_id: string;
 }
 const helperpointSchema = new Schema<IHelperPoint>(
