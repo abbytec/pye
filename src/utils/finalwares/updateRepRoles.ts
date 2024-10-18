@@ -43,13 +43,13 @@ async function updateMemberReputationRoles(member: GuildMember, points: number):
 	// Determinamos el rol más alto que el miembro debe tener
 	let newRoleId: string | null = null;
 
+	console.log(rolesWithPoints);
 	for (const role of rolesWithPoints) {
 		if (points >= role.minPoints) {
 			newRoleId = role.id;
-		} else {
-			break;
 		}
 	}
+	console.log(newRoleId);
 
 	// Eliminamos todos los roles de reputación actuales
 	const rolesToRemove = rolesWithPoints.map((role) => role.id).filter((roleId) => member.roles.cache.has(roleId));

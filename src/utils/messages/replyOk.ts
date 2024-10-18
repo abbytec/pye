@@ -1,12 +1,12 @@
 import { ChatInputCommandInteraction, EmbedBuilder, TextChannel } from "discord.js";
 
-export async function replyError(interaction: ChatInputCommandInteraction, message: string) {
+export async function replyOk(interaction: ChatInputCommandInteraction, message: string, author?: string) {
 	const embedMessage = {
 		embeds: [
 			new EmbedBuilder()
-				.setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
-				.setDescription("<:cross_custom:913093934832578601> • " + message)
-				.setColor(0xef5250)
+				.setAuthor({ name: author ?? interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
+				.setDescription("✅ • " + message)
+				.setColor(0x43b581)
 				.setTimestamp(),
 		],
 		ephemeral: true,

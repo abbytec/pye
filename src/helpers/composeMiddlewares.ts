@@ -1,6 +1,7 @@
 // helpers/composeMiddlewares.ts
 import { Finalware, Middleware, PostHandleable } from "../types/middleware.ts";
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, TextChannel } from "discord.js";
+import { getChannelFromEnv } from "../utils/constants.ts";
 
 /**
  * Componer múltiples middlewares en una única función.
@@ -11,7 +12,7 @@ import { ChatInputCommandInteraction } from "discord.js";
  */
 export const composeMiddlewares = (
 	middlewares: Middleware[],
-	finalHandler: (interaction: ChatInputCommandInteraction) => Promise<void> | void | Promise<any>,
+	finalHandler: (interaction: ChatInputCommandInteraction) => Promise<void> | Promise<any>,
 	postHandlers?: Finalware[]
 ) => {
 	return async (interaction: ChatInputCommandInteraction & PostHandleable) => {
@@ -28,7 +29,11 @@ export const composeMiddlewares = (
 				await middleware(interaction, () => dispatch(i + 1));
 			} else {
 				// Si no hay más middlewares, llama al handler
-				let result = (await finalHandler(interaction)) || {};
+				let result =
+					(await finalHandler(interaction).catch((e) => {
+						console.error(e);
+						(interaction.guild?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({ content: "error en pye: " + e });
+					})) || {};
 				// Después de ejecutar el handler final, ejecutamos los postHandlers si existen
 				if (postHandlers) {
 					for (const postHandler of postHandlers) {

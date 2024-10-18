@@ -29,14 +29,14 @@ async function sugerir(sugerencia: string | null, interaction: ChatInputCommandI
 			embeds: [suggest],
 		})
 		.then((message: any) => {
-			message.react("1282933528580849664").catch(() => null);
-			message.react("1282933529566511155").catch(() => null);
+			message.react("1282933528580849664").catch((e: any) => console.error(e));
+			message.react("1282933529566511155").catch((e: any) => console.error(e));
 			message
 				.startThread({ name: `Sugerencia por ${interaction.member?.user.username}` })
 				.then((c: any) => c.send(`<@${interaction.member?.user.id}>`))
-				.catch(() => null);
+				.catch((e: any) => console.error(e));
 		})
-		.catch(() => null);
+		.catch((e) => console.error(e));
 }
 
 async function execute(interaction: ChatInputCommandInteraction) {

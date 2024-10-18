@@ -9,7 +9,7 @@ export const sendFinalMessages: Finalware = async (postHandleableInteraction, re
 
 export const replyOkToMessage: Finalware = async (postHandleableInteraction, result) => {
 	if (postHandleableInteraction.deferred) {
-		await postHandleableInteraction.deleteReply().catch(() => null);
+		await postHandleableInteraction.deleteReply().catch((e) => console.error(e));
 	}
 	if (result.reactOkMessage === null) return;
 	await (postHandleableInteraction.guild?.channels.resolve(postHandleableInteraction?.channelId) as TextChannel)?.send({
@@ -18,7 +18,7 @@ export const replyOkToMessage: Finalware = async (postHandleableInteraction, res
 };
 export const replyWarningToMessage: Finalware = async (postHandleableInteraction, result) => {
 	if (postHandleableInteraction.deferred) {
-		await postHandleableInteraction.deleteReply().catch(() => null);
+		await postHandleableInteraction.deleteReply().catch((e) => console.error(e));
 	}
 	if (result.reactWarningMessage === null) return;
 	await (postHandleableInteraction.guild?.channels.resolve(postHandleableInteraction?.channelId) as TextChannel)?.send({

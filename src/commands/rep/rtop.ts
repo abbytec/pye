@@ -70,7 +70,7 @@ export default {
 			};
 		};
 
-		let m = await (msg.channel as TextChannel).send(await content()).catch(() => null);
+		let m = await (msg.channel as TextChannel).send(await content()).catch((e) => console.error(e));
 
 		m?.createMessageComponentCollector({
 			filter: (i) => i.user.id === msg.user.id && ["hp-topBack", "hp-topNext"].includes(i.customId),
@@ -82,6 +82,6 @@ export default {
 				else i.deferUpdate();
 				i.update(await content());
 			})
-			.on("end", async () => m.edit(await content(true)).catch(() => null));
+			.on("end", async () => m.edit(await content(true)).catch((e) => console.error(e)));
 	},
 };

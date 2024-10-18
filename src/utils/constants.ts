@@ -18,6 +18,7 @@ const CHANNELS = {
 	roles: "999427534670278667",
 	chatProgramadores: "807385882868580392",
 	sugerencias: "932011356213899274",
+	logs: "1145160830741135470",
 };
 
 const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
@@ -29,6 +30,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	sugerencias: "1296190631026233348",
 	logPuntos: "1296190632317943914",
 	bansanciones: "1296190632317943909",
+	logs: "1296190632020414594",
 };
 
 const isDevelopment = process.env.NODE_ENV === "development";
@@ -61,7 +63,7 @@ export const USERS = {
 };
 
 const ROLES = {
-	novatos: "780597611496865792",
+	novato: "780597611496865792",
 	iniciante: "806755636288815115",
 	avanzado: "780597430861168660",
 	regular: "805073774088945725",
@@ -85,19 +87,19 @@ const DEV_ROLES: Record<keyof typeof ROLES, string> = {
 	staff: "1296190630724370498",
 	moderador: "1296190630724370497",
 	moderadorVoz: "1296190630724370496",
-	novatos: "",
+	novato: "1296190630678233110",
 	iniciante: "1296190630678233111",
-	avanzado: "",
-	regular: "",
-	veterano: "",
-	sabio: "",
-	experto: "",
-	adalovelace: "",
-	alanturing: "",
-	perms: "",
-	restringido: "",
-	granApostador: "",
-	muted: "",
+	avanzado: "1296190630678233114",
+	regular: "1296190630678233112",
+	veterano: "1296190630678233115",
+	sabio: "1296190630678233117",
+	experto: "1296190630686494852",
+	adalovelace: "1296190630686494853",
+	alanturing: "1296190630686494854",
+	perms: "1296190630724370500",
+	restringido: "1296190630678233109",
+	granApostador: "1296190630657134617",
+	muted: "1296190630678233113",
 };
 
 export function getRoleFromEnv(role: keyof typeof ROLES): string {
@@ -112,7 +114,7 @@ export function getRepRolesByOrder(): string[] {
 	let roles = isDevelopment ? DEV_ROLES : ROLES;
 	/** if you modify the order it will have impact. */
 	return [
-		roles.novatos,
+		roles.novato,
 		roles.iniciante,
 		roles.regular,
 		roles.avanzado,
@@ -131,7 +133,7 @@ export function getRoleName(roleId: string): string {
 
 /** Minimum points needed to be X */
 export const ROLES_REP_RANGE = {
-	novatos: 0,
+	novato: 0,
 	iniciante: 1,
 	regular: 16,
 	avanzado: 32,

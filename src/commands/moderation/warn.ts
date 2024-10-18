@@ -120,7 +120,6 @@ export default {
 				});
 			let canal = (await getChannel(interaction, "bansanciones", true)) as TextChannel;
 
-			interaction.editReply(`**${member.user.tag}** ha recibido una advertencia.`);
 			if (!canal) return;
 			canal.send({
 				embeds: [

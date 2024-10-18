@@ -1,4 +1,13 @@
-import { SlashCommandBuilder, AttachmentBuilder, ChatInputCommandInteraction, EmbedBuilder, TextChannel, User, GuildMember } from "discord.js";
+import {
+	SlashCommandBuilder,
+	AttachmentBuilder,
+	ChatInputCommandInteraction,
+	EmbedBuilder,
+	TextChannel,
+	User,
+	GuildMember,
+	Interaction,
+} from "discord.js";
 import { Users } from "../../Models/User.ts";
 import { loadImage } from "@napi-rs/canvas";
 import { HelperPoint } from "../../Models/HelperPoint.ts";
@@ -40,7 +49,7 @@ export default {
 		const rank = (people.findIndex((memberFromDB) => memberFromDB._id === member.id) + 1).toLocaleString() || "-";
 		const avatar = await loadImage(member.displayAvatarURL({ extension: "png", forceStatic: true }));
 		const name = member.username.length > 9 ? member.username.substring(0, 8).trim() + "..." : member.username;
-		const role = getRole(guildMember);
+		const role = getRole(msg, guildMember);
 		if (!role) return;
 		const background = await loadImage(path.join(__dirname, `../../utils/Images/reputation/${getRoleName(role.id)}.jpg`));
 
@@ -55,15 +64,15 @@ export default {
 		});
 
 		// send avatar
-		return (msg.channel as TextChannel)
+		return (msg.guild?.channels.cache.get(msg.channelId) as TextChannel)
 			.send({
 				files: [new AttachmentBuilder(canvas.toBuffer("image/jpeg"), { name: "rank.png" })],
 			})
-			.catch(() => null);
+			.catch((e) => console.error(e));
 	},
 };
 
-function getRole(member: GuildMember | undefined) {
+function getRole(interaction: ChatInputCommandInteraction, member: GuildMember | undefined) {
 	if (!member) return;
 	for (const roleId of getRepRolesByOrder()) {
 		const role = member.roles.cache.get(roleId);
