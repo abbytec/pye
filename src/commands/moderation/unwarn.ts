@@ -6,8 +6,8 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { ModLogs } from "../../Models/ModLogs.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
+import { replyOkToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -56,9 +56,6 @@ export default {
 				})
 				.catch(() => null);
 
-			// Confirmar en el canal donde se ejecutó el comando
-			await replyOk(interaction, "Se ha removido correctamente una advertencia.");
-
 			// Notificar en el canal de sanciones
 			const canal = (await getChannel(interaction, "bansanciones", true)) as TextChannel;
 			if (canal) {
@@ -76,6 +73,8 @@ export default {
 					],
 				});
 			}
-		}
+			return { reactOkMessage: `Se ha removido una advertencia de **${member.user.tag}**.` };
+		},
+		[replyOkToMessage]
 	),
 };

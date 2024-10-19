@@ -8,7 +8,7 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { ModLogs } from "../../Models/ModLogs.ts";
 import ms from "ms";
-import { replyOk } from "../../utils/messages/replyOk.ts";
+import { replyWarningToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -107,10 +107,11 @@ export default {
 				}
 
 				// Responder al comando
-				await replyOk(interaction, `**${member.user.tag}** ha sido aislado del servidor por \`${ms(duration, { long: true })}\`.`);
+				return { reactWarningMessage: `**${member.user.tag}** ha sido aislado del servidor por \`${ms(duration, { long: true })}\`.` };
 			} catch {
 				return replyError(interaction, "No se pudo aplicar el timeout al usuario.");
 			}
-		}
+		},
+		[replyWarningToMessage]
 	),
 };
