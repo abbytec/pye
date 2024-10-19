@@ -37,7 +37,7 @@ export const composeMiddlewares = (
 								process.env.NODE_ENV === "development"
 									? `<@${interaction.user.id}>`
 									: "<@220683580467052544> <@341077056026705930> <@602240617862660096>"
-							}Error en el comando: \`${interaction.command?.name}\`\n\`\`\`js\n${e.stack}\`\`\``,
+							}Error en el comando: \`${interaction.commandName}\`\n\`\`\`js\n${e.stack}\`\`\``,
 						});
 					})) || {};
 				// Después de ejecutar el handler final, ejecutamos los postHandlers si existen
