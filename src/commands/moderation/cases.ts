@@ -9,14 +9,13 @@ import {
 	Interaction,
 	CacheType,
 } from "discord.js";
-import { getRoleFromEnv } from "../../utils/constants.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { ModLogs } from "../../Models/ModLogs.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
+import { getRoleFromEnv } from "../../utils/constants.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -24,20 +23,22 @@ export default {
 		.setDescription("Muestra los casos de un usuario.")
 		.addUserOption((option) => option.setName("usuario").setDescription("Selecciona el usuario").setRequired(true)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles([getRoleFromEnv("perms"), getRoleFromEnv("staff")]), deferInteraction],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
 			const member = await interaction.guild?.members.fetch(user.id);
+			const viewer = await interaction.guild?.members.fetch(interaction.user.id);
 
-			if (!member) {
-				return replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
-			}
+			if (!member) return replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
-			const data = await ModLogs.find({ id: user.id }).exec();
+			const data = await ModLogs.find({
+				id: user.id,
+				...(viewer?.roles.cache.has(getRoleFromEnv("staff")) || member.roles.cache.has(getRoleFromEnv("perms"))
+					? {}
+					: { hiddenCase: { $ne: true } }),
+			}).exec();
 
-			if (!data.length) {
-				return replyOk(interaction, "Este usuario no tiene casos registrados.");
-			}
+			if (!data.length) return replyOk(interaction, "Este usuario no tiene casos registrados.");
 
 			const itemsPerPage = 10;
 			const totalPages = Math.ceil(data.length / itemsPerPage);
@@ -60,7 +61,12 @@ export default {
 							name: "Casos Registrados",
 							value: items.length
 								? items
-										.map((c, index) => `**#${start + index + 1}** | Moderador: \`${c.moderator}\` | Razón: ${c.reason}`)
+										.map(
+											(c, index) =>
+												`**#${start + index + 1}** | Moderador: \`${c.moderator}\` | ${
+													c.hiddenCase ? "sancion removida" : `Razón: ${c.reason}`
+												}`
+										)
 										.join("\n")
 								: "❌ No hay casos registrados.",
 						},
@@ -98,10 +104,10 @@ export default {
 						.setCustomId("select_case")
 						.setPlaceholder("Selecciona un caso para ver detalles")
 						.addOptions(
-							items.map((c, index) => ({
-								label: `Caso ${start + index + 1}`,
-								value: `${c._id.toString()}`,
-								emoji: "📝",
+							items.map((caso, index) => ({
+								label: `Caso ${caso.hiddenCase ? "removido " : ""}${start + index + 1}`,
+								value: `${caso._id.toString()}`,
+								emoji: caso.hiddenCase ? "🙈" : "📝",
 							}))
 						);
 
@@ -130,12 +136,11 @@ export default {
 			collector.on("collect", async (i: Interaction<CacheType>) => {
 				if (!i.isButton() && !i.isStringSelectMenu()) return;
 
-				if (i.user.id !== interaction.user.id) {
+				if (i.user.id !== interaction.user.id)
 					return i.reply({
 						content: "❌ No puedes interactuar con estos controles.",
 						ephemeral: true,
 					});
-				}
 
 				if (i.isButton()) {
 					if (i.customId === "back") {
@@ -171,7 +176,11 @@ export default {
 										})}`,
 										inline: true,
 									},
-									{ name: "Sanción Aplicada", value: selectedCase.type || "Timeout", inline: true },
+									{
+										name: `Sanción ${selectedCase.hiddenCase ? "removida" : "aplicada"}`,
+										value: selectedCase.type || "Timeout",
+										inline: true,
+									},
 								])
 								.setTimestamp()
 								.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null);

@@ -6,6 +6,7 @@ interface IModLogs {
 	reason: string;
 	date: Date;
 	type: string;
+	hiddenCase?: boolean;
 }
 
 export interface IModLogsModel extends IModLogs, Document {}
@@ -32,6 +33,10 @@ const modlogsSchema = new Schema<IModLogsModel>(
 			type: String,
 			required: true,
 			default: "Timeout",
+		},
+		hiddenCase: {
+			type: Boolean,
+			default: false,
 		},
 	},
 	{ versionKey: false }
