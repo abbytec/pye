@@ -43,14 +43,14 @@ export default {
 				await member.timeout(null, reason);
 
 				// Registrar en ModLogs
-				// Buscar la advertencia más reciente que no esté oculta
+				// Buscar el timeout más reciente que no esté oculto
 				const latestTimeout = await ModLogs.findOne({ id: user.id, type: "Timeout", hiddenCase: { $ne: true } }).sort({ date: -1 });
 
 				if (!latestTimeout) {
-					return replyError(interaction, "Este usuario no tiene advertencias activas.");
+					return replyError(interaction, "Este usuario no tiene timeouts activos.");
 				}
 
-				// Marcar la advertencia como oculta
+				// Marcar el timeout como oculto
 				latestTimeout.hiddenCase = true;
 				await latestTimeout.save();
 

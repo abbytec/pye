@@ -26,14 +26,12 @@ export default {
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
-			const member = await interaction.guild?.members.fetch(user.id);
+			const member = await interaction.guild?.members.fetch(user.id).catch(() => null);
 			const viewer = await interaction.guild?.members.fetch(interaction.user.id);
-
-			if (!member) return replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
 			const data = await ModLogs.find({
 				id: user.id,
-				...(viewer?.roles.cache.has(getRoleFromEnv("staff")) || member.roles.cache.has(getRoleFromEnv("perms"))
+				...(viewer?.roles.cache.has(getRoleFromEnv("staff")) || viewer?.roles.cache.has(getRoleFromEnv("perms"))
 					? {}
 					: { hiddenCase: { $ne: true } }),
 			}).exec();
@@ -55,7 +53,7 @@ export default {
 						name: user.tag,
 						iconURL: user.displayAvatarURL(),
 					})
-					.setTitle(`📝 Casos de ${user.tag}`)
+					.setTitle(`📝 Casos de ${user.tag} ${member ? "" : "(Usuario baneado)"}`)
 					.addFields([
 						{
 							name: "Casos Registrados",
@@ -105,7 +103,7 @@ export default {
 						.setPlaceholder("Selecciona un caso para ver detalles")
 						.addOptions(
 							items.map((caso, index) => ({
-								label: `Caso ${caso.hiddenCase ? "removido " : ""}${start + index + 1}`,
+								label: `#${start + index + 1} ${caso.type} ${caso.hiddenCase ? "removido " : ""}`,
 								value: `${caso._id.toString()}`,
 								emoji: caso.hiddenCase ? "🙈" : "📝",
 							}))
