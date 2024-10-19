@@ -1,6 +1,6 @@
 // src/commands/Staff/timeout.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, TextChannel } from "discord.js";
-import { getChannel, getRoleFromEnv, getRoles, USERS } from "../../utils/constants.ts";
+import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { getChannelFromEnv, getRoleFromEnv, getRoles, USERS } from "../../utils/constants.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
@@ -8,7 +8,7 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { ModLogs } from "../../Models/ModLogs.ts";
 import ms from "ms";
-import { replyWarningToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
+import { logMessages, replyWarningToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -26,20 +26,20 @@ export default {
 
 			const member = await interaction.guild?.members.fetch(user.id);
 
-			if (!member) return replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
+			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
 			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby) {
-				return replyError(interaction, "No puedes darle timeout a un miembro del staff.");
+				return await replyError(interaction, "No puedes darle timeout a un miembro del staff.");
 			}
 
 			if (user.id === interaction.user.id) {
-				return replyError(interaction, "No puedes darte timeout a ti mismo.");
+				return await replyError(interaction, "No puedes darte timeout a ti mismo.");
 			}
 
 			// Parsear la duración
 			const duration = ms(durationString);
 			if (!duration || duration < 1000 || duration > 28 * 24 * 60 * 60 * 1000) {
-				return replyError(interaction, "La duración del timeout no es válida. Debe ser entre 1s y 28d.");
+				return await replyError(interaction, "La duración del timeout no es válida. Debe ser entre 1s y 28d.");
 			}
 
 			// Aplicar el timeout
@@ -58,8 +58,8 @@ export default {
 				const data = await ModLogs.find({ id: user.id }).exec();
 
 				// Enviar mensaje directo al usuario
-				try {
-					await member.send({
+				await member
+					.send({
 						embeds: [
 							new EmbedBuilder()
 								.setAuthor({
@@ -77,41 +77,31 @@ export default {
 								.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)
 								.setTimestamp(),
 						],
-					});
-				} catch {
-					// El usuario tiene los MD cerrados
-				}
-
-				// Enviar mensaje al canal de sanciones
-				const canal = (await getChannel(interaction, "bansanciones", true)) as TextChannel;
-				if (canal) {
-					canal.send({
-						embeds: [
-							new EmbedBuilder()
-								.setAuthor({
-									name: member.user.tag,
-									iconURL: member.user.displayAvatarURL(),
-								})
-								.setDescription(`**${member.user.tag}** ha sido aislado del servidor.`)
-								.addFields([
-									{ name: "Tiempo", value: `\`${ms(duration, { long: true })}\``, inline: true },
-									{ name: "Razón", value: reason, inline: true },
-									{ name: "ID", value: `${member.id}`, inline: true },
-									{ name: "Moderador", value: interaction.user.tag, inline: true },
-									{ name: "Casos", value: `#${data.length}`, inline: true },
-								])
-								.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)
-								.setTimestamp(),
-						],
-					});
-				}
+					})
+					.catch(() => null);
 
 				// Responder al comando
-				return { reactWarningMessage: `**${member.user.tag}** ha sido aislado del servidor por \`${ms(duration, { long: true })}\`.` };
+				return {
+					logMessages: [
+						{
+							channel: getChannelFromEnv("bansanciones"),
+							user: member.user,
+							description: `**${member.user.tag}** ha sido aislado del servidor.`,
+							fields: [
+								{ name: "Tiempo", value: `\`${ms(duration, { long: true })}\``, inline: true },
+								{ name: "Razón", value: reason, inline: true },
+								{ name: "ID", value: `${member.id}`, inline: true },
+								{ name: "Moderador", value: interaction.user.tag, inline: true },
+								{ name: "Casos", value: `#${data.length}`, inline: true },
+							],
+						},
+					],
+					reactWarningMessage: `**${member.user.tag}** ha sido aislado del servidor por \`${ms(duration, { long: true })}\`.`,
+				};
 			} catch {
-				return replyError(interaction, "No se pudo aplicar el timeout al usuario.");
+				return await replyError(interaction, "No se pudo aplicar el timeout al usuario.");
 			}
 		},
-		[replyWarningToMessage]
+		[logMessages, replyWarningToMessage]
 	),
 };

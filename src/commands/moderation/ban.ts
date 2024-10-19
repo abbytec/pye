@@ -1,13 +1,13 @@
 // src/commands/Staff/ban.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, TextChannel } from "discord.js";
-import { getChannel, getRoleFromEnv, getRoles, USERS } from "../../utils/constants.ts";
+import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { getChannelFromEnv, getRoleFromEnv, getRoles, USERS } from "../../utils/constants.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { ModLogs } from "../../Models/ModLogs.ts";
-import { replyOkToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
+import { replyOkToMessage, logMessages } from "../../utils/finalwares/sendFinalMessages.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -28,24 +28,24 @@ export default {
 				// Procedemos a verificar si está baneado
 				const isBanned = (await interaction.guild?.bans.fetch())?.has(user.id);
 				if (isBanned) {
-					return replyError(interaction, "Este usuario ya está baneado.");
+					return await replyError(interaction, "Este usuario ya está baneado.");
 				} else {
-					return replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
+					return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 				}
 			}
 
 			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby) {
-				return replyError(interaction, "No puedes banear a un miembro del staff.");
+				return await replyError(interaction, "No puedes banear a un miembro del staff.");
 			}
 
 			if (user.id === interaction.user.id) {
-				return replyError(interaction, "No puedes banearte a ti mismo.");
+				return await replyError(interaction, "No puedes banearte a ti mismo.");
 			}
 
 			// Verificar si el usuario ya está baneado
 			const bannedUsers = await interaction.guild?.bans.fetch();
 			if (bannedUsers?.has(user.id)) {
-				return replyError(interaction, "Este usuario ya está baneado.");
+				return await replyError(interaction, "Este usuario ya está baneado.");
 			}
 
 			try {
@@ -79,35 +79,27 @@ export default {
 					type: "Ban",
 				});
 
-				// Enviar mensaje al canal de sanciones
-				const canal = (await getChannel(interaction, "bansanciones", true)) as TextChannel;
-				if (canal) {
-					canal.send({
-						embeds: [
-							new EmbedBuilder()
-								.setAuthor({
-									name: user.tag,
-									iconURL: user.displayAvatarURL(),
-								})
-								.setDescription(`**${user.tag}** ha sido baneado del servidor.`)
-								.addFields([
-									{ name: "Razón", value: reason },
-									{ name: "Moderador", value: interaction.user.tag },
-									{ name: "ID", value: `${user.id}` },
-								])
-								.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)
-								.setTimestamp(),
-						],
-					});
-				}
-
 				// Responder al comando
-				return { reactOkMessage: `**${user.tag}** hasta la vista papu. Te fuiste baneado.` };
+				return {
+					logMessages: [
+						{
+							channel: getChannelFromEnv("bansanciones"),
+							user: user,
+							description: `**${user.tag}** ha sido baneado del servidor.`,
+							fields: [
+								{ name: "Razón", value: reason },
+								{ name: "Moderador", value: interaction.user.tag },
+								{ name: "ID", value: `${user.id}` },
+							],
+						},
+					],
+					reactOkMessage: `**${user.tag}** hasta la vista papu. Te fuiste baneado.`,
+				};
 			} catch (error) {
 				console.error(`Error al banear al usuario: ${error}`);
-				return replyError(interaction, "No se pudo banear al usuario.");
+				return await replyError(interaction, "No se pudo banear al usuario.");
 			}
 		},
-		[replyOkToMessage]
+		[logMessages, replyOkToMessage]
 	),
 };

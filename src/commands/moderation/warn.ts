@@ -5,13 +5,12 @@ import {
 	PermissionFlagsBits,
 	ActionRowBuilder,
 	ButtonBuilder,
-	TextChannel,
 } from "discord.js";
-import { getChannel, getRoleFromEnv, getRoles, USERS } from "../../utils/constants.ts";
+import { getChannelFromEnv, getRoleFromEnv, getRoles, USERS } from "../../utils/constants.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
-import { replyWarningToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
+import { logMessages, replyWarningToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { ModLogs } from "../../Models/ModLogs.ts";
@@ -28,14 +27,14 @@ export default {
 			const user = interaction.options.getUser("usuario", true);
 			const member = await interaction.guild?.members.fetch(user.id);
 
-			if (!member) return replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
+			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
 			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
-				return replyError(interaction, "No puedes darle warn a un miembro del staff.");
+				return await replyError(interaction, "No puedes darle warn a un miembro del staff.");
 
-			if (user.bot) return replyError(interaction, "No puedes darle warn a un bot.");
+			if (user.bot) return await replyError(interaction, "No puedes darle warn a un bot.");
 
-			if (user.id === interaction.user.id) return replyError(interaction, "No puedes darte warn a ti mismo.");
+			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes darte warn a ti mismo.");
 
 			const reason = interaction.options.getString("motivo", true) ?? "No hubo razón.";
 
@@ -118,26 +117,24 @@ export default {
 							});
 						});
 				});
-			let canal = (await getChannel(interaction, "bansanciones", true)) as TextChannel;
 
-			if (!canal) return;
-			canal.send({
-				embeds: [
-					new EmbedBuilder()
-						.setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
-						.setDescription(`**${member.user.tag}** ha recibido una advertencia .`)
-						.addFields([
+			return {
+				logMessages: [
+					{
+						channel: getChannelFromEnv("bansanciones"),
+						user: user,
+						description: `**${member.user.tag}** ha recibido una advertencia .`,
+						fields: [
 							{ name: "Razón", value: reason, inline: true },
 							{ name: "\u200b", value: "\u200b", inline: true },
 							{ name: "Moderador", value: interaction.user.tag, inline: true },
 							{ name: "Casos", value: `#${data.length}`, inline: true },
-						])
-						.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)
-						.setTimestamp(),
+						],
+					},
 				],
-			});
-			return { reactWarningMessage: `**${user.username}** ha recibido una advertencia.` };
+				reactWarningMessage: `**${user.username}** ha recibido una advertencia.`,
+			};
 		},
-		[replyWarningToMessage]
+		[logMessages, replyWarningToMessage]
 	),
 };

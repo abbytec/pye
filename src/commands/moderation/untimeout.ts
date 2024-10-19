@@ -1,13 +1,13 @@
 // src/commands/Staff/untimeout.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, TextChannel } from "discord.js";
-import { getChannel, getRoleFromEnv, getRoles, USERS } from "../../utils/constants.ts";
+import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { getChannelFromEnv, getRoleFromEnv, getRoles, USERS } from "../../utils/constants.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { ModLogs } from "../../Models/ModLogs.ts";
-import { replyOkToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
+import { logMessages, replyOkToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -23,19 +23,19 @@ export default {
 
 			const member = await interaction.guild?.members.fetch(user.id);
 
-			if (!member) return replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
+			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
 			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby) {
-				return replyError(interaction, "No puedes remover el timeout a un miembro del staff.");
+				return await replyError(interaction, "No puedes remover el timeout a un miembro del staff.");
 			}
 
 			if (user.id === interaction.user.id) {
-				return replyError(interaction, "No puedes removerte el timeout a ti mismo.");
+				return await replyError(interaction, "No puedes removerte el timeout a ti mismo.");
 			}
 
 			// Verificar si el miembro está en timeout
 			if (!member.isCommunicationDisabled()) {
-				return replyError(interaction, "El usuario no está en timeout.");
+				return await replyError(interaction, "El usuario no está en timeout.");
 			}
 
 			// Remover el timeout
@@ -47,7 +47,7 @@ export default {
 				const latestTimeout = await ModLogs.findOne({ id: user.id, type: "Timeout", hiddenCase: { $ne: true } }).sort({ date: -1 });
 
 				if (!latestTimeout) {
-					return replyError(interaction, "Este usuario no tiene timeouts activos.");
+					return await replyError(interaction, "Este usuario no tiene timeouts activos.");
 				}
 
 				// Marcar el timeout como oculto
@@ -55,7 +55,6 @@ export default {
 				await latestTimeout.save();
 
 				// Enviar mensaje directo al usuario
-
 				await member.send({
 					embeds: [
 						new EmbedBuilder()
@@ -70,33 +69,25 @@ export default {
 					],
 				});
 
-				// Enviar mensaje al canal de sanciones
-				const canal = (await getChannel(interaction, "bansanciones", true)) as TextChannel;
-				if (canal) {
-					canal.send({
-						embeds: [
-							new EmbedBuilder()
-								.setAuthor({
-									name: member.user.tag,
-									iconURL: member.user.displayAvatarURL(),
-								})
-								.setDescription(`Se ha removido el timeout a: **${member.user.tag}**`)
-								.addFields([
-									{ name: "Razón", value: reason },
-									{ name: "Moderador", value: interaction.user.tag },
-								])
-								.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)
-								.setTimestamp(),
-						],
-					});
-				}
-
 				// Responder al comando
-				return { reactOkMessage: `Se ha removido el timeout de **${member.user.tag}**.` };
+				return {
+					logMessages: [
+						{
+							channel: getChannelFromEnv("bansanciones"),
+							user: user,
+							description: `Se ha removido el timeout a: **${member.user.tag}**`,
+							fields: [
+								{ name: "Razón", value: reason },
+								{ name: "Moderador", value: interaction.user.tag },
+							],
+						},
+					],
+					reactOkMessage: `Se ha removido el timeout de **${member.user.tag}**.`,
+				};
 			} catch {
-				return replyError(interaction, "No se pudo remover el timeout del usuario.");
+				return await replyError(interaction, "No se pudo remover el timeout del usuario.");
 			}
 		},
-		[replyOkToMessage]
+		[logMessages, replyOkToMessage]
 	),
 };

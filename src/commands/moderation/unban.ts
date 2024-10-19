@@ -1,13 +1,14 @@
 // src/commands/Staff/unban.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, TextChannel } from "discord.js";
-import { getChannel, getRoleFromEnv, getRoles, USERS } from "../../utils/constants.ts";
+import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { getChannel, getChannelFromEnv, getRoles } from "../../utils/constants.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { ModLogs } from "../../Models/ModLogs.ts";
-import { replyOkToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
+import { logMessages, replyOkToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
+import { PostHandleable } from "../../types/middleware.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -24,7 +25,7 @@ export default {
 			// Validar el ID del usuario
 			const user = await interaction.client.users.fetch(userId).catch(() => null);
 			if (!user) {
-				return replyError(interaction, "No se pudo encontrar al usuario con esa ID.");
+				return await replyError(interaction, "No se pudo encontrar al usuario con esa ID.");
 			}
 
 			// Verificar si el usuario está baneado
@@ -45,7 +46,7 @@ export default {
 			const latestTimeout = await ModLogs.findOne({ id: user.id, type: "Ban", hiddenCase: { $ne: true } }).sort({ date: -1 });
 
 			if (!latestTimeout) {
-				return isBanned ? {} : replyError(interaction, "Este usuario no tiene bans activos.");
+				return isBanned ? ({} as PostHandleable) : await replyError(interaction, "Este usuario no tiene bans activos.");
 			}
 
 			// Marcar el ban como oculto
@@ -53,7 +54,6 @@ export default {
 			await latestTimeout.save();
 
 			// Enviar mensaje directo al usuario
-
 			await user
 				.send({
 					embeds: [
@@ -70,31 +70,23 @@ export default {
 				})
 				.catch(() => null);
 
-			// Enviar mensaje al canal de sanciones
-			const canal = (await getChannel(interaction, "bansanciones", true)) as TextChannel;
-			if (canal) {
-				canal.send({
-					embeds: [
-						new EmbedBuilder()
-							.setAuthor({
-								name: user.tag,
-								iconURL: user.displayAvatarURL(),
-							})
-							.setDescription(`**${user.tag}** ha sido desbaneado del servidor.`)
-							.addFields([
-								{ name: "Razón", value: reason },
-								{ name: "Moderador", value: interaction.user.tag },
-								{ name: "ID", value: `${user.id}` },
-							])
-							.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)
-							.setTimestamp(),
-					],
-				});
-			}
-
 			// Responder al comando
-			return { reactOkMessage: `**${user.tag}** ha sido desbaneado del servidor.` };
+			return {
+				logMessages: [
+					{
+						channel: getChannelFromEnv("bansanciones"),
+						user: user,
+						description: `**${user.tag}** ha sido desbaneado del servidor.`,
+						fields: [
+							{ name: "Razón", value: reason },
+							{ name: "Moderador", value: interaction.user.tag },
+							{ name: "ID", value: `${user.id}` },
+						],
+					},
+				],
+				reactOkMessage: `**${user.tag}** ha sido desbaneado del servidor.`,
+			};
 		},
-		[replyOkToMessage]
+		[logMessages, replyOkToMessage]
 	),
 };

@@ -5,7 +5,7 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
 import { updateRepRoles } from "../../utils/finalwares/updateRepRoles.ts";
 import { HelperPoint } from "../../Models/HelperPoint.ts";
-import { replyOkToMessage, sendFinalMessages } from "../../utils/finalwares/sendFinalMessages.ts";
+import { replyOkToMessage, logMessages } from "../../utils/finalwares/sendFinalMessages.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 
@@ -33,7 +33,7 @@ export default {
 			return {
 				guildMember: await interaction.guild?.members.fetch(user.id),
 				helperPoint: newData,
-				finalMessages: [
+				logMessages: [
 					{
 						channel: getChannelFromEnv("logPuntos"),
 						content: `**${interaction.user.tag}** le ha dado un rep al usuario: \`${user.tag}\``,
@@ -42,6 +42,6 @@ export default {
 				reactOkMessage: `se le ha dado un rep al usuario: \`${user.tag}\``,
 			};
 		},
-		[updateRepRoles, sendFinalMessages, replyOkToMessage]
+		[updateRepRoles, logMessages, replyOkToMessage]
 	),
 };

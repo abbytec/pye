@@ -1,6 +1,5 @@
 import { Events, Message } from "discord.js";
 import { ExtendedClient } from "../../client.ts";
-import { Command } from "../../types/command.ts"; // Interfaz del comando
 
 const PREFIX = "h!"; // Define tu prefijo
 
@@ -8,14 +7,14 @@ export default {
 	name: Events.MessageCreate,
 	async execute(message: Message) {
 		// Evita mensajes de bots o mensajes que no tengan el prefijo
-		if (message.author.bot || !message.content.startsWith(PREFIX)) return;
+		if (message.author.bot || message.author.system || !message.content.startsWith(PREFIX)) return;
 
 		const commandBody = message.content.slice(PREFIX.length).trim();
 		const commandName = commandBody.split(/ +/, 1).shift()?.toLowerCase() ?? "";
 		const commandArg = commandBody.slice(commandName.length).trim();
 
 		// Verifica si el comando existe en la colección de comandos
-		const command = (message.client as ExtendedClient).commands.get(commandName) as Command | undefined;
+		const command = (message.client as ExtendedClient).commands.get(commandName);
 
 		if (!command) {
 			message.reply("Ese comando no existe.");
