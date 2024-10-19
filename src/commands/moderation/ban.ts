@@ -48,9 +48,27 @@ export default {
 				return replyError(interaction, "Este usuario ya está baneado.");
 			}
 
-			// Baneando al usuario
 			try {
-				await interaction.guild?.members.ban(user.id, { reason });
+				// Enviar mensaje directo al usuario
+				await user
+					.send({
+						embeds: [
+							new EmbedBuilder()
+								.setAuthor({
+									name: interaction.guild?.name ?? "Servidor",
+									iconURL: interaction.guild?.iconURL() ?? undefined,
+								})
+								.setDescription(
+									"Has sido baneado del servidor de **PyE**. \nPuedes intentar apelar a tu desbaneo en este servidor: https://discord.gg/F8QxEMtJ3B"
+								)
+								.addFields([{ name: "Razón", value: reason }])
+								.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)
+								.setTimestamp(),
+						],
+					})
+					// Baneando al usuario
+					.then(async () => await interaction.guild?.members.ban(user.id, { reason }))
+					.catch(() => null);
 
 				// Registrar en ModLogs
 				await ModLogs.create({
@@ -60,25 +78,6 @@ export default {
 					date: Date.now(),
 					type: "Ban",
 				});
-
-				// Enviar mensaje directo al usuario
-				try {
-					await user.send({
-						embeds: [
-							new EmbedBuilder()
-								.setAuthor({
-									name: interaction.guild?.name ?? "Servidor",
-									iconURL: interaction.guild?.iconURL() ?? undefined,
-								})
-								.setDescription("Has sido baneado del servidor de **PyE**.")
-								.addFields([{ name: "Razón", value: reason }])
-								.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)
-								.setTimestamp(),
-						],
-					});
-				} catch {
-					// El usuario tiene los MD cerrados o no pudo recibir el mensaje
-				}
 
 				// Enviar mensaje al canal de sanciones
 				const canal = (await getChannel(interaction, "bansanciones", true)) as TextChannel;
