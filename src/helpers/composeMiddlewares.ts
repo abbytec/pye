@@ -32,7 +32,13 @@ export const composeMiddlewares = (
 				let result =
 					(await finalHandler(interaction).catch((e) => {
 						console.error(e);
-						(interaction.guild?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({ content: "error en pye: " + e });
+						(interaction.guild?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({
+							content: `${
+								process.env.NODE_ENV === "development"
+									? `<@${interaction.user.id}>`
+									: "<@220683580467052544> <@341077056026705930> <@602240617862660096>"
+							}Error en el comando: \`${interaction.command?.name}\`\n\`\`\`js\n${e.stack}\`\`\``,
+						});
 					})) || {};
 				// Después de ejecutar el handler final, ejecutamos los postHandlers si existen
 				if (postHandlers) {

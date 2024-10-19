@@ -1,5 +1,4 @@
-import { Events, Interaction, ChatInputCommandInteraction } from "discord.js";
-import { Command } from "../types/command.ts"; // Asegúrate de que el tipo Command está bien definido
+import { Events, Interaction } from "discord.js";
 import { ExtendedClient } from "../client.ts";
 
 export default {
