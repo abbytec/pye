@@ -5,7 +5,7 @@ interface IModLogs {
 	moderator: string;
 	reason: string;
 	date: Date;
-	type: string;
+	type: "Warn" | "Timeout";
 	hiddenCase?: boolean;
 }
 

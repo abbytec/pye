@@ -23,6 +23,7 @@
 		"redis": "^4.7.0"
 	},
 	"devDependencies": {
+		"@types/ms": "^0.7.34",
 		"cross-env": "^7.0.3",
 		"ts-node": "^10.9.2",
 		"ts-node-dev": "^2.0.0"
