@@ -8,7 +8,7 @@ interface IHelperPoint {
 export interface IHelperPointDocument extends IHelperPoint, Document {
 	_id: string;
 }
-const helperpointSchema = new Schema<IHelperPoint>(
+const helperpointSchema = new Schema<IHelperPointDocument>(
 	{
 		_id: {
 			type: String,

@@ -19,10 +19,9 @@ export default {
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
 
-			if (user.bot) {
-				replyError(interaction, "No puedo quitarle puntos a los bots.\nUso: `add-rep [@Usuario]`");
-				return;
-			}
+			if (user.bot) return await replyError(interaction, "No puedo quitarle puntos a los bots.\nUso: `add-rep [@Usuario]`");
+			const member = await interaction.guild?.members.fetch(user.id);
+			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
 			let data = await HelperPoint.findOne({ _id: user.id }).exec();
 
@@ -31,7 +30,7 @@ export default {
 			let newData = await data.save();
 
 			return {
-				guildMember: await interaction.guild?.members.fetch(user.id),
+				guildMember: member,
 				helperPoint: newData,
 				logMessages: [
 					{
