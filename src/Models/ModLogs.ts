@@ -9,9 +9,11 @@ interface IModLogs {
 	hiddenCase?: boolean;
 }
 
-export interface IModLogsModel extends IModLogs, Document {}
+export interface IModLogsDocument extends IModLogs, Document {
+	_id: string;
+}
 
-const modlogsSchema = new Schema<IModLogsModel>(
+const modlogsSchema = new Schema<IModLogsDocument>(
 	{
 		id: {
 			type: String,

@@ -5,6 +5,7 @@ import path, { dirname } from "node:path";
 import { Command } from "./types/command.ts"; // Asegúrate de tener esta interfaz
 import { fileURLToPath, pathToFileURL } from "node:url";
 import loadEnvVariables from "./utils/environment.ts";
+import { exit } from "node:process";
 
 const isDevelopment = process.env.NODE_ENV === "development";
 loadEnvVariables();
@@ -56,4 +57,4 @@ const rest = new REST({ version: "10" }).setToken(token);
 	} catch (error) {
 		console.error(error);
 	}
-})();
+})().then(() => exit(0));

@@ -6,7 +6,7 @@ export async function replyError(interaction: ChatInputCommandInteraction, messa
 		embeds: [
 			new EmbedBuilder()
 				.setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
-				.setDescription("<:cross_custom:913093934832578601> • " + message)
+				.setDescription(process.env.NODE_ENV === "development" ? "❌ • " + message : "<:cross_custom:913093934832578601> • " + message)
 				.setColor(0xef5250)
 				.setTimestamp(),
 		],

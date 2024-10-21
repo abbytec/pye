@@ -8,14 +8,103 @@ import {
 	StringSelectMenuBuilder,
 	Interaction,
 	CacheType,
+	User,
+	GuildMember,
 } from "discord.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
-import { ModLogs } from "../../Models/ModLogs.ts";
+import { IModLogsDocument, ModLogs } from "../../Models/ModLogs.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 import { getRoleFromEnv } from "../../utils/constants.ts";
+
+// Función para generar las Action Rows
+const generateActionRows = (page: number, data: IModLogsDocument[], itemsPerPage: number, totalPages: number) => {
+	const rows = [
+		new ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>().addComponents(
+			new ButtonBuilder()
+				.setCustomId("back")
+				.setLabel("«")
+				.setStyle(ButtonStyle.Primary)
+				.setDisabled(page === 0),
+			new ButtonBuilder()
+				.setCustomId("next")
+				.setLabel("»")
+				.setStyle(ButtonStyle.Primary)
+				.setDisabled(page === totalPages - 1)
+		),
+	];
+
+	const start = page * itemsPerPage;
+	const end = start + itemsPerPage;
+	const items = data.slice(start, end);
+
+	if (items.length > 0) {
+		const selectMenu = new StringSelectMenuBuilder()
+			.setCustomId("select_case")
+			.setPlaceholder("Selecciona un caso para ver detalles")
+			.addOptions(
+				items.map((caso, index) => ({
+					label: `#${start + index + 1} ${caso.type} ${caso.hiddenCase ? "removido " : ""}`,
+					value: `${caso._id.toString()}`,
+					emoji: caso.hiddenCase ? "🙈" : "📝",
+				}))
+			);
+
+		// Verificación opcional para asegurar que no se excedan las opciones
+		if (selectMenu.data.options && selectMenu.data.options.length > 25) {
+			throw new Error("El número de opciones del Select Menu excede el límite de 25.");
+		}
+
+		const selectRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
+		rows.push(selectRow);
+	}
+
+	return rows;
+};
+
+// Función para generar el embed de la página actual
+const generateEmbed = (
+	page: number,
+	data: IModLogsDocument[],
+	itemsPerPage: number,
+	totalPages: number,
+	user: User,
+	interaction: ChatInputCommandInteraction,
+	member?: GuildMember | null
+) => {
+	const start = page * itemsPerPage;
+	const end = start + itemsPerPage;
+	const items = data.slice(start, end);
+
+	const embed = new EmbedBuilder()
+		.setAuthor({
+			name: user.tag,
+			iconURL: user.displayAvatarURL(),
+		})
+		.setTitle(`📝 Casos de ${user.tag} ${member ? "" : "(Usuario baneado)"}`)
+		.addFields([
+			{
+				name: "Casos Registrados",
+				value: items.length
+					? items
+							.map(
+								(c, index) =>
+									`**#${start + index + 1}** | Moderador: \`${c.moderator}\` | ${
+										c.hiddenCase ? "sancion removida" : `Razón: ${c.reason}`
+									}`
+							)
+							.join("\n")
+					: "❌ No hay casos registrados.",
+			},
+		])
+		.setFooter({ text: `Página ${page + 1} de ${totalPages}` })
+		.setTimestamp()
+		.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null);
+
+	return embed;
+};
 
 export default {
 	data: new SlashCommandBuilder()
@@ -36,95 +125,16 @@ export default {
 					: { hiddenCase: { $ne: true } }),
 			}).exec();
 
-			if (!data.length) return replyOk(interaction, "Este usuario no tiene casos registrados.");
+			if (!data.length) return await replyOk(interaction, "Este usuario no tiene casos registrados.");
 
 			const itemsPerPage = 10;
 			const totalPages = Math.ceil(data.length / itemsPerPage);
 			let currentPage = 0;
 
-			// Función para generar el embed de la página actual
-			const generateEmbed = (page: number) => {
-				const start = page * itemsPerPage;
-				const end = start + itemsPerPage;
-				const items = data.slice(start, end);
-
-				const embed = new EmbedBuilder()
-					.setAuthor({
-						name: user.tag,
-						iconURL: user.displayAvatarURL(),
-					})
-					.setTitle(`📝 Casos de ${user.tag} ${member ? "" : "(Usuario baneado)"}`)
-					.addFields([
-						{
-							name: "Casos Registrados",
-							value: items.length
-								? items
-										.map(
-											(c, index) =>
-												`**#${start + index + 1}** | Moderador: \`${c.moderator}\` | ${
-													c.hiddenCase ? "sancion removida" : `Razón: ${c.reason}`
-												}`
-										)
-										.join("\n")
-								: "❌ No hay casos registrados.",
-						},
-					])
-					.setFooter({ text: `Página ${page + 1} de ${totalPages}` })
-					.setTimestamp()
-					.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null);
-
-				return embed;
-			};
-
-			// Función para generar las Action Rows
-			const generateActionRows = (page: number) => {
-				const rows = [
-					new ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>().addComponents(
-						new ButtonBuilder()
-							.setCustomId("back")
-							.setLabel("«")
-							.setStyle(ButtonStyle.Primary)
-							.setDisabled(page === 0),
-						new ButtonBuilder()
-							.setCustomId("next")
-							.setLabel("»")
-							.setStyle(ButtonStyle.Primary)
-							.setDisabled(page === totalPages - 1)
-					),
-				];
-
-				const start = page * itemsPerPage;
-				const end = start + itemsPerPage;
-				const items = data.slice(start, end);
-
-				if (items.length > 0) {
-					const selectMenu = new StringSelectMenuBuilder()
-						.setCustomId("select_case")
-						.setPlaceholder("Selecciona un caso para ver detalles")
-						.addOptions(
-							items.map((caso, index) => ({
-								label: `#${start + index + 1} ${caso.type} ${caso.hiddenCase ? "removido " : ""}`,
-								value: `${caso._id.toString()}`,
-								emoji: caso.hiddenCase ? "🙈" : "📝",
-							}))
-						);
-
-					// Verificación opcional para asegurar que no se excedan las opciones
-					if (selectMenu.data.options && selectMenu.data.options.length > 25) {
-						throw new Error("El número de opciones del Select Menu excede el límite de 25.");
-					}
-
-					const selectRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
-					rows.push(selectRow);
-				}
-
-				return rows;
-			};
-
 			// Enviar el embed inicial
 			const message = await interaction.editReply({
-				embeds: [generateEmbed(currentPage)],
-				components: generateActionRows(currentPage),
+				embeds: [generateEmbed(currentPage, data, itemsPerPage, totalPages, user, interaction, member)],
+				components: generateActionRows(currentPage, data, itemsPerPage, totalPages),
 			});
 
 			const collector = message.createMessageComponentCollector({
@@ -134,11 +144,13 @@ export default {
 			collector.on("collect", async (i: Interaction<CacheType>) => {
 				if (!i.isButton() && !i.isStringSelectMenu()) return;
 
-				if (i.user.id !== interaction.user.id)
-					return i.reply({
+				if (i.user.id !== interaction.user.id) {
+					i.reply({
 						content: "❌ No puedes interactuar con estos controles.",
 						ephemeral: true,
 					});
+					return;
+				}
 
 				if (i.isButton()) {
 					if (i.customId === "back") {
@@ -148,8 +160,8 @@ export default {
 					}
 
 					await i.update({
-						embeds: [generateEmbed(currentPage)],
-						components: generateActionRows(currentPage),
+						embeds: [generateEmbed(currentPage, data, itemsPerPage, totalPages, user, interaction, member)],
+						components: generateActionRows(currentPage, data, itemsPerPage, totalPages),
 					});
 				} else if (i.isStringSelectMenu()) {
 					if (i.customId === "select_case") {

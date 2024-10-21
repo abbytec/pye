@@ -82,7 +82,9 @@ const ROLES = {
 	moderadorVoz: "1290753880191271007",
 };
 
-const DEV_ROLES: Record<keyof typeof ROLES, string> = {
+export type Roles = keyof typeof ROLES;
+
+const DEV_ROLES: Record<Roles, string> = {
 	repatidorDeRep: "1296190630648610818",
 	staff: "1296190630724370498",
 	moderador: "1296190630724370497",
@@ -102,11 +104,11 @@ const DEV_ROLES: Record<keyof typeof ROLES, string> = {
 	muted: "1296190630678233113",
 };
 
-export function getRoleFromEnv(role: keyof typeof ROLES): string {
+export function getRoleFromEnv(role: Roles): string {
 	return (isDevelopment ? DEV_ROLES : ROLES)[role] ?? "";
 }
 
-export function getRoles(...roles: (keyof typeof ROLES)[]): string[] {
+export function getRoles(...roles: Roles[]): string[] {
 	return roles.map((role) => getRoleFromEnv(role));
 }
 
@@ -151,3 +153,5 @@ const COLORS = {
 const EMOJIS = {
 	thumbsUp: ":thumbsup:",
 };
+
+export const pyecoin = "<a:pyecoin:911087695864950854>";

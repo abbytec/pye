@@ -16,7 +16,7 @@ export default {
 		.setDescription("Agrega puntos de ayuda.")
 		.addUserOption((option) => option.setName("usuario").setDescription("selecciona el usuario").setRequired(true)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles(getRoles("staff", "repatidorDeRep")), deferInteraction],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "repatidorDeRep"), deferInteraction],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
 

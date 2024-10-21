@@ -12,7 +12,7 @@ import { getChannelFromEnv } from "../utils/constants.ts";
  */
 export const composeMiddlewares = (
 	middlewares: Middleware[],
-	finalHandler: (interaction: ChatInputCommandInteraction) => Promise<void> | Promise<PostHandleable>,
+	finalHandler: (interaction: ChatInputCommandInteraction) => Promise<PostHandleable | void>,
 	postHandlers?: Finalware[]
 ) => {
 	return async (interaction: ChatInputCommandInteraction & PostHandleable) => {

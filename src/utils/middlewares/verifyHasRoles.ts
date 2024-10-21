@@ -1,13 +1,14 @@
 // middlewares/verifyHasRoles.ts
 import { Middleware } from "../../types/middleware.ts";
-import { CommandInteraction, GuildMemberRoleManager } from "discord.js";
+import { GuildMemberRoleManager } from "discord.js";
+import { getRoles, Roles } from "../constants.ts";
 
 /**
  * Crea un middleware para verificar si el usuario tiene al menos uno de los roles permitidos.
  * @param allowedRoleIds - Array de IDs de roles permitidos.
  * @returns Middleware.
  */
-export const verifyHasRoles = (allowedRoleIds: string[]): Middleware => {
+const verifyHasRolesInternal = (allowedRoleIds: string[]): Middleware => {
 	return async (interaction, next) => {
 		const member = interaction.member;
 
@@ -34,3 +35,7 @@ export const verifyHasRoles = (allowedRoleIds: string[]): Middleware => {
 		await next(); // Continua al siguiente middleware o handler
 	};
 };
+
+export function verifyHasRoles(...roles: Roles[]): Middleware {
+	return verifyHasRolesInternal(getRoles(...roles));
+}

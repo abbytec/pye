@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, TextChannel } from "discord.js";
+import { PostHandleable } from "../../types/middleware.ts";
 
-export async function replyOk(interaction: ChatInputCommandInteraction, message: string, author?: string) {
+export async function replyOk(interaction: ChatInputCommandInteraction, message: string, author?: string): Promise<PostHandleable> {
 	const embedMessage = {
 		embeds: [
 			new EmbedBuilder()
