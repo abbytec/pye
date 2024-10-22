@@ -14,7 +14,6 @@ import {
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
 import { IModLogsDocument, ModLogs } from "../../Models/ModLogs.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 import { getRoleFromEnv } from "../../utils/constants.ts";
@@ -164,47 +163,45 @@ export default {
 						components: generateActionRows(currentPage, data, itemsPerPage, totalPages),
 					});
 				} else if (i.isStringSelectMenu()) {
-					if (i.customId === "select_case") {
-						const caseId = i.values[0];
-						const selectedCase = data.find((c) => c._id.toString() === caseId);
+					const caseId = i.values[0];
+					const selectedCase = data.find((c) => c._id.toString() === caseId);
 
-						if (selectedCase) {
-							const caseEmbed = new EmbedBuilder()
-								.setAuthor({
-									name: user.tag,
-									iconURL: user.displayAvatarURL(),
-								})
-								.setTitle(`📝 Caso #${data.findIndex((c) => c._id.toString() === caseId) + 1}`)
-								.addFields([
-									{ name: "Razón", value: selectedCase.reason || "No especificada.", inline: true },
-									{ name: "Moderador", value: selectedCase.moderator, inline: true },
-									{
-										name: "Fecha",
-										value: `${new Date(selectedCase.date).toLocaleString("es-ES", {
-											hour12: true,
-											timeZone: "America/Argentina/Buenos_Aires",
-										})}`,
-										inline: true,
-									},
-									{
-										name: `Sanción ${selectedCase.hiddenCase ? "removida" : "aplicada"}`,
-										value: selectedCase.type || "Timeout",
-										inline: true,
-									},
-								])
-								.setTimestamp()
-								.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null);
+					if (selectedCase) {
+						const caseEmbed = new EmbedBuilder()
+							.setAuthor({
+								name: user.tag,
+								iconURL: user.displayAvatarURL(),
+							})
+							.setTitle(`📝 Caso #${data.findIndex((c) => c._id.toString() === caseId) + 1}`)
+							.addFields([
+								{ name: "Razón", value: selectedCase.reason || "No especificada.", inline: true },
+								{ name: "Moderador", value: selectedCase.moderator, inline: true },
+								{
+									name: "Fecha",
+									value: `${new Date(selectedCase.date).toLocaleString("es-ES", {
+										hour12: true,
+										timeZone: "America/Argentina/Buenos_Aires",
+									})}`,
+									inline: true,
+								},
+								{
+									name: `Sanción ${selectedCase.hiddenCase ? "removida" : "aplicada"}`,
+									value: selectedCase.type || "Timeout",
+									inline: true,
+								},
+							])
+							.setTimestamp()
+							.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null);
 
-							await i.reply({
-								embeds: [caseEmbed],
-								ephemeral: true,
-							});
-						} else {
-							await i.reply({
-								content: "❌ No se encontró el caso seleccionado.",
-								ephemeral: true,
-							});
-						}
+						await i.reply({
+							embeds: [caseEmbed],
+							ephemeral: true,
+						});
+					} else {
+						await i.reply({
+							content: "❌ No se encontró el caso seleccionado.",
+							ephemeral: true,
+						});
 					}
 				}
 			});

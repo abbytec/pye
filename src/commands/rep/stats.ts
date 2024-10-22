@@ -1,13 +1,4 @@
-import {
-	SlashCommandBuilder,
-	AttachmentBuilder,
-	ChatInputCommandInteraction,
-	EmbedBuilder,
-	TextChannel,
-	User,
-	GuildMember,
-	Interaction,
-} from "discord.js";
+import { SlashCommandBuilder, AttachmentBuilder, ChatInputCommandInteraction, TextChannel, GuildMember } from "discord.js";
 import { Users } from "../../Models/User.ts";
 import { loadImage } from "@napi-rs/canvas";
 import { HelperPoint } from "../../Models/HelperPoint.ts";

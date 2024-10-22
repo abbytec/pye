@@ -14,6 +14,7 @@ import { replyOk } from "../../utils/messages/replyOk.ts";
 export default {
 	data: new SlashCommandBuilder()
 		.setName("remove-money")
+		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
 		.setDescription("Remueve dinero de un usuario.")
 		.addStringOption((option) =>
 			option

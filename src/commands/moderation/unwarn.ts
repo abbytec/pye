@@ -1,6 +1,6 @@
 // src/commands/Staff/unwarn.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { getChannelFromEnv, getRoleFromEnv, getRoles, USERS } from "../../utils/constants.ts";
+import { getChannelFromEnv, getRoleFromEnv, USERS } from "../../utils/constants.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";

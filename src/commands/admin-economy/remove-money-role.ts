@@ -14,6 +14,7 @@ import { replyOk } from "../../utils/messages/replyOk.ts";
 export default {
 	data: new SlashCommandBuilder()
 		.setName("remove-money-role")
+		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
 		.setDescription("Remueve dinero a todos los usuarios que tengan un rol específico.")
 		.addRoleOption((option) => option.setName("rol").setDescription("El rol al que se le removerá el dinero.").setRequired(true))
 		.addStringOption((option) =>

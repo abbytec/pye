@@ -9,7 +9,6 @@ import {
 	ButtonBuilder,
 	StringSelectMenuBuilder,
 	ComponentType,
-	Role,
 	ButtonStyle,
 	MessageActionRowComponentBuilder,
 } from "discord.js";
@@ -39,7 +38,7 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName("items")
 		.setDescription("Administra ítems en la tienda.")
-		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
 		.addSubcommand((subcommand) => subcommand.setName("visualizar").setDescription("Visualiza los ítems disponibles."))
 		.addSubcommand((subcommand) =>
 			subcommand

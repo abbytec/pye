@@ -1,6 +1,6 @@
 // src/commands/admin/add-money.ts
 
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
@@ -14,6 +14,7 @@ import { replyOk } from "../../utils/messages/replyOk.ts";
 export default {
 	data: new SlashCommandBuilder()
 		.setName("add-money")
+		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
 		.setDescription("Agrega dinero a un usuario.")
 		.addStringOption((option) =>
 			option

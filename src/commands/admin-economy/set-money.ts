@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
@@ -13,6 +13,7 @@ import { replyOk } from "../../utils/messages/replyOk.ts";
 export default {
 	data: new SlashCommandBuilder()
 		.setName("set-money")
+		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
 		.setDescription("Establece el dinero que se gana en los canales de voz, texto o mediante el comando bump.")
 		.addSubcommand((subcommand) =>
 			subcommand

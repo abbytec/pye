@@ -23,6 +23,7 @@ const payoutCommands = [
 export default {
 	data: new SlashCommandBuilder()
 		.setName("set-economy")
+		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
 		.setDescription("Configura aspectos de los comandos de economía.")
 		.addSubcommand((subcommand: SlashCommandSubcommandBuilder) =>
 			subcommand
