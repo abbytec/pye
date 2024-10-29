@@ -10,7 +10,12 @@ export interface IUser {
 	couples: Record<string, any>[]; // Define una interfaz más específica si es necesario
 	couple: string;
 	description: string;
-	profile?: Record<string, any>;
+	profile?: {
+		gender: string;
+		job: string;
+		skin: string;
+		style: string;
+	};
 	proposals: any[]; // Define una interfaz más específica si es necesario
 	inventory: Types.ObjectId[];
 	caps: number;

@@ -1,5 +1,5 @@
 // types/middleware.ts
-import { APIEmbedField, ChatInputCommandInteraction, EmbedBuilder, GuildMember, RestOrArray, User } from "discord.js";
+import { APIEmbedField, AttachmentBuilder, ChatInputCommandInteraction, EmbedBuilder, GuildMember, RestOrArray, User } from "discord.js";
 import { IHelperPointDocument } from "../Models/HelperPoint.ts";
 
 export interface CommonMessage {
@@ -12,6 +12,7 @@ export interface EmbedMessage {
 	user: User;
 	description: string;
 	fields: APIEmbedField[];
+	attachments?: AttachmentBuilder[];
 }
 
 export interface PostHandleable {
