@@ -63,7 +63,7 @@ export default {
 				embeds: [
 					new EmbedBuilder()
 						.setColor(0x0099ff)
-						.setTitle("RETO CON VALOR DE 1 PUNTO 🌟")
+						.setTitle("Nueva publicación 🌟")
 						.setDescription(
 							`
                       :large_blue_diamond: <@${thread.ownerId}> necesita tu ayuda en **${thread.parent}** 
@@ -71,7 +71,7 @@ export default {
                     `
 						)
 						.setFooter({
-							text: "Ayudalo para ganar puntos y subir de rango!",
+							text: "¡Ayúdalo para ganar puntos y subir de rango!",
 							iconURL:
 								"https://cdn.discordapp.com/attachments/1115058778736431104/1281037481755807774/Mesa_de_trabajo_2_5-8.png?ex=66da42a0&is=66d8f120&hm=6e2562a64fc6ca93ad9f69c9c9f48174938c4b9e8ca531b445c0b7099853b886&",
 						}),
@@ -85,6 +85,7 @@ export default {
 					console.log(err);
 				});
 			});
+			// Enviar log al canal
 		}
 	},
 };
