@@ -26,7 +26,7 @@ export const logMessages: Finalware = async (postHandleableInteraction, result) 
 
 export const replyOkToMessage: Finalware = async (postHandleableInteraction, result) => {
 	if (postHandleableInteraction.deferred) {
-		await postHandleableInteraction.deleteReply().catch((e) => console.error(e));
+		await postHandleableInteraction.deleteReply().catch((e) => null);
 	}
 	if (result.reactOkMessage === null) return;
 	await (postHandleableInteraction.guild?.channels.resolve(postHandleableInteraction?.channelId) as TextChannel)?.send({
@@ -35,7 +35,7 @@ export const replyOkToMessage: Finalware = async (postHandleableInteraction, res
 };
 export const replyWarningToMessage: Finalware = async (postHandleableInteraction, result) => {
 	if (postHandleableInteraction.deferred) {
-		await postHandleableInteraction.deleteReply().catch((e) => console.error(e));
+		await postHandleableInteraction.deleteReply().catch((e) => null);
 	}
 	if (result.reactWarningMessage === null) return;
 	await (postHandleableInteraction.guild?.channels.resolve(postHandleableInteraction?.channelId) as TextChannel)?.send({
