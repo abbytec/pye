@@ -36,7 +36,7 @@ export const composeMiddlewares = (
 							content: `${
 								process.env.NODE_ENV === "development"
 									? `<@${interaction.user.id}>`
-									: "<@220683580467052544> <@341077056026705930> <@602240617862660096>"
+									: "<@220683580467052544> <@1088883078405038151> <@602240617862660096>"
 							}Error en el comando: \`${interaction.commandName}\`\n\`\`\`js\n${e.stack}\`\`\``,
 						});
 					})) || {};
