@@ -1,7 +1,4 @@
 import loadEnvVariables from "./utils/environment.ts";
-const isDevelopment = process.env.NODE_ENV === "development";
-
-loadEnvVariables();
 import { readdirSync } from "node:fs";
 import path, { dirname, join } from "node:path";
 import { ExtendedClient } from "./client.ts";
@@ -14,61 +11,74 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const client = new ExtendedClient();
 client.commands = new Collection();
-const extension = isDevelopment ? ".ts" : ".js";
+const extension = process.env.NODE_ENV === "development" ? ".ts" : ".js";
 
-const commandFolders = readdirSync(__dirname + "/commands");
-for (const folder of commandFolders) {
-	const commandsPath = path.join(__dirname, "commands", folder);
-	const commandFiles = readdirSync(commandsPath).filter((file) => file.endsWith(extension));
+const loadCommands = async () => {
+	const commandFolders = readdirSync(path.join(__dirname, "commands"));
+	const importPromises = commandFolders.map(async (folder) => {
+		const commandsPath = path.join(__dirname, "commands", folder);
+		const commandFiles = readdirSync(commandsPath).filter((file) => file.endsWith(extension));
 
-	for (const file of commandFiles) {
-		const filePath = path.join(commandsPath, file);
+		const commandsImportPromises = commandFiles.map(async (file) => {
+			const filePath = path.join(commandsPath, file);
+			try {
+				const commandModule = await import(pathToFileURL(filePath).href);
+				const command: Command = commandModule.default || commandModule;
+
+				if (command.data) {
+					console.log(`Cargando comando: ${command.data.name}`);
+					client.commands.set(command.data.name, command);
+				} else {
+					console.log(`[ADVERTENCIA] El comando en ${filePath} carece de la propiedad "data".`);
+				}
+			} catch (error) {
+				console.error(`Error al cargar el comando ${filePath}:`, error);
+			}
+		});
+
+		await Promise.all(commandsImportPromises);
+	});
+
+	await Promise.all(importPromises);
+};
+
+const loadEvents = async () => {
+	const eventsPath = join(__dirname, "events");
+	const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith(extension));
+
+	const eventsImportPromises = eventFiles.map(async (file) => {
+		const filePath = join(eventsPath, file);
 		try {
-			const commandModule = await import(pathToFileURL(filePath).href);
-			const command: Command = commandModule.default || commandModule;
+			const eventModule = await import(pathToFileURL(filePath).href);
+			const event = eventModule.default || eventModule;
 
-			if (command.data) {
-				console.log(`Cargando comando: ${command.data.name}`);
-				client.commands.set(command.data.name, command);
+			console.log(`Cargando evento: ${event.name}`);
+
+			if (event.once) {
+				client.once(event.name, (...args: any[]) => event.execute(...args));
 			} else {
-				console.log(`[ADVERTENCIA] El comando en ${filePath} carece de la propiedad "data".`);
+				client.on(event.name, (...args: any[]) => event.execute(...args));
 			}
 		} catch (error) {
-			console.error(`Error al cargar el comando ${filePath}:`, error);
+			console.error(`Error al cargar el evento ${filePath}:`, error);
 		}
-	}
-}
+	});
 
-//event handler, manejador de eventos
-const eventsPath = join(__dirname, "events");
-const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith(extension));
-for (const file of eventFiles) {
-	const filePath = join(eventsPath, file);
+	await Promise.all(eventsImportPromises);
+};
+
+const main = async () => {
 	try {
-		const eventModule = await import(pathToFileURL(filePath).href);
-		const event = eventModule.default || eventModule;
+		await loadEnvVariables();
+		await Promise.all([loadCommands(), loadEvents()]);
+		await connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/");
+		console.log("Conectado a la base de datos.");
 
-		console.log(`Cargando evento: ${event.name}`);
-
-		if (event.once) {
-			client.once(event.name, (...args: any[]) => event.execute(...args));
-		} else {
-			client.on(event.name, (...args: any[]) => event.execute(...args));
-		}
+		await client.login(process.env.TOKEN_BOT);
+		console.log("Bot listo.");
 	} catch (error) {
-		console.error(`Error al cargar el evento ${filePath}:`, error);
+		console.error("Error en la inicialización:", error);
 	}
-}
+};
 
-//conectar la base de datos con mongoose
-async function main() {
-	await connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/");
-	console.log("conectado papi");
-}
-main().catch((err) => console.log(err));
-
-// Log in to Discord with your client's token
-client
-	.login(process.env.TOKEN_BOT)
-	.then(() => console.log("bot listo papi"))
-	.catch((err) => console.log(err));
+main();
