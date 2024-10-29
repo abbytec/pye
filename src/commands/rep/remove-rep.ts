@@ -18,6 +18,7 @@ export default {
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "repatidorDeRep"), deferInteraction],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
+			const channel = interaction.options.getChannel("canal", true);
 
 			if (user.bot) return await replyError(interaction, "No puedo quitarle puntos a los bots.\nUso: `add-rep [@Usuario]`");
 			const member = await interaction.guild?.members.fetch(user.id);
@@ -35,7 +36,7 @@ export default {
 				logMessages: [
 					{
 						channel: getChannelFromEnv("logPuntos"),
-						content: `**${interaction.user.tag}** le ha quitado un rep al usuario: \`${user.tag}\``,
+						content: `**${interaction.user.tag}** le ha quitado un rep al usuario: \`${user.tag}\` en el canal: \`${channel.id}\``,
 					},
 				],
 				reactOkMessage: `se le ha quitado un rep al usuario: \`${user.tag}\``,
