@@ -36,7 +36,7 @@ export default {
 				logMessages: [
 					{
 						channel: getChannelFromEnv("logPuntos"),
-						content: `**${interaction.user.tag}** le ha quitado un rep al usuario: \`${user.tag}\` en el canal: \`${channel.id}\``,
+						content: `**${interaction.user.tag}** le ha quitado un rep al usuario: \`${user.tag}\` en el canal: <#\`${channel.id}\`>`,
 					},
 				],
 				reactOkMessage: `se le ha quitado un rep al usuario: \`${user.tag}\``,
