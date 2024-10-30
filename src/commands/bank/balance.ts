@@ -1,4 +1,3 @@
-// balance.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, AttachmentBuilder } from "discord.js";
 import { Users } from "../../Models/User.ts";
 import { Home } from "../../Models/Home.ts";

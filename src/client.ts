@@ -4,6 +4,7 @@ import { Command } from "./types/command.ts"; // Asegúrate de definir la interf
 
 export class ExtendedClient extends Client {
 	public commands: Collection<string, Command>;
+	public cooldowns: Collection<string, number>;
 
 	constructor() {
 		super({
@@ -18,5 +19,6 @@ export class ExtendedClient extends Client {
 		});
 
 		this.commands = new Collection();
+		this.cooldowns = new Collection();
 	}
 }
