@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, AttachmentBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder, GuildMember, AttachmentBuilder } from "discord.js";
 import { Users } from "../../Models/User.ts";
 import { Home } from "../../Models/Home.ts";
 import redis from "../../redis.ts";
@@ -13,6 +13,10 @@ import { PostHandleable } from "../../types/middleware.ts";
 import { pyecoin } from "../../utils/constants.ts";
 import { IUser } from "../../interfaces/IUser.ts";
 import { logMessages, replyOkToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default {
 	data: new SlashCommandBuilder()
@@ -58,15 +62,15 @@ export default {
 				const homeData = await Home.findOne({ id: member.id }).exec();
 				if (!homeData) return await replyError(interaction, "No se pudo encontrar la información de la casa del usuario.");
 
-				let imagePath = `../../Utils/Pictures/Profiles/Casa/${homeData.house.color}/${homeData.house.level}.png`;
+				let imagePath = `../../utils/Pictures/Profiles/Casa/${homeData.house.color}/${homeData.house.level}.png`;
 
 				if (homeData.pet !== "none") {
-					const petDir = path.join(__dirname, `../../Utils/Pictures/Profiles/Casa/${homeData.house.color}/${homeData.house.level}`);
+					const petDir = path.join(__dirname, `../../utils/Pictures/Profiles/Casa/${homeData.house.color}/${homeData.house.level}`);
 					const pets = await fs.readdir(petDir);
 					const happyPets = pets.filter((m) => m.includes("Feliz"));
 					const selectedPet = happyPets.find((r) => r.includes(homeData.pet));
 					if (selectedPet)
-						imagePath = `../../Utils/Pictures/Profiles/Casa/${homeData.house.color}/${homeData.house.level}/${selectedPet}`;
+						imagePath = `../../utils/Pictures/Profiles/Casa/${homeData.house.color}/${homeData.house.level}/${selectedPet}`;
 				}
 
 				const canvas = createCanvas(590, 458);

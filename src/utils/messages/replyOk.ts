@@ -1,11 +1,20 @@
-import { ActionRowBuilder, ButtonBuilder, ChatInputCommandInteraction, EmbedBuilder, StringSelectMenuBuilder, TextChannel } from "discord.js";
+import {
+	ActionRowBuilder,
+	AttachmentBuilder,
+	ButtonBuilder,
+	ChatInputCommandInteraction,
+	EmbedBuilder,
+	StringSelectMenuBuilder,
+	TextChannel,
+} from "discord.js";
 import { PostHandleable } from "../../types/middleware.ts";
 
 export async function replyOk(
 	interaction: ChatInputCommandInteraction,
 	message: string | EmbedBuilder[],
 	author?: string,
-	components?: (ActionRowBuilder<ButtonBuilder> | ActionRowBuilder<StringSelectMenuBuilder>)[]
+	components?: (ActionRowBuilder<ButtonBuilder> | ActionRowBuilder<StringSelectMenuBuilder>)[],
+	files?: AttachmentBuilder[]
 ): Promise<PostHandleable> {
 	let embedMessage: {
 		embeds?: EmbedBuilder[];
@@ -24,10 +33,13 @@ export async function replyOk(
 	}
 
 	if (interaction.deferred && !components) {
-		await interaction.deleteReply().catch((e) => console.error(e));
+		await interaction.deleteReply().catch((e) => null);
 		await (interaction.guild?.channels.resolve(interaction?.channelId) as TextChannel)?.send(embedMessage);
-	} else if (components) {
-		await interaction.editReply({ embeds: embedMessage.embeds, components: components });
+	} else if (components || files) {
+		let messageToSend: any = { embeds: embedMessage.embeds };
+		if (components) messageToSend.components = components;
+		if (files) messageToSend.files = files;
+		await interaction.editReply(messageToSend).catch((e) => null);
 	} else {
 		interaction.reply(embedMessage);
 	}

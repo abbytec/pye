@@ -7,7 +7,10 @@ export interface IUser {
 	rob: number;
 	bet: number;
 	earnings: number;
-	couples: Record<string, any>[]; // Define una interfaz más específica si es necesario
+	couples: {
+		user: string;
+		job: string;
+	}[];
 	couple: string;
 	description: string;
 	profile?: {

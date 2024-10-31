@@ -21,16 +21,13 @@ export default {
 			const user = interaction.user;
 
 			let userData: Partial<IUser> | null = await Users.findOne({ id: user.id }).exec();
-			if (!userData) {
-				userData = { id: user.id, cash: 0, bank: 0, total: 0 };
-				await Users.create(userData);
-			}
+			if (!userData) userData = { id: user.id, cash: 0, bank: 0, total: 0 };
+			await Users.create(userData);
 
-			if (userData.bank! <= 0) {
+			if (userData.bank! <= 0)
 				return {
 					reactWarningMessage: "No tienes suficientes PyE Coins para sacar del banco.",
 				};
-			}
 
 			const cantidadInput = interaction.options.getString("cantidad", true);
 			let cantidad: number;
@@ -38,27 +35,24 @@ export default {
 			if (cantidadInput.toLowerCase() === "all") {
 				cantidad = userData.bank!;
 			} else {
-				if (!/^\d+$/gi.test(cantidadInput)) {
+				if (!/^\d+$/gi.test(cantidadInput))
 					return {
 						reactWarningMessage: 'La cantidad que ingresaste no es válida.\nUso: `/withdraw [Cantidad | "all"]`',
 					};
-				}
 				cantidad = parseInt(cantidadInput, 10);
-				if (isNaN(cantidad) || cantidad <= 0) {
+				if (isNaN(cantidad) || cantidad <= 0)
 					return {
 						reactWarningMessage: 'La cantidad que ingresaste no es válida.\nUso: `/withdraw [Cantidad | "all"]`',
 					};
-				}
 			}
 
-			if (cantidad > userData.bank!) {
+			if (cantidad > userData.bank!)
 				return {
 					reactWarningMessage: "No tienes suficientes PyE Coins en tu banco para retirar.",
 				};
-			}
 
-			userData.bank = userData.bank! - cantidad;
-			userData.cash = userData.cash! + cantidad;
+			userData.bank! -= cantidad;
+			userData.cash! += cantidad;
 
 			await Users.updateOne({ id: user.id }, userData);
 
