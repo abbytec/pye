@@ -25,18 +25,13 @@ export default {
 
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
-			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby) {
+			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
 				return await replyError(interaction, "No puedes remover el timeout a un miembro del staff.");
-			}
 
-			if (user.id === interaction.user.id) {
-				return await replyError(interaction, "No puedes removerte el timeout a ti mismo.");
-			}
+			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes removerte el timeout a ti mismo.");
 
 			// Verificar si el miembro está en timeout
-			if (!member.isCommunicationDisabled()) {
-				return await replyError(interaction, "El usuario no está en timeout.");
-			}
+			if (!member.isCommunicationDisabled()) return await replyError(interaction, "El usuario no está en timeout.");
 
 			// Remover el timeout
 			try {
@@ -46,9 +41,7 @@ export default {
 				// Buscar el timeout más reciente que no esté oculto
 				const latestTimeout = await ModLogs.findOne({ id: user.id, type: "Timeout", hiddenCase: { $ne: true } }).sort({ date: -1 });
 
-				if (!latestTimeout) {
-					return await replyError(interaction, "Este usuario no tiene timeouts activos.");
-				}
+				if (!latestTimeout) return await replyError(interaction, "Este usuario no tiene timeouts activos.");
 
 				// Marcar el timeout como oculto
 				latestTimeout.hiddenCase = true;

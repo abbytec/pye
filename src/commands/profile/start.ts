@@ -19,6 +19,9 @@ import { createCanvas, loadImage } from "@napi-rs/canvas";
 import path from "path";
 import fs from "fs";
 import { replyWarning } from "../../utils/messages/replyWarning.ts";
+import { replyOk } from "../../utils/messages/replyOk.ts";
+import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
+import { getChannelFromEnv } from "../../utils/constants.ts";
 
 // Enumeraciones para género, tono de piel y profesiones
 enum Gender {
@@ -56,7 +59,7 @@ export default {
 	data: new SlashCommandBuilder().setName("start").setDescription("Comienza a crear tu perfil en la economía."),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? "")],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye"))],
 		async (interaction: ChatInputCommandInteraction): Promise<void> => {
 			const userId = interaction.user.id;
 
@@ -87,6 +90,7 @@ export default {
 			const message = await interaction.reply({
 				content: `<@${userId}>`,
 				embeds: [initialEmbed],
+				ephemeral: true,
 			});
 
 			// Esperar 10 segundos antes de comenzar
@@ -171,10 +175,7 @@ async function startProfile(message: any, interaction: ChatInputCommandInteracti
 			)
 			.setTimestamp();
 
-		await interaction.editReply({
-			embeds: [successEmbed],
-			components: [],
-		});
+		replyOk(interaction, [successEmbed], undefined, undefined, undefined, false);
 	} catch (error) {
 		console.error(error);
 		await interaction.editReply(TIMEOUT_RESPONSE);
@@ -206,6 +207,7 @@ async function selectOption(
 	await message.edit({
 		embeds: [embed],
 		components: [row],
+		ephemeral: true,
 	});
 
 	const response = await message

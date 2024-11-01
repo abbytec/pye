@@ -7,14 +7,14 @@ import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { PostHandleable } from "../../types/middleware.ts";
-import { pyecoin } from "../../utils/constants.ts";
+import { getChannelFromEnv, pyecoin } from "../../utils/constants.ts";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import path from "path";
 import fs from "fs/promises"; // Usar promesas para operaciones de archivos
 import redisClient from "../../redis.ts"; // Asegúrate de exportar correctamente tu cliente redis
-import { replyWarningToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
 import { replyWarning } from "../../utils/messages/replyWarning.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
+import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
 
 const jobs: Record<string, string> = {
 	Policia:
@@ -41,7 +41,7 @@ export default {
 		.addStringOption((option) => option.setName("descripcion").setDescription("Actualiza tu descripción de perfil").setRequired(false)),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable> => {
 			const author = interaction.user;
 			const option = interaction.options.getUser("usuario");
@@ -51,7 +51,7 @@ export default {
 				? (await interaction.guild?.members.fetch(option.id).catch(() => null)) || interaction.member
 				: (interaction.member as any); // Asegúrate de manejar correctamente el tipo
 
-			if (member.user.bot) return replyWarning(interaction, "❌ - Los bots no pueden tener un perfil.");
+			if (member.user.bot) return replyWarning(interaction, "Los bots no pueden tener un perfil.");
 
 			let data = await Users.findOne({ id: member.id });
 			if (!data) data = await Users.create({ id: member.id });
@@ -123,7 +123,7 @@ export default {
 
 			return replyOk(interaction, [embed], undefined, undefined, [img]);
 		},
-		[replyWarningToMessage] // Define este middleware para manejar mensajes de advertencia
+		[]
 	),
 };
 

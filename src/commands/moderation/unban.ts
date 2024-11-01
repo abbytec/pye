@@ -25,30 +25,24 @@ export default {
 
 			// Validar el ID del usuario
 			const user = await interaction.client.users.fetch(userId).catch(() => null);
-			if (!user) {
-				return await replyError(interaction, "No se pudo encontrar al usuario con esa ID.");
-			}
+			if (!user) return await replyError(interaction, "No se pudo encontrar al usuario con esa ID.");
 
 			// Verificar si el usuario está baneado
 			const bannedUsers = await interaction.guild?.bans.fetch();
 			let isBanned = bannedUsers?.has(userId);
-			if (!isBanned) {
-				await replyError(interaction, "Este usuario no está baneado.");
-			} else {
-				// Desbanear al usuario
+
+			if (!isBanned) await replyError(interaction, "Este usuario no está baneado.");
+			else
 				await interaction.guild?.members.unban(userId, reason).catch(async (error) => {
 					console.error(`Error al desbanear al usuario: ${error}`);
 					await replyError(interaction, "No se pudo desbanear al usuario.");
 				});
-			}
 
 			// Registrar en ModLogs
 			// Buscar el ban más reciente que no esté oculto
 			const latestTimeout = await ModLogs.findOne({ id: user.id, type: "Ban", hiddenCase: { $ne: true } }).sort({ date: -1 });
 
-			if (!latestTimeout) {
-				return isBanned ? ({} as PostHandleable) : await replyError(interaction, "Este usuario no tiene bans activos.");
-			}
+			if (!latestTimeout) return isBanned ? ({} as PostHandleable) : await replyError(interaction, "Este usuario no tiene bans activos.");
 
 			// Marcar el ban como oculto
 			latestTimeout.hiddenCase = true;

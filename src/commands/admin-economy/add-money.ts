@@ -37,30 +37,23 @@ export default {
 			const user = interaction.options.getUser("usuario") ?? interaction.user;
 
 			// Validaciones
-			if (!["cash", "bank"].includes(place)) {
-				return await replyError(interaction, "Debes seleccionar un lugar válido (`cash` o `bank`).");
-			}
+			if (!["cash", "bank"].includes(place)) return await replyError(interaction, "Debes seleccionar un lugar válido (`cash` o `bank`).");
 
 			// Evitar que se añada dinero a bots
-			if (user.bot) {
-				return await replyError(interaction, "No puedes añadir dinero a un bot.");
-			}
+			if (user.bot) return await replyError(interaction, "No puedes añadir dinero a un bot.");
 
 			// Validar cantidad
-			if (amount <= 0) {
-				return await replyError(interaction, "La cantidad debe ser un número mayor a 0.");
-			}
+			if (amount <= 0) return await replyError(interaction, "La cantidad debe ser un número mayor a 0.");
 
 			try {
 				// Actualizar la base de datos
 				await Users.updateOne({ id: user.id }, { $inc: { [place]: amount } }, { upsert: true });
 
 				// Mensaje de confirmación
-				const confirmationMessage = `Se han agregado ${pyecoin} **${amount.toLocaleString()}** PyE coins en \`${place}\` a **${
-					user.tag
-				}**.`;
-
-				await replyOk(interaction, confirmationMessage);
+				await replyOk(
+					interaction,
+					`Se han agregado ${pyecoin} **${amount.toLocaleString()}** PyE coins en \`${place}\` a **${user.tag}**.`
+				);
 
 				// Registrar en el canal de logs
 				return {

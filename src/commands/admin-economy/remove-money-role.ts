@@ -37,21 +37,15 @@ export default {
 			const amount = interaction.options.getInteger("cantidad", true);
 
 			// Validaciones
-			if (!["cash", "bank"].includes(place)) {
-				return await replyError(interaction, "Debes seleccionar un lugar válido (`cash` o `bank`).");
-			}
+			if (!["cash", "bank"].includes(place)) return await replyError(interaction, "Debes seleccionar un lugar válido (`cash` o `bank`).");
 
 			// Validar cantidad
-			if (amount <= 0) {
-				return await replyError(interaction, "La cantidad debe ser un número mayor a 0.");
-			}
+			if (amount <= 0) return await replyError(interaction, "La cantidad debe ser un número mayor a 0.");
 
 			// Obtener todos los miembros con el rol especificado
 			const membersWithRole = role.members;
 
-			if (membersWithRole.size === 0) {
-				return await replyError(interaction, "No hay miembros con el rol especificado.");
-			}
+			if (membersWithRole.size === 0) return await replyError(interaction, "No hay miembros con el rol especificado.");
 
 			try {
 				// Extraer los IDs de los usuarios

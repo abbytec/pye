@@ -1,6 +1,5 @@
 // middlewares/verifyIsGuild.ts
 import { Middleware } from "../../types/middleware.ts";
-import { CommandInteraction } from "discord.js";
 
 /**
  * Middleware para verificar que la interacción se realizó en un guild.

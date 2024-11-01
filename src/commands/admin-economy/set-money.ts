@@ -58,23 +58,18 @@ export default {
 			let confirmationMessage = "";
 
 			// Validaciones
-			if (amount <= 0) {
-				return await replyError(interaction, "La cantidad debe ser un número mayor a 0.");
-			}
+			if (amount <= 0) return await replyError(interaction, "La cantidad debe ser un número mayor a 0.");
 
 			switch (subcommand) {
 				case "voice":
 				case "text":
 					timeInput = interaction.options.getString("tiempo", true);
 
-					if (/^\d+$/.test(timeInput)) {
+					if (/^\d+$/.test(timeInput))
 						return await replyError(interaction, "El formato de tiempo no es válido. Ejemplos válidos: `1h`, `20m`, `1h30m`.");
-					}
 
 					time = ms(timeInput) || 0;
-					if (time === 0) {
-						return await replyError(interaction, "El tiempo proporcionado no es válido.");
-					}
+					if (time === 0) return await replyError(interaction, "El tiempo proporcionado no es válido.");
 
 					updateObj = {
 						[`${subcommand}.time`]: time,
@@ -100,18 +95,14 @@ export default {
 				await Money.updateOne({ _id: process.env.CLIENT_ID }, updateObj, { upsert: true });
 
 				// Si tienes una función similar a this.client.voiceMoney()
-				if (typeof (interaction.client as any).voiceMoney === "function") {
-					(interaction.client as any).voiceMoney();
-				}
+				if (typeof (interaction.client as any).voiceMoney === "function") (interaction.client as any).voiceMoney();
 
 				// Responder al usuario
 				await replyOk(interaction, confirmationMessage);
 
 				// Preparar campos para el log
 				let fields = [{ name: "Cantidad PyE Coins", value: `${amount}`, inline: true }];
-				if (subcommand !== "bump") {
-					fields.push({ name: "Tiempo (cooldown)", value: ms(time, { long: true }), inline: true });
-				}
+				if (subcommand !== "bump") fields.push({ name: "Tiempo (cooldown)", value: ms(time, { long: true }), inline: true });
 
 				return {
 					logMessages: [

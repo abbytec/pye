@@ -37,31 +37,22 @@ export default {
 			const user = interaction.options.getUser("usuario") ?? interaction.user;
 
 			// Validaciones
-			if (!["cash", "bank"].includes(place)) {
-				return await replyError(interaction, "Debes seleccionar un lugar válido (`cash` o `bank`).");
-			}
+			if (!["cash", "bank"].includes(place)) return await replyError(interaction, "Debes seleccionar un lugar válido (`cash` o `bank`).");
 
 			// Evitar que se remueva dinero a bots
-			if (user.bot) {
-				return await replyError(interaction, "No puedes remover dinero a un bot.");
-			}
+			if (user.bot) return await replyError(interaction, "No puedes remover dinero a un bot.");
 
 			// Validar cantidad
-			if (amount <= 0) {
-				return await replyError(interaction, "La cantidad debe ser un número mayor a 0.");
-			}
+			if (amount <= 0) return await replyError(interaction, "La cantidad debe ser un número mayor a 0.");
 
 			try {
 				// Obtener el usuario de la base de datos
 				const userData = await Users.findOne({ id: user.id });
-				if (!userData) {
-					return await replyError(interaction, "El usuario no tiene registros en la base de datos.");
-				}
+				if (!userData) return await replyError(interaction, "El usuario no tiene registros en la base de datos.");
 
 				// Verificar si el usuario tiene suficiente dinero en el lugar especificado
-				if ((userData as any)[place] < amount) {
+				if ((userData as any)[place] < amount)
 					return await replyError(interaction, `El usuario no tiene suficientes ${pyecoin} en \`${place}\` para remover.`);
-				}
 
 				// Actualizar la base de datos
 				await Users.updateOne({ id: user.id }, { $inc: { [place]: -amount } });

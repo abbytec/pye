@@ -35,19 +35,14 @@ export default {
 				}
 			}
 
-			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby) {
+			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
 				return await replyError(interaction, "No puedes banear a un miembro del staff.");
-			}
 
-			if (user.id === interaction.user.id) {
-				return await replyError(interaction, "No puedes banearte a ti mismo.");
-			}
+			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes banearte a ti mismo.");
 
 			// Verificar si el usuario ya está baneado
 			const bannedUsers = await interaction.guild?.bans.fetch();
-			if (bannedUsers?.has(user.id)) {
-				return await replyError(interaction, "Este usuario ya está baneado.");
-			}
+			if (bannedUsers?.has(user.id)) return await replyError(interaction, "Este usuario ya está baneado.");
 
 			try {
 				// Enviar mensaje directo al usuario

@@ -28,19 +28,15 @@ export default {
 
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
-			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby) {
+			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
 				return await replyError(interaction, "No puedes darle timeout a un miembro del staff.");
-			}
 
-			if (user.id === interaction.user.id) {
-				return await replyError(interaction, "No puedes darte timeout a ti mismo.");
-			}
+			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes darte timeout a ti mismo.");
 
 			// Parsear la duración
 			const duration = ms(durationString);
-			if (!duration || duration < 1000 || duration > 28 * 24 * 60 * 60 * 1000) {
+			if (!duration || duration < 1000 || duration > 28 * 24 * 60 * 60 * 1000)
 				return await replyError(interaction, "La duración del timeout no es válida. Debe ser entre 1s y 28d.");
-			}
 
 			// Aplicar el timeout
 			try {

@@ -61,9 +61,10 @@ export default {
 				await Users.updateMany({ id: { $in: userIds } }, { $inc: { [place]: amount } }, { upsert: true });
 
 				// Mensaje de confirmación
-				const confirmationMessage = `Se han agregado ${pyecoin} **${amount.toLocaleString()}** PyE coins en \`${place}\` al rol ${role}.`;
-
-				await replyOk(interaction, confirmationMessage);
+				await replyOk(
+					interaction,
+					`Se han agregado ${pyecoin} **${amount.toLocaleString()}** PyE coins en \`${place}\` al rol ${role}.`
+				);
 
 				// Registrar en el canal de logs
 				return {

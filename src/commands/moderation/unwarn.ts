@@ -23,20 +23,15 @@ export default {
 
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
-			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby) {
+			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
 				return await replyError(interaction, "No puedes remover advertencias a un miembro del staff.");
-			}
 
-			if (user.id === interaction.user.id) {
-				return await replyError(interaction, "No puedes remover advertencias a ti mismo.");
-			}
+			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes remover advertencias a ti mismo.");
 
 			// Buscar la advertencia más reciente que no esté oculta
 			const latestWarn = await ModLogs.findOne({ id: user.id, type: "Warn", hiddenCase: { $ne: true } }).sort({ date: -1 });
 
-			if (!latestWarn) {
-				return await replyError(interaction, "Este usuario no tiene advertencias activas.");
-			}
+			if (!latestWarn) return await replyError(interaction, "Este usuario no tiene advertencias activas.");
 
 			// Marcar la advertencia como oculta
 			latestWarn.hiddenCase = true;
