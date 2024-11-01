@@ -42,7 +42,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable> => {
+		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const author = interaction.user;
 			const option = interaction.options.getUser("usuario");
 			const descriptionOption = interaction.options.getString("descripcion");

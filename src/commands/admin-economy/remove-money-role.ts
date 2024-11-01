@@ -4,7 +4,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits, 
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
-import { logMessages } from "../../utils/finalwares/sendFinalMessages.ts";
+import { logMessages } from "../../utils/finalwares/logMessages.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { Users } from "../../Models/User.ts";
 import { replyError } from "../../utils/messages/replyError.ts";

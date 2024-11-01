@@ -7,7 +7,7 @@ import { PostHandleable } from "../../types/middleware.ts";
 import { pyecoin } from "../../utils/constants.ts";
 import { IUser } from "../../interfaces/IUser.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
-import { replyWarningToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
+import { replyWarning } from "../../utils/messages/replyWarning.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -17,17 +17,14 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable> => {
+		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
 			let userData: Partial<IUser> | null = await Users.findOne({ id: user.id }).exec();
 			if (!userData) userData = { id: user.id, cash: 0, bank: 0, total: 0 };
 			await Users.create(userData);
 
-			if (userData.bank! <= 0)
-				return {
-					reactWarningMessage: "No tienes suficientes PyE Coins para sacar del banco.",
-				};
+			if (userData.bank! <= 0) return await replyWarning(interaction, "No tienes suficientes PyE Coins para sacar del banco.");
 
 			const cantidadInput = interaction.options.getString("cantidad", true);
 			let cantidad: number;
@@ -36,20 +33,13 @@ export default {
 				cantidad = userData.bank!;
 			} else {
 				if (!/^\d+$/gi.test(cantidadInput))
-					return {
-						reactWarningMessage: 'La cantidad que ingresaste no es válida.\nUso: `/withdraw [Cantidad | "all"]`',
-					};
+					return await replyWarning(interaction, 'La cantidad que ingresaste no es válida.\nUso: `/withdraw [Cantidad | "all"]`');
 				cantidad = parseInt(cantidadInput, 10);
 				if (isNaN(cantidad) || cantidad <= 0)
-					return {
-						reactWarningMessage: 'La cantidad que ingresaste no es válida.\nUso: `/withdraw [Cantidad | "all"]`',
-					};
+					return await replyWarning(interaction, 'La cantidad que ingresaste no es válida.\nUso: `/withdraw [Número | "all"]`');
 			}
 
-			if (cantidad > userData.bank!)
-				return {
-					reactWarningMessage: "No tienes suficientes PyE Coins en tu banco para retirar.",
-				};
+			if (cantidad > userData.bank!) return await replyWarning(interaction, "No tienes suficientes PyE Coins en tu banco para retirar.");
 
 			userData.bank! -= cantidad;
 			userData.cash! += cantidad;
@@ -64,6 +54,6 @@ export default {
 					.setTimestamp(),
 			]);
 		},
-		[replyWarningToMessage]
+		[]
 	),
 };

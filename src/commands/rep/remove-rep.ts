@@ -5,9 +5,10 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
 import { updateRepRoles } from "../../utils/finalwares/updateRepRoles.ts";
 import { HelperPoint } from "../../Models/HelperPoint.ts";
-import { replyOkToMessage, logMessages } from "../../utils/finalwares/sendFinalMessages.ts";
+import { logMessages } from "../../utils/finalwares/logMessages.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
+import { replyOk } from "../../utils/messages/replyOk.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -30,6 +31,8 @@ export default {
 			data.points -= 1;
 			let newData = await data.save();
 
+			await replyOk(interaction, `se le ha quitado un rep al usuario: \`${user.tag}\``);
+
 			return {
 				guildMember: member,
 				helperPoint: newData,
@@ -39,9 +42,8 @@ export default {
 						content: `**${interaction.user.tag}** le ha quitado un rep al usuario: \`${user.tag}\` en el canal: <#\`${channel.id}\`>`,
 					},
 				],
-				reactOkMessage: `se le ha quitado un rep al usuario: \`${user.tag}\``,
 			};
 		},
-		[updateRepRoles, logMessages, replyOkToMessage]
+		[updateRepRoles, logMessages]
 	),
 };

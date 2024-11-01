@@ -22,16 +22,11 @@ export default {
 		const guildMember = await msg.guild?.members.fetch(member.id); // 'user' es de tipo 'User'
 
 		// validate bot
-		if (member.bot) {
-			replyError(msg, "Los bots no pueden tener puntos de ayuda.");
-			return;
-		}
+		if (member.bot) return await replyError(msg, "Los bots no pueden tener puntos de ayuda.");
 
 		// get data
 		let data: any = await HelperPoint.findOne({ _id: member.id });
-		if (!data) {
-			data = { points: 0 };
-		}
+		if (!data) data = { points: 0 };
 		let people = await HelperPoint.find().sort({ points: -1 }).exec();
 
 		const points = data.points.toLocaleString();

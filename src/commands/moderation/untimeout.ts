@@ -7,7 +7,8 @@ import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { ModLogs } from "../../Models/ModLogs.ts";
-import { logMessages, replyOkToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
+import { logMessages } from "../../utils/finalwares/logMessages.ts";
+import { replyOk } from "../../utils/messages/replyOk.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -63,6 +64,7 @@ export default {
 				});
 
 				// Responder al comando
+				await replyOk(interaction, `Se ha removido el timeout de **${member.user.tag}**.`);
 				return {
 					logMessages: [
 						{
@@ -75,12 +77,11 @@ export default {
 							],
 						},
 					],
-					reactOkMessage: `Se ha removido el timeout de **${member.user.tag}**.`,
 				};
 			} catch {
 				return await replyError(interaction, "No se pudo remover el timeout del usuario.");
 			}
 		},
-		[logMessages, replyOkToMessage]
+		[logMessages]
 	),
 };

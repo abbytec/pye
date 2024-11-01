@@ -12,8 +12,9 @@ import { replyError } from "../../utils/messages/replyError.ts"; // Asegúrate d
 import { PostHandleable } from "../../types/middleware.ts";
 import { pyecoin } from "../../utils/constants.ts";
 import { IUser } from "../../interfaces/IUser.ts";
-import { logMessages, replyOkToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
+import { logMessages } from "../../utils/finalwares/logMessages.ts";
 import { fileURLToPath } from "url";
+import { replyWarning } from "../../utils/messages/replyWarning.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,15 +27,12 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable> => {
+		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const userOption = interaction.options.getUser("usuario");
 			let member: GuildMember | undefined = undefined;
 
 			if (userOption) {
-				if (userOption.bot)
-					return {
-						reactWarningMessage: "No puedo mostrar el balance de los bots.",
-					};
+				if (userOption.bot) return await replyWarning(interaction, "No puedo mostrar el balance de bots.");
 
 				member = await interaction.guild?.members.fetch(userOption.id).catch(() => interaction.member as GuildMember);
 			}
@@ -82,9 +80,8 @@ export default {
 			}
 			return {
 				logMessages: [logMessage],
-				reactOkMessage: null,
 			};
 		},
-		[logMessages, replyOkToMessage]
+		[logMessages]
 	),
 };

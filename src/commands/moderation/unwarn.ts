@@ -7,7 +7,8 @@ import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { ModLogs } from "../../Models/ModLogs.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { logMessages, replyOkToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
+import { logMessages } from "../../utils/finalwares/logMessages.ts";
+import { replyOk } from "../../utils/messages/replyOk.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -51,6 +52,7 @@ export default {
 				})
 				.catch(() => null);
 
+			await replyOk(interaction, `Se ha removido la advertencia de **${member.user.tag}**.`);
 			return {
 				logMessages: [
 					{
@@ -63,9 +65,8 @@ export default {
 						],
 					},
 				],
-				reactOkMessage: `Se ha removido una advertencia de **${member.user.tag}**.`,
 			};
 		},
-		[logMessages, replyOkToMessage]
+		[logMessages]
 	),
 };

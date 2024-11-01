@@ -7,7 +7,8 @@ import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { ModLogs } from "../../Models/ModLogs.ts";
-import { replyOkToMessage, logMessages } from "../../utils/finalwares/sendFinalMessages.ts";
+import { logMessages } from "../../utils/finalwares/logMessages.ts";
+import { replyOk } from "../../utils/messages/replyOk.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -75,6 +76,8 @@ export default {
 					type: "Ban",
 				});
 
+				await replyOk(interaction, `**${user.tag}** hasta la vista papu. Te fuiste baneado.`);
+
 				// Responder al comando
 				return {
 					logMessages: [
@@ -89,13 +92,12 @@ export default {
 							],
 						},
 					],
-					reactOkMessage: `**${user.tag}** hasta la vista papu. Te fuiste baneado.`,
 				};
 			} catch (error) {
 				console.error(`Error al banear al usuario: ${error}`);
 				return await replyError(interaction, "No se pudo banear al usuario.");
 			}
 		},
-		[logMessages, replyOkToMessage]
+		[logMessages]
 	),
 };

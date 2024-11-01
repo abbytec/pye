@@ -7,7 +7,6 @@ import {
 	StringSelectMenuBuilder,
 	TextChannel,
 } from "discord.js";
-import { PostHandleable } from "../../types/middleware.ts";
 
 export async function replyOk(
 	interaction: ChatInputCommandInteraction,
@@ -16,7 +15,7 @@ export async function replyOk(
 	components?: (ActionRowBuilder<ButtonBuilder> | ActionRowBuilder<StringSelectMenuBuilder>)[],
 	files?: AttachmentBuilder[],
 	ephemeral = false
-): Promise<PostHandleable> {
+): Promise<void> {
 	let messageToSend: any = { ephemeral: ephemeral };
 	if (Array.isArray(message)) {
 		messageToSend.embeds = message;
@@ -38,7 +37,6 @@ export async function replyOk(
 	} else if (components) {
 		await interaction.editReply(messageToSend).catch((e) => null);
 	} else {
-		interaction.reply(messageToSend);
+		await interaction.reply(messageToSend);
 	}
-	return { reactWarningMessage: null, reactOkMessage: null };
 }

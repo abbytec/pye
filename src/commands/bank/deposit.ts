@@ -7,7 +7,7 @@ import { PostHandleable } from "../../types/middleware.ts";
 import { pyecoin } from "../../utils/constants.ts";
 import { IUser } from "../../interfaces/IUser.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
-import { replyWarningToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
+import { replyWarning } from "../../utils/messages/replyWarning.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -17,17 +17,14 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable> => {
+		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
 			let userData: Partial<IUser> | null = await Users.findOne({ id: user.id }).exec();
 			if (!userData) userData = { id: user.id, cash: 0, bank: 0, total: 0 };
 			await Users.create(userData);
 
-			if (userData.cash! <= 0)
-				return {
-					reactWarningMessage: "No tienes suficientes PyE Coins para guardar en el banco.",
-				};
+			if (userData.cash! <= 0) return await replyWarning(interaction, "No tienes suficientes PyE Coins para guardar en el banco.");
 
 			const cantidadInput = interaction.options.getString("cantidad", true);
 			let cantidad: number;
@@ -36,20 +33,14 @@ export default {
 				cantidad = userData.cash!;
 			} else {
 				if (!/^\d+$/gi.test(cantidadInput))
-					return {
-						reactWarningMessage: 'La cantidad que ingresaste no es válida.\nUso: `/deposit [Cantidad | "all"]`',
-					};
+					return await replyWarning(interaction, 'La cantidad que ingresaste no es válida.\nUso: `/deposit [Cantidad | "all"]`');
+
 				cantidad = parseInt(cantidadInput, 10);
 				if (isNaN(cantidad) || cantidad <= 0)
-					return {
-						reactWarningMessage: 'La cantidad que ingresaste no es válida.\nUso: `/deposit [Cantidad | "all"]`',
-					};
+					return await replyWarning(interaction, 'La cantidad que ingresaste no es válida.\nUso: `/deposit [Cantidad | "all"]`');
 			}
 
-			if (cantidad > userData.cash!)
-				return {
-					reactWarningMessage: "No tienes suficientes PyE Coins en tu mano para depositar.",
-				};
+			if (cantidad > userData.cash!) return await replyWarning(interaction, "No tienes suficientes PyE Coins para depositar.");
 
 			userData.cash! -= cantidad;
 			userData.bank! += cantidad;
@@ -64,6 +55,6 @@ export default {
 					.setTimestamp(),
 			]);
 		},
-		[replyWarningToMessage]
+		[]
 	),
 };

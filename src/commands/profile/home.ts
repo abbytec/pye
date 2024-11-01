@@ -4,7 +4,6 @@ import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, Attachm
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { replyWarningToMessage } from "../../utils/finalwares/sendFinalMessages.ts";
 import { replyWarning } from "../../utils/messages/replyWarning.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 
@@ -12,7 +11,7 @@ import path from "path";
 import fs from "fs/promises";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 
-import { Home, IHomeDocument } from "../../Models/Home.ts";
+import { Home } from "../../Models/Home.ts";
 import { Users } from "../../Models/User.ts";
 import { Pets } from "../../Models/Pets.ts";
 import { PostHandleable } from "../../types/middleware.ts";

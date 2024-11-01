@@ -4,7 +4,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits, 
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
-import { logMessages } from "../../utils/finalwares/sendFinalMessages.ts";
+import { logMessages } from "../../utils/finalwares/logMessages.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { Command } from "../../Models/Command.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
@@ -109,7 +109,7 @@ export default {
 					return;
 			}
 
-			if (result) return result;
+			if (!result) return;
 
 			logMessage.fields.push({
 				name: "Ejecutado por",
@@ -164,6 +164,8 @@ async function handlePayout(
 	// Configurar logMessage
 	logMessage.description = `**${user.tag}** ha establecido la paga del comando \`${commandName}\` de ${pyecoin} **${min}** a ${pyecoin} **${max}** PyE Coins.`;
 	logMessage.fields.push({ name: "Dinero Mínimo", value: `${min}`, inline: true }, { name: "Dinero Máximo", value: `${max}`, inline: true });
+
+	return { logMessages: [logMessage] };
 }
 
 // Handler for the 'failrate' subcommand
@@ -197,6 +199,8 @@ async function handleFailrate(
 		{ name: "Comando", value: `${commandName}`, inline: true },
 		{ name: "Porcentaje de Fallo", value: `${failRate}%`, inline: true }
 	);
+
+	return { logMessages: [logMessage] };
 }
 
 // Handler for the 'cooldown' subcommand
@@ -247,4 +251,6 @@ async function handleCooldown(
 		long: true,
 	})}**.`;
 	logMessage.fields.push({ name: "Tiempo de Espera", value: `${ms(cooldownMs, { long: true })}`, inline: true });
+
+	return { logMessages: [logMessage] };
 }

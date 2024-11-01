@@ -65,16 +65,10 @@ export default {
 
 			// Verificar si el usuario ya tiene un perfil
 			const userData = await Users.findOne({ id: userId }).exec();
-			if (userData?.profile) {
-				await replyWarning(interaction, "Ya tienes un perfil.");
-				return;
-			}
+			if (userData?.profile) return await replyWarning(interaction, "Ya tienes un perfil.");
 
 			// Verificar si el usuario está en proceso de creación
-			if (onIt.has(userId)) {
-				await replyWarning(interaction, "Ya estás en un proceso de creación.");
-				return;
-			}
+			if (onIt.has(userId)) return await replyWarning(interaction, "Ya estás en un proceso de creación.");
 
 			onIt.add(userId);
 
