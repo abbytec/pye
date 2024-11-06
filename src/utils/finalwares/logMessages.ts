@@ -12,7 +12,7 @@ export const logMessages: Finalware = async (postHandleableInteraction, result) 
 				.addFields(message.fields)
 				.setThumbnail(
 					message.attachments
-						? "attachments://" + message.attachments[0].name
+						? "attachment://" + message.attachments[0].name
 						: postHandleableInteraction.guild?.iconURL({ extension: "gif" }) ?? null
 				)
 				.setTimestamp();

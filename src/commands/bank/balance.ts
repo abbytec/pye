@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, GuildMember, AttachmentBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder, GuildMember, AttachmentBuilder, EmbedBuilder } from "discord.js";
 import { Users } from "../../Models/User.ts";
 import { Home } from "../../Models/Home.ts";
 import redis from "../../redis.ts";
@@ -12,9 +12,9 @@ import { replyError } from "../../utils/messages/replyError.ts"; // Asegúrate d
 import { PostHandleable } from "../../types/middleware.ts";
 import { pyecoin } from "../../utils/constants.ts";
 import { IUser } from "../../interfaces/IUser.ts";
-import { logMessages } from "../../utils/finalwares/logMessages.ts";
 import { fileURLToPath } from "url";
 import { replyWarning } from "../../utils/messages/replyWarning.ts";
+import { replyOk } from "../../utils/messages/replyOk.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,18 +43,16 @@ export default {
 
 			if (!data) return await replyError(interaction, "No se pudo encontrar la información del usuario.");
 
-			let logMessage = {
-				channel: interaction.channelId, // Reemplaza con el canal adecuado
-				user: member.user,
-				description: data.profile ? `**Oficio**: \`${data.profile.job}\`` : `⚠ Aún no te creaste un perfil, crea uno con \`/start\`.`,
-				fields: [
+			let embed = new EmbedBuilder()
+				.setAuthor({ name: member.user.username, iconURL: member.user.displayAvatarURL() })
+				.setDescription(data.profile ? `**Oficio**: \`${data.profile.job}\`` : `⚠ Aún no te creaste un perfil, crea uno con \`/start\`.`)
+				.setFields([
 					{ name: "PyE Coins", value: `${pyecoin} ${data.cash?.toLocaleString()}`, inline: true },
 					{ name: "Banco", value: `${pyecoin} ${data.bank?.toLocaleString()}`, inline: true },
 					{ name: "Total", value: `${pyecoin} ${data.total?.toLocaleString()}`, inline: true },
-				],
-				footer: { text: `Top: ${!isNaN(position) ? "#" + (position + 1) : "Sin top."}` },
-				attachments: undefined as any,
-			};
+				])
+				.setFooter({ text: `Top: ${!isNaN(position) ? "#" + (position + 1) : "Sin top."}` });
+			let attachment: AttachmentBuilder[] | undefined = undefined;
 
 			if (data.profile) {
 				const homeData = await Home.findOne({ id: member.id }).exec();
@@ -75,13 +73,11 @@ export default {
 				const ctx = canvas.getContext("2d");
 				const img = await loadImage(path.resolve(__dirname, imagePath));
 				ctx.drawImage(img, 0, 0, 590, 458);
-				const attachment = new AttachmentBuilder(canvas.toBuffer("image/png"), { name: "casa.png" });
-				logMessage.attachments = [attachment];
+				embed.setThumbnail("attachment://casa.png");
+				attachment = [new AttachmentBuilder(canvas.toBuffer("image/png"), { name: "casa.png" })];
 			}
-			return {
-				logMessages: [logMessage],
-			};
+			return await replyOk(interaction, [embed], undefined, undefined, attachment);
 		},
-		[logMessages]
+		[]
 	),
 };

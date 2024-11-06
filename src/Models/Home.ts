@@ -72,3 +72,48 @@ const schemaHome = new Schema<IHomeDocument>(
 	{ versionKey: false }
 );
 export const Home = model("Home", schemaHome);
+
+export async function increaseHomeMonthlyIncome(id: string, amount: number) {
+	const user = await Home.findOne({ id: id }).exec();
+	if (!user) return;
+	await new Promise((resolve) => setTimeout(resolve, 3e3));
+	user.monthly += amount;
+	await user.save();
+}
+
+export async function levelUpHome(user: IHomeDocument, next: number, houseColor = "") {
+	if (houseColor.length)
+		return await Home.updateOne(
+			{ id: user.id },
+			{
+				level: user.level + next,
+				house: {
+					level: user.house.level + next,
+					color: houseColor,
+				},
+				game: 0,
+				money: 0,
+				bump: 0,
+				text: 0,
+				rep: 0,
+				active: false,
+			}
+		);
+	else
+		return await Home.updateOne(
+			{ id: user.id },
+			{
+				level: user.level + next,
+				house: {
+					level: user.house.level + next,
+					color: user.house.color,
+				},
+				game: 0,
+				money: 0,
+				bump: 0,
+				text: 0,
+				rep: 0,
+				active: false,
+			}
+		);
+}

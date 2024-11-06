@@ -31,6 +31,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	logPuntos: "1296190632317943914",
 	bansanciones: "1296190632317943909",
 	logs: "1296190632020414594",
+	casinoPye: "1296190631533608961",
 };
 
 const isDevelopment = process.env.NODE_ENV === "development";
