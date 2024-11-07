@@ -165,7 +165,7 @@ async function startProfile(message: any, interaction: ChatInputCommandInteracti
 		const successEmbed = new EmbedBuilder()
 			.setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
 			.setDescription(
-				`<:check:913199297678434374> - Has creado tu perfil correctamente.\nPuedes mirarlo usando \`/profile\`.\nTambién puedes mirar tu casa con \`/house\` y completar tareas para subirla de nivel con \`/quest\`.`
+				`<:check:913199297678434374> - Has creado tu perfil correctamente.\nPuedes mirarlo usando \`/profile\`.\nTambién puedes mirar tu casa con \`/home\` y completar tareas para subirla de nivel con \`/quest\`.`
 			)
 			.setTimestamp();
 
