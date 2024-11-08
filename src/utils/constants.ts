@@ -23,7 +23,7 @@ const CHANNELS = {
 
 const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	comparte: "1144149847839084624",
-	general: "1142244181587263511",
+	general: "1296190631269372046",
 	chatProgramadores: "1142244181587263511",
 	ofreceServicios: "1144133135475425320",
 	puntos: "1144159059247898657",
