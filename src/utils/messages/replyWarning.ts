@@ -6,7 +6,6 @@ import {
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 	StringSelectMenuBuilder,
-	TextChannel,
 } from "discord.js";
 
 export async function replyWarning(
@@ -15,6 +14,7 @@ export async function replyWarning(
 	author?: string,
 	components?: (ActionRowBuilder<ButtonBuilder> | ActionRowBuilder<StringSelectMenuBuilder>)[],
 	files?: AttachmentBuilder[],
+	content?: string,
 	ephemeral = true
 ): Promise<void> {
 	let messageToSend: any = { ephemeral: ephemeral };
@@ -31,10 +31,10 @@ export async function replyWarning(
 	}
 	if (components) messageToSend.components = components;
 	if (files) messageToSend.files = files;
+	if (content) messageToSend.content = content;
 
 	if ((interaction.deferred || interaction.replied) && !components) {
-		await interaction.deleteReply().catch((e) => null);
-		await (interaction.guild?.channels.resolve(interaction?.channelId) as TextChannel)?.send(messageToSend);
+		await interaction.followUp(messageToSend);
 	} else if (components) {
 		await interaction.editReply(messageToSend).catch((e) => null);
 	} else {

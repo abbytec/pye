@@ -5,7 +5,6 @@ import {
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 	StringSelectMenuBuilder,
-	TextChannel,
 } from "discord.js";
 
 export async function replyOk(
@@ -14,6 +13,7 @@ export async function replyOk(
 	author?: string,
 	components?: (ActionRowBuilder<ButtonBuilder> | ActionRowBuilder<StringSelectMenuBuilder>)[],
 	files?: AttachmentBuilder[],
+	content?: string,
 	ephemeral = false
 ): Promise<void> {
 	let messageToSend: any = { ephemeral: ephemeral };
@@ -30,10 +30,10 @@ export async function replyOk(
 	}
 	if (components) messageToSend.components = components;
 	if (files) messageToSend.files = files;
+	if (content) messageToSend.content = content;
 
 	if ((interaction.deferred || interaction.replied) && !components) {
-		await interaction.deleteReply().catch((e) => null);
-		await (interaction.guild?.channels.resolve(interaction?.channelId) as TextChannel)?.send(messageToSend);
+		await interaction.followUp(messageToSend);
 	} else if (components) {
 		await interaction.editReply(messageToSend).catch((e) => null);
 	} else {

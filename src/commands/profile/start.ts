@@ -169,7 +169,7 @@ async function startProfile(message: any, interaction: ChatInputCommandInteracti
 			)
 			.setTimestamp();
 
-		replyOk(interaction, [successEmbed], undefined, undefined, undefined, false);
+		replyOk(interaction, [successEmbed], undefined, undefined, undefined, undefined, false);
 	} catch (error) {
 		console.error(error);
 		await interaction.editReply(TIMEOUT_RESPONSE);
