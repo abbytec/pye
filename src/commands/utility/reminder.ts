@@ -1,6 +1,7 @@
 import {
     SlashCommandBuilder,
     ChatInputCommandInteraction,
+    GuildMember,
 } from "discord.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
@@ -32,7 +33,7 @@ export default {
                 .setMaxLength(10)
         ),
     execute: composeMiddlewares(
-        [verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("general")), deferInteraction],
+        [verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction],
         async (interaction: ChatInputCommandInteraction) => {
             const message = interaction.options.getString("mensaje", true);
             const time = interaction.options.getString("tiempo", true);
@@ -52,9 +53,11 @@ export default {
                 if (currentTime >= reminderTime) {
                     clearInterval(intervalId);
                     // Send reminder to the user or channel
-                    await replyOk(interaction, `${message}`);
+
+                    await replyOk(interaction, `${message}`, undefined, undefined, undefined, `<@${interaction.user.id}>`);
                 }
-            }, 60e3); // Check every second
+            }, 60e3); // Check every minute
+            replyOk(interaction, "Se creó tu recordatorio", undefined, undefined, undefined, undefined, true)
         }
     )
 }
