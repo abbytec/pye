@@ -60,7 +60,7 @@ export default {
 		[
 			verifyIsGuild(process.env.GUILD_ID ?? ""),
 			verifyChannel(getChannelFromEnv("casinoPye")),
-			verifyCooldown("rob", 5 * 60 * 60 * 1000, cooldownFunction),
+			verifyCooldown("rob", cooldownDuration, cooldownFunction),
 			deferInteraction,
 		],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
@@ -165,7 +165,7 @@ export default {
 				.setColor(lose ? 0xff7f7f : 0xebae34)
 				.setTimestamp();
 
-			await replyOk(interaction, [embed]);
+			await replyOk(interaction, [embed], undefined, undefined, undefined, undefined, false);
 		},
 		[]
 	),

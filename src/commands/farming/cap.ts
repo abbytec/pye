@@ -105,7 +105,7 @@ export default {
 				)
 				.setTimestamp();
 
-			await replyOk(interaction, [embed]);
+			await replyOk(interaction, [embed], undefined, undefined, undefined, undefined, false);
 		},
 		[]
 	),

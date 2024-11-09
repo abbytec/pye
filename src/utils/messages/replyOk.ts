@@ -5,6 +5,7 @@ import {
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 	StringSelectMenuBuilder,
+	TextChannel,
 } from "discord.js";
 
 export async function replyOk(
@@ -33,7 +34,10 @@ export async function replyOk(
 	if (content) messageToSend.content = content;
 
 	if ((interaction.deferred || interaction.replied) && !components) {
-		await interaction.followUp(messageToSend);
+		if (!ephemeral) {
+			await interaction.deleteReply().catch((e) => null);
+			await (interaction.guild?.channels.resolve(interaction?.channelId) as TextChannel)?.send(messageToSend);
+		} else await interaction.followUp(messageToSend);
 	} else if (components) {
 		await interaction.editReply(messageToSend).catch((e) => null);
 	} else {

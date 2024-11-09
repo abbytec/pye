@@ -14,7 +14,7 @@ const thirtyMinutes = 30 * 60 * 1000;
 export async function getCooldown(client: ExtendedClient, userId: string, commandName: string, expectedCooldown: number): Promise<number> {
 	const key = `${userId}:${commandName}`;
 
-	if (expectedCooldown > thirtyMinutes) {
+	if (expectedCooldown < thirtyMinutes) {
 		// Use client.cooldowns Map
 		const cooldownEntry = client.cooldowns.get(key);
 		if (!cooldownEntry) {
@@ -57,17 +57,16 @@ export async function getCooldown(client: ExtendedClient, userId: string, comman
  * @param duration - The duration of the cooldown in milliseconds.
  */
 export async function setCooldown(client: ExtendedClient, userId: string, commandName: string, duration: number): Promise<void> {
-	const key = `${userId}:${commandName}`;
 	const newDate = new Date(Date.now() + duration);
 
-	if (duration > thirtyMinutes) {
+	if (duration < thirtyMinutes) {
 		// Use client.cooldowns Map
 		const cooldownEntry: ICooldown = {
 			user: userId,
 			command: commandName,
 			date: newDate,
 		};
-		client.cooldowns.set(key, cooldownEntry);
+		client.cooldowns.set(`${userId}:${commandName}`, cooldownEntry);
 	} else {
 		// Use database
 		let cooldownEntry = await Cooldowns.findOne({
