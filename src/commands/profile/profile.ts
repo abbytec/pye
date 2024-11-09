@@ -1,7 +1,7 @@
 // profile.ts
 
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } from "discord.js";
-import { Users } from "../../Models/User.ts";
+import { newUser, Users } from "../../Models/User.ts";
 import { HelperPoint, IHelperPointDocument } from "../../Models/HelperPoint.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
@@ -53,17 +53,17 @@ export default {
 
 			if (member.user.bot) return replyWarning(interaction, "Los bots no pueden tener un perfil.");
 
-			let data = await Users.findOne({ id: member.id });
-			if (!data) data = await Users.create({ id: member.id });
+			let userData = await Users.findOne({ id: member.id });
+			if (!userData) userData = await newUser(member.id);
 
 			if (descriptionOption) {
 				// Actualizar descripción si se proporciona
-				data.description = descriptionOption.slice(0, 110); // Limitar a 110 caracteres
-				await data.save();
+				userData.description = descriptionOption.slice(0, 110); // Limitar a 110 caracteres
+				await userData.save();
 				return replyOk(interaction, "📝 Descripción actualizada exitosamente.");
 			}
 
-			if (!data.profile)
+			if (!userData.profile)
 				return replyWarning(
 					interaction,
 					member.id === author.id
@@ -75,7 +75,7 @@ export default {
 			let dataRep: Partial<IHelperPointDocument> | null = await HelperPoint.findOne({ _id: member.id });
 			const people = await HelperPoint.find().sort({ points: -1 }).exec();
 			if (!dataRep) dataRep = { points: 0 };
-			const img = await getJobImage(data.profile);
+			const img = await getJobImage(userData.profile);
 			const rank = people.findIndex((u) => u._id === member.id) + 1;
 
 			const embed = new EmbedBuilder()
@@ -84,9 +84,9 @@ export default {
 					iconURL: member.user.displayAvatarURL(),
 				})
 				.setThumbnail("attachment://estilo.png")
-				.setDescription(data.description || "Mirame soy una linda mariposa. 🦋")
+				.setDescription(userData.description || "Mirame soy una linda mariposa. 🦋")
 				.addFields(
-					{ name: "🛠 Oficio", value: data.profile.job || "No tiene oficio.", inline: true },
+					{ name: "🛠 Oficio", value: userData.profile.job || "No tiene oficio.", inline: true },
 					{
 						name: "🏆 Tops",
 						value:
@@ -95,22 +95,22 @@ export default {
 					},
 					{
 						name: "💍 Pareja(s)",
-						value: data.couples?.length ? await getCouplesList(interaction, data.couples) : "No tiene.",
+						value: userData.couples?.length ? await getCouplesList(interaction, userData.couples) : "No tiene.",
 						inline: true,
 					},
 					{
 						name: "💳 Cartera",
-						value: `**PyE Coins:** \`${data.cash.toLocaleString()}\` ${pyecoin}\n**Banco:** \`${data.bank.toLocaleString()}\` ${pyecoin}\n**Total:** \`${data.total.toLocaleString()}\` ${pyecoin}`,
+						value: `**PyE Coins:** \`${userData.cash.toLocaleString()}\` ${pyecoin}\n**Banco:** \`${userData.bank.toLocaleString()}\` ${pyecoin}\n**Total:** \`${userData.total.toLocaleString()}\` ${pyecoin}`,
 						inline: true,
 					},
 					{
 						name: "🌠 Stats",
-						value: `🎒 **Inventario:** ${data.inventory.length}\n<:pyestar:926334569903435776> **Reputación:** ${dataRep.points}`,
+						value: `🎒 **Inventario:** ${userData.inventory.length}\n<:pyestar:926334569903435776> **Reputación:** ${dataRep.points}`,
 						inline: true,
 					},
 					{
 						name: "📝 Sobre su oficio",
-						value: jobs[data.profile.job] || "Sin info",
+						value: jobs[userData.profile.job] || "Sin info",
 						inline: true,
 					}
 				)

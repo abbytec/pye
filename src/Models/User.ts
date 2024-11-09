@@ -168,3 +168,7 @@ userSchema.post("updateMany", async function (result: any, next: () => void) {
  * Exporta el modelo de usuario.
  */
 export const Users = model<IUserModel>("Users", userSchema);
+
+export async function newUser(id: string) {
+	return await Users.create({ id });
+}

@@ -1,6 +1,6 @@
 // src/commands/Currency/crime.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { Users } from "../../Models/User.ts";
+import { newUser, Users } from "../../Models/User.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
@@ -47,10 +47,7 @@ export default {
 
 			// Obtener datos del usuario
 			let userData: Partial<IUser> | null = await Users.findOne({ id: user.id }).exec();
-			if (!userData) {
-				userData = { id: user.id, cash: 0, bank: 0, total: 0, profile: undefined, couples: [] };
-				await Users.create(userData);
-			}
+			if (!userData) userData = await newUser(user.id);
 
 			// Definir rangos de ganancia y tasa de falla
 			const lowestMoney = 100; // Ajusta estos valores según tus necesidades
