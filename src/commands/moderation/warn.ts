@@ -23,7 +23,7 @@ export default {
 		.addUserOption((option) => option.setName("usuario").setDescription("selecciona el usuario").setRequired(true))
 		.addStringOption((option) => option.setName("motivo").setDescription("escribe el motivo del warn").setRequired(true)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "perms"), deferInteraction],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "perms", "moderador"), deferInteraction],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
 			const member = await interaction.guild?.members.fetch(user.id);

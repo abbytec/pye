@@ -1,6 +1,6 @@
 // src/commands/Currency/rob.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { Users } from "../../Models/User.ts";
+import { newUser, Users } from "../../Models/User.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
@@ -9,9 +9,19 @@ import { replyOk } from "../../utils/messages/replyOk.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { checkQuestLevel, IQuest } from "../../utils/quest.ts";
 import { IUser } from "../../interfaces/IUser.ts";
-import ms from "ms";
+import { setCooldown } from "../../utils/cooldowns.ts";
 import { getChannelFromEnv } from "../../utils/constants.ts";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
+import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.ts";
+import { ExtendedClient } from "../../client.ts";
+
+const cooldownDuration = 5 * 60 * 60 * 1000;
+
+export interface Rob {
+	userId: string;
+	lastTime: number;
+	amount: number;
+}
 
 // Definición de los textos de éxito y fracaso
 const successTexts: Array<(profit: string, user: string) => string> = [
@@ -26,8 +36,19 @@ const failureTexts: Array<(profit: string, user: string) => string> = [
 		`Estabas ebrio y no lo recordabas, sacaste una pistola y apuntaste a ${user} pero el atracador resultó atracado. Perdiste ${profit} monedas.`,
 ];
 
-// Mapa para manejar los cooldowns de robos
-const robCooldowns = new Map<string, number>();
+async function cooldownFunction(interaction: ChatInputCommandInteraction) {
+	const user = interaction.user;
+	let userData: Partial<IUser> | null = await Users.findOne({
+		id: user.id,
+	}).exec();
+	if (!userData) userData = await newUser(user.id);
+
+	if (["Ladron", "Ladrona"].includes(userData.profile?.job ?? "")) {
+		return cooldownDuration / 2; // La mitad del cooldown
+	}
+
+	return cooldownDuration; // Cooldown completo
+}
 
 export default {
 	data: new SlashCommandBuilder()
@@ -36,7 +57,12 @@ export default {
 		.addUserOption((option) => option.setName("user").setDescription("El usuario al que deseas robar").setRequired(true)),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction],
+		[
+			verifyIsGuild(process.env.GUILD_ID ?? ""),
+			verifyChannel(getChannelFromEnv("casinoPye")),
+			verifyCooldown("rob", 5 * 60 * 60 * 1000, cooldownFunction),
+			deferInteraction,
+		],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
@@ -44,17 +70,7 @@ export default {
 			let userData: Partial<IUser> | null = await Users.findOne({
 				id: user.id,
 			}).exec();
-			if (!userData) {
-				userData = {
-					id: user.id,
-					cash: 0,
-					bank: 0,
-					total: 0,
-					profile: undefined,
-					couples: [],
-				};
-				await Users.create(userData);
-			}
+			if (!userData) userData = await newUser(user.id);
 
 			// Verificar si el usuario tiene un trabajo que le impide robar
 			if (["Militar", "Policia"].includes(userData.profile?.job ?? ""))
@@ -71,31 +87,13 @@ export default {
 			let targetUserData: Partial<IUser> | null = await Users.findOne({
 				id: targetUser.id,
 			}).exec();
-			if (!targetUserData) {
-				targetUserData = {
-					id: targetUser.id,
-					cash: 0,
-					bank: 0,
-					total: 0,
-					profile: undefined,
-					couples: [],
-				};
-				await Users.create(targetUserData);
-			}
+			if (!targetUserData) targetUserData = await newUser(targetUser.id);
 
 			// Verificar si el usuario objetivo tiene dinero en efectivo
 			if ((targetUserData.cash ?? 0) < 1) return await replyError(interaction, "No puedes robarle a alguien que no tiene dinero.");
 
-			// Manejo del cooldown
-			let cooldownTime = 5 * 60 * 60 * 1000; // 5 horas en milisegundos
-			if (["Ladron", "Ladrona"].includes(userData.profile?.job ?? "")) cooldownTime = cooldownTime / 2;
-
-			const lastUsed = robCooldowns.get(user.id);
-			const now = Date.now();
-			if (lastUsed && now - lastUsed < cooldownTime) {
-				const timeLeft = cooldownTime - (now - lastUsed);
-				return await replyError(interaction, `Debes esperar **${ms(timeLeft, { long: true })}** antes de hacer un robo de nuevo.`);
-			}
+			// Establecer el nuevo cooldown
+			await setCooldown(interaction.client as ExtendedClient, user.id, "rob", cooldownDuration);
 
 			// Calcular probabilidad de éxito
 			let probability = (targetUserData.cash ?? 0) / ((targetUserData.cash ?? 0) + (userData.total ?? 0));
@@ -126,7 +124,11 @@ export default {
 				userData.cash = (userData.cash ?? 0) + profit;
 				targetUserData.cash = (targetUserData.cash ?? 0) - profit;
 				if (targetUserData.cash < 0) targetUserData.cash = 0;
-
+				(interaction.client as ExtendedClient).lastRobs.push({
+					userId: user.id,
+					lastTime: Date.now(),
+					amount: profit,
+				});
 				// Actualizar misiones y otros datos
 				try {
 					await checkQuestLevel({
@@ -151,9 +153,6 @@ export default {
 				console.error("Error actualizando los datos del usuario:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
 			}
-
-			// Actualizar cooldown
-			robCooldowns.set(user.id, now);
 
 			// Seleccionar mensaje de éxito o fracaso
 			const description = lose

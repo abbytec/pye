@@ -7,8 +7,12 @@ import { PostHandleable } from "../../types/middleware.ts";
 import { pyecoin } from "../../utils/constants.ts";
 import { IUser } from "../../interfaces/IUser.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
-import { ExtendedClient } from "../../client.ts";
 import { replyWarning } from "../../utils/messages/replyWarning.ts";
+import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.ts";
+import { setCooldown } from "../../utils/cooldowns.ts";
+import { ExtendedClient } from "../../client.ts";
+
+const cooldown = 60 * 1000; // 1 minuto en milisegundos
 
 export default {
 	data: new SlashCommandBuilder()
@@ -18,25 +22,17 @@ export default {
 		.addStringOption((option) => option.setName("cantidad").setDescription('Cantidad a transferir o "all".').setRequired(true)),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("give-money", 60 * 1000), deferInteraction],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const author = interaction.user;
 			const targetUser = interaction.options.getUser("usuario", true);
 			let cantidadInput = interaction.options.getString("cantidad", true);
-			const client = interaction.client as ExtendedClient;
 
 			// Prevenir que el usuario se transfiera dinero a sí mismo
 			if (targetUser.id === author.id) return await replyWarning(interaction, "No puedes darte dinero a ti mismo.");
 
 			// Prevenir que se transfiera dinero a un bot
 			if (targetUser.bot) return await replyWarning(interaction, "Los bots no pueden tener PyE Coins.");
-
-			// Evitar el uso del comando si está en cooldown
-			const cooldownKey = `give-money-${author.id}`;
-			const cooldown = 60 * 1000; // 1 minuto en milisegundos
-			const now = Date.now();
-			if (client.cooldowns.has(cooldownKey) && now < client.cooldowns.get(cooldownKey)!)
-				return await replyWarning(interaction, "No puedes usar el comando **1 minuto** después de haberlo usado.");
 
 			// Validar la cantidad
 			let cantidad: number;
@@ -70,8 +66,7 @@ export default {
 			authorData.cash -= cantidad;
 			targetData.cash! += cantidad;
 
-			client.cooldowns.set(cooldownKey, now + cooldown);
-			setTimeout(() => client.cooldowns.delete(cooldownKey), cooldown);
+			await setCooldown(interaction.client as ExtendedClient, author.id, "give-money", Date.now() + cooldown);
 
 			await Users.updateOne({ id: author.id }, { cash: authorData.cash });
 			await Users.updateOne({ id: targetUser.id }, { cash: targetData.cash });
