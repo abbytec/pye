@@ -17,7 +17,7 @@ export default {
 		.addUserOption((option) => option.setName("usuario").setDescription("Selecciona el usuario").setRequired(true))
 		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo para remover la advertencia").setRequired(false)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "perms"), deferInteraction],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "perms"), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
 			const member = await interaction.guild?.members.fetch(user.id);

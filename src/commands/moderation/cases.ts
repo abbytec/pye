@@ -111,7 +111,7 @@ export default {
 		.setDescription("Muestra los casos de un usuario.")
 		.addUserOption((option) => option.setName("usuario").setDescription("Selecciona el usuario").setRequired(true)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
 			const member = await interaction.guild?.members.fetch(user.id).catch(() => null);

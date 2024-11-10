@@ -41,7 +41,7 @@ export default {
 		.addStringOption((option) => option.setName("descripcion").setDescription("Actualiza tu descripción de perfil").setRequired(false)),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const author = interaction.user;
 			const option = interaction.options.getUser("usuario");

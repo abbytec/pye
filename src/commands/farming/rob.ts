@@ -61,7 +61,7 @@ export default {
 			verifyIsGuild(process.env.GUILD_ID ?? ""),
 			verifyChannel(getChannelFromEnv("casinoPye")),
 			verifyCooldown("rob", cooldownDuration, cooldownFunction),
-			deferInteraction,
+			deferInteraction(),
 		],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const user = interaction.user;

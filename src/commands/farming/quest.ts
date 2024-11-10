@@ -9,7 +9,7 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { Home, IHomeDocument } from "../../Models/Home.ts";
-import { getChannelFromEnv, pyecoin } from "../../utils/constants.ts";
+import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.ts";
 
 // Definición de las tareas según el nivel
 const tasks: Array<{
@@ -109,7 +109,7 @@ export default {
 		[
 			verifyIsGuild(process.env.GUILD_ID ?? ""),
 			verifyChannel(getChannelFromEnv("casinoPye")), // Asegúrate de que "casinoPye" sea el canal correcto para los quests
-			deferInteraction,
+			deferInteraction(false),
 		],
 		async (interaction: ChatInputCommandInteraction): Promise<void> => {
 			const subcommand = interaction.options.getSubcommand();
@@ -136,7 +136,7 @@ export default {
 				const embed = new EmbedBuilder()
 					.setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
 					.setTimestamp()
-					.setColor(0x43b581);
+					.setColor(COLORS.okGreen);
 
 				if (data.house.level >= 1 && data.house.level <= 12) {
 					const task = tasks[data.house.level - 1];

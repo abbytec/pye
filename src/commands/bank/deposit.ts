@@ -16,7 +16,7 @@ export default {
 		.addStringOption((option) => option.setName("cantidad").setDescription('Cantidad a depositar o "all"').setRequired(true)),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 

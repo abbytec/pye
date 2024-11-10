@@ -7,6 +7,7 @@ import {
 	StringSelectMenuBuilder,
 	TextChannel,
 } from "discord.js";
+import { COLORS } from "../constants.ts";
 
 export async function replyOk(
 	interaction: ChatInputCommandInteraction,
@@ -25,7 +26,7 @@ export async function replyOk(
 			new EmbedBuilder()
 				.setAuthor({ name: author ?? interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
 				.setDescription("✅ • " + message)
-				.setColor(0x43b581)
+				.setColor(COLORS.okGreen)
 				.setTimestamp(),
 		];
 	}

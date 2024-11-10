@@ -22,7 +22,7 @@ export default {
 		.addStringOption((option) => option.setName("cantidad").setDescription('Cantidad a transferir o "all".').setRequired(true)),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("give-money", 60 * 1000), deferInteraction],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("give-money", 60 * 1000), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const author = interaction.user;
 			const targetUser = interaction.options.getUser("usuario", true);

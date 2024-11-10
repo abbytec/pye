@@ -147,8 +147,10 @@ export const ROLES_REP_RANGE = {
 	alanturing: 1024,
 };
 
-const COLORS = {
+export const COLORS = {
 	lightSeaGreen: 0x24b7b7,
+	pyeLightBlue: 0x0099ff,
+	okGreen: 0x43b581,
 };
 
 const EMOJIS = {

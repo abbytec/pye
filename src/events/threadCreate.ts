@@ -1,7 +1,7 @@
 import { Events, ChannelType, EmbedBuilder, ThreadChannel, TextChannel } from "discord.js";
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import loadEnvVariables from "../utils/environment.ts";
-import { getChannel } from "../utils/constants.ts";
+import { COLORS, getChannel } from "../utils/constants.ts";
 
 loadEnvVariables();
 const genAI = new GoogleGenerativeAI(process.env.gemini_API_KEY ?? "");
@@ -62,7 +62,7 @@ export default {
 			canal.send({
 				embeds: [
 					new EmbedBuilder()
-						.setColor(0x0099ff)
+						.setColor(COLORS.pyeLightBlue)
 						.setTitle("Nueva publicación 🌟")
 						.setDescription(
 							`

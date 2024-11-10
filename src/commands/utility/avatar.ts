@@ -1,4 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { COLORS } from "../../utils/constants.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -9,7 +10,7 @@ export default {
 		const user = interaction.options.getUser("usuario", true);
 
 		const embed = new EmbedBuilder()
-			.setColor(0x0099ff)
+			.setColor(COLORS.pyeLightBlue)
 			.setTitle(`Avatar de ${user.username}`)
 			.addFields([
 				{

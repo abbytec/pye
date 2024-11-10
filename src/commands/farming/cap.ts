@@ -24,7 +24,7 @@ export default {
 	data: new SlashCommandBuilder().setName("cap").setDescription("Es como el rob, pero le quitas a los rateros."),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("cap", 2 * 60 * 60 * 1000), deferInteraction],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("cap", 2 * 60 * 60 * 1000), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 

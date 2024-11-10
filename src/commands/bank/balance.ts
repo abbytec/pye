@@ -26,7 +26,7 @@ export default {
 		.addUserOption((option) => option.setName("usuario").setDescription("Selecciona el usuario").setRequired(false)),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const userOption = interaction.options.getUser("usuario");
 			let member: GuildMember | undefined = undefined;
