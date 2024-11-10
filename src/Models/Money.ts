@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, Document, model } from "mongoose";
 
 interface MoneyConfig {
 	time: number;
@@ -12,7 +12,9 @@ interface IMoney {
 	text: MoneyConfig;
 }
 
-export interface IMoneyDocument extends IMoney, Document {}
+export interface IMoneyDocument extends IMoney, Document {
+	_id: string;
+}
 
 const moneySchema = new Schema<IMoneyDocument>(
 	{

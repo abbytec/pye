@@ -46,7 +46,7 @@ const generateActionRows = (page: number, data: IModLogsDocument[], itemsPerPage
 			.addOptions(
 				items.map((caso, index) => ({
 					label: `#${start + index + 1} ${caso.type} ${caso.hiddenCase ? "removido " : ""}`,
-					value: `${caso._id.toString()}`,
+					value: `${caso.id.toString()}`,
 					emoji: caso.hiddenCase ? "🙈" : "📝",
 				}))
 			);
@@ -164,7 +164,7 @@ export default {
 					});
 				} else if (i.isStringSelectMenu()) {
 					const caseId = i.values[0];
-					const selectedCase = data.find((c) => c._id.toString() === caseId);
+					const selectedCase = data.find((c) => c.id.toString() === caseId);
 
 					if (selectedCase) {
 						const caseEmbed = new EmbedBuilder()
@@ -172,7 +172,7 @@ export default {
 								name: user.tag,
 								iconURL: user.displayAvatarURL(),
 							})
-							.setTitle(`📝 Caso #${data.findIndex((c) => c._id.toString() === caseId) + 1}`)
+							.setTitle(`📝 Caso #${data.findIndex((c) => c.id.toString() === caseId) + 1}`)
 							.addFields([
 								{ name: "Razón", value: selectedCase.reason || "No especificada.", inline: true },
 								{ name: "Moderador", value: selectedCase.moderator, inline: true },

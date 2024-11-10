@@ -119,7 +119,15 @@ export default {
 						});
 				});
 
-			await replyWarning(interaction, `**${user.username}** ha recibido una advertencia.`);
+			await replyWarning(
+				interaction,
+				`**${user.username}** ha recibido una advertencia.`,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				false
+			);
 
 			return {
 				logMessages: [

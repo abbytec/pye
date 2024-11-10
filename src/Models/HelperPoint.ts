@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, Document, model } from "mongoose";
 
 interface IHelperPoint {
 	_id: string;

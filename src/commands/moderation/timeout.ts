@@ -78,7 +78,15 @@ export default {
 					.catch(() => null);
 
 				// Responder al comando
-				await replyWarning(interaction, `**${member.user.tag}** ha sido aislado del servidor por \`${ms(duration, { long: true })}\`.`);
+				await replyWarning(
+					interaction,
+					`**${member.user.tag}** ha sido aislado del servidor por \`${ms(duration, { long: true })}\`.`,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					false
+				);
 				return {
 					logMessages: [
 						{

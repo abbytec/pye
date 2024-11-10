@@ -1,6 +1,6 @@
-import { Schema, model } from "mongoose";
+import { Schema, Document, model } from "mongoose";
 
-interface IHomhe {
+interface IHome {
 	id: string;
 	name: string;
 	money: number;
@@ -17,7 +17,9 @@ interface IHomhe {
 	monthly: number;
 }
 
-export interface IHomeDocument extends IHomhe, Document {}
+export interface IHomeDocument extends IHome, Document {
+	id: string;
+}
 
 const schemaHome = new Schema<IHomeDocument>(
 	{

@@ -72,7 +72,7 @@ export default {
 				);
 
 			const position = await redisClient.zRevRank("top:all", member.id);
-			let dataRep: Partial<IHelperPointDocument> | null = await HelperPoint.findOne({ _id: member.id });
+			let dataRep: Partial<IHelperPointDocument> | null = await HelperPoint.findOne({ _id: member.id }).exec();
 			const people = await HelperPoint.find().sort({ points: -1 }).exec();
 			if (!dataRep) dataRep = { points: 0 };
 			const img = await getJobImage(userData.profile);

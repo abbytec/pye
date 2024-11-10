@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, Document, model } from "mongoose";
 
 interface IPet {
 	id: string;
@@ -8,7 +8,9 @@ interface IPet {
 	shower: number;
 }
 
-export interface IPetDocument extends IPet, Document {}
+export interface IPetDocument extends IPet, Document {
+	id: string;
+}
 
 const petSchema = new Schema<IPetDocument>(
 	{

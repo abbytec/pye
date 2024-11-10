@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, Document, model } from "mongoose";
 
 interface IModLogs {
 	id: string;
@@ -10,7 +10,7 @@ interface IModLogs {
 }
 
 export interface IModLogsDocument extends IModLogs, Document {
-	_id: string;
+	id: string;
 }
 
 const modlogsSchema = new Schema<IModLogsDocument>(
