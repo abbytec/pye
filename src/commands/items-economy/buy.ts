@@ -54,19 +54,14 @@ export default {
 						name: { $regex: new RegExp(`^${itemInput}$`, "i") },
 					}).exec());
 
-				if (!itemData)
-					return await replyError(
-						interaction,
-						"<:cross_custom:913093934832578601> - No existe un ítem con ese nombre o ID.\nUso: `/buy [Nombre de ítem]`"
-					);
+				if (!itemData) return await replyError(interaction, "No existe un ítem con ese nombre o ID.\nUso: `/buy [Nombre de ítem]`");
 
 				// Verificar si el ítem es 'restart' y el usuario no tiene perfil
-				if (/^restart$/i.test(itemData.name) && !userData.profile)
-					return await replyError(interaction, "<:cross_custom:913093934832578601> - No puedes comprar este ítem.");
+				if (/^restart$/i.test(itemData.name) && !userData.profile) return await replyError(interaction, "No puedes comprar este ítem.");
 
 				// Verificar si el ítem no es almacenable y ya está en el inventario
 				if (!itemData.storable && userData.inventory.some((invItemId) => invItemId.toString() === itemData._id.toString())) {
-					return await replyError(interaction, "<:cross_custom:913093934832578601> - Ya posees ese ítem en tu inventario.");
+					return await replyError(interaction, "Ya posees ese ítem en tu inventario.");
 				}
 
 				// Calcular el costo total
@@ -74,10 +69,7 @@ export default {
 
 				// Verificar si el usuario tiene suficiente dinero
 				if (totalCost > (userData.cash ?? 0))
-					return await replyError(
-						interaction,
-						"<:cross_custom:913093934832578601> - No tienes suficientes **PyE Coins** para comprar este ítem."
-					);
+					return await replyError(interaction, "No tienes suficientes **PyE Coins** para comprar este ítem.");
 
 				// Manejar ítems que otorgan roles temporales
 				if (itemData.role && itemData.timeout > 0) return await handleTempRole(interaction, userData, itemData, amount);
@@ -102,10 +94,7 @@ export default {
 				return await replyOk(interaction, successMessage);
 			} catch (error) {
 				console.error("Error en el comando /buy:", error);
-				return await replyError(
-					interaction,
-					"<:cross_custom:913093934832578601> - Ocurrió un error al procesar tu solicitud. Inténtalo de nuevo más tarde."
-				);
+				return await replyError(interaction, "Ocurrió un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
 			}
 		}
 	),
@@ -121,12 +110,12 @@ async function handleTempRole(
 	const member = interaction.member;
 
 	if (!member || !(member instanceof GuildMember)) {
-		return await replyError(interaction, "<:cross_custom:913093934832578601> - No se pudo acceder a tu información de miembro.");
+		return await replyError(interaction, "No se pudo acceder a tu información de miembro.");
 	}
 
 	// Verificar si el usuario ya tiene el rol
 	if (member.roles.cache.has(itemData.role)) {
-		return await replyError(interaction, "<:cross_custom:913093934832578601> - Ya posees este rol en tu perfil.");
+		return await replyError(interaction, "Ya posees este rol en tu perfil.");
 	}
 
 	// Calcular el costo total
@@ -134,7 +123,7 @@ async function handleTempRole(
 
 	// Verificar si el usuario tiene suficiente dinero
 	if (totalCost > (userData.cash ?? 0)) {
-		return await replyError(interaction, "<:cross_custom:913093934832578601> - No tienes suficientes **PyE Coins** para comprar este ítem.");
+		return await replyError(interaction, "No tienes suficientes **PyE Coins** para comprar este ítem.");
 	}
 
 	// Deduct cash
@@ -148,10 +137,7 @@ async function handleTempRole(
 		await member.roles.add(itemData.role);
 	} catch (error) {
 		console.error("Error asignando el rol:", error);
-		return await replyError(
-			interaction,
-			"<:cross_custom:913093934832578601> - Ocurrió un error al asignarte el rol. Inténtalo de nuevo más tarde."
-		);
+		return await replyError(interaction, "Ocurrió un error al asignarte el rol. Inténtalo de nuevo más tarde.");
 	}
 
 	// Crear un registro en UserRole
@@ -170,10 +156,7 @@ async function handleTempRole(
 		} catch (removeError) {
 			console.error("Error removiendo el rol tras fallo en UserRole:", removeError);
 		}
-		return await replyError(
-			interaction,
-			"<:cross_custom:913093934832578601> - Ocurrió un error al procesar tu rol temporal. Inténtalo de nuevo más tarde."
-		);
+		return await replyError(interaction, "Ocurrió un error al procesar tu rol temporal. Inténtalo de nuevo más tarde.");
 	}
 
 	// Enviar mensaje personalizado si existe

@@ -47,11 +47,7 @@ export default {
 			let member: GuildMember;
 			if (memberOption) {
 				const fetchedMember = await interaction.guild?.members.fetch(memberOption.id).catch(() => null);
-				if (!fetchedMember)
-					return await replyError(
-						interaction,
-						"<:cross_custom:913093934832578601> - No se pudo encontrar al usuario especificado en este servidor."
-					);
+				if (!fetchedMember) return await replyError(interaction, "No se pudo encontrar al usuario especificado en este servidor.");
 				member = fetchedMember;
 			} else member = interaction.member as GuildMember;
 

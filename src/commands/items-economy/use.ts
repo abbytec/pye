@@ -1,13 +1,5 @@
 // src/commands/Currency/use.ts
-import {
-	ChatInputCommandInteraction,
-	SlashCommandBuilder,
-	EmbedBuilder,
-	ButtonStyle,
-	GuildMember,
-	Interaction,
-	ButtonInteraction,
-} from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder, GuildMember } from "discord.js";
 import { IUserModel, newUser, Users } from "../../Models/User.ts"; // Asegúrate de tener este modelo correctamente definido
 import { IShopDocument, Shop } from "../../Models/Shop.ts";
 import { UserRole } from "../../Models/Role.ts";
@@ -52,16 +44,13 @@ export default {
 
 			// Buscar el ítem en la tienda por ID o nombre (case-insensitive)
 			const itemData =
-				(await Shop.findOne({ itemId: itemInput }).exec()) ||
+				(await Shop.findOne({ itemId: itemInput }).exec()) ??
 				(await Shop.findOne({
 					name: { $regex: new RegExp(`^${itemInput}$`, "i") },
 				}).exec());
 
 			if (!itemData) {
-				return await replyError(
-					interaction,
-					"<:cross_custom:913093934832578601> - No existe un ítem con ese nombre o ID.\nUso: `/use [Nombre de ítem]`"
-				);
+				return await replyError(interaction, "No existe un ítem con ese nombre o ID.\nUso: `/use [Nombre de ítem]`");
 			}
 
 			// Verificar si el ítem es uno de los excluidos
@@ -87,7 +76,7 @@ export default {
 
 			for (const excluded of excludedItems) {
 				if (excluded.name.test(itemData.name)) {
-					return await replyError(interaction, `<:cross_custom:913093934832578601> - ${excluded.message}`);
+					return await replyError(interaction, `${excluded.message}`);
 				}
 			}
 
@@ -98,7 +87,7 @@ export default {
 
 			// Verificar si el usuario posee el ítem en su inventario
 			if (!userData.inventory.includes(itemData._id)) {
-				return await replyError(interaction, "<:cross_custom:913093934832578601> - No tienes este ítem en tu inventario.");
+				return await replyError(interaction, "No tienes este ítem en tu inventario.");
 			}
 
 			// Verificar si el ítem ya está en uso dentro del grupo
@@ -114,7 +103,7 @@ export default {
 				if (groupItem) {
 					return await replyError(
 						interaction,
-						`<:cross_custom:913093934832578601> - Ya tienes un ítem de \`${groupItem.group}\` en uso.\nPuedes quitarte el actual utilizando el comando \`restore\`.`
+						`Ya tienes un ítem de \`${groupItem.group}\` en uso.\nPuedes quitarte el actual utilizando el comando \`restore\`.`
 					);
 				}
 			}
@@ -142,10 +131,7 @@ export default {
 					await member.roles.add(itemData.role);
 				} catch (error) {
 					console.error("Error asignando el rol:", error);
-					return await replyError(
-						interaction,
-						"<:cross_custom:913093934832578601> - Ocurrió un error al asignarte el rol. Inténtalo de nuevo más tarde."
-					);
+					return await replyError(interaction, "Ocurrió un error al asignarte el rol. Inténtalo de nuevo más tarde.");
 				}
 
 				// Eliminar el ítem del inventario si es no almacenable
@@ -173,7 +159,7 @@ export default {
 					await userData.save();
 				}
 
-				return await replyError(interaction, "<:cross_custom:913093934832578601> - Ya tienes este rol en tu perfil.");
+				return await replyError(interaction, "Ya tienes este rol en tu perfil.");
 			}
 
 			// Si ninguna condición anterior se cumple, enviar un mensaje genérico
@@ -187,8 +173,8 @@ async function handleTempRole(interaction: ChatInputCommandInteraction, userData
 	const member = interaction.member as GuildMember;
 
 	// Verificar si el usuario ya tiene el rol
-	if (member.roles.cache.has(itemData.role!)) {
-		return await replyError(interaction, "<:cross_custom:913093934832578601> - Ya posees este rol en tu perfil.");
+	if (member.roles.cache.has(itemData.role)) {
+		return await replyError(interaction, "Ya posees este rol en tu perfil.");
 	}
 
 	// Eliminar el ítem del inventario
@@ -200,35 +186,29 @@ async function handleTempRole(interaction: ChatInputCommandInteraction, userData
 
 	// Asignar el rol al usuario
 	try {
-		await member.roles.add(itemData.role!);
+		await member.roles.add(itemData.role);
 	} catch (error) {
 		console.error("Error asignando el rol temporal:", error);
-		return await replyError(
-			interaction,
-			"<:cross_custom:913093934832578601> - Ocurrió un error al asignarte el rol temporal. Inténtalo de nuevo más tarde."
-		);
+		return await replyError(interaction, "Ocurrió un error al asignarte el rol temporal. Inténtalo de nuevo más tarde.");
 	}
 
 	// Crear un registro en UserRole para manejar el timeout
 	try {
 		await UserRole.create({
 			id: userData.id,
-			rolId: itemData.role!,
+			rolId: itemData.role,
 			guildId: interaction.guildId!,
-			count: itemData.timeout! + Date.now(),
+			count: itemData.timeout + Date.now(),
 		});
 	} catch (error) {
 		console.error("Error creando el registro de UserRole:", error);
 		// Opcional: eliminar el rol si falla la creación del registro
 		try {
-			await member.roles.remove(itemData.role!);
+			await member.roles.remove(itemData.role);
 		} catch (removeError) {
 			console.error("Error removiendo el rol tras fallo en UserRole:", removeError);
 		}
-		return await replyError(
-			interaction,
-			"<:cross_custom:913093934832578601> - Ocurrió un error al procesar tu rol temporal. Inténtalo de nuevo más tarde."
-		);
+		return await replyError(interaction, "Ocurrió un error al procesar tu rol temporal. Inténtalo de nuevo más tarde.");
 	}
 
 	// Enviar mensaje personalizado si existe
@@ -257,10 +237,7 @@ async function handleReset(interaction: ChatInputCommandInteraction, userData: I
 		await Pets.deleteOne({ id: userData.id }).exec();
 	} catch (error) {
 		console.error("Error eliminando Home o Pets:", error);
-		return await replyError(
-			interaction,
-			"<:cross_custom:913093934832578601> - Ocurrió un error al resetear tu perfil. Inténtalo de nuevo más tarde."
-		);
+		return await replyError(interaction, "Ocurrió un error al resetear tu perfil. Inténtalo de nuevo más tarde.");
 	}
 
 	return await replyOk(interaction, "Se ha eliminado tu perfil correctamente.");

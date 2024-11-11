@@ -22,6 +22,7 @@ import { replyWarning } from "../../utils/messages/replyWarning.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
 import { getChannelFromEnv } from "../../utils/constants.ts";
+import { replyError } from "../../utils/messages/replyError.ts";
 
 // Enumeraciones para género, tono de piel y profesiones
 enum Gender {
@@ -44,13 +45,6 @@ enum Job {
 	Enfermero = "Enfermero",
 	Obrero = "Obrero",
 }
-
-// Opciones de timeout
-const TIMEOUT_RESPONSE = {
-	embeds: [new EmbedBuilder().setDescription("<:cross_custom:913093934832578601> - Se acabó el tiempo...").setColor(0xef5250)],
-	components: [],
-	files: [],
-};
 
 // Conjunto para evitar procesos simultáneos
 const onIt = new Set<string>();
@@ -172,7 +166,7 @@ async function startProfile(message: any, interaction: ChatInputCommandInteracti
 		);
 	} catch (error) {
 		console.error(error);
-		await interaction.editReply(TIMEOUT_RESPONSE);
+		await replyError(interaction, "Se acabo el tiempo...");
 	} finally {
 		onIt.delete(userId);
 	}

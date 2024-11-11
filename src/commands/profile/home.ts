@@ -11,7 +11,7 @@ import path from "path";
 import fs from "fs/promises";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 
-import { Home } from "../../Models/Home.ts";
+import { Home, IHomeDocument } from "../../Models/Home.ts";
 import { Users } from "../../Models/User.ts";
 import { Pets } from "../../Models/Pets.ts";
 import { PostHandleable } from "../../types/middleware.ts";
@@ -91,7 +91,7 @@ export default {
 		[]
 	),
 };
-async function getHouseImage(data: any): Promise<AttachmentBuilder> {
+async function getHouseImage(data: IHomeDocument): Promise<AttachmentBuilder> {
 	let imagePath = path.join(process.cwd(), "src", "utils", "Pictures", "Profiles", "Casa", data.house.color, `${data.house.level}.png`);
 
 	if (data.pet !== "none") {
