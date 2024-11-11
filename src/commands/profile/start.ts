@@ -161,15 +161,15 @@ async function startProfile(message: any, interaction: ChatInputCommandInteracti
 		// Crear una casa para el usuario
 		await Home.create({ id: userId });
 
-		// Responder al usuario con éxito
-		const successEmbed = new EmbedBuilder()
-			.setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
-			.setDescription(
-				`<:check:913199297678434374> - Has creado tu perfil correctamente.\nPuedes mirarlo usando \`/profile\`.\nTambién puedes mirar tu casa con \`/home\` y completar tareas para subirla de nivel con \`/quest\`.`
-			)
-			.setTimestamp();
-
-		replyOk(interaction, [successEmbed], undefined, undefined, undefined, undefined, false);
+		replyOk(
+			interaction,
+			`Has creado tu perfil correctamente.\nPuedes mirarlo usando \`/profile\`.\nTambién puedes mirar tu casa con \`/home\` y completar tareas para subirla de nivel con \`/quest\`.`,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			false
+		);
 	} catch (error) {
 		console.error(error);
 		await interaction.editReply(TIMEOUT_RESPONSE);

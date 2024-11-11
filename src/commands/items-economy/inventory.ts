@@ -1,0 +1,217 @@
+// src/commands/Currency/inventory.ts
+import {
+	ChatInputCommandInteraction,
+	SlashCommandBuilder,
+	EmbedBuilder,
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	GuildMember,
+	Interaction,
+	ButtonInteraction,
+	CacheType,
+} from "discord.js";
+import { IUserModel, Users } from "../../Models/User.ts"; // Asegúrate de tener este modelo correctamente definido
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
+import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
+import { PostHandleable } from "../../types/middleware.ts";
+import { replyOk } from "../../utils/messages/replyOk.ts";
+import { replyError } from "../../utils/messages/replyError.ts";
+import { getChannelFromEnv } from "../../utils/constants.ts";
+import { IShopDocument, Shop } from "../../Models/Shop.ts";
+import { Types } from "mongoose";
+
+const ITEMS_PER_PAGE = 10;
+
+export default {
+	data: new SlashCommandBuilder()
+		.setName("inventory")
+		.setDescription("Muestra los ítems que posees en tu inventario o el de otro usuario.")
+		.addUserOption((option) => option.setName("usuario").setDescription("Usuario cuyo inventario deseas ver.").setRequired(false))
+		.addIntegerOption((option) => option.setName("pagina").setDescription("Número de página para ver los ítems.").setRequired(false)),
+
+	execute: composeMiddlewares(
+		[
+			verifyIsGuild(process.env.GUILD_ID ?? ""),
+			verifyChannel(getChannelFromEnv("casinoPye")), // Asegúrate de definir esta función o eliminar si no es necesaria
+			deferInteraction(false),
+		],
+		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+			const user = interaction.user;
+			const memberOption = interaction.options.getUser("usuario");
+			const pageOption = interaction.options.getInteger("pagina");
+
+			// Determinar el miembro cuyo inventario mostrar
+			let member: GuildMember;
+			if (memberOption) {
+				const fetchedMember = await interaction.guild?.members.fetch(memberOption.id).catch(() => null);
+				if (!fetchedMember)
+					return await replyError(
+						interaction,
+						"<:cross_custom:913093934832578601> - No se pudo encontrar al usuario especificado en este servidor."
+					);
+				member = fetchedMember;
+			} else member = interaction.member as GuildMember;
+
+			// Determinar la página a mostrar
+			let page = pageOption && pageOption > 0 ? pageOption : 1;
+
+			// Obtener los datos del usuario
+			let userData: IUserModel | null = await Users.findOne({ id: member.id }).populate("inventory", "name itemId icon weight").exec();
+			if (!userData) userData = await Users.create({ id: member.id, cash: 0, inventory: [] });
+
+			// Procesar los ítems del inventario
+			const itemsWithQuantity = await getItems(userData);
+			const totalPages = Math.ceil(itemsWithQuantity.length / ITEMS_PER_PAGE) || 1;
+
+			// Ajustar la página si excede el total
+			if (page > totalPages) page = totalPages;
+
+			// Obtener los ítems para la página actual
+			const paginatedItems = itemsWithQuantity.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+
+			// Crear el embed para el inventario
+			const embed = new EmbedBuilder()
+				.setAuthor({
+					name: member.id === user.id ? "Tu inventario" : `Inventario de ${member.user.tag}`,
+					iconURL: member.user.displayAvatarURL(),
+				})
+				.setDescription(`Puedes consumir un ítem escribiendo \`/use <nombre del ítem>\`.`)
+				.addFields([
+					{
+						name: "Lista de ítems",
+						value:
+							paginatedItems.length > 0
+								? paginatedItems
+										.map(
+											([item, amount], index) =>
+												`\`${(page - 1) * ITEMS_PER_PAGE + index + 1}\`. ${item.icon ? item.icon + " " : ""}**${
+													item.name
+												}** (x${amount})\n\`[ID ${item.itemId}]\``
+										)
+										.join("\n")
+								: "No tiene ningún ítem aún.",
+					},
+				])
+				.setFooter({ text: `Página ${page}/${totalPages}` })
+				.setColor(0x00ff00)
+				.setTimestamp();
+
+			// Crear los botones de paginación
+			const backButton = new ButtonBuilder()
+				.setStyle(ButtonStyle.Primary)
+				.setLabel("«")
+				.setCustomId("inventoryBack")
+				.setDisabled(page === 1);
+
+			const nextButton = new ButtonBuilder()
+				.setStyle(ButtonStyle.Primary)
+				.setLabel("»")
+				.setCustomId("inventoryNext")
+				.setDisabled(page === totalPages);
+
+			const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(backButton, nextButton);
+
+			// Enviar la respuesta inicial
+			await replyOk(interaction, [embed], undefined, [actionRow], undefined, undefined, false);
+
+			// Obtener el mensaje enviado
+			const message = await interaction.fetchReply();
+
+			// Asegurarse de que el mensaje es de tipo Message
+			if (!("edit" in message)) {
+				console.error("El mensaje obtenido no es una instancia de Message.");
+				return;
+			}
+
+			// Crear un collector para manejar las interacciones de los botones
+			const collector = message.createMessageComponentCollector({
+				filter: (i: Interaction) => i.isButton() && i.user.id === user.id && ["inventoryNext", "inventoryBack"].includes(i.customId),
+				time: 60000, // 60 segundos
+			});
+
+			collector.on("collect", async (i: ButtonInteraction) => {
+				if (i.customId === "inventoryBack" && page > 1) page--;
+				else if (i.customId === "inventoryNext" && page < totalPages) page++;
+				else {
+					await i.deferUpdate();
+					return;
+				}
+
+				// Obtener los ítems para la nueva página
+				const updatedPaginatedItems = itemsWithQuantity.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+
+				// Crear el nuevo embed actualizado
+				const updatedEmbed = new EmbedBuilder()
+					.setAuthor({
+						name: member.id === user.id ? "Tu inventario" : `Inventario de ${member.user.tag}`,
+						iconURL: member.user.displayAvatarURL(),
+					})
+					.setDescription(`Puedes consumir un ítem escribiendo \`/use <nombre del ítem>\`.`)
+					.addFields([
+						{
+							name: "Lista de ítems",
+							value:
+								updatedPaginatedItems.length > 0
+									? updatedPaginatedItems
+											.map(
+												([item, amount], index) =>
+													`\`${(page - 1) * ITEMS_PER_PAGE + index + 1}\`. ${item.icon} **${
+														item.name
+													}** (x${amount})\n\`[ID ${item.itemId}]\``
+											)
+											.join("\n")
+									: "No tiene ningún ítem aún.",
+						},
+					])
+					.setFooter({ text: `Página ${page}/${totalPages}` })
+					.setColor(0x00ff00)
+					.setTimestamp();
+
+				// Actualizar los botones de paginación
+				backButton.setDisabled(page === 1);
+				nextButton.setDisabled(page === totalPages);
+				const updatedActionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(backButton, nextButton);
+
+				// Actualizar el mensaje con el nuevo embed y botones
+				await i.update({
+					embeds: [updatedEmbed],
+					components: [updatedActionRow],
+				});
+			});
+
+			collector.on("end", async () => {
+				// Deshabilitar los botones al finalizar el collector
+				const disabledBackButton = ButtonBuilder.from(backButton).setDisabled(true);
+				const disabledNextButton = ButtonBuilder.from(nextButton).setDisabled(true);
+				const disabledActionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(disabledBackButton, disabledNextButton);
+
+				await message
+					.edit({
+						components: [disabledActionRow],
+					})
+					.catch(() => null);
+			});
+		}
+	),
+};
+
+// Función para procesar y agrupar los ítems del inventario
+async function getItems(data: IUserModel): Promise<[IShopDocument, number][]> {
+	const itemsMap: Map<Types.ObjectId, [IShopDocument, number]> = new Map();
+
+	if (!data?.inventory?.length) return [];
+
+	for (const itemId of data.inventory) {
+		// Asumiendo que `itemId` es una referencia al documento de `Shop`
+		const item: IShopDocument | null = await Shop.findOne({ _id: itemId }).exec();
+		if (!item) continue;
+
+		if (itemsMap.has(item._id)) itemsMap.get(item._id)![1]++;
+		else itemsMap.set(item._id, [item, 1]);
+	}
+
+	return Array.from(itemsMap.values());
+}

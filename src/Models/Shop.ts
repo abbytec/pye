@@ -1,4 +1,4 @@
-import { HydratedDocument, Schema, model } from "mongoose";
+import { Document, Schema, Types, model } from "mongoose";
 
 export interface IShop {
 	name: string;
@@ -13,7 +13,9 @@ export interface IShop {
 	group: string;
 }
 
-export type IShopDocument = HydratedDocument<IShop>;
+export interface IShopDocument extends IShop, Document {
+	_id: Types.ObjectId;
+}
 
 const schemaShop = new Schema<IShop>(
 	{
