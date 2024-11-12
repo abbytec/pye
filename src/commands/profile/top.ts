@@ -1,0 +1,294 @@
+// src/commands/Currency/top.ts
+import {
+	ChatInputCommandInteraction,
+	SlashCommandBuilder,
+	EmbedBuilder,
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	ButtonInteraction,
+	Interaction,
+	Message,
+} from "discord.js";
+import { Home, IHomeDocument } from "../../Models/Home.ts";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
+import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
+import { PostHandleable } from "../../types/middleware.ts";
+import { replyOk } from "../../utils/messages/replyOk.ts";
+import { replyError } from "../../utils/messages/replyError.ts";
+import redis from "../../redis.ts";
+import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.ts";
+import { Bumps } from "../../Models/Bump.ts";
+import { generateLeaderboard } from "../../utils/generic.ts";
+
+const key = {
+	rob: {
+		title: "Asaltantes",
+		url: "https://cdn.discordapp.com/attachments/916353103534632960/1017170796331933828/Thief.png",
+	},
+	cash: {
+		title: "Monedas",
+		url: "https://cdn.discordapp.com/attachments/916353103534632960/1017132949688299660/unknown.png",
+	},
+	apuestas: {
+		title: "Apostadores",
+		url: "https://cdn.discordapp.com/attachments/916353103534632960/1019088066616512562/unknown.png",
+	},
+	caps: {
+		title: "Policías",
+		url: "https://cdn.discordapp.com/attachments/916353103534632960/1019797558870147082/unknown.png",
+	},
+	house: {
+		title: "Casas",
+		url: "https://cdn.discordapp.com/attachments/916353103534632960/1017138053283852338/money.png",
+	},
+	all: {
+		title: "Dinero total",
+		url: "https://cdn.discordapp.com/attachments/916353103534632960/1017138053283852338/money.png",
+	},
+	bumps: {
+		title: "Bumps",
+		url: "https://cdn.discordapp.com/attachments/916353103534632960/1017138053283852338/money.png",
+	},
+};
+
+type LeaderboardType = keyof typeof key;
+
+export default {
+	data: new SlashCommandBuilder()
+		.setName("top")
+		.setDescription("Muestra el top de coins.")
+		.addStringOption((option) =>
+			option
+				.setName("tipo")
+				.setDescription("Tipo de top que deseas ver")
+				.setRequired(true)
+				.addChoices(
+					{ name: "Cash", value: "cash" },
+					{ name: "Robos", value: "rob" },
+					{ name: "Apuestas", value: "apuestas" },
+					{ name: "Caps", value: "caps" },
+					{ name: "Casas", value: "house" },
+					{ name: "Dinero Total", value: "all" },
+					{ name: "Bumps", value: "bumps" }
+				)
+		)
+		.addIntegerOption((option) => option.setName("pagina").setDescription("Número de página").setRequired(false)),
+
+	execute: composeMiddlewares(
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction(false)],
+		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+			const user = interaction.user;
+
+			const type = (interaction.options.getString("tipo") ?? "cash") as LeaderboardType;
+			let page = interaction.options.getInteger("pagina") ?? 1;
+			page = Math.max(page, 1);
+
+			if (!Object.keys(key).includes(type)) return await replyError(interaction, "El tipo de top seleccionado no es válido.");
+
+			try {
+				let totalPages = 1;
+				let position = -1;
+
+				const content = await generateContent(type, page, user, interaction, position, totalPages);
+				await replyOk(interaction, content.embeds, undefined, content.components);
+
+				const message = await interaction.fetchReply();
+
+				if (!(message instanceof Message)) return console.error("El mensaje obtenido no es una instancia de Message.");
+
+				const collector = message.createMessageComponentCollector({
+					filter: (i: Interaction) => i.isButton() && i.user.id === user.id && ["topBack", "topNext"].includes(i.customId),
+					time: 60000, // 60 segundos
+				});
+
+				collector.on("collect", async (i: ButtonInteraction) => {
+					if (i.customId === "topBack" && page > 1) page--;
+					else if (i.customId === "topNext") page++;
+					else {
+						await i.deferUpdate();
+						return;
+					}
+
+					const newContent = await generateContent(type, page, user, interaction, position, totalPages);
+					await i.update(newContent);
+				});
+
+				collector.on("end", async () => {
+					const disabledContent = await generateContent(type, page, user, interaction, position, totalPages, true);
+					await message.edit(disabledContent).catch(() => null);
+				});
+			} catch (error) {
+				console.error("Error ejecutando el comando top:", error);
+				await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
+			}
+		}
+	),
+};
+
+async function generateContent(
+	type: LeaderboardType,
+	page: number,
+	user: any,
+	interaction: ChatInputCommandInteraction,
+	position: number,
+	totalPages: number,
+	disable: boolean = false
+) {
+	let embed: EmbedBuilder;
+	let actionRow: ActionRowBuilder<ButtonBuilder>;
+
+	switch (type) {
+		case "house":
+			({ embed, actionRow } = await generateHouseLeaderboard(page, user, interaction, disable));
+			break;
+		case "bumps":
+			({ embed, actionRow } = await generateBumpsLeaderboard(page, user, interaction, disable));
+			break;
+		case "cash":
+		case "rob":
+		case "apuestas":
+		case "caps":
+		case "all":
+			({ embed, actionRow } = await generateRedisLeaderboard(type, page, user, interaction, disable));
+			break;
+		default:
+			throw new Error("Tipo de leaderboard inválido.");
+	}
+
+	return {
+		embeds: [embed],
+		components: [actionRow],
+	};
+}
+
+// Función para generar el leaderboard de bumps
+async function generateBumpsLeaderboard(page: number, user: any, interaction: ChatInputCommandInteraction, disable: boolean) {
+	return generateLeaderboard(page, user, disable, {
+		title: `🎉 Bump Leaderboard`,
+		dataFetch: async () => {
+			return await Bumps.aggregate([
+				{
+					$group: {
+						_id: "$user",
+						count: { $sum: 1 },
+					},
+				},
+			]).exec();
+		},
+		sortFunction: (a, b) => b.count - a.count,
+		positionFinder: (data, userId) => data.findIndex((u) => u._id === userId),
+		descriptionBuilder: async (item, index, start) => {
+			let member;
+			try {
+				member = await interaction.guild?.members.fetch(item._id);
+			} catch {
+				return `**${start + index + 1}.** [Usuario Desconocido](https://discord.com/users/${item._id}) • ${item.count} bumps`;
+			}
+			return `**${start + index + 1}.** [${member?.user.username}](https://discord.com/users/${item._id}) • ${item.count} bumps`;
+		},
+	});
+}
+
+// Función para generar el leaderboard de casas
+async function generateHouseLeaderboard(page: number, user: any, interaction: ChatInputCommandInteraction, disable: boolean) {
+	return generateLeaderboard(page, user, disable, {
+		title: "🏡 Top de casas.",
+		dataFetch: async () => {
+			return await Home.find().exec();
+		},
+		sortFunction: (a: IHomeDocument, b: IHomeDocument) => b.house.level - a.house.level,
+		positionFinder: (data: IHomeDocument[], userId) => data.findIndex((u) => u.id === userId),
+		descriptionBuilder: async (item, index, start) => {
+			let member;
+			try {
+				member = await interaction.guild?.members.fetch(item.id);
+			} catch {
+				return `**${start + index + 1}.** [Usuario Desconocido](https://discord.com/users/${item.id}) • \`Nivel:\` **${
+					item.house.level
+				}**.\n\`Nombre:\` ${item.name ? item.name : "🏠 Casa de Usuario Desconocido"}`;
+			}
+			return `**${start + index + 1}.** [${member?.user.tag}](https://discord.com/users/${item.id}) • \`Nivel:\` **${
+				item.house.level
+			}**.\n\`Nombre:\` ${item.name ?? "🏠 Casa de " + member?.user.tag}}`;
+		},
+	});
+}
+
+async function generateRedisLeaderboard(
+	type: LeaderboardType,
+	page: number,
+	user: any,
+	interaction: ChatInputCommandInteraction,
+	disable: boolean
+) {
+	const ITEMS_PER_PAGE = 10;
+	const leaderboardKey = type === "all" ? "all" : type;
+	let totalItems = await redis.zCount(`top:${leaderboardKey}`, "-inf", "+inf");
+	const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+	page = Math.min(page, totalPages);
+
+	const userPosition = await redis.zRevRank(`top:${leaderboardKey}`, user.id);
+	const position = userPosition ?? -1;
+
+	const start = (page - 1) * ITEMS_PER_PAGE;
+	const end = start + ITEMS_PER_PAGE - 1;
+	const topData: string[] = await redis.sendCommand(["ZREVRANGE", `top:${leaderboardKey}`, start.toString(), end.toString(), "WITHSCORES"]);
+
+	const descriptions = await Promise.all(
+		topData
+			?.filter((_, i) => i % 2 === 0)
+			.map(async (id, index) => {
+				const score = Number(topData[index * 2 + 1]);
+				let member;
+				try {
+					member = await interaction.guild?.members.fetch(id.toString());
+				} catch {
+					return `**${
+						start + index + 1
+					}.** [Usuario Desconocido](https://discord.com/users/${id}) • ${pyecoin} ${score.toLocaleString()}`;
+				}
+
+				let rankIcon = `${start + index + 1}`;
+				if (start + index + 1 === 1) {
+					rankIcon = type === "caps" ? "<:policebage:1019809933451071519>" : "<:6632serverowner:935013107946889267>";
+				}
+
+				return `**${rankIcon}.** [${member?.user.tag}](https://discord.com/users/${id}) • ${pyecoin} ${score.toLocaleString()}`;
+			})
+	);
+
+	const embedDescription = descriptions.join("\n") || "No hay usuarios en el top.";
+
+	const embed = new EmbedBuilder()
+		.setTitle(`Top ${key[type]?.title || "General"}`)
+		.setThumbnail(key[type]?.url || "https://cdn.discordapp.com/attachments/916353103534632960/1017138053283852338/money.png")
+		.setDescription(embedDescription)
+		.addFields([
+			{
+				name: "Tu posición",
+				value: position !== -1 ? `#${position + 1}` : "No te encontré en el top.",
+			},
+		])
+		.setFooter({ text: `Página ${page}/${totalPages}` })
+		.setColor(COLORS.pyeLightBlue)
+		.setTimestamp();
+
+	const backButton = new ButtonBuilder()
+		.setStyle(ButtonStyle.Primary)
+		.setLabel("«")
+		.setCustomId("topBack")
+		.setDisabled(page <= 1 || disable);
+
+	const nextButton = new ButtonBuilder()
+		.setStyle(ButtonStyle.Primary)
+		.setLabel("»")
+		.setCustomId("topNext")
+		.setDisabled(page >= totalPages || disable);
+
+	const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(backButton, nextButton);
+
+	return { embed, actionRow, position, totalPages };
+}
