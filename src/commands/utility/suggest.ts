@@ -44,22 +44,10 @@ async function execute(interaction: ChatInputCommandInteraction) {
 	await sugerir(args, interaction);
 }
 
-async function executePrefix(msg: Message, arg: string) {
-	if (!arg) {
-		await msg.reply({
-			content: "Por favor, proporciona una sugerencia.",
-		});
-		return;
-	}
-
-	await sugerir(arg, msg);
-}
-
 // Exportar el comando implementando la interfaz Command
 const sugerirCommand: Command = {
 	data,
 	execute,
-	executePrefix,
 };
 
 export default sugerirCommand;
