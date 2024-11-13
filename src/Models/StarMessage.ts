@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose')
+import { Schema, model } from "mongoose";
 
 /**
  * @typedef {Object} StarMessage
@@ -19,4 +19,4 @@ const schemaStarMessage = new Schema({
   }
 }, { versionKey: false })
 
-exports.StarMessage = model('StarMessage', schemaStarMessage)
+export const StarMessage = model('StarMessage', schemaStarMessage);

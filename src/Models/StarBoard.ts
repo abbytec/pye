@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose')
+import { Schema, model } from "mongoose";
 
 /**
  * @typedef {Object} StarBoard
@@ -25,4 +25,4 @@ const schemaStarBoard = new Schema({
   }
 }, { versionKey: false })
 
-exports.StarBoard = model('StarBoard', schemaStarBoard)
+export const StarBoard = model('StarBoard', schemaStarBoard);
