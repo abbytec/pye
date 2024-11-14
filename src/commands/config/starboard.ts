@@ -1,7 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, TextChannel } from "discord.js";
 import { StarBoard } from "../../Models/StarBoard.ts";
 import { Command } from "../../types/command.ts";
-const { ROLES } = require('../../Utils/constants');
 
 const data = new SlashCommandBuilder()
 	.setName("starboard")
