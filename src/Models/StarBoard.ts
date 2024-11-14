@@ -1,28 +1,29 @@
 import { Schema, model } from "mongoose";
 
-/**
- * @typedef {Object} StarBoard
- * @property {string} id
- * @property {string} channel
- * @property {number} stars
- */
+interface IStarBoard {
+	id: string;
+	channel: string;
+	stars: number;
+}
 
-/**
- * @type {Schema<StarBoard>}
- */
-const schemaStarBoard = new Schema({
-  id: {
-    type: String,
-    required: true
-  },
-  channel: {
-    type: String,
-    required: true
-  },
-  stars: {
-    type: Number,
-    default: 4
-  }
-}, { versionKey: false })
+export interface IStarBoardDocument extends IStarBoard, Document {}
 
-export const StarBoard = model('StarBoard', schemaStarBoard);
+const schemaStarBoard = new Schema<IStarBoardDocument>(
+	{
+		id: {
+			type: String,
+			required: true,
+		},
+		channel: {
+			type: String,
+			required: true,
+		},
+		stars: {
+			type: Number,
+			default: 4,
+		},
+	},
+	{ versionKey: false }
+);
+
+export const StarBoard = model("StarBoard", schemaStarBoard);

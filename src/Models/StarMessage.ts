@@ -1,22 +1,24 @@
 import { Schema, model } from "mongoose";
 
-/**
- * @typedef {Object} StarMessage
- * @property {string} msgId
- */
+interface IStarMessage {
+	msgId: string;
+	responseId: string;
+}
 
-/**
- * @type {Schema<StarMessage>}
- */
-const schemaStarMessage = new Schema({
-  msgId: {
-    type: String,
-    required: true
-  },
-  responseId: {
-    type: String,
-    required: true
-  }
-}, { versionKey: false })
+export interface IStarMessageDocument extends IStarMessage, Document {}
 
-export const StarMessage = model('StarMessage', schemaStarMessage);
+const schemaStarMessage: Schema<IStarMessageDocument> = new Schema(
+	{
+		msgId: {
+			type: String,
+			required: true,
+		},
+		responseId: {
+			type: String,
+			required: true,
+		},
+	},
+	{ versionKey: false }
+);
+
+export const StarMessage = model("StarMessage", schemaStarMessage);
