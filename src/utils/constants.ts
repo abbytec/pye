@@ -64,6 +64,7 @@ export const USERS = {
 };
 
 const ROLES = {
+	// rep
 	novato: "780597611496865792",
 	iniciante: "806755636288815115",
 	avanzado: "780597430861168660",
@@ -73,23 +74,26 @@ const ROLES = {
 	experto: "838285410995929119",
 	adalovelace: "1190365725865545828",
 	alanturing: "1190366029633814570",
-	perms: "808889381187485736", //super admin
-	repatidorDeRep: "966791217520209920",
-	restringido: "984278721055830047",
-	staff: "994980515335643267",
-	granApostador: "884160604275892234",
-	muted: "1193708756345827409",
-	moderador: "1289416128652771358",
+
+	// team
+	staff: "808889381187485736",
+	moderadorChats: "994980515335643267",
+	helper: "1289416128652771358",
 	moderadorVoz: "1290753880191271007",
+	repatidorDeRep: "966791217520209920",
+
+	// especiales
+	granApostador: "884160604275892234",
+
+	// sanciones
+	restringido: "984278721055830047",
+	muted: "1193708756345827409",
 };
 
 export type Roles = keyof typeof ROLES;
 
 const DEV_ROLES: Record<Roles, string> = {
-	repatidorDeRep: "1296190630648610818",
-	staff: "1296190630724370498",
-	moderador: "1296190630724370497",
-	moderadorVoz: "1296190630724370496",
+	// rep
 	novato: "1296190630678233110",
 	iniciante: "1296190630678233111",
 	avanzado: "1296190630678233114",
@@ -99,9 +103,19 @@ const DEV_ROLES: Record<Roles, string> = {
 	experto: "1296190630686494852",
 	adalovelace: "1296190630686494853",
 	alanturing: "1296190630686494854",
-	perms: "1296190630724370500",
-	restringido: "1296190630678233109",
+
+	// team
+	staff: "1296190630724370500",
+	moderadorChats: "1296190630724370498",
+	helper: "1296190630724370497",
+	moderadorVoz: "1296190630724370496",
+	repatidorDeRep: "1296190630648610818",
+
+	// especiales
 	granApostador: "1296190630657134617",
+
+	// sanciones
+	restringido: "1296190630678233109",
 	muted: "1296190630678233113",
 };
 

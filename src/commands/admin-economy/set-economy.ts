@@ -70,7 +70,7 @@ export default {
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator), // Solo administradores pueden usarlo
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("perms", "staff"), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction) => {
 			const subcommand = interaction.options.getSubcommand(true);
 			const commandName = interaction.options.getString("comando", true).toLowerCase();

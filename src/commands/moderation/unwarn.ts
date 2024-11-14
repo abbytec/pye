@@ -17,14 +17,14 @@ export default {
 		.addUserOption((option) => option.setName("usuario").setDescription("Selecciona el usuario").setRequired(true))
 		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo para remover la advertencia").setRequired(false)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "perms"), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
 			const member = await interaction.guild?.members.fetch(user.id);
 
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
-			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
+			if (member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
 				return await replyError(interaction, "No puedes remover advertencias a un miembro del staff.");
 
 			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes remover advertencias a ti mismo.");

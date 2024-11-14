@@ -23,14 +23,14 @@ export default {
 		.addUserOption((option) => option.setName("usuario").setDescription("selecciona el usuario").setRequired(true))
 		.addStringOption((option) => option.setName("motivo").setDescription("escribe el motivo del warn").setRequired(true)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "perms", "moderador"), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "moderadorChats"), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
 			const member = await interaction.guild?.members.fetch(user.id);
 
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
-			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
+			if (member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
 				return await replyError(interaction, "No puedes darle warn a un miembro del staff.");
 
 			if (user.bot) return await replyError(interaction, "No puedes darle warn a un bot.");
@@ -76,7 +76,7 @@ export default {
 									deny: [PermissionFlagsBits.ViewChannel],
 								},
 								{
-									id: getRoleFromEnv("perms"),
+									id: getRoleFromEnv("staff"),
 									allow: [PermissionFlagsBits.ViewChannel],
 								},
 								{

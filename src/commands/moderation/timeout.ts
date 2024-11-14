@@ -19,7 +19,7 @@ export default {
 		.addStringOption((option) => option.setName("duracion").setDescription("Duración del timeout (ej: 1h, 30m)").setRequired(true))
 		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo del timeout").setRequired(true)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "perms"), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "moderadorChats"), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
 			const durationString = interaction.options.getString("duracion", true);
@@ -29,7 +29,7 @@ export default {
 
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
-			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
+			if (member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
 				return await replyError(interaction, "No puedes darle timeout a un miembro del staff.");
 
 			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes darte timeout a ti mismo.");

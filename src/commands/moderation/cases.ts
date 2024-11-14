@@ -119,7 +119,7 @@ export default {
 
 			const data = await ModLogs.find({
 				id: user.id,
-				...(viewer?.roles.cache.has(getRoleFromEnv("staff")) || viewer?.roles.cache.has(getRoleFromEnv("perms"))
+				...(viewer?.roles.cache.has(getRoleFromEnv("staff")) || viewer?.roles.cache.has(getRoleFromEnv("staff"))
 					? {}
 					: { hiddenCase: { $ne: true } }),
 			}).exec();

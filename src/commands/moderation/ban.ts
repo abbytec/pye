@@ -18,7 +18,7 @@ export default {
 		.addUserOption((option) => option.setName("usuario").setDescription("Selecciona el usuario a banear").setRequired(true))
 		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo del ban").setRequired(true)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("perms"), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
 			const reason = interaction.options.getString("razon") ?? "No se proporcionó una razón.";
@@ -36,7 +36,7 @@ export default {
 				}
 			}
 
-			if (member.roles.cache.has(getRoleFromEnv("perms")) || member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
+			if (member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
 				return await replyError(interaction, "No puedes banear a un miembro del staff.");
 
 			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes banearte a ti mismo.");

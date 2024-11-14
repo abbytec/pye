@@ -19,7 +19,7 @@ export default {
 		.addStringOption((option) => option.setName("id").setDescription("ID del usuario a desbanear").setRequired(true))
 		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo del desban").setRequired(false)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("perms"), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction) => {
 			const userId = interaction.options.getString("id", true);
 			const reason = interaction.options.getString("razon") ?? "No se proporcionó una razón.";
