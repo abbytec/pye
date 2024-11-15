@@ -19,7 +19,7 @@ export interface IUser {
 		skin: string;
 		style: string;
 	};
-	proposals: any[]; // Define una interfaz más específica si es necesario
+	proposals: string[]; // Define una interfaz más específica si es necesario
 	inventory: Types.ObjectId[];
 	caps: number;
 	total: number;

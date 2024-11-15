@@ -50,7 +50,7 @@ const userSchema = new Schema<IUserModel>(
 			required: false,
 		},
 		proposals: {
-			type: [Object],
+			type: [String],
 			default: [],
 		},
 		inventory: {

@@ -8,6 +8,7 @@ import {
 	StringSelectMenuBuilder,
 	TextChannel,
 } from "discord.js";
+import { COLORS } from "../constants.ts";
 
 export async function replyWarning(
 	interaction: ChatInputCommandInteraction,
@@ -26,7 +27,7 @@ export async function replyWarning(
 			new EmbedBuilder()
 				.setAuthor({ name: author ?? interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
 				.setDescription(process.env.NODE_ENV === "development" ? "⚠️ • " + message : "<:warning_custom:913093934832578601> • " + message)
-				.setColor(0xffae42)
+				.setColor(COLORS.warnOrange)
 				.setTimestamp(),
 		];
 	}
