@@ -165,6 +165,8 @@ export const COLORS = {
 	lightSeaGreen: 0x24b7b7,
 	pyeLightBlue: 0x0099ff,
 	okGreen: 0x43b581,
+	errRed: 0xef5250,
+	warnOrange: 0xffae42,
 };
 
 const EMOJIS = {

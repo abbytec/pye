@@ -20,7 +20,7 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { IShop, IShopDocument, Shop } from "../../Models/Shop.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import ms from "ms";
-import { getChannelFromEnv } from "../../utils/constants.ts";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 
 function getId(items: any[]): number {
@@ -105,7 +105,7 @@ async function visualizarItems(interaction: ChatInputCommandInteraction) {
 
 	if (items.length === 0) {
 		await interaction.reply({
-			embeds: [new EmbedBuilder().setDescription("No hay ítems actualmente.").setColor(0xef5250)],
+			embeds: [new EmbedBuilder().setDescription("No hay ítems actualmente.").setColor(COLORS.errRed)],
 			ephemeral: true,
 		});
 		return;

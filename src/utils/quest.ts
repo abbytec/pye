@@ -14,6 +14,7 @@ import {
 	MessageCreateOptions,
 	StringSelectMenuInteraction,
 } from "discord.js";
+import { COLORS } from "./constants.ts";
 const Choose = new Set();
 
 export interface IQuest {
@@ -144,7 +145,9 @@ export async function checkQuestLevel(
 				if (!res) {
 					m.edit({
 						embeds: [
-							new EmbedBuilder().setDescription("<:cross_custom:913093934832578601> - Se acabó el tiempo...").setColor(0xef5250),
+							new EmbedBuilder()
+								.setDescription("<:cross_custom:913093934832578601> - Se acabó el tiempo...")
+								.setColor(COLORS.errRed),
 						],
 						components: [],
 						files: [],
@@ -450,7 +453,9 @@ export async function checkQuestLevel(
 				if (!res) {
 					m.edit({
 						embeds: [
-							new EmbedBuilder().setDescription("<:cross_custom:913093934832578601> - Se acabó el tiempo...").setColor(0xef5250),
+							new EmbedBuilder()
+								.setDescription("<:cross_custom:913093934832578601> - Se acabó el tiempo...")
+								.setColor(COLORS.errRed),
 						],
 						components: [],
 						files: [],
