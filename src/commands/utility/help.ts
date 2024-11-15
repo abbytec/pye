@@ -9,12 +9,13 @@ import { PostHandleable } from "../../types/middleware.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 import { COLORS, getRoles } from "../../utils/constants.ts";
 import { ExtendedClient } from "../../client.ts";
+import { replyError } from "../../utils/messages/replyError.ts";
 
 export default {
-	data: new SlashCommandBuilder().setName("help").setDescription("Muestra la lista de comandos disponibles agrupados por grupo."),
-
-	group: "General", // Asigna el grupo correspondiente
-
+	data: new SlashCommandBuilder()
+		.setName("help")
+		.setDescription("Muestra la lista de comandos disponibles agrupados por grupo.")
+		.addStringOption((option) => option.setName("grupo").setDescription("Nombre del grupo para filtrar").setRequired(false)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
@@ -22,6 +23,8 @@ export default {
 			const member = interaction.member as GuildMember;
 
 			const staffStatus = member.roles.cache.some((role) => getRoles("staff", "moderadorChats").includes(role.id));
+
+			const groupFilter = interaction.options.getString("grupo")?.toLowerCase();
 
 			// Agrupar los comandos por grupo
 			const groups: Record<string, Array<{ name: string; description: string }>> = {};
@@ -31,6 +34,8 @@ export default {
 				if (command.group) {
 					if (command.group.toLowerCase().includes("admin") && !staffStatus) return;
 
+					if (groupFilter && !command.group.toLowerCase().includes(groupFilter)) return;
+
 					if (!groups[command.group]) groups[command.group] = [];
 
 					groups[command.group].push({
@@ -38,6 +43,8 @@ export default {
 						description: command.data.description,
 					});
 				} else {
+					if (groupFilter && !"😊 - General".includes(groupFilter)) return;
+
 					if (!groups["😊 - General"]) groups["😊 - General"] = [];
 					groups["😊 - General"].push({
 						name: `/${command.data.name}`,
@@ -45,6 +52,10 @@ export default {
 					});
 				}
 			});
+
+			if (Object.keys(groups).length === 0) {
+				return replyError(interaction, "No se encontraron comandos para el grupo especificado.");
+			}
 
 			// Crear el embed para listar los comandos
 			const embed = new EmbedBuilder()
