@@ -1,51 +1,35 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, TextChannel } from "discord.js";
+import { ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder, TextChannel } from "discord.js";
 import { StarBoard } from "../../Models/StarBoard.ts";
 import { Command } from "../../types/command.ts";
-
-const data = new SlashCommandBuilder()
-	.setName("starboard")
-	.setDescription("Establece el canal del starboard y las estrellas necesarias.")
-	.addStringOption((option) =>
-		option.setName("canal").setDescription("Canal de texto donde se enviarán los mensajes de starboard").setRequired(true)
-	)
-	.addStringOption((option) =>
-		option.setName("estrellas").setDescription("La cantidad de estrellas mínimo para mostrar").setRequired(true)
-	);
-
-async function starboard(channel: TextChannel, stars: number, interaction: ChatInputCommandInteraction) {
-	await StarBoard.updateOne(
-		{ id: interaction.client.user?.id },
-		{ channel: channel.id, stars: stars },
-		{ upsert: true }
-	);
-
-	await interaction.reply(`<:check:913199297678434374> - Se ha establecido el canal ${channel.toString()}\nTotal de reacciones requeridas: \`${stars}\` .`);
-}
-
-async function execute(interaction: ChatInputCommandInteraction) {
-	const canal = interaction.options.getString("canal");
-	const stars = interaction.options.getString("estrellas");
-
-	const starsCount = Number(stars);
-	if (isNaN(starsCount)) {
-		await interaction.reply('La cantidad de estrellas debe ser un número válido.');
-		return
-	}
-
-	if (canal == null) {
-		await interaction.reply("Se necesita un id de canal para guardar")
-		return
-	}
-
-	const channel = interaction.guild?.channels.cache.get(canal) as TextChannel;
-
-	await starboard(channel, starsCount, interaction);
-}
+import { replyOk } from "../../utils/messages/replyOk.ts";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
+import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 
 // Export command
-const sugerirCommand: Command = {
-	data,
-	execute,
-};
+export default {
+	group: "⚙️ - Administración - General",
+	data: new SlashCommandBuilder()
+		.setName("starboard")
+		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
+		.setDescription("Establece el canal del starboard y las estrellas necesarias.")
+		.addChannelOption((option) =>
+			option.setName("canal").setDescription("Canal de texto donde se enviarán los mensajes de starboard").setRequired(true)
+		)
+		.addIntegerOption((option) =>
+			option.setName("estrellas").setDescription("La cantidad de estrellas mínimo para mostrar").setRequired(true)
+		),
+	execute: composeMiddlewares(
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
+		async (interaction: ChatInputCommandInteraction) => {
+			const channel = interaction.options.getChannel("canal", true);
+			const stars = interaction.options.getInteger("estrellas", true);
 
-export default sugerirCommand;
+			await StarBoard.updateOne({ id: interaction.client.user?.id }, { channel: channel.id, stars: stars }, { upsert: true });
+
+			await replyOk(interaction, `Se ha establecido el canal ${channel.name}\nTotal de reacciones requeridas: \`${stars}\` .`);
+		},
+		[]
+	),
+} as Command;
