@@ -10,7 +10,7 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts"; // Asegúrate de tener estas funciones adaptadas
 import { PostHandleable } from "../../types/middleware.ts";
-import { pyecoin } from "../../utils/constants.ts";
+import { COLORS, pyecoin } from "../../utils/constants.ts";
 import { IUser } from "../../interfaces/IUser.ts";
 import { fileURLToPath } from "url";
 import { replyWarning } from "../../utils/messages/replyWarning.ts";
@@ -46,12 +46,15 @@ export default {
 
 			let embed = new EmbedBuilder()
 				.setAuthor({ name: member.user.username, iconURL: member.user.displayAvatarURL() })
-				.setDescription(data.profile ? `**Oficio**: \`${data.profile.job}\`` : `⚠ Aún no te creaste un perfil, crea uno con \`/start\`.`)
+				.setDescription(
+					data.profile ? `🛠 **Oficio**: \`${data.profile.job}\`` : `⚠ Aún no te creaste un perfil, crea uno con \`/start\`.`
+				)
 				.setFields([
 					{ name: "PyE Coins", value: `${pyecoin} ${data.cash?.toLocaleString()}`, inline: true },
 					{ name: "Banco", value: `${pyecoin} ${data.bank?.toLocaleString()}`, inline: true },
 					{ name: "Total", value: `${pyecoin} ${data.total?.toLocaleString()}`, inline: true },
 				])
+				.setColor(COLORS.pyeLightBlue)
 				.setFooter({ text: `Top: ${!isNaN(position) ? "#" + (position + 1) : "Sin top."}` });
 			let attachment: AttachmentBuilder[] | undefined = undefined;
 

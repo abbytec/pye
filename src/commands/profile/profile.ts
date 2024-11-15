@@ -7,7 +7,7 @@ import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { PostHandleable } from "../../types/middleware.ts";
-import { getChannelFromEnv, pyecoin } from "../../utils/constants.ts";
+import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.ts";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import path from "path";
 import fs from "fs/promises"; // Usar promesas para operaciones de archivos
@@ -120,7 +120,7 @@ export default {
 					iconURL: author.displayAvatarURL(),
 				})
 				.setTimestamp()
-				.setColor(0xebae34);
+				.setColor(COLORS.pyeLightBlue);
 
 			return replyOk(interaction, [embed], undefined, undefined, [img]);
 		},

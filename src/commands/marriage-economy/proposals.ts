@@ -44,7 +44,7 @@ export default {
 							iconURL: member.user.displayAvatarURL(),
 						})
 						.setDescription("No tiene propuestas de matrimonio.")
-						.setColor(COLORS.errRed)
+						.setColor(COLORS.warnOrange)
 						.setTimestamp(),
 				]);
 
@@ -67,7 +67,7 @@ export default {
 					iconURL: member.user.displayAvatarURL(),
 				})
 				.setDescription(proposalTags.join("\n"))
-				.setColor(COLORS.okGreen)
+				.setColor(COLORS.pyeLightBlue)
 				.setTimestamp();
 
 			return await replyOk(interaction, [proposalsEmbed]);

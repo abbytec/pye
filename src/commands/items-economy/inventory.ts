@@ -18,7 +18,7 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { PostHandleable } from "../../types/middleware.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
-import { getChannelFromEnv } from "../../utils/constants.ts";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.ts";
 import { IShopDocument, Shop } from "../../Models/Shop.ts";
 import { Types } from "mongoose";
 
@@ -92,7 +92,7 @@ export default {
 					},
 				])
 				.setFooter({ text: `Página ${page}/${totalPages}` })
-				.setColor(0x00ff00)
+				.setColor(COLORS.pyeLightBlue)
 				.setTimestamp();
 
 			// Crear los botones de paginación
@@ -163,7 +163,7 @@ export default {
 						},
 					])
 					.setFooter({ text: `Página ${page}/${totalPages}` })
-					.setColor(0x00ff00)
+					.setColor(COLORS.pyeLightBlue)
 					.setTimestamp();
 
 				// Actualizar los botones de paginación

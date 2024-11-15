@@ -2,7 +2,6 @@ import loadEnvVariables from "./utils/environment.ts";
 import { readdirSync } from "node:fs";
 import path, { dirname, join } from "node:path";
 import { ExtendedClient } from "./client.ts";
-import { Collection } from "discord.js";
 import { connect } from "mongoose";
 import { Command } from "./types/command.ts";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -10,7 +9,6 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const client = new ExtendedClient();
-client.commands = new Collection();
 const extension = process.env.NODE_ENV === "development" ? ".ts" : ".js";
 
 const loadCommands = async () => {
@@ -69,13 +67,12 @@ const loadEvents = async () => {
 
 const main = async () => {
 	try {
-		await loadEnvVariables();
-		await Promise.all([loadCommands(), loadEvents()]);
-		await connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/");
-		console.log("Conectado a la base de datos.");
-
-		await client.login(process.env.TOKEN_BOT);
-		console.log("Bot listo.");
+		loadEnvVariables();
+		await Promise.all([
+			loadCommands().then(() => console.log("Comandos cargados.")),
+			loadEvents().then(() => console.log("Eventos cargados.")),
+			connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/").then(() => console.log("Conectado a la base de datos.")),
+		]).then(async () => await client.login(process.env.TOKEN_BOT));
 	} catch (error) {
 		console.error("Error en la inicialización:", error);
 	}

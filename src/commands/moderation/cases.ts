@@ -16,7 +16,7 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { IModLogsDocument, ModLogs } from "../../Models/ModLogs.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
-import { getRoleFromEnv } from "../../utils/constants.ts";
+import { COLORS, getRoleFromEnv } from "../../utils/constants.ts";
 
 // Función para generar las Action Rows
 const generateActionRows = (page: number, data: IModLogsDocument[], itemsPerPage: number, totalPages: number) => {
@@ -99,6 +99,7 @@ const generateEmbed = (
 			},
 		])
 		.setFooter({ text: `Página ${page + 1} de ${totalPages}` })
+		.setColor(COLORS.pyeLightBlue)
 		.setTimestamp()
 		.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null);
 
@@ -120,7 +121,7 @@ export default {
 
 			const data = await ModLogs.find({
 				id: user.id,
-				...(viewer?.roles.cache.has(getRoleFromEnv("staff")) || viewer?.roles.cache.has(getRoleFromEnv("staff"))
+				...(viewer?.roles.cache.has(getRoleFromEnv("staff")) ?? viewer?.roles.cache.has(getRoleFromEnv("staff"))
 					? {}
 					: { hiddenCase: { $ne: true } }),
 			}).exec();
@@ -191,6 +192,7 @@ export default {
 									inline: true,
 								},
 							])
+							.setColor(COLORS.warnOrange)
 							.setTimestamp()
 							.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null);
 
