@@ -12,6 +12,7 @@ import { replyError } from "../../utils/messages/replyError.ts";
 import { getChannelFromEnv } from "../../utils/constants.ts";
 
 export default {
+	group: "👤 - Perfiles (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("restore")
 		.setDescription("Quítate los roles de los ítems que hayas usado.")

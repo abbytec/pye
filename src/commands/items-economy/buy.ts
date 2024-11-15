@@ -13,6 +13,7 @@ import { replyError } from "../../utils/messages/replyError.ts";
 import { getChannelFromEnv } from "../../utils/constants.ts";
 
 export default {
+	group: "📚 - Inventario (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("buy")
 		.setDescription("Compra un ítem de la tienda.")

@@ -106,6 +106,7 @@ const generateEmbed = (
 };
 
 export default {
+	group: "⚙️ - Administración y Moderación",
 	data: new SlashCommandBuilder()
 		.setName("cases")
 		.setDescription("Muestra los casos de un usuario.")

@@ -16,4 +16,6 @@ export interface Command {
 	execute(interaction: ChatInputCommandInteraction): Promise<void>;
 
 	executePrefix?(msg: Message, arg: string): Promise<void>;
+
+	group?: string;
 }

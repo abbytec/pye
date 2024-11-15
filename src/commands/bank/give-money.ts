@@ -15,6 +15,7 @@ import { ExtendedClient } from "../../client.ts";
 const cooldown = 60 * 1000; // 1 minuto en milisegundos
 
 export default {
+	group: "🏦 - Finanzas del server (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("give-money")
 		.setDescription("Dale dinero a otra persona.")

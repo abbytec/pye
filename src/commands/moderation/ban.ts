@@ -11,6 +11,7 @@ import { logMessages } from "../../utils/finalwares/logMessages.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 
 export default {
+	group: "⚙️ - Administración y Moderación",
 	data: new SlashCommandBuilder()
 		.setName("ban")
 		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)

@@ -21,8 +21,8 @@ const policeReactionTime = 3e4;
 const militarReactionTime = 6e4;
 
 export default {
+	group: "💰 - Farmeo de PyeCoins (Casino)",
 	data: new SlashCommandBuilder().setName("cap").setDescription("Es como el rob, pero le quitas a los rateros."),
-
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("cap", 2 * 60 * 60 * 1000), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {

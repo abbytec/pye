@@ -20,6 +20,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default {
+	group: "🏦 - Finanzas del server (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("balance")
 		.setDescription("Consulta el dinero que tienes.")

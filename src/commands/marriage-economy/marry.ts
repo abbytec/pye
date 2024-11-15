@@ -13,6 +13,7 @@ import { replyWarning } from "../../utils/messages/replyWarning.ts";
 import { getChannelFromEnv } from "../../utils/constants.ts";
 
 export default {
+	group: "💍 - Matrimonios (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("marry")
 		.setDescription("Pídele matrimonio al amor de tu vida.")

@@ -94,6 +94,7 @@ const tasks: Array<{
 ];
 
 export default {
+	group: "💰 - Farmeo de PyeCoins (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("quest")
 		.setDescription("Revisa el progreso de los quests o inicia una nueva tarea.")

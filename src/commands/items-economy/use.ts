@@ -15,6 +15,7 @@ import { replyError } from "../../utils/messages/replyError.ts";
 import { getChannelFromEnv } from "../../utils/constants.ts";
 
 export default {
+	group: "📚 - Inventario (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("use")
 		.setDescription("Utiliza los ítems que tengas en tu inventario.")
@@ -34,9 +35,7 @@ export default {
 			let itemInput = interaction.options.getString("item", true);
 
 			// Limpiar el input del ítem (eliminar ceros a la izquierda)
-			if (itemInput.startsWith("0")) {
-				itemInput = itemInput.replace(/^0+/, "");
-			}
+			if (itemInput.startsWith("0")) itemInput = itemInput.replace(/^0+/, "");
 
 			// Obtener al usuario de la base de datos
 			let userData: IUserModel | null = await Users.findOne({ id: user.id }).exec();
@@ -49,9 +48,7 @@ export default {
 					name: { $regex: new RegExp(`^${itemInput}$`, "i") },
 				}).exec());
 
-			if (!itemData) {
-				return await replyError(interaction, "No existe un ítem con ese nombre o ID.\nUso: `/use [Nombre de ítem]`");
-			}
+			if (!itemData) return await replyError(interaction, "No existe un ítem con ese nombre o ID.\nUso: `/use [Nombre de ítem]`");
 
 			// Verificar si el ítem es uno de los excluidos
 			const excludedItems = [
@@ -75,9 +72,7 @@ export default {
 			];
 
 			for (const excluded of excludedItems) {
-				if (excluded.name.test(itemData.name)) {
-					return await replyError(interaction, `${excluded.message}`);
-				}
+				if (excluded.name.test(itemData.name)) return await replyError(interaction, `${excluded.message}`);
 			}
 
 			// Manejar el ítem 'restart'
@@ -86,9 +81,7 @@ export default {
 			}
 
 			// Verificar si el usuario posee el ítem en su inventario
-			if (!userData.inventory.includes(itemData._id)) {
-				return await replyError(interaction, "No tienes este ítem en tu inventario.");
-			}
+			if (!userData.inventory.includes(itemData._id)) return await replyError(interaction, "No tienes este ítem en tu inventario.");
 
 			// Verificar si el ítem ya está en uso dentro del grupo
 			if (itemData.group) {
@@ -100,18 +93,15 @@ export default {
 					.lean()
 					.exec();
 
-				if (groupItem) {
+				if (groupItem)
 					return await replyError(
 						interaction,
 						`Ya tienes un ítem de \`${groupItem.group}\` en uso.\nPuedes quitarte el actual utilizando el comando \`restore\`.`
 					);
-				}
 			}
 
 			// Manejar ítems que otorgan roles temporales
-			if (itemData.role && itemData.timeout && itemData.timeout > 0) {
-				return await handleTempRole(interaction, userData, itemData);
-			}
+			if (itemData.role && itemData.timeout && itemData.timeout > 0) return await handleTempRole(interaction, userData, itemData);
 
 			// Si el ítem no otorga un rol, simplemente eliminarlo del inventario
 			if (!itemData.role) {
@@ -144,11 +134,8 @@ export default {
 				}
 
 				// Enviar mensaje personalizado si existe
-				if (itemData.message) {
-					return await replyOk(interaction, itemData.message);
-				} else {
-					return await replyOk(interaction, `¡Has utilizado el ítem ${itemData.name}!`);
-				}
+				if (itemData.message) return await replyOk(interaction, itemData.message);
+				else return await replyOk(interaction, `¡Has utilizado el ítem ${itemData.name}!`);
 			}
 
 			// Si el rol ya está asignado, simplemente eliminar el ítem del inventario
@@ -173,9 +160,7 @@ async function handleTempRole(interaction: ChatInputCommandInteraction, userData
 	const member = interaction.member as GuildMember;
 
 	// Verificar si el usuario ya tiene el rol
-	if (member.roles.cache.has(itemData.role)) {
-		return await replyError(interaction, "Ya posees este rol en tu perfil.");
-	}
+	if (member.roles.cache.has(itemData.role)) return await replyError(interaction, "Ya posees este rol en tu perfil.");
 
 	// Eliminar el ítem del inventario
 	const itemIndex = userData.inventory.indexOf(itemData._id);
@@ -212,20 +197,15 @@ async function handleTempRole(interaction: ChatInputCommandInteraction, userData
 	}
 
 	// Enviar mensaje personalizado si existe
-	if (itemData.message) {
-		return await replyOk(interaction, itemData.message);
-	} else {
-		return await replyOk(interaction, `¡Has utilizado el ítem ${itemData.name} y se te ha asignado el rol temporal!`);
-	}
+	if (itemData.message) return await replyOk(interaction, itemData.message);
+	else return await replyOk(interaction, `¡Has utilizado el ítem ${itemData.name} y se te ha asignado el rol temporal!`);
 }
 
 // Función para manejar el reseteo del perfil
 async function handleReset(interaction: ChatInputCommandInteraction, userData: IUserModel, itemData: IShopDocument) {
 	// Eliminar el ítem del inventario
 	const itemIndex = userData.inventory.indexOf(itemData._id);
-	if (itemIndex > -1) {
-		userData.inventory.splice(itemIndex, 1);
-	}
+	if (itemIndex > -1) userData.inventory.splice(itemIndex, 1);
 
 	// Resetear el perfil del usuario
 	userData.profile = undefined;

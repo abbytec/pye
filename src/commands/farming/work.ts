@@ -28,8 +28,8 @@ const texts: Array<(profit: string) => string> = [
 ];
 
 export default {
+	group: "💰 - Farmeo de PyeCoins (Casino)",
 	data: new SlashCommandBuilder().setName("work").setDescription("Trabaja para ganar dinero."),
-
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {

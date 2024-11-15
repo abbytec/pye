@@ -57,6 +57,7 @@ const key = {
 type LeaderboardType = keyof typeof key;
 
 export default {
+	group: "👤 - Perfiles (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("top")
 		.setDescription("Muestra el top de coins.")

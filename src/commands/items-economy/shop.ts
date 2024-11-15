@@ -30,6 +30,7 @@ const texts: string[] = [
 ];
 
 export default {
+	group: "📚 - Inventario (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("shop")
 		.setDescription("Muestra los artículos actuales en la tienda.")

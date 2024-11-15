@@ -37,6 +37,7 @@ const jobs: Record<string, string> = {
 };
 
 export default {
+	group: "👤 - Perfiles (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("home")
 		.setDescription("Mira cómo se ve tu casa.")

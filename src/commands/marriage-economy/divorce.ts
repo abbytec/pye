@@ -22,6 +22,7 @@ import { replyError } from "../../utils/messages/replyError.ts";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.ts";
 
 export default {
+	group: "💍 - Matrimonios (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("divorce")
 		.setDescription("Divórciate de tu matrimonio.")

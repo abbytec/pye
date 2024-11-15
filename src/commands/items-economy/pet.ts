@@ -17,6 +17,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default {
+	group: "📚 - Inventario (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("pet")
 		.setDescription("Muestra a tu mascota en la economía o realiza acciones.")

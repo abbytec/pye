@@ -9,7 +9,6 @@ import {
 	GuildMember,
 	Interaction,
 	ButtonInteraction,
-	CacheType,
 } from "discord.js";
 import { IUserModel, Users } from "../../Models/User.ts"; // Asegúrate de tener este modelo correctamente definido
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
@@ -26,6 +25,7 @@ import { Types } from "mongoose";
 const ITEMS_PER_PAGE = 10;
 
 export default {
+	group: "📚 - Inventario (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("inventory")
 		.setDescription("Muestra los ítems que posees en tu inventario o el de otro usuario.")

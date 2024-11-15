@@ -2,6 +2,7 @@ import { SlashCommandBuilder, ActionRowBuilder, EmbedBuilder, ButtonBuilder, Cha
 import { HelperPoint } from "../../Models/HelperPoint.ts";
 
 export default {
+	group: "🥳 - Puntos de reputación",
 	data: new SlashCommandBuilder().setName("rtop").setDescription("Muestra el top de usuarios con más puntos de reputación"),
 	execute: async (msg: ChatInputCommandInteraction, args: string[]) => {
 		let page = parseInt(args?.[0] ?? 1) - 1;

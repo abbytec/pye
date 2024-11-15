@@ -12,6 +12,7 @@ import { logMessages } from "../../utils/finalwares/logMessages.ts";
 import { replyWarning } from "../../utils/messages/replyWarning.ts";
 
 export default {
+	group: "⚙️ - Administración y Moderación",
 	data: new SlashCommandBuilder()
 		.setName("timeout")
 		.setDescription("Aplica un timeout a un usuario.")

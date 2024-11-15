@@ -12,6 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default {
+	group: "🥳 - Puntos de reputación",
 	data: new SlashCommandBuilder()
 		.setName("stats")
 		.addUserOption((option) => option.setName("usuario").setDescription("menciona a un usuario").setRequired(true))

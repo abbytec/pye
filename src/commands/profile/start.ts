@@ -50,6 +50,7 @@ enum Job {
 const onIt = new Set<string>();
 
 export default {
+	group: "👤 - Perfiles (Casino)",
 	data: new SlashCommandBuilder().setName("start").setDescription("Comienza a crear tu perfil en la economía."),
 
 	execute: composeMiddlewares(

@@ -10,6 +10,7 @@ import { replyOk } from "../../utils/messages/replyOk.ts";
 import { replyWarning } from "../../utils/messages/replyWarning.ts";
 
 export default {
+	group: "🏦 - Finanzas del server (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("withdraw")
 		.setDescription("Saca dinero del banco.")

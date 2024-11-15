@@ -17,6 +17,7 @@ import { ModLogs } from "../../Models/ModLogs.ts";
 import { replyWarning } from "../../utils/messages/replyWarning.ts";
 
 export default {
+	group: "⚙️ - Administración y Moderación",
 	data: new SlashCommandBuilder()
 		.setName("warn")
 		.setDescription("Dale una advertencia a un usuario en el servidor.")

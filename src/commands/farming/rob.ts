@@ -51,6 +51,7 @@ async function cooldownFunction(interaction: ChatInputCommandInteraction) {
 }
 
 export default {
+	group: "💰 - Farmeo de PyeCoins (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("rob")
 		.setDescription("Gana (o pierde) dinero atracando.")

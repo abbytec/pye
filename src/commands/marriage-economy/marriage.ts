@@ -21,6 +21,7 @@ const gifs: string[] = [
 ];
 
 export default {
+	group: "💍 - Matrimonios (Casino)",
 	data: new SlashCommandBuilder()
 		.setName("marriage")
 		.setDescription("Gestiona las propuestas de matrimonio.")

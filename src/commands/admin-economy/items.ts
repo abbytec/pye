@@ -35,9 +35,10 @@ function getId(items: any[]): number {
 }
 
 export default {
+	group: "⚙️ - Administración de Economía",
 	data: new SlashCommandBuilder()
 		.setName("items")
-		.setDescription("Administra ítems en la tienda.")
+		.setDescription("⚙️ - Administra ítems en la tienda.")
 		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
 		.addSubcommand((subcommand) => subcommand.setName("visualizar").setDescription("Visualiza los ítems disponibles."))
 		.addSubcommand((subcommand) =>

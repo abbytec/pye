@@ -12,6 +12,7 @@ import { PostHandleable } from "../../types/middleware.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 
 export default {
+	group: "⚙️ - Administración y Moderación",
 	data: new SlashCommandBuilder()
 		.setName("unban")
 		.setDescription("Desbanea a un usuario del servidor.")

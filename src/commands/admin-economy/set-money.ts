@@ -11,6 +11,7 @@ import { getChannelFromEnv, pyecoin } from "../../utils/constants.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 
 export default {
+	group: "⚙️ - Administración de Economía",
 	data: new SlashCommandBuilder()
 		.setName("set-money")
 		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)

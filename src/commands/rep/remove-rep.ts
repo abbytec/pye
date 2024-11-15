@@ -11,6 +11,7 @@ import { replyError } from "../../utils/messages/replyError.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 
 export default {
+	group: "🥳 - Puntos de reputación",
 	data: new SlashCommandBuilder()
 		.setName("remove-rep")
 		.setDescription("Resta puntos de ayuda.")

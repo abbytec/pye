@@ -21,6 +21,7 @@ const payoutCommands = [
 ];
 
 export default {
+	group: "⚙️ - Administración de Economía",
 	data: new SlashCommandBuilder()
 		.setName("set-economy")
 		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)

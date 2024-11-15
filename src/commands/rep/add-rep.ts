@@ -12,6 +12,7 @@ import { PostHandleable } from "../../types/middleware.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 
 export default {
+	group: "🥳 - Puntos de reputación",
 	data: new SlashCommandBuilder()
 		.setName("add-rep")
 		.setDescription("Agrega puntos de ayuda.")
