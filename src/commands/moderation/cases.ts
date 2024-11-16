@@ -17,6 +17,7 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { IModLogsDocument, ModLogs } from "../../Models/ModLogs.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 import { COLORS, getRoleFromEnv } from "../../utils/constants.ts";
+import { ObjectId } from "mongoose";
 
 // Función para generar las Action Rows
 const generateActionRows = (page: number, data: IModLogsDocument[], itemsPerPage: number, totalPages: number) => {
@@ -46,7 +47,7 @@ const generateActionRows = (page: number, data: IModLogsDocument[], itemsPerPage
 			.addOptions(
 				items.map((caso, index) => ({
 					label: `#${start + index + 1} ${caso.type} ${caso.hiddenCase ? "removido " : ""}`,
-					value: `${caso.id.toString()}`,
+					value: `${(caso._id as ObjectId).toString()}`,
 					emoji: caso.hiddenCase ? "🙈" : "📝",
 				}))
 			);
@@ -166,7 +167,7 @@ export default {
 					});
 				} else if (i.isStringSelectMenu()) {
 					const caseId = i.values[0];
-					const selectedCase = data.find((c) => c.id.toString() === caseId);
+					const selectedCase = data.find((c) => (c._id as ObjectId).toString() === caseId);
 
 					if (selectedCase) {
 						const caseEmbed = new EmbedBuilder()
