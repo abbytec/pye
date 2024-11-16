@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, TextChannel, Message, EmbedBuilder } from "discord.js";
-import { getChannelFromEnv } from "../../utils/constants.ts";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { PostHandleable } from "../../types/middleware.ts";
 import { IUser } from "../../interfaces/IUser.ts";
@@ -16,31 +16,28 @@ export default {
     data: new SlashCommandBuilder()
         .setName("flipcoin")
         .setDescription("Tira la moneda y prueba tu suerte.")
-        .addStringOption((option) =>
+        .addIntegerOption((option) =>
             option.setName("cantidad").setDescription("la cantidad que quieres apostar").setRequired(true)
         )
         .addStringOption((option) =>
-            option.setName("lado").setDescription("Cara ó cruz").setRequired(true)
+            option.setName("lado").setDescription("Cara ó cruz").setChoices([{ name: "Cara", value: "cara" }, { name: "Cruz", value: "cruz" }]).setRequired(true)
         ),
 
     execute: composeMiddlewares(
         [verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
         async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
             const user = interaction.user;
-            // precondiciones
+            let amount: number = interaction.options.getInteger("cantidad", true)
+            let side: string = interaction.options.getString("lado", true)
 
-            let amount: any = new Number(interaction.options.getString("cantidad"))
-            let side: any = new String(interaction.options.getString("lado"))
-            // Declaración de datos
+            if (amount < 0) return replyError(interaction, "Se ingresó una cantidad inválida");
+
             let userData: Partial<IUser> | null = await Users.findOne({ id: user.id }).exec();
             if (!userData) userData = await newUser(user.id);
 
             const flipcoin = ['cara', 'cruz'][Math.floor(Math.random() * 2)]
-            let lose = true
+
             if (flipcoin != side) {
-                lose = false
-            }
-            if (lose) {
                 userData.cash = (userData.cash ?? 0) - amount;
                 userData.total = (userData.total ?? 0) - amount;
             } else {
@@ -52,7 +49,7 @@ export default {
                     profit += profit * 0.35;
                 }
 
-                profit = Math.floor(amount);
+                profit = Math.ceil(amount);
 
                 // Actualizar el dinero del usuario
                 userData.cash = (userData.cash ?? 0) + profit;
@@ -69,13 +66,13 @@ export default {
             // Crear embed de respuesta
             const embed = new EmbedBuilder()
                 .setAuthor({ name: 'Cruz o cara', iconURL: 'https://cdn.discordapp.com/emojis/911087695864950854.gif?size=96' })
-                .setDescription(`Ha salido \`${flipcoin === 'cruz' ? 'cara' : 'cruz'}\` y ${lose === true ? "perdiste" : "ganaste"} ${amount}.`)
-                .setColor(lose ? 0xef5250 : 0x90EE90)
+                .setDescription(`Ha salido \`${flipcoin === 'cruz' ? 'cara' : 'cruz'}\` y ${flipcoin == side === true ? "perdiste" : "ganaste"} ${amount}.`)
+                .setColor(flipcoin != side ? COLORS.errRed : COLORS.okGreen)
                 .setTimestamp();
 
             await replyOk(interaction, [embed]);
 
-            if (!lose) {
+            if (flipcoin == side) {
                 try {
                     await increaseHomeMonthlyIncome(user.id, amount);
                     await checkQuestLevel({ msg: interaction, money: amount, userId: user.id } as IQuest);
