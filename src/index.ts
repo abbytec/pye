@@ -5,6 +5,7 @@ import { ExtendedClient } from "./client.ts";
 import { connect } from "mongoose";
 import { Command } from "./types/command.ts";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { Evento } from "./types/event.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -48,7 +49,7 @@ const loadEvents = async () => {
 		const filePath = join(eventsPath, file);
 		try {
 			const eventModule = await import(pathToFileURL(filePath).href);
-			const event = eventModule.default || eventModule;
+			const event: Evento = eventModule.default || eventModule;
 
 			console.log(`Cargando evento: ${event.name}`);
 
@@ -71,7 +72,9 @@ const main = async () => {
 		await Promise.all([
 			loadCommands().then(() => console.log("Comandos cargados.")),
 			loadEvents().then(() => console.log("Eventos cargados.")),
-			connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/").then(() => console.log("Conectado a la base de datos.")),
+			connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/", {
+				connectTimeoutMS: 15000,
+			}).then(() => console.log("Conectado a la base de datos.")),
 		]).then(async () => await client.login(process.env.TOKEN_BOT));
 	} catch (error) {
 		console.error("Error en la inicialización:", error);
