@@ -26,7 +26,7 @@ export default {
 			const channel = interaction.options.getChannel("canal", true);
 			const stars = interaction.options.getInteger("estrellas", true);
 
-			await StarBoard.updateOne({ id: interaction.client.user?.id }, { channel: channel.id, stars: stars }, { upsert: true });
+			await StarBoard.updateOne({ id: process.env.GUILD_ID }, { channel: channel.id, stars: stars }, { upsert: true });
 
 			await replyOk(interaction, `Se ha establecido el canal ${channel.name}\nTotal de reacciones requeridas: \`${stars}\` .`);
 		},
