@@ -74,7 +74,7 @@ export async function setCooldown(client: ExtendedClient, userId: string, comman
 				user: userId,
 				command: commandName,
 			},
-			{ $inc: { date: newDate } },
+			{ $set: { date: newDate } },
 			{ new: true }
 		);
 
