@@ -10,7 +10,7 @@ import { getChannelFromEnv } from "../../utils/constants.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { IPetDocument, Pets } from "../../Models/Pets.ts";
-import { Home } from "../../Models/Home.ts";
+import { Home, IHomeDocument } from "../../Models/Home.ts";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -41,21 +41,50 @@ export default {
 		async (interaction: ChatInputCommandInteraction): Promise<void> => {
 			const subcommand = interaction.options.getSubcommand();
 
+			const userId = interaction.options.getUser("usuario")?.id ?? interaction.user.id;
+
+			// Obtener el miembro
+			let member: GuildMember | null | undefined;
+			if (userId) {
+				member = await interaction.guild?.members.fetch(userId).catch(() => null);
+				if (!member) return await replyError(interaction, "No se pudo encontrar al usuario especificado en este servidor.");
+			} else member = interaction.member as GuildMember;
+
+			if (member.user.bot) return await replyError(interaction, "Los bots no pueden tener un perfil.");
+
+			const homeData = await Home.findOne({ id: member.id });
+			if (!homeData) {
+				const mensaje =
+					member.id === interaction.user.id ? "Aún no tienes un perfil de economía." : "Aún no tiene un perfil de economía.";
+				return await replyError(interaction, mensaje);
+			}
+
+			if (homeData.pet === "none") {
+				const mensaje =
+					member.id === interaction.user.id
+						? "Aún no tienes una mascota.\nPuedes obtener una completando las quests."
+						: "Aún no tiene una mascota.\nPuede obtener una completando las quests.";
+				return await replyError(interaction, mensaje);
+			}
+			let petData =
+				(await Pets.findOne({ id: member.id })) ??
+				(await Pets.create({ id: member.id, name: "Sin nombre", mood: 100, food: 100, shower: 100 }));
+
 			switch (subcommand) {
 				case "show":
-					await showPet(interaction);
+					await showPet(interaction, member, homeData, petData);
 					break;
 				case "name":
-					await setPetName(interaction);
+					await setPetName(interaction, member, petData);
 					break;
 				case "play":
-					await playPet(interaction);
+					await playPet(interaction, petData);
 					break;
 				case "feed":
-					await feedPet(interaction);
+					await feedPet(interaction, petData);
 					break;
 				case "clean":
-					await cleanPet(interaction);
+					await cleanPet(interaction, petData);
 					break;
 				default:
 					await replyError(interaction, "Opción no válida.");
@@ -64,37 +93,7 @@ export default {
 	),
 };
 
-async function showPet(interaction: ChatInputCommandInteraction) {
-	const userId = interaction.options.getUser("usuario")?.id ?? interaction.user.id;
-
-	// Obtener el miembro
-	let member: GuildMember | null | undefined;
-	if (userId) {
-		member = await interaction.guild?.members.fetch(userId).catch(() => null);
-		if (!member) return await replyError(interaction, "No se pudo encontrar al usuario especificado en este servidor.");
-	} else member = interaction.member as GuildMember;
-
-	if (member.user.bot) return await replyError(interaction, "Los bots no pueden tener un perfil.");
-
-	// Obtener datos de Home y Pets
-	const homeData = await Home.findOne({ id: member.id }).exec();
-	let petInfo = await Pets.findOne({ id: member.id }).exec();
-
-	if (!homeData) {
-		const mensaje = member.id === interaction.user.id ? "Aún no tienes un perfil de economía." : "Aún no tiene un perfil de economía.";
-		return await replyError(interaction, mensaje);
-	}
-
-	if (homeData.pet === "none") {
-		const mensaje =
-			member.id === interaction.user.id
-				? "Aún no tienes una mascota.\nPuedes obtener una completando las quests."
-				: "Aún no tiene una mascota.\nPuede obtener una completando las quests.";
-		return await replyError(interaction, mensaje);
-	}
-
-	if (!petInfo) petInfo = await Pets.create({ id: member.id, name: "Sin nombre", mood: 100, food: 100, shower: 100 });
-
+async function showPet(interaction: ChatInputCommandInteraction, member: GuildMember, homeData: IHomeDocument, petInfo: IPetDocument) {
 	const mood = getMood(petInfo);
 	const rutaImagen = path.join(__dirname, `../../Utils/Pictures/Profiles/Pets/${homeData.pet}${mood}.png`);
 
@@ -145,19 +144,11 @@ function getBars(value: number): string {
 	return "□□□□□";
 }
 
-export async function setPetName(interaction: ChatInputCommandInteraction) {
-	const userId = interaction.user.id;
-	const homeData = await Home.findOne({ id: userId }).exec();
-
-	if (!homeData || homeData.pet === "none") return await replyError(interaction, "Aún no tienes una mascota.");
-
-	const petInfo = await Pets.findOne({ id: userId }).exec();
-	if (!petInfo) return await replyError(interaction, "No se pudo encontrar la información de tu mascota.");
-
+export async function setPetName(interaction: ChatInputCommandInteraction, member: GuildMember, petInfo: IPetDocument) {
 	await interaction.reply({ content: "🦴- Escribe el nuevo nombre de tu mascota.", ephemeral: true });
 
 	try {
-		const filter = (m: any) => m.author.id === userId && m.content.length <= 60;
+		const filter = (m: any) => m.author.id === member.id && m.content.length <= 60;
 		if (!interaction.channel?.isTextBased()) {
 			return await replyError(interaction, "No se pudo acceder al canal de texto.");
 		}
@@ -188,15 +179,7 @@ export async function setPetName(interaction: ChatInputCommandInteraction) {
 	}
 }
 
-export async function playPet(interaction: ChatInputCommandInteraction) {
-	const userId = interaction.user.id;
-	const homeData = await Home.findOne({ id: userId }).exec();
-	const petInfo = await Pets.findOne({ id: userId }).exec();
-
-	if (!homeData || homeData.pet === "none") return await replyError(interaction, "Aún no tienes una mascota.");
-
-	if (!petInfo) return await replyError(interaction, "No se pudo encontrar la información de tu mascota.");
-
+export async function playPet(interaction: ChatInputCommandInteraction, petInfo: IPetDocument) {
 	// Lógica para jugar con la mascota
 	petInfo.mood = Math.min(petInfo.mood + 10, 100); // Aumentar el cariño
 	petInfo.food = Math.max(petInfo.food - 5, 0); // Disminuir el hambre
@@ -206,15 +189,7 @@ export async function playPet(interaction: ChatInputCommandInteraction) {
 	return await replyOk(interaction, "🐾 - Has jugado con tu mascota. ¡Está más feliz!");
 }
 
-export async function feedPet(interaction: ChatInputCommandInteraction) {
-	const userId = interaction.user.id;
-	const homeData = await Home.findOne({ id: userId }).exec();
-	const petInfo = await Pets.findOne({ id: userId }).exec();
-
-	if (!homeData || homeData.pet === "none") return await replyError(interaction, "Aún no tienes una mascota.");
-
-	if (!petInfo) return await replyError(interaction, "No se pudo encontrar la información de tu mascota.");
-
+export async function feedPet(interaction: ChatInputCommandInteraction, petInfo: IPetDocument) {
 	// Lógica para alimentar a la mascota
 	petInfo.food = Math.min(petInfo.food + 10, 100); // Aumentar el hambre
 	await petInfo.save();
@@ -222,15 +197,7 @@ export async function feedPet(interaction: ChatInputCommandInteraction) {
 	return await replyOk(interaction, "🍽️ - Has alimentado a tu mascota. ¡Está más llena!");
 }
 
-export async function cleanPet(interaction: ChatInputCommandInteraction) {
-	const userId = interaction.user.id;
-	const homeData = await Home.findOne({ id: userId }).exec();
-	const petInfo = await Pets.findOne({ id: userId }).exec();
-
-	if (!homeData || homeData.pet === "none") return await replyError(interaction, "Aún no tienes una mascota.");
-
-	if (!petInfo) return await replyError(interaction, "No se pudo encontrar la información de tu mascota.");
-
+export async function cleanPet(interaction: ChatInputCommandInteraction, petInfo: IPetDocument) {
 	// Lógica para limpiar a la mascota
 	petInfo.shower = Math.min(petInfo.shower + 10, 100); // Aumentar la higiene
 	await petInfo.save();

@@ -40,15 +40,16 @@ export default {
 					await replyError(interaction, "No se pudo desbanear al usuario.");
 				});
 
-			// Registrar en ModLogs
 			// Buscar el ban más reciente que no esté oculto
-			const latestTimeout = await ModLogs.findOne({ id: user.id, type: "Ban", hiddenCase: { $ne: true } }).sort({ date: -1 });
+			const latestTimeout = await ModLogs.findOneAndUpdate(
+				{ id: user.id, type: "Ban", hiddenCase: { $ne: true } }, // Filtro
+				{ $set: { hiddenCase: true } }, // Actualización
+				{ sort: { date: -1 }, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
+			);
 
-			if (!latestTimeout) return isBanned ? ({} as PostHandleable) : await replyError(interaction, "Este usuario no tiene bans activos.");
-
-			// Marcar el ban como oculto
-			latestTimeout.hiddenCase = true;
-			await latestTimeout.save();
+			if (!latestTimeout) {
+				return await replyError(interaction, "Este usuario no tiene bans activos.");
+			}
 
 			// Enviar mensaje directo al usuario
 			await user

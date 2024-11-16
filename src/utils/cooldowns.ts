@@ -32,7 +32,7 @@ export async function getCooldown(client: ExtendedClient, userId: string, comman
 		}
 	} else {
 		// Use database
-		const cooldownEntry = await Cooldowns.findOne({ user: userId, command: commandName }, "date").exec();
+		const cooldownEntry = await Cooldowns.findOne({ user: userId, command: commandName }, "date");
 		if (!cooldownEntry) {
 			return 0;
 		}
@@ -41,7 +41,7 @@ export async function getCooldown(client: ExtendedClient, userId: string, comman
 
 		if (remaining <= 0) {
 			// Cooldown has expired, remove from database
-			await Cooldowns.deleteOne({ user: userId, command: commandName }).exec();
+			await Cooldowns.deleteOne({ user: userId, command: commandName });
 			return 0;
 		} else {
 			return remaining;
@@ -69,21 +69,21 @@ export async function setCooldown(client: ExtendedClient, userId: string, comman
 		client.cooldowns.set(`${userId}:${commandName}`, cooldownEntry);
 	} else {
 		// Use database
-		let cooldownEntry = await Cooldowns.findOne({
-			user: userId,
-			command: commandName,
-		}).exec();
+		let cooldownEntry = await Cooldowns.findOneAndUpdate(
+			{
+				user: userId,
+				command: commandName,
+			},
+			{ $inc: { date: newDate } },
+			{ new: true }
+		);
 
 		if (!cooldownEntry) {
-			cooldownEntry = new Cooldowns({
+			await Cooldowns.create({
 				user: userId,
 				command: commandName,
 				date: newDate,
 			});
-		} else {
-			cooldownEntry.date = newDate;
 		}
-
-		await cooldownEntry.save();
 	}
 }

@@ -6,11 +6,12 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
 import { logMessages } from "../../utils/finalwares/logMessages.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { Command } from "../../Models/Command.ts";
+import { CommandLimits, ICommandLimits, ICommandLimitsDocument } from "../../Models/Command.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { getChannelFromEnv, pyecoin } from "../../utils/constants.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 import ms from "ms"; // Importación de la librería ms
+import { ExtendedClient } from "../../client.ts";
 
 const payoutCommands = [
 	{ name: "Work", value: "work" },
@@ -146,7 +147,7 @@ async function handlePayout(
 	if (max < min) return await replyError(interaction, "El dinero máximo a dar no puede ser menor que el mínimo.");
 
 	// Actualizar la base de datos
-	await Command.updateOne(
+	await CommandLimits.findOneAndUpdate(
 		{ name: commandName },
 		{
 			$set: {
@@ -154,13 +155,13 @@ async function handlePayout(
 				highestMoney: max,
 			},
 		},
-		{ upsert: true }
-	).exec();
+		{ new: true, upsert: true }
+	).then((res: ICommandLimits) => (interaction.client as ExtendedClient).setCommandLimit(res));
 
-	// Mensaje de confirmación
-	const confirmationMessage = `Se ha establecido la paga del comando \`${commandName}\` de ${pyecoin} **${min}** a ${pyecoin} **${max}** PyE Coins.`;
-
-	await replyOk(interaction, confirmationMessage);
+	await replyOk(
+		interaction,
+		`Se ha establecido la paga del comando \`${commandName}\` de ${pyecoin} **${min}** a ${pyecoin} **${max}** PyE Coins.`
+	);
 
 	// Configurar logMessage
 	logMessage.description = `**${user.tag}** ha establecido la paga del comando \`${commandName}\` de ${pyecoin} **${min}** a ${pyecoin} **${max}** PyE Coins.`;
@@ -187,12 +188,11 @@ async function handleFailrate(
 	if (failRate < 0 || failRate > 100) return await replyError(interaction, "El porcentaje de fallo debe estar entre 0 y 100.");
 
 	// Actualizar la base de datos
-	await Command.updateOne({ name: commandName }, { $set: { failRate } }, { upsert: true }).exec();
+	await CommandLimits.findOneAndUpdate({ name: commandName }, { $set: { failRate } }, { new: true, upsert: true }).then(
+		(res: ICommandLimits) => (interaction.client as ExtendedClient).setCommandLimit(res)
+	);
 
-	// Mensaje de confirmación
-	const confirmationMessage = `Se ha establecido el porcentaje de fallo del comando \`${commandName}\` a **${failRate}%**.`;
-
-	await replyOk(interaction, confirmationMessage);
+	await replyOk(interaction, `Se ha establecido el porcentaje de fallo del comando \`${commandName}\` a **${failRate}%**.`);
 
 	// Configurar logMessage
 	logMessage.description = `**${user.tag}** ha establecido el porcentaje de fallo del comando \`${commandName}\` a **${failRate}%**.`;
@@ -238,14 +238,16 @@ async function handleCooldown(
 	}
 
 	// Actualizar el cooldown en la base de datos
-	await Command.updateOne({ name: commandName }, { $set: { cooldown: cooldownHours } }, { upsert: true }).exec();
+	await CommandLimits.findOneAndUpdate({ name: commandName }, { $set: { cooldown: cooldownHours } }, { new: true, upsert: true }).then(
+		(res: ICommandLimits) => (interaction.client as ExtendedClient).setCommandLimit(res)
+	);
 
-	// Mensaje de confirmación
-	const confirmationMessage = `Se ha establecido el tiempo de espera para el comando \`${commandName}\` a **${ms(cooldownMs, {
-		long: true,
-	})}**.`;
-
-	await replyOk(interaction, confirmationMessage);
+	await replyOk(
+		interaction,
+		`Se ha establecido el tiempo de espera para el comando \`${commandName}\` a **${ms(cooldownMs, {
+			long: true,
+		})}**.`
+	);
 
 	// Configurar logMessage
 	logMessage.description = `**${user.tag}** ha establecido el tiempo de espera del comando \`${commandName}\` a **${ms(cooldownMs, {

@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { getOrCreateUser, Users } from "../../Models/User.ts";
+import { getOrCreateUser, IUserModel, Users } from "../../Models/User.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
@@ -21,9 +21,9 @@ export default {
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
-			let userData: Partial<IUser> | null = await getOrCreateUser(user.id);
+			let userData: IUserModel = await getOrCreateUser(user.id);
 
-			if (userData.bank! <= 0) return await replyWarning(interaction, "No tienes suficientes PyE Coins para sacar del banco.");
+			if (userData.bank <= 0) return await replyWarning(interaction, "No tienes suficientes PyE Coins para sacar del banco.");
 
 			const cantidadInput = interaction.options.getString("cantidad", true);
 			let cantidad: number;
@@ -38,12 +38,9 @@ export default {
 					return await replyWarning(interaction, 'La cantidad que ingresaste no es válida.\nUso: `/withdraw [Número | "all"]`');
 			}
 
-			if (cantidad > userData.bank!) return await replyWarning(interaction, "No tienes suficientes PyE Coins en tu banco para retirar.");
+			if (cantidad > userData.bank) return await replyWarning(interaction, "No tienes suficientes PyE Coins en tu banco para retirar.");
 
-			userData.bank! -= cantidad;
-			userData.cash! += cantidad;
-
-			await Users.updateOne({ id: user.id }, userData);
+			await Users.updateOne({ id: user.id }, { $inc: { bank: -cantidad, cash: cantidad } });
 
 			return await replyOk(interaction, [
 				new EmbedBuilder()

@@ -20,19 +20,17 @@ const loadCommands = async () => {
 
 		const commandsImportPromises = commandFiles.map(async (file) => {
 			const filePath = path.join(commandsPath, file);
-			try {
-				const commandModule = await import(pathToFileURL(filePath).href);
-				const command: Command = commandModule.default || commandModule;
-
-				if (command.data) {
-					console.log(`Cargando comando: ${command.data.name}`);
-					client.commands.set(command.data.name, command);
-				} else {
-					console.log(`[ADVERTENCIA] El comando en ${filePath} carece de la propiedad "data".`);
-				}
-			} catch (error) {
-				console.error(`Error al cargar el comando ${filePath}:`, error);
-			}
+			await import(pathToFileURL(filePath).href)
+				.then((module) => module.default || module)
+				.then((command: Command) => {
+					if (command.data) {
+						console.log(`Cargando comando: ${command.data.name}`);
+						client.commands.set(command.data.name, command);
+					} else {
+						console.log(`[ADVERTENCIA] El comando en ${filePath} carece de la propiedad "data".`);
+					}
+				})
+				.catch((error) => console.error(`Error al cargar el comando ${filePath}:`, error));
 		});
 
 		await Promise.all(commandsImportPromises);
@@ -47,20 +45,17 @@ const loadEvents = async () => {
 
 	const eventsImportPromises = eventFiles.map(async (file) => {
 		const filePath = join(eventsPath, file);
-		try {
-			const eventModule = await import(pathToFileURL(filePath).href);
-			const event: Evento = eventModule.default || eventModule;
-
-			console.log(`Cargando evento: ${event.name}`);
-
-			if (event.once) {
-				client.once(event.name, (...args: any[]) => event.execute(...args));
-			} else {
-				client.on(event.name, (...args: any[]) => event.execute(...args));
-			}
-		} catch (error) {
-			console.error(`Error al cargar el evento ${filePath}:`, error);
-		}
+		await import(pathToFileURL(filePath).href)
+			.then((module) => module.default || module)
+			.then((event: Evento) => {
+				console.log(`Cargando evento: ${event.name}`);
+				if (event.once) {
+					client.once(event.name, (...args: any[]) => event.execute(...args));
+				} else {
+					client.on(event.name, (...args: any[]) => event.execute(...args));
+				}
+			})
+			.catch((error) => console.error(`Error al cargar el evento ${filePath}:`, error));
 	});
 
 	await Promise.all(eventsImportPromises);

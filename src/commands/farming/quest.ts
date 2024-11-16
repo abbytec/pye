@@ -1,6 +1,6 @@
 // src/commands/Currency/quests.ts
 
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, User } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, User, Guild } from "discord.js";
 
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
@@ -118,15 +118,15 @@ export default {
 			if (subcommand === "check") {
 				const userOption = interaction.options.getUser("usuario");
 				const user: User = userOption ?? interaction.user;
-				const member: GuildMember | null | undefined = userOption
-					? await interaction.guild?.members.fetch(user.id).catch(() => null)
+				const member: GuildMember | null = userOption
+					? await (interaction.guild as Guild).members.fetch(user.id).catch(() => null)
 					: (interaction.member as GuildMember);
 
 				if (!member) return replyError(interaction, "No se pudo encontrar al usuario especificado.");
 
 				if (member.user.bot) return replyError(interaction, "Los bots no pueden tener un perfil.");
 
-				const data = await Home.findOne({ id: member.id }).exec();
+				const data = await Home.findOne({ id: member.id });
 
 				if (!data)
 					return replyError(
@@ -156,7 +156,7 @@ export default {
 
 				if (!member) return replyError(interaction, "No se pudo encontrar tu información de miembro.");
 
-				const data = await Home.findOne({ id: user.id }).exec();
+				const data = await Home.findOne({ id: user.id });
 
 				if (!data) return replyError(interaction, "Aún no tienes un perfil de economía.");
 

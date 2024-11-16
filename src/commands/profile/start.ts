@@ -59,7 +59,7 @@ export default {
 			const userId = interaction.user.id;
 
 			// Verificar si el usuario ya tiene un perfil
-			const userData = await Users.findOne({ id: userId }).exec();
+			const userData = await Users.findOne({ id: userId });
 			if (userData?.profile) return await replyWarning(interaction, "Ya tienes un perfil.");
 
 			// Verificar si el usuario está en proceso de creación

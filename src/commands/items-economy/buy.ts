@@ -44,10 +44,10 @@ export default {
 
 				// Buscar el ítem en la tienda por ID o nombre (case-insensitive)
 				const itemData =
-					(await Shop.findOne({ itemId: itemInput }).exec()) ??
+					(await Shop.findOne({ itemId: itemInput })) ??
 					(await Shop.findOne({
 						name: { $regex: new RegExp(`^${itemInput}$`, "i") },
-					}).exec());
+					}));
 
 				if (!itemData) return await replyError(interaction, "No existe un ítem con ese nombre o ID.\nUso: `/buy [Nombre de ítem]`");
 

@@ -64,9 +64,8 @@ export default {
 								.setTimestamp(),
 						],
 					})
-					// Baneando al usuario
-					.then(async () => await interaction.guild?.members.ban(user.id, { reason }))
-					.catch(() => null);
+					.catch(() => null)
+					.finally(async () => await interaction.guild?.members.ban(user.id, { reason }));
 
 				// Registrar en ModLogs
 				await ModLogs.create({

@@ -1,11 +1,18 @@
 import { Events, ActivityType } from "discord.js";
 import { ExtendedClient } from "../client.ts";
+import { CommandLimits, ICommandLimits } from "../Models/Command.ts";
 
 export default {
 	name: Events.ClientReady,
 	once: true,
 	async execute(client: ExtendedClient) {
 		console.log(`Bot Listo como: ${client.user?.tag} ! `);
+
+		await CommandLimits.find().then((res: ICommandLimits[]) => {
+			res.forEach((command) => {
+				client.setCommandLimit(command);
+			});
+		});
 
 		setInterval(() => {
 			setTimeout(() => client.user?.setActivity("discord.gg/programacion", { type: ActivityType.Watching }), 1000);

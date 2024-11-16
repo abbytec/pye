@@ -177,7 +177,7 @@ async function generateBumpsLeaderboard(page: number, user: any, interaction: Ch
 						count: { $sum: 1 },
 					},
 				},
-			]).exec();
+			]);
 		},
 		sortFunction: (a, b) => b.count - a.count,
 		positionFinder: (data, userId) => data.findIndex((u) => u._id === userId),
@@ -198,7 +198,7 @@ async function generateHouseLeaderboard(page: number, user: any, interaction: Ch
 	return generateLeaderboard(page, user, disable, {
 		title: "🏡 Top de casas.",
 		dataFetch: async () => {
-			return await Home.find().exec();
+			return await Home.find();
 		},
 		sortFunction: (a: IHomeDocument, b: IHomeDocument) => b.house.level - a.house.level,
 		positionFinder: (data: IHomeDocument[], userId) => data.findIndex((u) => u.id === userId),

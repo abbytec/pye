@@ -124,7 +124,7 @@ export default {
 				...(viewer?.roles.cache.has(getRoleFromEnv("staff")) ?? viewer?.roles.cache.has(getRoleFromEnv("staff"))
 					? {}
 					: { hiddenCase: { $ne: true } }),
-			}).exec();
+			});
 
 			if (!data.length) return await replyOk(interaction, "Este usuario no tiene casos registrados.");
 

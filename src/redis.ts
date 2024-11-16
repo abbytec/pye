@@ -13,13 +13,13 @@ client.on("error", (err) => {
 });
 
 (async () => {
-	try {
-		await client.connect();
-		console.log("Redis listo!");
-	} catch (err) {
-		console.error("Error de Redis:", err);
-		process.exit(1);
-	}
+	await client
+		.connect()
+		.then(() => console.log("Redis listo!"))
+		.catch((err) => {
+			console.error("Error de Redis:", err);
+			process.exit(1);
+		});
 })();
 
 export default client;

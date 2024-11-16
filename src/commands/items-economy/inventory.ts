@@ -201,7 +201,7 @@ async function getItems(data: IUserModel): Promise<[IShopDocument, number][]> {
 
 	for (const itemId of data.inventory) {
 		// Asumiendo que `itemId` es una referencia al documento de `Shop`
-		const item: IShopDocument | null = await Shop.findOne({ _id: itemId }).exec();
+		const item: IShopDocument | null = await Shop.findOne({ _id: itemId });
 		if (!item) continue;
 
 		if (itemsMap.has(item._id)) itemsMap.get(item._id)![1]++;

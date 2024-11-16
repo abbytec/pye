@@ -1,6 +1,6 @@
 import { Schema, Document, model } from "mongoose";
 
-interface ICommand {
+export interface ICommandLimits {
 	name: string;
 	lowestMoney: number;
 	highestMoney: number;
@@ -8,9 +8,9 @@ interface ICommand {
 	cooldown: number;
 }
 
-export interface ICommandDocument extends ICommand, Document {}
+export interface ICommandLimitsDocument extends ICommandLimits, Document {}
 
-const commandSchema = new Schema<ICommandDocument>(
+const commandSchema = new Schema<ICommandLimitsDocument>(
 	{
 		name: {
 			type: String,
@@ -36,4 +36,4 @@ const commandSchema = new Schema<ICommandDocument>(
 	{ versionKey: false }
 );
 
-export const Command = model("Command", commandSchema);
+export const CommandLimits = model("Command", commandSchema);

@@ -1,7 +1,7 @@
 // src/commands/Currency/cap.ts
 
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, Guild } from "discord.js";
-import { getOrCreateUser, Users } from "../../Models/User.ts";
+import { getOrCreateUser, IUserModel, Users } from "../../Models/User.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
@@ -29,7 +29,7 @@ export default {
 			const user = interaction.user;
 
 			// Obtener datos del usuario
-			let userData: Partial<IUser> | null = await getOrCreateUser(user.id);
+			let userData: IUserModel = await getOrCreateUser(user.id);
 
 			// Verificar que el usuario tenga perfil y trabajo adecuado
 			if (!userData.profile || !["Militar", "Policia"].includes(userData.profile.job))
@@ -55,24 +55,15 @@ export default {
 
 			if (!member) return await replyError(interaction, "El último usuario en robar ya no se encuentra en el servidor.");
 
-			let robberData: IUser | null = await Users.findOne({ id: robberId }).exec();
+			let robberData: IUser | null = await Users.findOne({ id: robberId });
 			if (!robberData) return await replyError(interaction, "No se pudo encontrar la información del usuario que robó.");
 
 			// Aplicar cooldown
 			setCooldown(client, user.id, "cap", cooldownDuration);
 
-			const profit = amount;
-
-			// Actualizar el dinero del usuario que robó
-			if ((robberData.cash ?? 0) > profit) robberData.cash = (robberData.cash ?? 0) - profit;
-			else robberData.bank = (robberData.bank ?? 0) - profit;
-
-			// Actualizar el dinero del usuario actual
-			userData.cash = (userData.cash ?? 0) + profit;
-			userData.caps = (userData.caps ?? 0) + profit;
-
 			try {
-				await Promise.all([Users.updateOne({ id: user.id }, userData).exec(), Users.updateOne({ id: robberId }, robberData).exec()]);
+				await Users.updateOne({ id: user.id }, { $inc: { cash: amount, caps: amount } });
+				await Users.updateOne({ id: robberId }, { $inc: (robberData.cash ?? 0) > amount ? { cash: -amount } : { bank: -amount } });
 			} catch (error) {
 				console.error("Error actualizando los usuarios:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
@@ -85,12 +76,11 @@ export default {
 			try {
 				await checkQuestLevel({
 					msg: interaction,
-					money: profit,
+					money: amount,
 					userId: user.id,
 				} as IQuest);
 			} catch (error) {
 				console.error("Error actualizando la quest:", error);
-				// Puedes optar por enviar una advertencia o simplemente registrar el error
 			}
 
 			// Crear embed de respuesta
@@ -98,7 +88,7 @@ export default {
 				.setAuthor({ name: user.tag, iconURL: user.displayAvatarURL() })
 				.setThumbnail("https://cdn.discordapp.com/emojis/1019809933451071519.webp?size=96&quality=lossless")
 				.setDescription(
-					`Has logrado sacarle **${profit.toLocaleString()}** monedas de la cuenta de \`${
+					`Has logrado sacarle **${amount.toLocaleString()}** monedas de la cuenta de \`${
 						member.user.username
 					}\`.\nBuen trabajo oficial.`
 				)

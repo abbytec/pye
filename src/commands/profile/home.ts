@@ -56,7 +56,7 @@ export default {
 
 			if (member.user.bot) return replyError(interaction, "Los bots no pueden tener una casa.");
 
-			const home = await Home.findOne({ id: member.id }).exec();
+			const home = await Home.findOne({ id: member.id });
 
 			if (interaction.member?.user.id === member.id) {
 				if (!home) return replyWarning(interaction, "Aún no tienes un perfil de economía.");
@@ -96,8 +96,7 @@ async function getHouseImage(data: IHomeDocument): Promise<AttachmentBuilder> {
 	let imagePath = path.join(process.cwd(), "src", "utils", "Pictures", "Profiles", "Casa", data.house.color, `${data.house.level}.png`);
 
 	if (data.pet !== "none") {
-		let petInfo = await Pets.findOne({ id: data.id }).exec();
-		if (!petInfo) petInfo = await Pets.create({ id: data.id });
+		let petInfo = (await Pets.findOne({ id: data.id })) ?? (await Pets.create({ id: data.id }));
 
 		const houseDir = path.join(process.cwd(), "src", "utils", "Pictures", "Profiles", "Casa", data.house.color, `${data.house.level}`);
 		const files = await fs.readdir(houseDir);

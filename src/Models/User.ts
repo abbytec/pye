@@ -157,9 +157,7 @@ userSchema.post("updateMany", async function (result: any, next: () => void) {
 			if (update.$inc.cash) {
 				multi.zIncrBy("top:cash", update.$inc.cash.toString(), userId);
 			}
-			// Añade otros campos según sea necesario
 		}
-		await multi.exec();
 	}
 	next();
 });
@@ -169,12 +167,8 @@ userSchema.post("updateMany", async function (result: any, next: () => void) {
  */
 export const Users = model<IUserModel>("Users", userSchema);
 
-async function newUser(id: string) {
-	return await Users.create({ id });
-}
-
 export async function getOrCreateUser(id: string): Promise<IUserModel> {
-	const user = await Users.findOne({ id }).exec();
+	const user = await Users.findOne({ id });
 	if (user) return user;
-	return await newUser(id);
+	return await Users.create({ id });
 }

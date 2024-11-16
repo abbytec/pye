@@ -26,17 +26,15 @@ export default {
 			const member = await interaction.guild?.members.fetch(user.id);
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
-			let data = await HelperPoint.findOne({ _id: user.id }).exec();
+			let data = await HelperPoint.findOneAndUpdate({ _id: user.id, points: { $gt: 0 } }, { $inc: { points: -1 } }, { new: true });
 
-			if (!data) data = await HelperPoint.create({ _id: user.id });
-			data.points -= 1;
-			let newData = await data.save();
+			if (!data) return replyError(interaction, "No se encontraron puntos para restar.");
 
 			await replyOk(interaction, `se le ha quitado un rep al usuario: \`${user.tag}\``);
 
 			return {
 				guildMember: member,
-				helperPoint: newData,
+				helperPoint: data,
 				logMessages: [
 					{
 						channel: getChannelFromEnv("logPuntos"),

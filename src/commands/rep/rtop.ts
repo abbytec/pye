@@ -7,7 +7,7 @@ export default {
 	execute: async (msg: ChatInputCommandInteraction, args: string[]) => {
 		let page = parseInt(args?.[0] ?? 1) - 1;
 		if (page < 0) page = 0;
-		let all = Math.ceil((await HelperPoint.countDocuments().exec()) / 10);
+		let all = Math.ceil((await HelperPoint.countDocuments()) / 10);
 		if (all < 0) all = 0;
 		if (page > all) page = all - 1;
 		const allDocs = await HelperPoint.find().sort({ points: -1 });
@@ -17,9 +17,7 @@ export default {
 			let users = await HelperPoint.find()
 				.sort({ points: -1 })
 				.skip(page * 10)
-				.lean()
-				.exec();
-
+				.lean();
 			users = users.slice(0, 10);
 
 			return {

@@ -102,7 +102,7 @@ export default {
 };
 
 async function visualizarItems(interaction: ChatInputCommandInteraction) {
-	const items = await Shop.find().lean().exec();
+	const items = await Shop.find().lean();
 
 	if (items.length === 0) {
 		await interaction.reply({
@@ -261,7 +261,7 @@ async function añadirItem(interaction: ChatInputCommandInteraction) {
 	}
 
 	try {
-		const existingItems = await Shop.find().exec();
+		const existingItems = await Shop.find();
 		const itemId = getId(existingItems);
 
 		const newItem = new Shop({
@@ -381,7 +381,7 @@ function getUpdatedFields(interaction: ChatInputCommandInteraction, item: IShop)
 async function editarItem(interaction: ChatInputCommandInteraction) {
 	const id = interaction.options.getString("id", true);
 
-	let item = await Shop.findOne<IShopDocument>({ itemId: id }).exec();
+	let item = await Shop.findOne<IShopDocument>({ itemId: id });
 	if (!item) {
 		return await replyError(interaction, `No se encontró ningún ítem con el id \`${id}\`.`);
 	}
@@ -440,7 +440,7 @@ async function editarItem(interaction: ChatInputCommandInteraction) {
 async function eliminarItem(interaction: ChatInputCommandInteraction) {
 	const id = interaction.options.getString("id", true);
 
-	const item = await Shop.findOne({ itemId: id }).exec();
+	const item = await Shop.findOne({ itemId: id });
 	if (!item) {
 		return await replyError(interaction, `No se encontró ningún ítem con el id \`${id}\`.`);
 	}

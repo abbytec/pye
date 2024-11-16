@@ -59,16 +59,12 @@ export default {
 			if (authorData.cash < cantidad)
 				return await replyWarning(interaction, "No tienes suficientes PyE Coins en tu bolsillo para transferir.");
 
-			let targetData: Partial<IUser> | null = await getOrCreateUser(targetUser.id);
-
-			// Realizar la transferencia
-			authorData.cash -= cantidad;
-			targetData.cash! += cantidad;
+			await getOrCreateUser(targetUser.id); // asegura que el usuario destino exista
 
 			await setCooldown(interaction.client as ExtendedClient, author.id, "give-money", Date.now() + cooldown);
 
-			await Users.updateOne({ id: author.id }, { cash: authorData.cash });
-			await Users.updateOne({ id: targetUser.id }, { cash: targetData.cash });
+			await Users.updateOne({ id: author.id }, { $inc: { cash: -cantidad } });
+			await Users.updateOne({ id: targetUser.id }, { $inc: { cash: cantidad } });
 
 			return await replyOk(interaction, [
 				new EmbedBuilder()

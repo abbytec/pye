@@ -42,10 +42,10 @@ export default {
 
 			// Buscar el ítem en la tienda por ID o nombre (case-insensitive)
 			const itemData =
-				(await Shop.findOne({ itemId: itemInput }).exec()) ??
+				(await Shop.findOne({ itemId: itemInput })) ??
 				(await Shop.findOne({
 					name: { $regex: new RegExp(`^${itemInput}$`, "i") },
-				}).exec());
+				}));
 
 			if (!itemData) return await replyError(interaction, "No existe un ítem con ese nombre o ID.\nUso: `/use [Nombre de ítem]`");
 
@@ -88,10 +88,7 @@ export default {
 					role: { $in: [...member.roles.cache.keys()] },
 					_id: { $in: userData.inventory },
 					group: itemData.group,
-				})
-					.lean()
-					.exec();
-
+				}).lean();
 				if (groupItem)
 					return await replyError(
 						interaction,
@@ -212,8 +209,8 @@ async function handleReset(interaction: ChatInputCommandInteraction, userData: I
 
 	// Eliminar documentos relacionados en Home y Pets
 	try {
-		await Home.deleteOne({ id: userData.id }).exec();
-		await Pets.deleteOne({ id: userData.id }).exec();
+		await Home.deleteOne({ id: userData.id });
+		await Pets.deleteOne({ id: userData.id });
 	} catch (error) {
 		console.error("Error eliminando Home o Pets:", error);
 		return await replyError(interaction, "Ocurrió un error al resetear tu perfil. Inténtalo de nuevo más tarde.");

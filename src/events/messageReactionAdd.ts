@@ -16,7 +16,7 @@ export default {
 		console.log(`Comando messageReactionAdd activado`);
 		if (!reaction || !user || user.bot || reaction.emoji.name !== "⭐" || !reaction.message?.guild || reaction.message.author?.bot) return;
 
-		const data = await StarBoard.findOne({ id: process.env.GUILD_ID }).exec();
+		const data = await StarBoard.findOne({ id: process.env.GUILD_ID });
 		if (!data) return;
 
 		try {
@@ -48,10 +48,11 @@ async function checkReactions(reaction: MessageReaction, starboard: any) {
 	const msg = reaction.message;
 	if (!msg.guild) return;
 
-	const messagePosted = await StarMessage.findOne({ msgId: msg.id }).exec();
 	const postChannel = msg.guild.channels.cache.get(starboard.channel) as TextChannel;
 
 	if (!postChannel || reaction.count < starboard.stars) return;
+
+	const messagePosted = await StarMessage.findOne({ msgId: msg.id });
 
 	if (messagePosted) {
 		const embedMessage = await postChannel.messages.fetch(messagePosted.responseId).catch(() => null);
@@ -101,15 +102,12 @@ async function checkReactions(reaction: MessageReaction, starboard: any) {
 			.addFields([{ name: data.fields.name, value: data.fields.value }])
 			.setTimestamp();
 
-		const sentMessage = await postChannel
+		await postChannel
 			.send({
 				content: `**${reaction.count}** ⭐ ${msg.channel.toString()}`,
 				embeds: [embed],
 			})
+			.then(async (msg) => await StarMessage.create({ msgId: msg.id, responseId: msg.id }))
 			.catch(() => null);
-
-		if (sentMessage) {
-			await StarMessage.create({ msgId: msg.id, responseId: sentMessage.id }).catch(() => null);
-		}
 	}
 }

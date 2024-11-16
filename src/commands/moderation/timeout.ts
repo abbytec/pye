@@ -53,7 +53,7 @@ export default {
 					type: "Timeout",
 				});
 
-				const data = await ModLogs.find({ id: user.id }).exec();
+				const data = await ModLogs.find({ id: user.id });
 
 				// Enviar mensaje directo al usuario
 				await member

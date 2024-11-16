@@ -50,7 +50,7 @@ export default {
 
 			const member = option
 				? (await interaction.guild?.members.fetch(option.id).catch(() => null)) || interaction.member
-				: (interaction.member as any); // Asegúrate de manejar correctamente el tipo
+				: (interaction.member as any);
 
 			if (member.user.bot) return replyWarning(interaction, "Los bots no pueden tener un perfil.");
 
@@ -72,9 +72,8 @@ export default {
 				);
 
 			const position = await redisClient.zRevRank("top:all", member.id);
-			let dataRep: Partial<IHelperPointDocument> | null = await HelperPoint.findOne({ _id: member.id }).exec();
-			const people = await HelperPoint.find().sort({ points: -1 }).exec();
-			if (!dataRep) dataRep = { points: 0 };
+			let dataRep: IHelperPointDocument | null = await HelperPoint.findOne({ _id: member.id });
+			const people = await HelperPoint.find().sort({ points: -1 });
 			const img = await getJobImage(userData.profile);
 			const rank = people.findIndex((u) => u._id === member.id) + 1;
 
@@ -105,7 +104,9 @@ export default {
 					},
 					{
 						name: "🌠 Stats",
-						value: `🎒 **Inventario:** ${userData.inventory.length}\n<:pyestar:926334569903435776> **Reputación:** ${dataRep.points}`,
+						value: `🎒 **Inventario:** ${userData.inventory.length}\n<:pyestar:926334569903435776> **Reputación:** ${
+							dataRep?.points ?? 0
+						}`,
 						inline: true,
 					},
 					{

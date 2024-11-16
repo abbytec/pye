@@ -45,7 +45,7 @@ export default {
 			let page = interaction.options.getInteger("pagina") ?? 1;
 			page = Math.max(page, 1); // Asegurarse de que la página sea al menos 1
 
-			const totalItems = await Shop.countDocuments().exec();
+			const totalItems = await Shop.countDocuments();
 			const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
 			page = Math.min(page, totalPages); // Asegurarse de que la página no exceda el total
 
@@ -53,9 +53,7 @@ export default {
 				.sort({ price: 1 })
 				.skip((page - 1) * ITEMS_PER_PAGE)
 				.limit(ITEMS_PER_PAGE)
-				.lean()
-				.exec();
-
+				.lean();
 			if (items.length === 0) {
 				return await replyError(interaction, "No hay artículos disponibles en la tienda en este momento.");
 			}
@@ -130,9 +128,7 @@ export default {
 					.sort({ price: 1 })
 					.skip((page - 1) * ITEMS_PER_PAGE)
 					.limit(ITEMS_PER_PAGE)
-					.lean()
-					.exec();
-
+					.lean();
 				// Actualizar embed
 				const newEmbed = new EmbedBuilder()
 					.setAuthor({

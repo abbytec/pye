@@ -76,11 +76,8 @@ const schemaHome = new Schema<IHomeDocument>(
 export const Home = model("Home", schemaHome);
 
 export async function increaseHomeMonthlyIncome(id: string, amount: number) {
-	const user = await Home.findOne({ id: id }).exec();
-	if (!user) return;
 	await new Promise((resolve) => setTimeout(resolve, 3e3));
-	user.monthly += amount;
-	await user.save();
+	await Home.findOneAndUpdate({ id: id }, { $inc: { monthly: amount } });
 }
 
 export async function levelUpHome(user: IHomeDocument, next: number, houseColor = "") {

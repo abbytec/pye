@@ -33,11 +33,11 @@ export default {
 
 			const item = await Shop.findOne({
 				$or: [{ itemId: itemInput }, { name: { $regex: new RegExp(`^${itemInput}$`, "i") } }],
-			}).exec();
+			});
 
 			if (!item) return await replyError(interaction, "No existe un ítem con ese nombre.\nUso: `/restore <ítem>`.");
 
-			const userData = await Users.findOne({ id: user.id }).exec();
+			const userData = await Users.findOne({ id: user.id });
 			if (!userData) return await replyError(interaction, "No se pudo encontrar tu perfil de usuario.");
 
 			if (!userData.inventory.includes(item._id)) return await replyError(interaction, "No tienes este ítem en tu inventario.");

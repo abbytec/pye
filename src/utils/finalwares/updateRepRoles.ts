@@ -55,23 +55,19 @@ async function updateMemberReputationRoles(member: GuildMember, points: number):
 	const rolesToRemove = rolesWithPoints.map((role) => role.id).filter((roleId) => member.roles.cache.has(roleId));
 
 	if (rolesToRemove.length > 0) {
-		try {
-			await member.roles.remove(rolesToRemove);
-			console.log(`Roles ${rolesToRemove.join(", ")} eliminados de ${member.user.tag}`);
-		} catch (error) {
-			console.error(`Error al eliminar roles de ${member.user.tag}:`, error);
-		}
+		await member.roles
+			.remove(rolesToRemove)
+			.then(() => console.log(`Roles ${rolesToRemove.join(", ")} eliminados de ${member.user.tag}`))
+			.catch((error) => console.error(`Error al eliminar roles de ${member.user.tag}:`, error));
 	}
 
 	// Añadimos el nuevo rol si es necesario
 	if (newRoleId) {
 		if (!member.roles.cache.has(newRoleId)) {
-			try {
-				await member.roles.add(newRoleId);
-				console.log(`Rol ${newRoleId} añadido a ${member.user.tag}`);
-			} catch (error) {
-				console.error(`Error al añadir el rol ${newRoleId} a ${member.user.tag}:`, error);
-			}
+			await member.roles
+				.add(newRoleId)
+				.then(() => console.log(`Rol ${newRoleId} añadido a ${member.user.tag}`))
+				.catch((error) => console.error(`Error al añadir el rol ${newRoleId} a ${member.user.tag}:`, error));
 		}
 	}
 }

@@ -14,6 +14,7 @@ import { checkQuestLevel, IQuest } from "../../utils/quest.ts";
 import { getRandomNumber } from "../../utils/generic.ts";
 import { getChannelFromEnv } from "../../utils/constants.ts";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
+import { ExtendedClient } from "../../client.ts";
 
 // Definición de los textos de éxito
 const texts: Array<(profit: string) => string> = [
@@ -48,22 +49,24 @@ export default {
 			// Obtener datos del usuario
 			let userData: Partial<IUser> | null = await getOrCreateUser(user.id);
 
-			// Definir rangos de ganancia y tasa de falla
-			const lowestMoney = 100; // Ajusta estos valores según tus necesidades
-			const highestMoney = 500;
-			const failRate = 30; // Porcentaje de probabilidad de fallo
+			let command = (interaction.client as ExtendedClient).getCommandLimit("crime") ?? {
+				lowestMoney: 500,
+				highestMoney: 1000,
+				failRate: 55,
+			};
 
 			// Generar ganancia aleatoria
-			let profit = getRandomNumber(lowestMoney, highestMoney);
+			let profit = getRandomNumber(command.lowestMoney, command.highestMoney);
 
 			// Determinar si el usuario pierde
-			const lose = Math.random() <= failRate / 100;
+			const lose = Math.random() <= command.failRate / 100;
 
 			if (lose) {
 				// El usuario pierde, deducir profit de su cash
 				userData.cash = (userData.cash ?? 0) - profit;
 				// Asegurarse de que el cash no sea negativo
 				if (userData.cash < 0) {
+					profit += userData.cash;
 					userData.cash = 0;
 				}
 			} else {
@@ -81,20 +84,18 @@ export default {
 
 				profit = Math.floor(profit);
 				userData.cash = (userData.cash ?? 0) + profit;
-				userData.total = (userData.total ?? 0) + profit;
 
 				try {
 					await increaseHomeMonthlyIncome(user.id, profit);
 					await checkQuestLevel({ msg: interaction, money: profit, userId: user.id } as IQuest);
 				} catch (error) {
 					console.error("Error actualizando la quest:", error);
-					// Puedes manejar el error según sea necesario
 				}
 			}
 
 			// Actualizar el usuario en la base de datos
 			try {
-				await Users.updateOne({ id: user.id }, userData).exec();
+				await Users.updateOne({ id: user.id }, { $set: { cash: userData.cash } });
 			} catch (error) {
 				console.error("Error actualizando el usuario:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");

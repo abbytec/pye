@@ -48,7 +48,7 @@ export default {
 				type: "Warn",
 			});
 
-			let data = (await ModLogs.find({ id: user.id }).exec()) ?? [];
+			let data = (await ModLogs.find({ id: user.id })) ?? [];
 
 			member
 				?.send({

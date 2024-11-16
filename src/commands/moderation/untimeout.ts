@@ -39,15 +39,16 @@ export default {
 			try {
 				await member.timeout(null, reason);
 
-				// Registrar en ModLogs
 				// Buscar el timeout más reciente que no esté oculto
-				const latestTimeout = await ModLogs.findOne({ id: user.id, type: "Timeout", hiddenCase: { $ne: true } }).sort({ date: -1 });
+				const latestTimeout = await ModLogs.findOneAndUpdate(
+					{ id: user.id, type: "Timeout", hiddenCase: { $ne: true } }, // Filtro
+					{ $set: { hiddenCase: true } }, // Actualización
+					{ sort: { date: -1 }, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
+				);
 
-				if (!latestTimeout) return await replyError(interaction, "Este usuario no tiene timeouts activos.");
-
-				// Marcar el timeout como oculto
-				latestTimeout.hiddenCase = true;
-				await latestTimeout.save();
+				if (!latestTimeout) {
+					return await replyError(interaction, "Este usuario no tiene timeouts activos.");
+				}
 
 				// Enviar mensaje directo al usuario
 				await member.send({

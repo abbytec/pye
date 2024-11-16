@@ -50,10 +50,7 @@ export default {
 			// Buscar el ítem "anillo" en la tienda
 			const ringItem = await Shop.findOne({
 				name: { $regex: /anillo/gi },
-			})
-				.lean()
-				.exec();
-
+			}).lean();
 			if (!ringItem)
 				return await replyError(
 					interaction,

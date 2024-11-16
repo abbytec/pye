@@ -31,13 +31,15 @@ export default {
 			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes remover advertencias a ti mismo.");
 
 			// Buscar la advertencia más reciente que no esté oculta
-			const latestWarn = await ModLogs.findOne({ id: user.id, type: "Warn", hiddenCase: { $ne: true } }).sort({ date: -1 });
+			const latestWarn = await ModLogs.findOneAndUpdate(
+				{ id: user.id, type: "Warn", hiddenCase: { $ne: true } },
+				{ $set: { hiddenCase: true } },
+				{ sort: { date: -1 }, new: true }
+			);
 
-			if (!latestWarn) return await replyError(interaction, "Este usuario no tiene advertencias activas.");
-
-			// Marcar la advertencia como oculta
-			latestWarn.hiddenCase = true;
-			await latestWarn.save();
+			if (!latestWarn) {
+				return await replyError(interaction, "Este usuario no tiene advertencias activas.");
+			}
 
 			// Enviar mensaje al usuario
 			member

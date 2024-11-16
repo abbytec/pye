@@ -26,12 +26,11 @@ export default {
 		if (member.bot) return await replyError(msg, "Los bots no pueden tener puntos de ayuda.");
 
 		// get data
-		let data: any = await HelperPoint.findOne({ _id: member.id });
-		if (!data) data = { points: 0 };
-		let people = await HelperPoint.find().sort({ points: -1 }).exec();
+		let data: any = (await HelperPoint.findOne({ _id: member.id })) ?? { points: 0 };
+		let people = await HelperPoint.find().sort({ points: -1 });
 
 		const points = data.points.toLocaleString();
-		const userData = await Users.findOne({ id: member.id }).exec();
+		const userData = await Users.findOne({ id: member.id });
 		const pyeCoins = userData?.bank?.toLocaleString() ?? "-";
 		const rank = (people.findIndex((memberFromDB) => memberFromDB._id === member.id) + 1).toLocaleString() || "-";
 		const avatar = await loadImage(member.displayAvatarURL({ extension: "png", forceStatic: true }));

@@ -14,6 +14,7 @@ import { checkQuestLevel, IQuest } from "../../utils/quest.ts";
 import { getRandomNumber } from "../../utils/generic.ts";
 import { getChannelFromEnv } from "../../utils/constants.ts";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
+import { ExtendedClient } from "../../client.ts";
 
 // Definición de los textos de respuesta para éxito
 const successTexts: Array<(profit: string) => string> = [
@@ -44,16 +45,17 @@ export default {
 			// Obtener datos del usuario
 			let userData: Partial<IUser> = await getOrCreateUser(user.id);
 
-			// Definir rangos de ganancia
-			const lowestMoney = 50; // Ajusta estos valores según tus necesidades
-			const highestMoney = 300;
+			let command = (interaction.client as ExtendedClient).getCommandLimit("slut") ?? {
+				lowestMoney: 500,
+				highestMoney: 1000,
+				failRate: 55,
+			};
 
 			// Generar ganancia aleatoria
-			let profit = getRandomNumber(lowestMoney, highestMoney);
+			let profit = getRandomNumber(command.lowestMoney, command.highestMoney);
 
 			// Determinar si el usuario pierde
-			const failRate = 20; // Porcentaje de fallo, ajusta según tus necesidades
-			const lose = Math.random() <= failRate / 100;
+			const lose = Math.random() <= command.failRate / 100;
 
 			let profitFormatted: string;
 
@@ -83,7 +85,7 @@ export default {
 			}
 
 			try {
-				await Users.updateOne({ id: user.id }, userData).exec();
+				await Users.updateOne({ id: user.id }, userData);
 			} catch (error) {
 				console.error("Error actualizando el usuario:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");

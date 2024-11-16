@@ -11,7 +11,7 @@ import {
 	ComponentType,
 	Guild,
 } from "discord.js";
-import { Users, IUserModel } from "../../Models/User.ts";
+import { Users, IUserModel, getOrCreateUser } from "../../Models/User.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
@@ -39,8 +39,7 @@ export default {
 
 			if (!targetMember) return await replyError(interaction, "No se pudo encontrar al usuario especificado en este servidor.");
 
-			let userData: IUserModel | null = await Users.findOne({ id: user.id }).exec();
-			if (!userData) return await replyError(interaction, "No se pudo encontrar tu perfil de usuario.");
+			let userData: IUserModel = await getOrCreateUser(user.id);
 
 			if (!userData.couples || userData.couples.length === 0) return await replyError(interaction, "No estás casado.");
 
@@ -113,7 +112,7 @@ export default {
 };
 
 async function processDivorce(userId: string, targetUserId: string) {
-	const [userData, targetData] = await Promise.all([Users.findOne({ id: userId }).exec(), Users.findOne({ id: targetUserId }).exec()]);
+	const [userData, targetData] = await Promise.all([Users.findOne({ id: userId }), Users.findOne({ id: targetUserId })]);
 	if (!userData || !targetData) return;
 	userData.couples = userData.couples.filter((couple) => couple.user !== targetUserId);
 	targetData.couples = targetData.couples.filter((couple) => couple.user !== userId);

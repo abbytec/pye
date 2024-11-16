@@ -52,7 +52,7 @@ export default {
 			}
 
 			try {
-				await Users.updateOne({ id: user.id }, { $inc: { cash: amount } }).exec();
+				await Users.updateOne({ id: user.id }, { $inc: { cash: amount } });
 			} catch (error) {
 				console.error("Error actualizando el usuario:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");

@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, GuildMember, AttachmentBuilder, EmbedBuilder } from "discord.js";
-import { Users } from "../../Models/User.ts";
+import { getOrCreateUser, IUserModel } from "../../Models/User.ts";
 import { Home } from "../../Models/Home.ts";
 import redis from "../../redis.ts";
 import path from "path";
@@ -8,10 +8,9 @@ import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { replyError } from "../../utils/messages/replyError.ts"; // Asegúrate de tener estas funciones adaptadas
+import { replyError } from "../../utils/messages/replyError.ts";
 import { PostHandleable } from "../../types/middleware.ts";
 import { COLORS, pyecoin } from "../../utils/constants.ts";
-import { IUser } from "../../interfaces/IUser.ts";
 import { fileURLToPath } from "url";
 import { replyWarning } from "../../utils/messages/replyWarning.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
@@ -40,9 +39,7 @@ export default {
 			member = member || (interaction.member as GuildMember);
 
 			const position = await redis.sendCommand(["ZREVRANK", "top:all", member.id]).then((res) => Number(res?.toString()));
-			const data: Partial<IUser> = (await Users.findOne({ id: member.id }).exec()) ?? { cash: 0, bank: 0, total: 0 };
-
-			if (!data) return await replyError(interaction, "No se pudo encontrar la información del usuario.");
+			const data: IUserModel = await getOrCreateUser(member.id);
 
 			let embed = new EmbedBuilder()
 				.setAuthor({ name: member.user.username, iconURL: member.user.displayAvatarURL() })
@@ -59,7 +56,7 @@ export default {
 			let attachment: AttachmentBuilder[] | undefined = undefined;
 
 			if (data.profile) {
-				const homeData = await Home.findOne({ id: member.id }).exec();
+				const homeData = await Home.findOne({ id: member.id });
 				if (!homeData) return await replyError(interaction, "No se pudo encontrar la información de la casa del usuario.");
 
 				let imagePath = `../../utils/Pictures/Profiles/Casa/${homeData.house.color}/${homeData.house.level}.png`;

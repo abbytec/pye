@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { getOrCreateUser, Users } from "../../Models/User.ts";
+import { getOrCreateUser, IUserModel, Users } from "../../Models/User.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
@@ -21,15 +21,15 @@ export default {
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
-			let userData: Partial<IUser> | null = await getOrCreateUser(user.id);
+			let userData: IUserModel = await getOrCreateUser(user.id);
 
-			if (userData.cash! <= 0) return await replyWarning(interaction, "No tienes suficientes PyE Coins para guardar en el banco.");
+			if (userData.cash <= 0) return await replyWarning(interaction, "No tienes suficientes PyE Coins para guardar en el banco.");
 
 			const cantidadInput = interaction.options.getString("cantidad", true);
 			let cantidad: number;
 
 			if (cantidadInput.toLowerCase() === "all") {
-				cantidad = userData.cash!;
+				cantidad = userData.cash;
 			} else {
 				if (!/^\d+$/gi.test(cantidadInput))
 					return await replyWarning(interaction, 'La cantidad que ingresaste no es válida.\nUso: `/deposit [Cantidad | "all"]`');
@@ -39,12 +39,9 @@ export default {
 					return await replyWarning(interaction, 'La cantidad que ingresaste no es válida.\nUso: `/deposit [Cantidad | "all"]`');
 			}
 
-			if (cantidad > userData.cash!) return await replyWarning(interaction, "No tienes suficientes PyE Coins para depositar.");
+			if (cantidad > userData.cash) return await replyWarning(interaction, "No tienes suficientes PyE Coins para depositar.");
 
-			userData.cash! -= cantidad;
-			userData.bank! += cantidad;
-
-			await Users.updateOne({ id: user.id }, userData);
+			await Users.updateOne({ id: user.id }, { $inc: { cash: -cantidad, bank: cantidad } });
 
 			return await replyOk(interaction, [
 				new EmbedBuilder()

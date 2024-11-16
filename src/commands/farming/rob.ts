@@ -1,6 +1,6 @@
 // src/commands/Currency/rob.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { getOrCreateUser, Users } from "../../Models/User.ts";
+import { getOrCreateUser, IUserModel, Users } from "../../Models/User.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
@@ -79,7 +79,7 @@ export default {
 			if (targetUser.bot) return await replyError(interaction, "Los bots no pueden tener monedas.");
 
 			// Obtener datos del usuario objetivo
-			let targetUserData: Partial<IUser> = await getOrCreateUser(targetUser.id);
+			let targetUserData: IUserModel = await getOrCreateUser(targetUser.id);
 
 			// Verificar si el usuario objetivo tiene dinero en efectivo
 			if ((targetUserData.cash ?? 0) < 1) return await replyError(interaction, "No puedes robarle a alguien que no tiene dinero.");
@@ -88,7 +88,7 @@ export default {
 			await setCooldown(interaction.client as ExtendedClient, user.id, "rob", cooldownDuration);
 
 			// Calcular probabilidad de éxito
-			let probability = (targetUserData.cash ?? 0) / ((targetUserData.cash ?? 0) + (userData.total ?? 0));
+			let probability = targetUserData.cash / (targetUserData.cash + (userData.total ?? 0));
 			probability = Math.max(0.2, Math.min(0.8, probability));
 
 			let lose = Math.random() <= probability;
@@ -97,7 +97,7 @@ export default {
 			if (["Ladron", "Ladrona"].includes(userData.profile?.job ?? "")) lose = false;
 
 			// Calcular ganancia o pérdida
-			let profit = Math.floor((1 - probability) * (targetUserData.cash ?? 0));
+			let profit = Math.floor((1 - probability) * targetUserData.cash);
 
 			// Si la ganancia es menor a 1, informar fracaso
 			if (profit < 1)
@@ -106,16 +106,22 @@ export default {
 					`**Fracasaste** en el intento de robo a ${targetUser.toString()}, te vio y llamó a la policía. 🚔`
 				);
 
-			const profitFormatted = profit.toLocaleString();
 			const targetUserMention = `<@${targetUser.id}>`;
 
 			if (lose) {
 				userData.cash = (userData.cash ?? 0) - profit;
-				if (userData.cash < 0) userData.cash = 0;
+				if (userData.cash < 0) {
+					profit += userData.cash;
+					userData.cash = 0;
+				}
 			} else {
+				targetUserData.cash = targetUserData.cash - profit;
+				if (targetUserData.cash < 0) {
+					profit += targetUserData.cash;
+					targetUserData.cash = 0;
+				}
 				userData.cash = (userData.cash ?? 0) + profit;
-				targetUserData.cash = (targetUserData.cash ?? 0) - profit;
-				if (targetUserData.cash < 0) targetUserData.cash = 0;
+
 				(interaction.client as ExtendedClient).lastRobs.push({
 					userId: user.id,
 					lastTime: Date.now(),
@@ -130,7 +136,6 @@ export default {
 					} as IQuest);
 				} catch (error) {
 					console.error("Error actualizando la quest:", error);
-					// Puedes optar por manejar el error aquí
 				}
 
 				// Actualizar estadísticas de robo
@@ -139,14 +144,15 @@ export default {
 
 			// Guardar datos actualizados
 			try {
-				await Users.updateOne({ id: user.id }, userData).exec();
-				await Users.updateOne({ id: targetUser.id }, targetUserData).exec();
+				await Users.updateOne({ id: user.id }, userData);
+				await Users.updateOne({ id: targetUser.id }, targetUserData);
 			} catch (error) {
 				console.error("Error actualizando los datos del usuario:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
 			}
 
 			// Seleccionar mensaje de éxito o fracaso
+			const profitFormatted = profit.toLocaleString();
 			const description = lose
 				? failureTexts[Math.floor(Math.random() * failureTexts.length)](profitFormatted, targetUserMention)
 				: successTexts[Math.floor(Math.random() * successTexts.length)](profitFormatted, targetUserMention);

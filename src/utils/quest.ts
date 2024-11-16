@@ -37,8 +37,8 @@ export async function checkQuestLevel(
 	}: { msg: ChatInputCommandInteraction; money: number; bump: number; text: number; rep: number; userId: string },
 	game = false
 ) {
-	const user = await Home.findOne({ id: userId }).exec();
-	const dateZ = await Users.findOne({ id: userId }).exec();
+	const user = await Home.findOne({ id: userId });
+	const dateZ = await Users.findOne({ id: userId });
 	let next;
 	if (!user || !user.active) return;
 	const person = msg.client.users.resolve(userId);
