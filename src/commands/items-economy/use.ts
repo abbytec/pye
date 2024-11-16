@@ -1,6 +1,6 @@
 // src/commands/Currency/use.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, GuildMember } from "discord.js";
-import { IUserModel, newUser, Users } from "../../Models/User.ts"; // Asegúrate de tener este modelo correctamente definido
+import { getOrCreateUser, IUserModel } from "../../Models/User.ts"; // Asegúrate de tener este modelo correctamente definido
 import { IShopDocument, Shop } from "../../Models/Shop.ts";
 import { UserRole } from "../../Models/Role.ts";
 import { Home } from "../../Models/Home.ts";
@@ -38,8 +38,7 @@ export default {
 			if (itemInput.startsWith("0")) itemInput = itemInput.replace(/^0+/, "");
 
 			// Obtener al usuario de la base de datos
-			let userData: IUserModel | null = await Users.findOne({ id: user.id }).exec();
-			if (!userData) userData = await newUser(user.id);
+			let userData: IUserModel = await getOrCreateUser(user.id);
 
 			// Buscar el ítem en la tienda por ID o nombre (case-insensitive)
 			const itemData =

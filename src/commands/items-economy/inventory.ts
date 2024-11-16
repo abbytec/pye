@@ -10,7 +10,7 @@ import {
 	Interaction,
 	ButtonInteraction,
 } from "discord.js";
-import { IUserModel, Users } from "../../Models/User.ts"; // Asegúrate de tener este modelo correctamente definido
+import { getOrCreateUser, IUserModel } from "../../Models/User.ts"; // Asegúrate de tener este modelo correctamente definido
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
@@ -55,8 +55,7 @@ export default {
 			let page = pageOption && pageOption > 0 ? pageOption : 1;
 
 			// Obtener los datos del usuario
-			let userData: IUserModel | null = await Users.findOne({ id: member.id }).populate("inventory", "name itemId icon weight").exec();
-			if (!userData) userData = await Users.create({ id: member.id, cash: 0, inventory: [] });
+			let userData: IUserModel = await getOrCreateUser(member.id);
 
 			// Procesar los ítems del inventario
 			const itemsWithQuantity = await getItems(userData);

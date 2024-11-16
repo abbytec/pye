@@ -27,3 +27,5 @@ const schemaMessages = new Schema({
 }, { versionKey: false })
 
 exports.TextMessages = model('TextMessages', schemaMessages)
+
+// function incrementTextMessages(userId, channelId, limit: number) {}

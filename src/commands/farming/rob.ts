@@ -1,6 +1,6 @@
 // src/commands/Currency/rob.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { newUser, Users } from "../../Models/User.ts";
+import { getOrCreateUser, Users } from "../../Models/User.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
@@ -38,10 +38,7 @@ const failureTexts: Array<(profit: string, user: string) => string> = [
 
 async function cooldownFunction(interaction: ChatInputCommandInteraction) {
 	const user = interaction.user;
-	let userData: Partial<IUser> | null = await Users.findOne({
-		id: user.id,
-	}).exec();
-	if (!userData) userData = await newUser(user.id);
+	let userData: Partial<IUser> = await getOrCreateUser(user.id);
 
 	if (["Ladron", "Ladrona"].includes(userData.profile?.job ?? "")) {
 		return cooldownDuration / 2; // La mitad del cooldown
@@ -68,10 +65,7 @@ export default {
 			const user = interaction.user;
 
 			// Obtener datos del usuario
-			let userData: Partial<IUser> | null = await Users.findOne({
-				id: user.id,
-			}).exec();
-			if (!userData) userData = await newUser(user.id);
+			let userData: Partial<IUser> = await getOrCreateUser(user.id);
 
 			// Verificar si el usuario tiene un trabajo que le impide robar
 			if (["Militar", "Policia"].includes(userData.profile?.job ?? ""))
@@ -85,10 +79,7 @@ export default {
 			if (targetUser.bot) return await replyError(interaction, "Los bots no pueden tener monedas.");
 
 			// Obtener datos del usuario objetivo
-			let targetUserData: Partial<IUser> | null = await Users.findOne({
-				id: targetUser.id,
-			}).exec();
-			if (!targetUserData) targetUserData = await newUser(targetUser.id);
+			let targetUserData: Partial<IUser> = await getOrCreateUser(targetUser.id);
 
 			// Verificar si el usuario objetivo tiene dinero en efectivo
 			if ((targetUserData.cash ?? 0) < 1) return await replyError(interaction, "No puedes robarle a alguien que no tiene dinero.");

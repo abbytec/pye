@@ -73,7 +73,7 @@ const main = async () => {
 			loadCommands().then(() => console.log("Comandos cargados.")),
 			loadEvents().then(() => console.log("Eventos cargados.")),
 			connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/", {
-				connectTimeoutMS: 15000,
+				connectTimeoutMS: 20000,
 			}).then(() => console.log("Conectado a la base de datos.")),
 		]).then(async () => await client.login(process.env.TOKEN_BOT));
 	} catch (error) {

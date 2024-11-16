@@ -169,6 +169,12 @@ userSchema.post("updateMany", async function (result: any, next: () => void) {
  */
 export const Users = model<IUserModel>("Users", userSchema);
 
-export async function newUser(id: string) {
+async function newUser(id: string) {
 	return await Users.create({ id });
+}
+
+export async function getOrCreateUser(id: string): Promise<IUserModel> {
+	const user = await Users.findOne({ id }).exec();
+	if (user) return user;
+	return await newUser(id);
 }

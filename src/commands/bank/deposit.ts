@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { newUser, Users } from "../../Models/User.ts";
+import { getOrCreateUser, Users } from "../../Models/User.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
@@ -21,8 +21,7 @@ export default {
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
-			let userData: Partial<IUser> | null = await Users.findOne({ id: user.id }).exec();
-			if (!userData) userData = await newUser(user.id);
+			let userData: Partial<IUser> | null = await getOrCreateUser(user.id);
 
 			if (userData.cash! <= 0) return await replyWarning(interaction, "No tienes suficientes PyE Coins para guardar en el banco.");
 

@@ -18,6 +18,8 @@ export class ExtendedClient extends Client {
 				GatewayIntentBits.GuildModeration,
 				GatewayIntentBits.GuildMessages,
 				GatewayIntentBits.GuildMessageReactions,
+				GatewayIntentBits.DirectMessages,
+				GatewayIntentBits.GuildVoiceStates,
 				GatewayIntentBits.MessageContent,
 			],
 		});

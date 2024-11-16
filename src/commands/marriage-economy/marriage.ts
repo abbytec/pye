@@ -1,6 +1,6 @@
 // src/commands/Currency/marriage.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, User, CommandInteraction, Guild } from "discord.js";
-import { Users, IUserModel } from "../../Models/User.ts";
+import { IUserModel, getOrCreateUser } from "../../Models/User.ts";
 import { Shop } from "../../Models/Shop.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
@@ -53,12 +53,10 @@ export default {
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario especificado en este servidor.");
 
 			// Obtener los datos del usuario que ejecuta el comando
-			let userData: IUserModel | null = await Users.findOne({ id: interaction.user.id }).exec();
-			if (!userData) userData = await Users.create({ id: interaction.user.id });
+			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 
 			// Obtener los datos del usuario objetivo
-			let targetData: IUserModel | null = await Users.findOne({ id: targetUser.id }).exec();
-			if (!targetData) targetData = await Users.create({ id: targetUser.id });
+			let targetData: IUserModel = await getOrCreateUser(targetUser.id);
 
 			switch (subcommand) {
 				case "accept":

@@ -1,7 +1,7 @@
 // profile.ts
 
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } from "discord.js";
-import { newUser, Users } from "../../Models/User.ts";
+import { getOrCreateUser } from "../../Models/User.ts";
 import { HelperPoint, IHelperPointDocument } from "../../Models/HelperPoint.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
@@ -54,8 +54,7 @@ export default {
 
 			if (member.user.bot) return replyWarning(interaction, "Los bots no pueden tener un perfil.");
 
-			let userData = await Users.findOne({ id: member.id });
-			if (!userData) userData = await newUser(member.id);
+			let userData = await getOrCreateUser(member.id);
 
 			if (descriptionOption) {
 				// Actualizar descripción si se proporciona

@@ -1,8 +1,8 @@
 // src/commands/Currency/buy.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, GuildMember } from "discord.js";
-import { newUser, Users } from "../../Models/User.ts"; // Asegúrate de tener este modelo correctamente definido
+import { getOrCreateUser } from "../../Models/User.ts";
 import { Shop } from "../../Models/Shop.ts";
-import { UserRole } from "../../Models/Role.ts"; // Modelo para manejar roles temporales
+import { UserRole } from "../../Models/Role.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
@@ -21,11 +21,7 @@ export default {
 		.addIntegerOption((option) => option.setName("cantidad").setDescription("Cantidad de ítems que deseas comprar.").setRequired(false)),
 
 	execute: composeMiddlewares(
-		[
-			verifyIsGuild(process.env.GUILD_ID ?? ""),
-			verifyChannel(getChannelFromEnv("casinoPye")), // Asegúrate de definir esta función o eliminar si no es necesaria
-			deferInteraction(false),
-		],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction(false)],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
@@ -44,9 +40,7 @@ export default {
 			}
 
 			try {
-				// Obtener al usuario de la base de datos
-				let userData = await Users.findOne({ id: user.id }).exec();
-				if (!userData) userData = await newUser(user.id);
+				let userData = await getOrCreateUser(user.id);
 
 				// Buscar el ítem en la tienda por ID o nombre (case-insensitive)
 				const itemData =

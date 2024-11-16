@@ -1,6 +1,6 @@
 // src/commands/Currency/marry.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, User, AttachmentBuilder } from "discord.js";
-import { Users } from "../../Models/User.ts";
+import { getOrCreateUser } from "../../Models/User.ts";
 import { Shop } from "../../Models/Shop.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
@@ -61,16 +61,14 @@ export default {
 				);
 
 			// Obtener los datos del usuario que envía la propuesta
-			let userData = await Users.findOne({ id: user.id }).exec();
-			if (!userData) userData = await Users.create({ id: user.id });
+			let userData = await getOrCreateUser(user.id);
 
 			// Verificar si el usuario tiene el anillo en su inventario
 			if (!userData.inventory.includes(ringItem._id))
 				return await replyError(interaction, "Necesitas comprar un anillo para poder casarte.");
 
 			// Obtener los datos del usuario objetivo
-			let targetData = await Users.findOne({ id: targetUser.id }).exec();
-			if (!targetData) targetData = await Users.create({ id: targetUser.id });
+			let targetData = await getOrCreateUser(targetUser.id);
 
 			// Verificar que el usuario objetivo tenga un perfil
 			if (!targetData.profile) return await replyError(interaction, "Este usuario no tiene un perfil.");

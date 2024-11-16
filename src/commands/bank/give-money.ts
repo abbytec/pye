@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { newUser, Users } from "../../Models/User.ts";
+import { getOrCreateUser, Users } from "../../Models/User.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
@@ -37,8 +37,7 @@ export default {
 
 			// Validar la cantidad
 			let cantidad: number;
-			let authorData: IUser | null = await Users.findOne({ id: author.id }).exec();
-			if (!authorData) authorData = await newUser(author.id);
+			let authorData: IUser | null = await getOrCreateUser(author.id);
 
 			if (cantidadInput.toLowerCase() === "all") {
 				cantidad = authorData.cash!;
@@ -60,8 +59,7 @@ export default {
 			if (authorData.cash < cantidad)
 				return await replyWarning(interaction, "No tienes suficientes PyE Coins en tu bolsillo para transferir.");
 
-			let targetData: Partial<IUser> | null = await Users.findOne({ id: targetUser.id }).exec();
-			if (!targetData) targetData = await newUser(targetUser.id);
+			let targetData: Partial<IUser> | null = await getOrCreateUser(targetUser.id);
 
 			// Realizar la transferencia
 			authorData.cash -= cantidad;
