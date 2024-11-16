@@ -2,42 +2,175 @@
 
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, AttachmentBuilder, Guild } from "discord.js";
 import Canvas from "@napi-rs/canvas";
+import fetch from "node-fetch"; // Asegúrate de tener instalado node-fetch
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { PostHandleable } from "../../types/middleware.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 
-// Lista de opciones y sus URLs correspondientes
-const defaultImages: Record<string, string> = {
-	js: "https://cdn.discordapp.com/attachments/916353103534632965/1024771598844170330/js.jpg",
-	javascript: "https://cdn.discordapp.com/attachments/916353103534632965/1024771598844170330/js.jpg",
-	py: "https://cdn.discordapp.com/attachments/916353103534632965/1024771600714842142/python.png",
-	python: "https://cdn.discordapp.com/attachments/916353103534632965/1024771600714842142/python.png",
-	rust: "https://cdn.discordapp.com/attachments/916353103534632965/1024771601767612548/rust.jpg",
-	linux: "https://cdn.discordapp.com/attachments/916353103534632965/1024771600324776007/linux.png",
-	php: "https://cdn.discordapp.com/attachments/916353103534632965/1024771599871787108/php.png",
-	kotlin: "https://cdn.discordapp.com/attachments/916353103534632965/1024771601209774130/kotlin.jpg",
-	csharp: "https://cdn.discordapp.com/attachments/916353103534632965/1024771599351676948/csharp.jpg",
-	"c#": "https://cdn.discordapp.com/attachments/916353103534632965/1024771599351676948/csharp.jpg",
-	bash: "https://cdn.discordapp.com/attachments/916353103534632965/1024771598324072600/bash.jpg",
-};
+const GITHUB_API_URL = "https://api.github.com";
+const REPO_OWNER = "cat-milk";
+const REPO_NAME = "Anime-Girls-Holding-Programming-Books";
 
-// Lista de opciones válidas
-const validOptions = Object.keys(defaultImages);
+// Mapeo para opciones que pueden tener diferentes nombres
+// Mapeo de alias de opciones a los nombres de directorios correspondientes
+const optionAliases: Record<string, string> = {
+	// Lenguajes de programación
+	"a++": "A++",
+	"a+": "A++",
+	abap: "ABAP",
+	ai: "AI",
+	apl: "APL",
+	asm: "ASM",
+	ada: "Ada",
+	agda: "Agda",
+	algorithms: "Algorithms",
+	algorithm: "Algorithms",
+	angular: "Angular",
+	architecture: "Architecture",
+	beef: "Beef",
+
+	"c#": "C#",
+	csharp: "C#",
+
+	"c++": "C++",
+	cpp: "C++",
+
+	c: "C",
+	cmake: "CMake",
+	css: "CSS",
+	clojure: "Clojure",
+	cobol: "Cobol",
+	coffeescript: "CoffeeScript",
+	coffee: "CoffeeScript",
+	compilers: "Compilers",
+	cuda: "Cuda",
+	d: "D",
+	dart: "Dart",
+	delphi: "Delphi",
+	"design patterns": "Design Patterns",
+	designpatterns: "Design Patterns",
+	design_pattern: "Design Patterns",
+	editors: "Editors",
+	elixir: "Elixir",
+	elm: "Elm",
+
+	"f#": "F#",
+	fsharp: "F#",
+
+	forth: "FORTH",
+	fortran: "Fortran",
+	gdscript: "GDScript",
+	git: "Git",
+	go: "Go",
+	godot: "Godot",
+	haskell: "Haskell",
+	hott: "HoTT",
+	holyc: "HolyC",
+	idris: "Idris",
+
+	java: "Java",
+	javascript: "Javascript",
+	js: "Javascript",
+	julia: "Julia",
+	kotlin: "Kotlin",
+	linux: "Linux",
+	lisp: "Lisp",
+	lua: "Lua",
+	math: "Math",
+	memes: "Memes",
+	mixed: "Mixed",
+	mongodb: "MongoDB",
+	nim: "Nim",
+
+	nodejs: "NodeJs",
+	"node.js": "NodeJs",
+	node: "NodeJs",
+
+	ocaml: "OCaml",
+	"objective-c": "Objective-C",
+	objectivec: "Objective-C",
+
+	orchestrator: "Orchestrator",
+	other: "Other",
+
+	php: "PHP",
+	perl: "Perl",
+	personification: "Personification",
+
+	powershell: "PowerShell",
+	ps: "PowerShell",
+
+	prolog: "Prolog",
+	purescript: "Purescript",
+
+	python: "Python",
+	py: "Python",
+
+	"quantum computing": "Quantum Computing",
+	quantum: "Quantum Computing",
+
+	r: "R",
+	racket: "Racket",
+	raytracing: "RayTracing",
+	rect: "ReCT",
+	regex: "Regex",
+
+	ruby: "Ruby",
+	rust: "Rust",
+
+	sicp: "SICP",
+	sql: "SQL",
+	scala: "Scala",
+	shell: "Shell",
+	sh: "Shell",
+
+	smalltalk: "Smalltalk",
+	solidity: "Solidity",
+	swift: "Swift",
+
+	systems: "Systems",
+
+	typescript: "Typescript",
+	ts: "Typescript",
+
+	uefi: "UEFI",
+	uncategorized: "Uncategorized",
+
+	unity: "Unity",
+	unreal: "Unreal",
+
+	v: "V",
+	vhdl: "VHDL",
+	verilog: "Verilog",
+
+	"visual basic": "Visual Basic",
+	vb: "Visual Basic",
+	"vb.net": "Visual Basic",
+
+	vuejs: "VueJS",
+	"vue.js": "VueJS",
+	vue: "VueJS",
+
+	vulkan: "Vulkan",
+	webgl: "WebGL",
+};
 
 export default {
 	data: new SlashCommandBuilder()
-		.setName("komi")
-		.setDescription("Envia una imagen de komi con texto personalizado o selecciona una opción predefinida.")
+		.setName("komi-book")
+		.setDescription("Envía una imagen de komi con texto personalizado o una chica anime con un libro.")
 		.addStringOption((option) =>
-			option.setName("texto").setDescription("Texto u opción predefinida ('list' para ver las opciones).").setRequired(true)
+			option
+				.setName("texto")
+				.setDescription("Texto u opción predefinida (escribe 'list' para ver los libros disponibles).")
+				.setRequired(true)
 		),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false)],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const textoInput = interaction.options.getString("texto", true)?.trim();
 			const user = interaction.user;
@@ -45,7 +178,9 @@ export default {
 
 			// Si el usuario solicita la lista de opciones
 			if (/^(list|lista)$/i.test(textoInput)) {
-				const optionsList = validOptions.map((opt) => `❥ \`${opt}\` | \`${opt === "csharp" ? "c#" : opt}\``).join("\n");
+				const optionsList = Object.keys(optionAliases)
+					.map((opt) => `❥ \`${opt}\``)
+					.join("\n");
 				const listEmbed = new EmbedBuilder()
 					.setTitle("__**Lista de Opciones**__")
 					.setDescription(optionsList || "No hay opciones disponibles en este momento.")
@@ -56,20 +191,21 @@ export default {
 
 			// Si el texto corresponde a una opción válida y no hay texto adicional
 			const firstArg = textoInput.split(" ")[0].toLowerCase();
-			if (validOptions.includes(firstArg) && textoInput.split(" ").length === 1) {
-				const imageUrl = defaultImages[firstArg];
-				if (!imageUrl) return await replyError(interaction, "Opción inválida. Usa `/komi list` para ver las opciones disponibles.");
-				const attachment = new AttachmentBuilder(imageUrl, { name: "komi.png" });
-				return await replyOk(interaction, `${user}`, undefined, undefined, [attachment]);
+			const languageKey = optionAliases[firstArg];
+
+			if (languageKey && textoInput.split(" ").length === 1) {
+				// Obtener una imagen aleatoria del repositorio
+				const imageUrl = await getRandomImageFromRepo(languageKey);
+				if (!imageUrl) return await replyError(interaction, "No se pudo obtener una imagen para la opción especificada.");
+				interaction.editReply({ files: [new AttachmentBuilder(imageUrl, { name: "komi.png" })] });
+				return;
 			}
 
 			// Generar una imagen personalizada con el texto proporcionado
 			// Cargar la imagen de fondo
 			const canvas = Canvas.createCanvas(640, 480);
 			const ctx = canvas.getContext("2d");
-			const backgroundImage = await Canvas.loadImage(
-				"https://cdn.discordapp.com/attachments/916353103534632965/1024771597669781565/normal.png"
-			);
+			const backgroundImage = await Canvas.loadImage("https://i.imgur.com/9udmQFS.png");
 			ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
 			// Procesar el texto
@@ -110,9 +246,46 @@ export default {
 			// Dibujar el texto en el canvas
 			ctx.fillText(finalText, textX, textY);
 
-			const attachment = new AttachmentBuilder(canvas.toBuffer("image/png"), { name: "komi.png" });
+			const attachment = new AttachmentBuilder(canvas.toBuffer("image/png"), {
+				name: "komi.png",
+			});
 
-			return await replyOk(interaction, "", undefined, undefined, [attachment]);
+			interaction.editReply({ files: [attachment] });
 		}
 	),
 };
+
+// Función para obtener una imagen aleatoria de un lenguaje específico
+async function getRandomImageFromRepo(language: string): Promise<string | null> {
+	try {
+		const response = await fetch(`${GITHUB_API_URL}/repos/${REPO_OWNER}/${REPO_NAME}/contents/${language}`);
+		if (!response.ok) {
+			console.error(`Error al obtener contenido de GitHub: ${response.status}`);
+			return null;
+		}
+		const data = await response.json();
+		if (!Array.isArray(data)) {
+			console.error("El formato de los datos recibidos no es válido.");
+			return null;
+		}
+
+		// Filtrar solo archivos de imagen
+		const images = data.filter((item) => item.type === "file" && /\.(png|jpg|jpeg|gif)$/i.test(item.name));
+
+		if (images.length === 0) {
+			console.error("No se encontraron imágenes en el directorio.");
+			return null;
+		}
+
+		// Seleccionar una imagen aleatoria
+		const randomImage = images[Math.floor(Math.random() * images.length)];
+
+		// Construir la URL directa a la imagen
+		const imageUrl = `${randomImage.download_url}`;
+
+		return imageUrl;
+	} catch (error) {
+		console.error("Error al obtener la imagen del repositorio:", error);
+		return null;
+	}
+}
