@@ -19,12 +19,19 @@
 		"@napi-rs/canvas": "^0.1.55",
 		"discord.js": "^14.16.3",
 		"dotenv": "^16.4.5",
+		"gif-encoder": "^0.7.2",
+		"is-svg": "^5.1.0",
 		"mongoose": "^8.6.3",
 		"node-fetch": "^3.3.2",
-		"redis": "^4.7.0"
+		"redis": "^4.7.0",
+		"sharp": "^0.33.5",
+		"twemoji-parser": "^14.0.0"
 	},
 	"devDependencies": {
+		"@types/gif-encoder": "^0.7.4",
 		"@types/ms": "^0.7.34",
+		"@types/sharp": "^0.32.0",
+		"@types/twemoji-parser": "^13.1.4",
 		"cross-env": "^7.0.3",
 		"ts-node": "^10.9.2",
 		"ts-node-dev": "^2.0.0"

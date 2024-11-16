@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Document, Schema, model } from "mongoose";
 
 interface IStarBoard {
 	id: string;
@@ -6,7 +6,9 @@ interface IStarBoard {
 	stars: number;
 }
 
-export interface IStarBoardDocument extends IStarBoard, Document {}
+export interface IStarBoardDocument extends IStarBoard, Document {
+	id: string;
+}
 
 const schemaStarBoard = new Schema<IStarBoardDocument>(
 	{

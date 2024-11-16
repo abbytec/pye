@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Document, Schema, model } from "mongoose";
 
 interface Role {
 	id: string;
@@ -7,7 +7,9 @@ interface Role {
 	count: number;
 }
 
-interface RoleDocument extends Role, Document {}
+interface RoleDocument extends Role, Document {
+	id: string;
+}
 
 const schemaUserRole = new Schema<RoleDocument>(
 	{

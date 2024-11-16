@@ -10,6 +10,7 @@
 		"skipLibCheck": true,
 		"strict": true,
 		"types": ["node"],
+		"lib": ["es2021"],
 		"allowImportingTsExtensions": true,
 		"noEmit": true,
 		"declaration": true
