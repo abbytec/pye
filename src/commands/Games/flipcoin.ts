@@ -3,7 +3,7 @@ import { COLORS, getChannelFromEnv } from "../../utils/constants.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { PostHandleable } from "../../types/middleware.ts";
 import { IUser } from "../../interfaces/IUser.ts";
-import { getOrCreateUser, Users } from "../../Models/User.ts";
+import { getOrCreateUser, IUserModel, Users } from "../../Models/User.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
@@ -32,36 +32,27 @@ export default {
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const user = interaction.user;
-			let amount: number = interaction.options.getInteger("cantidad", true);
+			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			let side: string = interaction.options.getString("lado", true);
 
 			if (amount < 0) return replyError(interaction, "Se ingresó una cantidad inválida");
+			if (amount > 4000) return replyError(interaction, "No puedes apostar mas de 4000 PyE Coins.");
 
-			let userData: Partial<IUser> = await getOrCreateUser(user.id);
+			let userData: IUserModel = await getOrCreateUser(user.id);
 
 			const flipcoin = ["cara", "cruz"][Math.floor(Math.random() * 2)];
 
-			if (flipcoin != side) {
-				userData.cash = (userData.cash ?? 0) - amount;
-				userData.total = (userData.total ?? 0) - amount;
-			} else {
-				let profit = amount * 2;
+			if (amount > userData.cash) return await replyError(interaction, "No tienes suficientes PyE Coins para apostar.");
+
+			if (flipcoin == side) {
 				const userJob = userData.profile?.job;
-
-				// Ajustar ganancia según el trabajo
-				if (userJob === "Bombero" || userJob === "Bombera") {
-					profit += profit * 0.35;
-				}
-
-				profit = Math.ceil(amount);
-
-				// Actualizar el dinero del usuario
-				userData.cash = (userData.cash ?? 0) + profit;
-				userData.total = (userData.total ?? 0) + profit;
+				if (userJob === "Bombero" || userJob === "Bombera") amount += Math.ceil(amount * 0.35);
+			} else {
+				amount = 0 - amount;
 			}
 
 			try {
-				await Users.updateOne({ id: user.id }, userData).exec();
+				await Users.updateOne({ id: user.id }, { $inc: { cash: amount } }).exec();
 			} catch (error) {
 				console.error("Error actualizando el usuario:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
@@ -70,9 +61,7 @@ export default {
 			// Crear embed de respuesta
 			const embed = new EmbedBuilder()
 				.setAuthor({ name: "Cruz o cara", iconURL: "https://cdn.discordapp.com/emojis/911087695864950854.gif?size=96" })
-				.setDescription(
-					`Ha salido \`${flipcoin === "cruz" ? "cara" : "cruz"}\` y ${(flipcoin == side) === true ? "perdiste" : "ganaste"} ${amount}.`
-				)
+				.setDescription(`Ha salido \`${flipcoin}\` y ${flipcoin == side ? "ganaste" : "perdiste"} ${Math.abs(amount)}.`)
 				.setColor(flipcoin != side ? COLORS.errRed : COLORS.okGreen)
 				.setTimestamp();
 
