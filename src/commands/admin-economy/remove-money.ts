@@ -28,7 +28,7 @@ export default {
 			option.setName("cantidad").setDescription("Cantidad de PyE Coins a remover.").setRequired(true).setMinValue(1)
 		)
 		.addUserOption((option) => option.setName("usuario").setDescription("Usuario al que se le removerá el dinero.").setRequired(false))
-		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator), // Solo administradores pueden usarlo
+		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers), // Solo administradores pueden usarlo
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
