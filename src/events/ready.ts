@@ -1,6 +1,7 @@
 import { Events, ActivityType } from "discord.js";
 import { ExtendedClient } from "../client.ts";
 import { CommandLimits, ICommandLimits } from "../Models/Command.ts";
+import { Money, IMoney } from "../Models/Money.ts";
 
 export default {
 	name: Events.ClientReady,
@@ -11,6 +12,11 @@ export default {
 		await CommandLimits.find().then((res: ICommandLimits[]) => {
 			res.forEach((command) => {
 				client.setCommandLimit(command);
+			});
+		});
+		await Money.find().then((res: IMoney[]) => {
+			res.forEach((money) => {
+				client.setMoneyConfig(money);
 			});
 		});
 

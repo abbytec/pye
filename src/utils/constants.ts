@@ -3,7 +3,7 @@ const CHANNELS = {
 	ayuda: "916353103534632964",
 	bansanciones: "844385995352047646",
 	casinoPye: "973425187301261393",
-	comparte: "924436818718494740",
+	recursos: "924436818718494740",
 	general: "1142244181587263511", // chequear
 	filosofiaPolitica: "847920994156806194",
 	logPuntos: "932871373280395314",
@@ -13,7 +13,6 @@ const CHANNELS = {
 	ofreceServicios: "901578179431530496",
 	proyectosNoPagos: "785303382314844160",
 	puntos: "925121655578173440",
-	recursos: "768326411484135425",
 	reglas: "845314420494434355",
 	roles: "999427534670278667",
 	chatProgramadores: "807385882868580392",
@@ -22,8 +21,9 @@ const CHANNELS = {
 };
 
 const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
-	comparte: "1144149847839084624",
+	recursos: "1296190631269372055",
 	general: "1296190631269372046",
+	filosofiaPolitica: "1296190631269372048",
 	chatProgramadores: "1142244181587263511",
 	ofreceServicios: "1144133135475425320",
 	puntos: "1144159059247898657",
@@ -84,6 +84,9 @@ const ROLES = {
 
 	// especiales
 	granApostador: "884160604275892234",
+	granAportador: "873596856121327626",
+	granDebatidor: "873597268819865671",
+	especialistaEnMemes: "873596533503848509",
 
 	// sanciones
 	restringido: "984278721055830047",
@@ -113,6 +116,9 @@ const DEV_ROLES: Record<Roles, string> = {
 
 	// especiales
 	granApostador: "1296190630657134617",
+	granAportador: "1296190630657134619",
+	granDebatidor: "1296190630657134618",
+	especialistaEnMemes: "1296190630657134620",
 
 	// sanciones
 	restringido: "1296190630678233109",

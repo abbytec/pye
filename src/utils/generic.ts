@@ -1,5 +1,6 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, Message } from "discord.js";
 import { COLORS } from "./constants.ts";
+import { TextMessages } from "../Models/TextMessages.ts";
 
 export const getRandomNumber = (min = 0, max = 1) => (Math.random() * (max - min) + min) | 0;
 
@@ -89,4 +90,16 @@ export async function generateLeaderboard(
 	const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(backButton, nextButton);
 
 	return { embed, actionRow };
+}
+
+export async function checkRole(msg: Message<boolean>, roleId: string, limit: number, roleName?: string) {
+	if ((msg.member as GuildMember).roles.cache.has(roleId)) return;
+	let data = await TextMessages.findOneAndUpdate(
+		{ channelId: roleName ?? msg.channel.id, id: msg.author.id },
+		{ $inc: { messages: 1 } },
+		{ new: true, upsert: true }
+	);
+	if (data?.messages >= limit) {
+		(msg.member as GuildMember).roles.add(roleId).catch(() => null);
+	}
 }

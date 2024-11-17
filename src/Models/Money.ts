@@ -5,7 +5,7 @@ interface MoneyConfig {
 	coins: number;
 }
 
-interface IMoney {
+export interface IMoney {
 	_id: string;
 	bump: number;
 	voice: MoneyConfig;

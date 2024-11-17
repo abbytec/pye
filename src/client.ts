@@ -4,12 +4,14 @@ import { Command } from "./types/command.ts"; // Asegúrate de definir la interf
 import { ICooldown } from "./Models/Cooldown.ts";
 import { Rob } from "./commands/farming/rob.ts";
 import { ICommandLimits } from "./Models/Command.ts";
+import { IMoney } from "./Models/Money.ts";
 
 export class ExtendedClient extends Client {
 	public commands: Collection<string, Command>;
 	private readonly _commandLimits: Collection<string, ICommandLimits>;
 	public cooldowns: Map<string, ICooldown>;
 	public lastRobs: Rob[];
+	public moneyConfigs: Map<string, IMoney>;
 
 	constructor() {
 		super({
@@ -30,6 +32,7 @@ export class ExtendedClient extends Client {
 		this.cooldowns = new Map();
 		this.lastRobs = [];
 		this._commandLimits = new Collection();
+		this.moneyConfigs = new Map();
 	}
 
 	public getCommandLimit(commandName: string) {
@@ -38,5 +41,26 @@ export class ExtendedClient extends Client {
 
 	public setCommandLimit(command: ICommandLimits) {
 		this._commandLimits.set(command.name, command);
+	}
+
+	public setMoneyConfig(moneyConfig: IMoney) {
+		this.moneyConfigs.set(moneyConfig._id, moneyConfig);
+	}
+
+	public getMoneyConfig(guildId: string) {
+		return (
+			this.moneyConfigs.get(guildId) ?? {
+				_id: process.env.CLIENT_ID ?? "",
+				bump: 0,
+				voice: {
+					time: 60000,
+					coins: 100,
+				},
+				text: {
+					time: 3000,
+					coins: 10,
+				},
+			}
+		);
 	}
 }

@@ -1,5 +1,5 @@
 // src/commands/Staff/timeout.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, User, GuildMember } from "discord.js";
 import { getChannelFromEnv, getRoleFromEnv, USERS } from "../../utils/constants.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
@@ -10,6 +10,7 @@ import { ModLogs } from "../../Models/ModLogs.ts";
 import ms from "ms";
 import { logMessages } from "../../utils/finalwares/logMessages.ts";
 import { replyWarning } from "../../utils/messages/replyWarning.ts";
+import { PostHandleable } from "../../types/middleware.ts";
 
 export default {
 	group: "⚙️ - Administración y Moderación",
@@ -42,68 +43,7 @@ export default {
 
 			// Aplicar el timeout
 			try {
-				await member.timeout(duration, reason);
-
-				// Registrar en ModLogs
-				await ModLogs.create({
-					id: user.id,
-					moderator: interaction.user.tag,
-					reason: reason,
-					date: Date.now(),
-					type: "Timeout",
-				});
-
-				const data = await ModLogs.find({ id: user.id });
-
-				// Enviar mensaje directo al usuario
-				await member
-					.send({
-						embeds: [
-							new EmbedBuilder()
-								.setAuthor({
-									name: member.user.tag,
-									iconURL: member.user.displayAvatarURL(),
-								})
-								.setDescription(
-									"Has sido aislado en el servidor de **PyE**.\nPodrás interactuar en los canales una vez tu sanción haya terminado. Recuerda leer <#845314420494434355> para evitar que vuelva a pasar y conocer las sanciones. \nTambien puedes intentar apelar a tu des-aislamiento desde este otro servidor: https://discord.gg/F8QxEMtJ3B"
-								)
-								.addFields([
-									{ name: "Tiempo", value: `\`${ms(duration, { long: true })}\``, inline: true },
-									{ name: "Casos", value: `#${data.length}`, inline: true },
-									{ name: "Razón", value: reason, inline: true },
-								])
-								.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)
-								.setTimestamp(),
-						],
-					})
-					.catch(() => null);
-
-				// Responder al comando
-				await replyWarning(
-					interaction,
-					`**${member.user.tag}** ha sido aislado del servidor por \`${ms(duration, { long: true })}\`.`,
-					undefined,
-					undefined,
-					undefined,
-					undefined,
-					false
-				);
-				return {
-					logMessages: [
-						{
-							channel: getChannelFromEnv("bansanciones"),
-							user: member.user,
-							description: `**${member.user.tag}** ha sido aislado del servidor.`,
-							fields: [
-								{ name: "Tiempo", value: `\`${ms(duration, { long: true })}\``, inline: true },
-								{ name: "Razón", value: reason, inline: true },
-								{ name: "ID", value: `${member.id}`, inline: true },
-								{ name: "Moderador", value: interaction.user.tag, inline: true },
-								{ name: "Casos", value: `#${data.length}`, inline: true },
-							],
-						},
-					],
-				};
+				await applyTimeout(duration, reason, member, interaction.guild?.iconURL({ extension: "gif" }) ?? null, interaction.user);
 			} catch {
 				return await replyError(interaction, "No se pudo aplicar el timeout al usuario.");
 			}
@@ -111,3 +51,66 @@ export default {
 		[logMessages]
 	),
 };
+
+export async function applyTimeout(
+	duration: number,
+	reason: string,
+	member: GuildMember,
+	interactionGuildIconURL: string | null,
+	moderator?: User
+): Promise<PostHandleable> {
+	// Aplicar el timeout
+	await member.timeout(duration, reason);
+
+	// Registrar en ModLogs
+	await ModLogs.create({
+		id: member.id,
+		moderator: moderator?.tag ?? "BotPyE",
+		reason: reason,
+		date: new Date(),
+		type: "Timeout",
+	});
+
+	// Obtener todos los casos actuales del usuario
+	const data = await ModLogs.find({ id: member.id });
+
+	// Enviar mensaje directo al usuario
+	await member
+		.send({
+			embeds: [
+				new EmbedBuilder()
+					.setAuthor({
+						name: member.user.tag,
+						iconURL: member.user.displayAvatarURL(),
+					})
+					.setDescription(
+						"Has sido aislado en el servidor de **PyE**.\nPodrás interactuar en los canales una vez tu sanción haya terminado. Recuerda leer <#845314420494434355> para evitar que vuelva a pasar y conocer las sanciones. \nTambién puedes intentar apelar a tu des-aislamiento desde este otro servidor: https://discord.gg/F8QxEMtJ3B"
+					)
+					.addFields([
+						{ name: "Tiempo", value: `\`${ms(duration, { long: true })}\``, inline: true },
+						{ name: "Casos", value: `#${data.length}`, inline: true },
+						{ name: "Razón", value: reason, inline: true },
+					])
+					.setThumbnail(interactionGuildIconURL)
+					.setTimestamp(),
+			],
+		})
+		.catch(() => null); // Ignorar errores si el usuario no acepta DMs
+
+	return {
+		logMessages: [
+			{
+				channel: getChannelFromEnv("bansanciones"),
+				user: member.user,
+				description: `**${member.user.tag}** ha sido aislado del servidor.`,
+				fields: [
+					{ name: "Tiempo", value: `\`${ms(duration, { long: true })}\``, inline: true },
+					{ name: "Razón", value: reason, inline: true },
+					{ name: "ID", value: `${member.id}`, inline: true },
+					{ name: "Moderador", value: moderator?.tag ?? "BotPyE", inline: true },
+					{ name: "Casos", value: `#${data.length}`, inline: true },
+				],
+			},
+		],
+	};
+}
