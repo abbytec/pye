@@ -1,9 +1,8 @@
-import { Client, MessageReaction, User, TextChannel, EmbedBuilder, Events, GuildMember } from "discord.js";
+import { MessageReaction, User, TextChannel, EmbedBuilder, Events, GuildMember } from "discord.js";
 import { IStarBoardDocument, StarBoard } from "../Models/StarBoard.ts";
 import { StarMessage } from "../Models/StarMessage.ts";
 import { Evento } from "../types/event.ts";
-import { ExtendedClient } from "../client.ts";
-import { getRoleFromEnv } from "../utils/constants.ts";
+import { getChannelFromEnv, getRoleFromEnv } from "../utils/constants.ts";
 
 /**
  * Maneja el evento messageReactionAdd
@@ -13,9 +12,10 @@ import { getRoleFromEnv } from "../utils/constants.ts";
 export default {
 	name: Events.MessageReactionAdd,
 	async execute(reaction: MessageReaction, user: User) {
-		if (!reaction || !user || user.bot || !reaction.message?.guild || reaction.message.author?.bot) return;
+		if (!reaction || !user || user.bot || !reaction.message?.guild) return;
 		let fullReaction = await fetchStructure(reaction);
-		if (reaction.emoji.name === "⭐") {
+		let category = (reaction.message.channel as TextChannel).parentId;
+		if (reaction.emoji.name === "⭐" && category !== getChannelFromEnv("categoryStaff")) {
 			const data = await StarBoard.findOne({ id: process.env.GUILD_ID });
 			if (!data) return;
 			await checkReactions(fullReaction, data).catch((error: any) => console.error("Error al procesar la reacción:", error));
