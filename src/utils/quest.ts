@@ -13,30 +13,21 @@ import {
 	TextChannel,
 	MessageCreateOptions,
 	StringSelectMenuInteraction,
+	Message,
 } from "discord.js";
 import { COLORS } from "./constants.ts";
 const Choose = new Set();
 
 export interface IQuest {
-	msg: ChatInputCommandInteraction;
+	msg: ChatInputCommandInteraction | Message;
 	money: number;
 	bump: number;
-	text: number;
-	rep: number;
+	text?: number;
+	rep?: number;
 	userId: string;
 }
 
-export async function checkQuestLevel(
-	{
-		msg,
-		money,
-		bump,
-		text,
-		rep,
-		userId,
-	}: { msg: ChatInputCommandInteraction; money: number; bump: number; text: number; rep: number; userId: string },
-	game = false
-) {
+export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: IQuest, game = false) {
 	const user = await Home.findOne({ id: userId });
 	const dateZ = await Users.findOne({ id: userId });
 	let next;

@@ -1,17 +1,26 @@
 import { DMChannel, EmbedBuilder, Events, Guild, GuildMember, Message, PublicThreadChannel, TextChannel, ThreadChannel } from "discord.js";
 import { ExtendedClient } from "../client.ts";
-import { COLORS, getChannelFromEnv, getForumIdsFromEnv, getRoleFromEnv } from "../utils/constants.ts";
+import { COLORS, DISBOARD_UID, EMOJIS, getChannelFromEnv, getForumIdsFromEnv, getRoleFromEnv } from "../utils/constants.ts";
 import { applyTimeout } from "../commands/moderation/timeout.ts";
 import { Users } from "../Models/User.ts";
 import { getCooldown, setCooldown } from "../utils/cooldowns.ts";
 import { checkRole } from "../utils/generic.ts";
 import { checkHelp } from "../utils/checkhelp.ts";
+import { bumpHandler } from "../utils/bumpHandler.ts";
 
 const PREFIX = "!"; // Define tu prefijo
 
 export default {
 	name: Events.MessageCreate,
 	async execute(message: Message) {
+		if (
+			message.author.id === DISBOARD_UID &&
+			message.embeds.length &&
+			message.embeds[0].data.color == COLORS.lightSeaGreen &&
+			message.embeds[0].data.description?.includes(EMOJIS.thumbsUp)
+		) {
+			return bumpHandler(message.client as ExtendedClient, message);
+		}
 		// Evita mensajes de bots o mensajes que no tengan el prefijo
 		if (message.author.bot || message.author.system) return;
 		const client = message.client as ExtendedClient;
@@ -71,7 +80,6 @@ export default {
 				return;
 			}
 
-			// Ejecuta el comando con prefijo
 			try {
 				if (command.executePrefix) {
 					await command.executePrefix(message, commandArgs);

@@ -47,7 +47,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	recursos: "1296190631269372055",
 	general: "1296190631269372046",
 	filosofiaPolitica: "1296190631269372048",
-	chatProgramadores: "1142244181587263511",
+	chatProgramadores: "1296190631269372047",
 	ofreceServicios: "1144133135475425320",
 	puntos: "1296190632317943913",
 	sugerencias: "1296190631026233348",
@@ -238,8 +238,10 @@ export const COLORS = {
 	warnOrange: 0xffae42,
 };
 
-const EMOJIS = {
+export const EMOJIS = {
 	thumbsUp: ":thumbsup:",
 };
+
+export const DISBOARD_UID = "302050872383242240";
 
 export const pyecoin = "<a:pyecoin:911087695864950854>";
