@@ -1,4 +1,4 @@
-import { Channel, ChatInputCommandInteraction, Client, Guild, Message } from "discord.js";
+import { Channel, ChatInputCommandInteraction, Guild, Message } from "discord.js";
 const CHANNELS = {
 	ayuda: "916353103534632964",
 	bansanciones: "844385995352047646",
@@ -48,7 +48,9 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	general: "1296190631269372046",
 	filosofiaPolitica: "1296190631269372048",
 	chatProgramadores: "1296190631269372047",
-	ofreceServicios: "1144133135475425320",
+	ofreceServicios: "1296190631269372051",
+	proyectosNoPagos: "1296190631269372052",
+	ofertasDeEmpleos: "1296190631269372050",
 	puntos: "1296190632317943913",
 	sugerencias: "1296190631026233348",
 	logPuntos: "1296190632317943914",
