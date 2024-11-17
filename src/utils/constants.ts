@@ -1,23 +1,19 @@
 import { Channel, ChatInputCommandInteraction, Guild, Message } from "discord.js";
 const CHANNELS = {
 	ayuda: "916353103534632964",
-	bansanciones: "844385995352047646",
 	casinoPye: "973425187301261393",
 	recursos: "924436818718494740",
 	general: "1142244181587263511", // chequear
 	filosofiaPolitica: "847920994156806194",
-	logPuntos: "932871373280395314",
 	memes: "783188322087993346",
 	mudae: "875535411924062279",
 	ofertasDeEmpleos: "793661563705360394",
 	ofreceServicios: "901578179431530496",
 	proyectosNoPagos: "785303382314844160",
-	puntos: "925121655578173440",
 	reglas: "845314420494434355",
 	roles: "999427534670278667",
 	chatProgramadores: "807385882868580392",
 	sugerencias: "932011356213899274",
-	logs: "1145160830741135470",
 
 	// foros
 	hardware: "1019727139173576814",
@@ -41,6 +37,16 @@ const CHANNELS = {
 	"java-kotlin": "1122390294973915176",
 	matemáticas: "1305675508637499493",
 	"física-química": "867526069875507240",
+
+	// staff
+	puntos: "925121655578173440",
+	logPuntos: "932871373280395314",
+	logs: "1145160830741135470",
+	bansanciones: "844385995352047646",
+	staff: "1289417254894702644",
+	moderadores: "1289416349860368425",
+
+	categoryStaff: "837035918187298836",
 };
 
 const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
@@ -51,13 +57,17 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	ofreceServicios: "1296190631269372051",
 	proyectosNoPagos: "1296190631269372052",
 	ofertasDeEmpleos: "1296190631269372050",
-	puntos: "1296190632317943913",
 	sugerencias: "1296190631026233348",
+	casinoPye: "1296190631533608961",
+	"html-css": "1300952181171818536",
+
+	// staff
+	puntos: "1296190632317943913",
 	logPuntos: "1296190632317943914",
 	bansanciones: "1296190632317943909",
 	logs: "1296190632020414594",
-	casinoPye: "1296190631533608961",
-	"html-css": "1300952181171818536",
+	staff: "1296190632020414595",
+	categoryStaff: "1296190631810568283",
 };
 
 const isDevelopment = process.env.NODE_ENV === "development";

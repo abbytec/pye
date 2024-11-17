@@ -35,7 +35,7 @@ interface FetchResult {
  */
 async function fetchMessagesAndHelpers(gratitudeMessage: Message): Promise<FetchResult> {
 	const messagesFetched = await gratitudeMessage.channel.messages.fetch({
-		limit: 8,
+		limit: 10,
 		before: gratitudeMessage.id,
 	});
 
@@ -109,9 +109,10 @@ function buildFields({ gratitudeMessage, messages, repliedMessage, helpers }: Bu
 
 	const helpedMessage = `
 ${repliedText}
-${repliedMessage ? "  :arrow_right_hook:" : ""} ${gratitudeMessage.author} (\`${gratitudeMessage.author.id}\`) ${
-		repliedMessage ? "**Miembro ayudado respondió** :" : ""
-	} ${gratitudeMessage.content.slice(0, 250)} [Ir allá!](${gratitudeMessage.url})
+${repliedMessage ? "  :arrow_right_hook:" : ""} ${repliedMessage ? "**Miembro ayudado respondió** :" : ""} ${gratitudeMessage.content.slice(
+		0,
+		250
+	)}... [Ir allá!](${gratitudeMessage.url})
 `;
 
 	const helpedMessageTrigger = {
@@ -203,7 +204,7 @@ async function sendHelpNotification(msg: Message, fields: APIEmbedField[], butto
  * @param msg - The message to check.
  * @returns A boolean indicating if the message was a help message.
  */
-export async function checkHelp(msg: Message): Promise<boolean> {
+export async function checkHelp(msg: Message): Promise<void> {
 	const normalizedString = normalizeString(msg.content);
 	const gratitudeKeywords = [
 		"gracias",
@@ -227,14 +228,15 @@ export async function checkHelp(msg: Message): Promise<boolean> {
 
 	// Verificar si el mensaje contiene alguna de las palabras de gratitud
 	const containsGratitude = gratitudeKeywords.some((keyword) => normalizedString.includes(keyword));
-	if (!containsGratitude) return false;
+	if (!containsGratitude) return;
 
 	// Excluir ciertos mensajes que contienen palabras negativas
 	const containsNegative = negativeKeywords.some((keyword) => normalizedString.includes(keyword));
-	if (containsNegative) return false;
+	if (containsNegative) return;
 
 	try {
 		const { helpers, messages, repliedMessage } = await fetchMessagesAndHelpers(msg);
+		if (helpers.length === 0) return;
 		const buttons: ButtonBuilder[] = [new ButtonBuilder().setCustomId("cancel-point").setLabel("Eliminar").setStyle(ButtonStyle.Danger)];
 
 		helpers.forEach((id, index) => {
@@ -254,10 +256,10 @@ export async function checkHelp(msg: Message): Promise<boolean> {
 		});
 
 		await sendHelpNotification(msg, fields, buttons);
-		return true;
+		return;
 	} catch (error: any) {
 		console.error("Error en checkHelp:", error);
 		await sendErrorReport(msg, error, "checkHelp", msg.url);
-		return false;
+		return;
 	}
 }
