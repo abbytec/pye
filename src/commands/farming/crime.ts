@@ -11,7 +11,7 @@ import { replyError } from "../../utils/messages/replyError.ts";
 import { IUser } from "../../interfaces/IUser.ts";
 import { increaseHomeMonthlyIncome } from "../../Models/Home.ts";
 import { checkQuestLevel, IQuest } from "../../utils/quest.ts";
-import { getRandomNumber } from "../../utils/generic.ts";
+import { calculateJobMultiplier, getRandomNumber } from "../../utils/generic.ts";
 import { getChannelFromEnv } from "../../utils/constants.ts";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
 import { ExtendedClient } from "../../client.ts";
@@ -71,16 +71,7 @@ export default {
 				}
 			} else {
 				// El usuario gana, ajustar profit por bonificaciones de trabajo
-				const userJob = userData.profile?.job;
-				const couples = userData.couples || [];
-
-				if ((userJob === "Enfermero" || userJob === "Enfermera") && couples.some((s) => s.job === "Doctor" || s.job === "Doctora")) {
-					profit += profit * 0.5;
-				}
-
-				if ((userJob === "Doctor" || userJob === "Doctora") && couples.some((s) => s.job === "Enfermero" || s.job === "Enfermera")) {
-					profit += profit * 0.5;
-				}
+				profit = calculateJobMultiplier(userData.profile?.job, profit, userData.couples || [])
 
 				profit = Math.floor(profit);
 				userData.cash = (userData.cash ?? 0) + profit;

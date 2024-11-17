@@ -1,5 +1,8 @@
 import { Types } from "mongoose";
-
+export interface ICouple {
+	user: string;
+	job: string;
+}
 export interface IUser {
 	id: string;
 	cash: number;
@@ -7,10 +10,7 @@ export interface IUser {
 	rob: number;
 	bet: number;
 	earnings: number;
-	couples: {
-		user: string;
-		job: string;
-	}[];
+	couples: ICouple[];
 	couple: string;
 	description: string;
 	profile?: {

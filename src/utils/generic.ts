@@ -1,6 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, Message } from "discord.js";
 import { COLORS } from "./constants.ts";
 import { TextMessages } from "../Models/TextMessages.ts";
+import { ICouple } from "../interfaces/IUser.ts";
 
 export const getRandomNumber = (min = 0, max = 1) => (Math.random() * (max - min) + min) | 0;
 
@@ -102,4 +103,15 @@ export async function checkRole(msg: Message<boolean>, roleId: string, limit: nu
 	if (data?.messages >= limit) {
 		(msg.member as GuildMember).roles.add(roleId).catch(() => null);
 	}
+}
+
+export function calculateJobMultiplier(job: string | undefined, profit: number, couples: ICouple[]) {
+	if ((job === "Enfermero" || job === "Enfermera") && couples.some((s) => s.job === "Doctor" || s.job === "Doctora")) {
+		profit += profit * 0.5;
+	}
+	if ((job === "Doctor" || job === "Doctora") && couples.some((s) => s.job === "Enfermero" || s.job === "Enfermera")) {
+		profit += profit * 0.5;
+	}
+	if (job === "Bombero" || job === "Bombera") profit += Math.ceil(profit * 0.35)
+	return profit
 }
