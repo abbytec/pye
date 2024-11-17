@@ -58,7 +58,7 @@ export default {
 	execute: async function (thread: ThreadChannel) {
 		if (thread.parent?.type == ChannelType.GuildForum) {
 			//Enviar advertencia de nuevo thread.
-			const canal = (await getChannel(thread.guild, "sugerencias", true)) as TextChannel;
+			const canal = (await getChannel(thread.guild, "chatProgramadores", true)) as TextChannel;
 			canal.send({
 				embeds: [
 					new EmbedBuilder()

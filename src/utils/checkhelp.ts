@@ -1,6 +1,6 @@
 // src/utils/checkHelp.ts
 
-import { ActionRowBuilder, ButtonBuilder, AttachmentBuilder, ButtonStyle, Message, TextChannel, EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, AttachmentBuilder, ButtonStyle, Message, TextChannel, EmbedBuilder, APIEmbedField } from "discord.js";
 import { getChannelFromEnv, getRoleFromEnv } from "./constants.ts";
 
 /**
@@ -88,16 +88,12 @@ interface BuildFieldsParams {
 }
 
 function buildFields({ gratitudeMessage, messages, repliedMessage, helpers }: BuildFieldsParams): { name: string; value: string }[] {
-	const listOfComments = messages.map((msg) => ({
-		name: "",
+	const listOfComments = messages.map((msg, index) => ({
+		name: `Comentario ${index + 1}`,
 		value: `${msg.author} (\`${msg.author.id}\`)\n${msg.content.slice(0, 250)} [Ir allá](${msg.url})`,
 	}));
 
-	const divider = [
-		{ name: "", value: "" },
-		{ name: "", value: " ════════════════════" },
-		{ name: "", value: "" },
-	];
+	const divider = [{ name: "\u200b", value: " ════════════════════" }];
 
 	const channelField = { name: "# Canal", value: `<#${gratitudeMessage.channel.id}>` };
 	const userHelpedField = {
@@ -135,7 +131,15 @@ ${repliedMessage ? "  :arrow_right_hook:" : ""} ${gratitudeMessage.author} (\`${
 			.join("\n"),
 	};
 
-	return [...listOfComments, ...divider, channelField, userHelpedField, helpedMessageTrigger, posibleHelpers];
+	console.log(helpedMessageTrigger, posibleHelpers);
+
+	const fields = [...listOfComments, ...divider, channelField, userHelpedField, helpedMessageTrigger];
+
+	if (helpers.length > 0) {
+		fields.push(posibleHelpers);
+	}
+
+	return fields;
 }
 
 /**
@@ -146,14 +150,14 @@ ${repliedMessage ? "  :arrow_right_hook:" : ""} ${gratitudeMessage.author} (\`${
  * @param method - The method where the error occurred.
  * @param url - The URL or context where the error occurred.
  */
-async function sendErrorReport(client: any, error: any, method: string, url: string): Promise<void> {
+async function sendErrorReport(message: Message<boolean>, error: any, method: string, url: string): Promise<void> {
 	const errorChannelId = getChannelFromEnv("logs");
 	const staffRoleId = getRoleFromEnv("staff");
 
-	const errorChannel = client.channels.resolve(errorChannelId) as TextChannel | null;
+	const errorChannel = message.client.channels.resolve(errorChannelId) as TextChannel | null;
 	if (!errorChannel) return;
 
-	const errorMessage = `<@&${staffRoleId}>`;
+	const errorMessage = process.env.NODE_ENV === "development" ? `<@${message.author.id}>` : `<@&${staffRoleId}>`;
 
 	const attachment = new AttachmentBuilder(Buffer.from(`${error.stack}\nMétodo: ${method}\nURL: ${url}`), {
 		name: "check.txt",
@@ -172,7 +176,7 @@ async function sendErrorReport(client: any, error: any, method: string, url: str
  * @param fields - The fields to include in the embed.
  * @param buttons - The buttons to include in the embed.
  */
-async function sendHelpNotification(msg: Message, fields: { name: string; value: string }[], buttons: ButtonBuilder[]): Promise<void> {
+async function sendHelpNotification(msg: Message, fields: APIEmbedField[], buttons: ButtonBuilder[]): Promise<void> {
 	const pointsChannelId = getChannelFromEnv("puntos");
 	const pointsChannel = msg.client.channels.resolve(pointsChannelId) as TextChannel | null;
 
@@ -181,7 +185,7 @@ async function sendHelpNotification(msg: Message, fields: { name: string; value:
 	}
 
 	const embed = new EmbedBuilder()
-		.setThumbnail(msg.guild?.iconURL({ extension: "gif" }) ?? "")
+		.setThumbnail(msg.guild?.iconURL() ?? null)
 		.setTitle("Se ha encontrado una nueva ayuda!")
 		.addFields(fields)
 		.setTimestamp(new Date())
@@ -255,7 +259,7 @@ export async function checkHelp(msg: Message): Promise<boolean> {
 		return true;
 	} catch (error: any) {
 		console.error("Error en checkHelp:", error);
-		await sendErrorReport(msg.client, error, "checkHelp", msg.url);
+		await sendErrorReport(msg, error, "checkHelp", msg.url);
 		return false;
 	}
 }

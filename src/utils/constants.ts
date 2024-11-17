@@ -49,12 +49,13 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	filosofiaPolitica: "1296190631269372048",
 	chatProgramadores: "1142244181587263511",
 	ofreceServicios: "1144133135475425320",
-	puntos: "1144159059247898657",
+	puntos: "1296190632317943913",
 	sugerencias: "1296190631026233348",
 	logPuntos: "1296190632317943914",
 	bansanciones: "1296190632317943909",
 	logs: "1296190632020414594",
 	casinoPye: "1296190631533608961",
+	"html-css": "1300952181171818536",
 };
 
 const isDevelopment = process.env.NODE_ENV === "development";

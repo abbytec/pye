@@ -1,11 +1,11 @@
 import { DMChannel, EmbedBuilder, Events, Guild, GuildMember, Message, PublicThreadChannel, TextChannel, ThreadChannel } from "discord.js";
-import { ExtendedClient } from "../../client.ts";
-import { COLORS, getChannelFromEnv, getForumIdsFromEnv, getRoleFromEnv } from "../../utils/constants.ts";
-import { applyTimeout } from "../../commands/moderation/timeout.ts";
-import { Users } from "../../Models/User.ts";
-import { getCooldown, setCooldown } from "../../utils/cooldowns.ts";
-import { checkRole } from "../../utils/generic.ts";
-import { checkHelp } from "../../utils/checkhelp.ts";
+import { ExtendedClient } from "../client.ts";
+import { COLORS, getChannelFromEnv, getForumIdsFromEnv, getRoleFromEnv } from "../utils/constants.ts";
+import { applyTimeout } from "../commands/moderation/timeout.ts";
+import { Users } from "../Models/User.ts";
+import { getCooldown, setCooldown } from "../utils/cooldowns.ts";
+import { checkRole } from "../utils/generic.ts";
+import { checkHelp } from "../utils/checkhelp.ts";
 
 const PREFIX = "!"; // Define tu prefijo
 
