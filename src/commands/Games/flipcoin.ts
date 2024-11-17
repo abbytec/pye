@@ -16,7 +16,7 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName("flipcoin")
 		.setDescription("Tira la moneda y prueba tu suerte.")
-		.addIntegerOption((option) => option.setName("cantidad").setDescription("la cantidad que quieres apostar").setRequired(true))
+		.addIntegerOption((option) => option.setName("cantidad").setDescription("la cantidad que quieres apostar (Máximo 4000)").setRequired(true))
 		.addStringOption((option) =>
 			option
 				.setName("lado")
