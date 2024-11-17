@@ -57,26 +57,54 @@ export default {
 	name: Events.ThreadCreate,
 	execute: async function (thread: ThreadChannel) {
 		if (thread.parent?.type == ChannelType.GuildForum) {
-			//Enviar advertencia de nuevo thread.
-			const canal = (await getChannel(thread.guild, "chatProgramadores", true)) as TextChannel;
-			canal.send({
-				embeds: [
-					new EmbedBuilder()
+			try {
+				const canal = (await getChannel(thread.guild, "chatProgramadores", true)) as TextChannel;
+				if (!canal) return console.error('No se pudo encontrar el canal "chatProgramadores".');
+
+				const guild = await thread.guild.fetch();
+
+				const newField = {
+					name: `:large_blue_diamond: <${(await thread.fetchOwner())?.user?.username}> necesita tu ayuda en **${thread.parent.name}**`,
+					value: `> Su problema : <#${thread.id}>`,
+				};
+
+				const fetchedMessages = await canal.messages.fetch({ limit: 2 });
+
+				const targetEmbedMessage = fetchedMessages.find(
+					(msg) => msg.embeds.length > 0 && msg.embeds[0].title === "Nueva publicación 🌟"
+				);
+
+				if (targetEmbedMessage) {
+					const existingEmbed = EmbedBuilder.from(targetEmbedMessage.embeds[0]);
+
+					existingEmbed.addFields(newField);
+
+					await targetEmbedMessage.edit({
+						embeds: [existingEmbed],
+					});
+				} else {
+					const newEmbed = new EmbedBuilder()
 						.setColor(COLORS.pyeLightBlue)
 						.setTitle("Nueva publicación 🌟")
-						.setDescription(
-							`
-                      :large_blue_diamond: <@${thread.ownerId}> necesita tu ayuda en **${thread.parent}** 
-                      > Su problema : <#${thread.id}>
-                    `
-						)
+						.addFields(newField)
 						.setFooter({
 							text: "¡Ayúdalo para ganar puntos y subir de rango!",
-							iconURL:
-								"https://cdn.discordapp.com/attachments/1115058778736431104/1281037481755807774/Mesa_de_trabajo_2_5-8.png?ex=66da42a0&is=66d8f120&hm=6e2562a64fc6ca93ad9f69c9c9f48174938c4b9e8ca531b445c0b7099853b886&",
-						}),
-				],
-			});
+							iconURL: "https://cdn.discordapp.com/attachments/1115058778736431104/1281037481755807774/Mesa_de_trabajo_2_5-8.png",
+						})
+						.setTimestamp();
+
+					const guildIconURL = guild.iconURL({ extension: "gif" });
+					if (guildIconURL) {
+						newEmbed.setThumbnail(guildIconURL);
+					}
+
+					await canal.send({
+						embeds: [newEmbed],
+					});
+				}
+			} catch (error) {
+				console.error("Error al enviar o actualizar el embed de publicación:", error);
+			}
 
 			// GEMINI Api para responder threads.
 			thread.fetchStarterMessage().then(async (msg) => {
@@ -85,7 +113,6 @@ export default {
 					console.log(err);
 				});
 			});
-			// Enviar log al canal
 		}
 	},
 };
