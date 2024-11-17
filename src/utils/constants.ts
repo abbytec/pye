@@ -18,6 +18,29 @@ const CHANNELS = {
 	chatProgramadores: "807385882868580392",
 	sugerencias: "932011356213899274",
 	logs: "1145160830741135470",
+
+	// foros
+	hardware: "1019727139173576814",
+	linux: "1019789271386837102",
+	"discord-dev": "1019729125310734366",
+	"bases-de-datos": "1019771485948227614",
+	redes: "1019773997296123944",
+	"seguridad-informática": "1019776581599768719",
+	windows: "1019719246655258705",
+	electrónica: "1019750681608994825",
+	"game-dev": "1019734514202857592",
+	"ayuda-general": "1019686175490986124",
+	javascript: "1122388627557732362",
+	rust: "1122399598107967580",
+	python: "1122390683106414652",
+	"c-sharp-dotnet": "1122397677066395689",
+	"c-cpp": "1122396855775539320",
+	"html-css": "1122376272450945025",
+	c: "1122393447698014271",
+	php: "1122391769775079505",
+	"java-kotlin": "1122390294973915176",
+	matemáticas: "1305675508637499493",
+	"física-química": "867526069875507240",
 };
 
 const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
@@ -36,8 +59,47 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
+function getChannelsFromEnv() {
+	return isDevelopment ? CHANNELS_DEV : CHANNELS;
+}
+
+export const forums: (keyof typeof CHANNELS)[] = [
+	"hardware",
+	"linux",
+	"discord-dev",
+	"bases-de-datos",
+	"redes",
+	"seguridad-informática",
+	"windows",
+	"electrónica",
+	"game-dev",
+	"ayuda-general",
+	"javascript",
+	"rust",
+	"python",
+	"c-sharp-dotnet",
+	"javascript",
+	"c-cpp",
+	"html-css",
+	"c",
+	"php",
+	"java-kotlin",
+	"matemáticas",
+	"física-química",
+];
+
+let forumIds: string[] = [];
+
+export function getForumIdsFromEnv() {
+	if (forumIds.length) return forumIds;
+	for (const forum of forums) {
+		forumIds.push(getChannelFromEnv(forum));
+	}
+	return forumIds;
+}
+
 export function getChannelFromEnv(channel: keyof typeof CHANNELS): string {
-	return isDevelopment ? CHANNELS_DEV[channel] ?? "" : CHANNELS[channel];
+	return getChannelsFromEnv()[channel] ?? "";
 }
 
 export async function getChannel(

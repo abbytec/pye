@@ -1,10 +1,11 @@
-import { DMChannel, EmbedBuilder, Events, Guild, GuildMember, Message, TextChannel } from "discord.js";
+import { DMChannel, EmbedBuilder, Events, Guild, GuildMember, Message, PublicThreadChannel, TextChannel, ThreadChannel } from "discord.js";
 import { ExtendedClient } from "../../client.ts";
-import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../../utils/constants.ts";
+import { COLORS, getChannelFromEnv, getForumIdsFromEnv, getRoleFromEnv } from "../../utils/constants.ts";
 import { applyTimeout } from "../../commands/moderation/timeout.ts";
 import { Users } from "../../Models/User.ts";
 import { getCooldown, setCooldown } from "../../utils/cooldowns.ts";
 import { checkRole } from "../../utils/generic.ts";
+import { checkHelp } from "../../utils/checkhelp.ts";
 
 const PREFIX = "!"; // Define tu prefijo
 
@@ -51,6 +52,11 @@ export default {
 				});
 
 				specificChannels(message);
+				checkChannel(message).then((isThankable) => {
+					if (isThankable) {
+						checkHelp(message);
+					}
+				});
 			}
 		} else {
 			const commandBody = message.content.slice(PREFIX.length).trim();
@@ -176,4 +182,12 @@ function specificChannels(msg: Message<boolean>) {
 			checkRole(msg, getRoleFromEnv("granDebatidor"), 75);
 			break;
 	}
+}
+
+/** Check channels to trigger Point Helper system */
+async function checkChannel(msg: Message<boolean>) {
+	let channelId;
+	if (msg.channel.type === 11) channelId = (msg.guild as Guild).channels.resolve((msg.channel as PublicThreadChannel).parentId ?? "")?.id;
+	else channelId = msg.channel.id;
+	return getForumIdsFromEnv().includes(channelId ?? "");
 }
