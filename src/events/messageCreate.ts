@@ -1,4 +1,4 @@
-import { DMChannel, EmbedBuilder, Events, Guild, GuildMember, Message, PublicThreadChannel, TextChannel, ThreadChannel } from "discord.js";
+import { DMChannel, EmbedBuilder, Events, Guild, GuildBasedChannel, GuildMember, Message, PublicThreadChannel, TextChannel } from "discord.js";
 import { ExtendedClient } from "../client.ts";
 import { COLORS, DISBOARD_UID, EMOJIS, getChannelFromEnv, getForumIdsFromEnv, getRoleFromEnv } from "../utils/constants.ts";
 import { applyTimeout } from "../commands/moderation/timeout.ts";
@@ -194,8 +194,11 @@ function specificChannels(msg: Message<boolean>) {
 
 /** Check channels to trigger Point Helper system */
 async function checkChannel(msg: Message<boolean>) {
-	let channelId;
-	if (msg.channel.type === 11) channelId = (msg.guild as Guild).channels.resolve((msg.channel as PublicThreadChannel).parentId ?? "")?.id;
-	else channelId = msg.channel.id;
-	return getForumIdsFromEnv().includes(channelId ?? "");
+	let channel: GuildBasedChannel | TextChannel;
+	if (msg.channel.type === 11) {
+		channel = (msg.guild as Guild).channels.resolve((msg.channel as PublicThreadChannel).parentId ?? "") as GuildBasedChannel;
+		const threadAuthor = await (msg.channel as PublicThreadChannel).fetchOwner();
+		if (threadAuthor?.id !== msg.author.id) return false;
+	} else channel = msg.channel as TextChannel;
+	return getForumIdsFromEnv().includes(channel.id ?? "");
 }

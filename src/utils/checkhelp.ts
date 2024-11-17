@@ -131,8 +131,6 @@ ${repliedMessage ? "  :arrow_right_hook:" : ""} ${gratitudeMessage.author} (\`${
 			.join("\n"),
 	};
 
-	console.log(helpedMessageTrigger, posibleHelpers);
-
 	const fields = [...listOfComments, ...divider, channelField, userHelpedField, helpedMessageTrigger];
 
 	if (helpers.length > 0) {
