@@ -1,5 +1,5 @@
 import { Client, MessageReaction, User, TextChannel, EmbedBuilder, Events, GuildMember } from "discord.js";
-import { StarBoard } from "../Models/StarBoard.ts";
+import { IStarBoardDocument, StarBoard } from "../Models/StarBoard.ts";
 import { StarMessage } from "../Models/StarMessage.ts";
 import { Evento } from "../types/event.ts";
 import { ExtendedClient } from "../client.ts";
@@ -19,7 +19,7 @@ export default {
 		if (reaction.emoji.name === "⭐") {
 			const data = await StarBoard.findOne({ id: process.env.GUILD_ID });
 			if (!data) return;
-			await checkReactions(fullReaction, data).catch((error: any) => console.error("Error al procesar la reacción:", error.message));
+			await checkReactions(fullReaction, data).catch((error: any) => console.error("Error al procesar la reacción:", error));
 		} else if (
 			reaction.emoji.name === "pepedown" &&
 			(fullReaction.count ?? 0) > 5 &&
@@ -46,7 +46,7 @@ async function fetchStructure(structure: MessageReaction): Promise<MessageReacti
  * @param {MessageReaction} reaction - La reacción al mensaje
  * @param starboard - Configuración de la StarBoard
  */
-async function checkReactions(reaction: MessageReaction, starboard: any) {
+async function checkReactions(reaction: MessageReaction, starboard: IStarBoardDocument) {
 	const msg = reaction.message;
 	if (!msg.guild) return;
 
@@ -74,7 +74,7 @@ async function checkReactions(reaction: MessageReaction, starboard: any) {
 				name: "Link del mensaje",
 				value: `[Ir allá](${msgLink})`,
 			},
-			imageURL: "",
+			imageURL: null as string | null,
 		};
 
 		// Revisión de imágenes y adjuntos
@@ -86,7 +86,7 @@ async function checkReactions(reaction: MessageReaction, starboard: any) {
 
 			// Revisión de clips de Twitch
 			const videoEmbed = msg.embeds.find((embed) => embed.video);
-			if (videoEmbed && videoEmbed.video?.url?.includes("clips.twitch.tv")) {
+			if (videoEmbed?.video?.url?.includes("clips.twitch.tv")) {
 				data.content += `\n⬇️ [Descarga el video](${videoEmbed.thumbnail?.url.replace("-social-preview.jpg", ".mp4")})`;
 			}
 		} else if (msg.attachments.size) {
@@ -100,7 +100,7 @@ async function checkReactions(reaction: MessageReaction, starboard: any) {
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: msg.author?.username ?? "Unknown User", iconURL: data.avatarURL })
 			.setDescription(data.content)
-			.setImage(data.imageURL)
+			.setImage(data.imageURL ?? null)
 			.addFields([{ name: data.fields.name, value: data.fields.value }])
 			.setTimestamp();
 
