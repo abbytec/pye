@@ -150,6 +150,7 @@ const ROLES = {
 	granAportador: "873596856121327626",
 	granDebatidor: "873597268819865671",
 	especialistaEnMemes: "873596533503848509",
+	iqNegativo: "1302062476266967201",
 
 	// sanciones
 	restringido: "984278721055830047",
@@ -182,6 +183,7 @@ const DEV_ROLES: Record<Roles, string> = {
 	granAportador: "1296190630657134619",
 	granDebatidor: "1296190630657134618",
 	especialistaEnMemes: "1296190630657134620",
+	iqNegativo: "1307563510716432455",
 
 	// sanciones
 	restringido: "1296190630678233109",

@@ -1,5 +1,5 @@
 // src/Client.ts
-import { Client, Collection, GatewayIntentBits } from "discord.js";
+import { Client, Collection, GatewayIntentBits, Partials } from "discord.js";
 import { Command } from "./types/command.ts"; // Asegúrate de definir la interfaz Command
 import { ICooldown } from "./Models/Cooldown.ts";
 import { Rob } from "./commands/farming/rob.ts";
@@ -26,6 +26,8 @@ export class ExtendedClient extends Client {
 				GatewayIntentBits.GuildVoiceStates,
 				GatewayIntentBits.MessageContent,
 			],
+
+			partials: [Partials.GuildMember, Partials.Channel, Partials.Reaction, Partials.Message, Partials.ThreadMember, Partials.User],
 		});
 
 		this.commands = new Collection();

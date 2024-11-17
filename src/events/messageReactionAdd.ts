@@ -1,12 +1,12 @@
-import { Client, MessageReaction, User, TextChannel, EmbedBuilder, Events } from "discord.js";
+import { Client, MessageReaction, User, TextChannel, EmbedBuilder, Events, GuildMember } from "discord.js";
 import { StarBoard } from "../Models/StarBoard.ts";
 import { StarMessage } from "../Models/StarMessage.ts";
 import { Evento } from "../types/event.ts";
 import { ExtendedClient } from "../client.ts";
+import { getRoleFromEnv } from "../utils/constants.ts";
 
 /**
  * Maneja el evento messageReactionAdd
- * @param {Client} client - Cliente de Discord
  * @param {MessageReaction} reaction - La reacción al mensaje
  * @param {User} user - El usuario que reaccionó
  */
@@ -14,16 +14,18 @@ export default {
 	name: Events.MessageReactionAdd,
 	async execute(reaction: MessageReaction, user: User) {
 		console.log(`Comando messageReactionAdd activado`);
-		if (!reaction || !user || user.bot || reaction.emoji.name !== "⭐" || !reaction.message?.guild || reaction.message.author?.bot) return;
-
-		const data = await StarBoard.findOne({ id: process.env.GUILD_ID });
-		if (!data) return;
-
-		try {
-			const fullReaction = await fetchStructure(reaction);
-			await checkReactions(fullReaction, data);
-		} catch (error) {
-			console.error("Error al procesar la reacción:", error);
+		if (!reaction || !user || user.bot || !reaction.message?.guild || reaction.message.author?.bot) return;
+		let fullReaction = await fetchStructure(reaction);
+		if (reaction.emoji.name === "⭐") {
+			const data = await StarBoard.findOne({ id: process.env.GUILD_ID });
+			if (!data) return;
+			await checkReactions(fullReaction, data).catch((error: any) => console.error("Error al procesar la reacción:", error.message));
+		} else if (
+			reaction.emoji.name === "pepedown" &&
+			(fullReaction.count ?? 0) > 5 &&
+			!(reaction.message.member as GuildMember).roles.cache.get(getRoleFromEnv("iqNegativo"))
+		) {
+			await (reaction.message.member as GuildMember).roles.add(getRoleFromEnv("iqNegativo"));
 		}
 	},
 } as Evento;
