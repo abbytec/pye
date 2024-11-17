@@ -13,7 +13,6 @@ import { getRoleFromEnv } from "../utils/constants.ts";
 export default {
 	name: Events.MessageReactionAdd,
 	async execute(reaction: MessageReaction, user: User) {
-		console.log(`Comando messageReactionAdd activado`);
 		if (!reaction || !user || user.bot || !reaction.message?.guild || reaction.message.author?.bot) return;
 		let fullReaction = await fetchStructure(reaction);
 		if (reaction.emoji.name === "⭐") {

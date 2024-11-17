@@ -76,12 +76,51 @@ userSchema.virtual("total").get(function (this: IUserModel) {
 /**
  * Middleware post-save para actualizar los rankings en Redis.
  */
-userSchema.post("save", async function (doc: IUserModel) {
-	await client.sendCommand(["ZADD", "top:all", doc.total.toString(), doc.id]);
-	await client.sendCommand(["ZADD", "top:cash", doc.cash.toString(), doc.id]);
-	await client.sendCommand(["ZADD", "top:rob", doc.rob.toString(), doc.id]);
-	await client.sendCommand(["ZADD", "top:apostador", (doc.earnings - doc.bet).toString(), doc.id]);
-	await client.sendCommand(["ZADD", "top:caps", doc.caps.toString(), doc.id]);
+userSchema.post(["save", "findOneAndUpdate"], async function (doc: IUserModel | null) {
+	if (!doc) return;
+	await client.sendCommand(["ZADD", "top:all", doc.total.toString() ?? 0, doc.id]);
+	await client.sendCommand(["ZADD", "top:cash", doc.cash.toString() ?? 0, doc.id]);
+	await client.sendCommand(["ZADD", "top:rob", doc.rob.toString() ?? 0, doc.id]);
+	await client.sendCommand(["ZADD", "top:apostador", (doc.earnings - doc.bet).toString() ?? 0, doc.id]);
+	await client.sendCommand(["ZADD", "top:caps", doc.caps.toString() ?? 0, doc.id]);
+});
+
+userSchema.post(["updateOne", "updateMany"], async function (result) {
+	// 'this' se refiere a la consulta
+	const filter = this.getFilter();
+
+	try {
+		// Recupera los documentos actualizados
+		const updatedDocs = await Users.find(filter).exec();
+
+		if (!updatedDocs || updatedDocs.length === 0) return console.warn("No se encontraron documentos actualizados para el filtro:", filter);
+
+		// Prepara todas las operaciones ZADD para Redis
+		const pipeline = client.multi();
+
+		updatedDocs.forEach((doc) => {
+			// Verificar que todas las propiedades necesarias existen
+			if (!doc.id) return console.warn(`El documento del usuario ${doc.id} está erroneo. No se actualizará Redis.`);
+
+			pipeline.zAdd("top:all", { score: doc.total || 0, value: doc.id });
+			pipeline.zAdd("top:cash", { score: doc.cash || 0, value: doc.id });
+			pipeline.zAdd("top:rob", { score: doc.rob || 0, value: doc.id });
+			pipeline.zAdd("top:apostador", { score: doc.earnings - doc.bet || 0, value: doc.id });
+			pipeline.zAdd("top:caps", { score: doc.caps || 0, value: doc.id });
+		});
+
+		const results = await pipeline.exec();
+		results.forEach((result, index) => {
+			if (Array.isArray(result)) {
+				const [error] = result;
+				if (error) {
+					console.error(`Error en el comando ${index + 1}:`, error);
+				}
+			}
+		});
+	} catch (error) {
+		console.error(`Error actualizando Redis en 'updateOne'/'updateMany' con filtro ${JSON.stringify(filter)}:`, error);
+	}
 });
 
 /**
