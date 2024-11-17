@@ -113,5 +113,5 @@ export function calculateJobMultiplier(job: string | undefined, profit: number, 
 		profit += profit * 0.5;
 	}
 	if (job === "Bombero" || job === "Bombera") profit += Math.ceil(profit * 0.35)
-	return profit
+	return Math.floor(profit)
 }
