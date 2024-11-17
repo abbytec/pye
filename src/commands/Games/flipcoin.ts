@@ -1,8 +1,7 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, TextChannel, Message, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { PostHandleable } from "../../types/middleware.ts";
-import { IUser } from "../../interfaces/IUser.ts";
 import { getOrCreateUser, IUserModel, Users } from "../../Models/User.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
@@ -11,6 +10,7 @@ import { replyError } from "../../utils/messages/replyError.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 import { increaseHomeMonthlyIncome } from "../../Models/Home.ts";
 import { checkQuestLevel, IQuest } from "../../utils/quest.ts";
+import { calculateJobMultiplier } from "../../utils/generic.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -45,8 +45,7 @@ export default {
 			if (amount > userData.cash) return await replyError(interaction, "No tienes suficientes PyE Coins para apostar.");
 
 			if (flipcoin == side) {
-				const userJob = userData.profile?.job;
-				if (userJob === "Bombero" || userJob === "Bombera") amount += Math.ceil(amount * 0.35);
+				amount = calculateJobMultiplier(userData.profile?.job, amount, userData.couples || [])
 			} else {
 				amount = 0 - amount;
 			}
