@@ -52,10 +52,30 @@ const threadsHelp = async function (tittle: string, pregunta: string, m: ThreadC
 		console.log(error);
 	}
 };
+const spamPattern = new RegExp(
+	"(?:discord[\\s/.,-]*(?:gg|li|me|io|com/invite)[/\\\\]?[a-z0-9-.]*|" +
+		"discord[.,]?gg|" +
+		"\\.gg|" +
+		"steamcommunity|" +
+		"nitro|" +
+		"free discord|" +
+		"gift|" +
+		"robux|" +
+		"giveaway|" +
+		"https?:\\/\\/(?:[a-z0-9-.]+\\.)?(?:gift|steamcommunity|nitro|robux))",
+	"i"
+);
 
 export default {
 	name: Events.ThreadCreate,
 	execute: async function (thread: ThreadChannel) {
+		if (
+			spamPattern.test(thread.name) ||
+			thread.name.includes("discord.gg") ||
+			thread.name.includes("discord,gg") ||
+			thread.name.includes(".gg")
+		)
+			return thread.delete("spam detectado");
 		if (thread.parent?.type == ChannelType.GuildForum) {
 			try {
 				const canal = (await getChannel(thread.guild, "chatProgramadores", true)) as TextChannel;
