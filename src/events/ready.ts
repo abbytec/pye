@@ -3,7 +3,7 @@ import { ExtendedClient } from "../client.ts";
 import { CommandLimits, ICommandLimits } from "../Models/Command.ts";
 import { Money, IMoney } from "../Models/Money.ts";
 import { Users } from "../Models/User.ts";
-import { COLORS, getChannel, getChannelFromEnv, getRoleFromEnv } from "../utils/constants.ts";
+import { COLORS, getChannel, getRoleFromEnv } from "../utils/constants.ts";
 
 export default {
 	name: Events.ClientReady,

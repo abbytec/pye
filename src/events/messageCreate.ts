@@ -93,18 +93,16 @@ export default {
 		}
 	},
 };
-
+const filterList = [
+	{ filter: "telegra.ph/Adobe-GRATIS-2024", mute: true },
+	{ filter: "steamcommunity.com/gift/", mute: true },
+	{ filter: "/freenitro", mute: true },
+	{ filter: "https://t.me", mute: false },
+	{ filter: "https://telegram.me", mute: false },
+];
 async function spamFilter(message: Message<boolean>, client: ExtendedClient) {
-	if (message.author.bot) return;
 	if (message.content?.length < 8) return;
 
-	const filterList = [
-		{ filter: "telegra.ph/Adobe-GRATIS-2024", mute: true },
-		{ filter: "steamcommunity.com/gift/", mute: true },
-		{ filter: "/freenitro", mute: true },
-		{ filter: "https://t.me", mute: false },
-		{ filter: "https://telegram.me", mute: false },
-	];
 	const detectedFilter = filterList.find((item) => message.content.includes(item.filter));
 
 	if (detectedFilter) {

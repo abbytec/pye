@@ -12,11 +12,11 @@ interface VoiceFarming {
 }
 
 export class ExtendedClient extends Client {
-	public commands: Collection<string, Command>;
-	private readonly _commandLimits: Collection<string, ICommandLimits>;
+	public commands: Map<string, Command>;
+	private readonly _commandLimits: Map<string, ICommandLimits>;
+	private readonly moneyConfigs: Map<string, IMoney>;
 	public cooldowns: Map<string, ICooldown>;
 	public lastRobs: Rob[];
-	public moneyConfigs: Map<string, IMoney>;
 	public voiceFarmers: Map<string, VoiceFarming>;
 	public newUsers: Set<string>;
 
@@ -37,10 +37,10 @@ export class ExtendedClient extends Client {
 			partials: [Partials.GuildMember, Partials.Channel, Partials.Reaction, Partials.Message, Partials.ThreadMember, Partials.User],
 		});
 
-		this.commands = new Collection();
+		this.commands = new Map();
 		this.cooldowns = new Map();
 		this.lastRobs = [];
-		this._commandLimits = new Collection();
+		this._commandLimits = new Map();
 		this.moneyConfigs = new Map();
 		this.voiceFarmers = new Map();
 		this.newUsers = new Set();
