@@ -7,6 +7,7 @@ import ms from "ms";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
 import { getChannelFromEnv } from "../../utils/constants.ts";
+import { ExtendedClient } from "../../client.ts";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -24,23 +25,22 @@ export default {
 			const message = interaction.options.getString("mensaje", true);
 			const time = interaction.options.getString("tiempo", true);
 			const timems = ms(time);
-			if (timems < 60e3 || timems > 86.4e6) replyError(interaction, "Tiempo invállido. El máximo es 24h y el mínimo 1min.");
+			if (timems < 60e3 || timems > 86.4e6) return replyError(interaction, "Tiempo invállido. El máximo es 24h y el mínimo 1min.");
 			// Castear duración y setear el tiempo
-			const reminderTime = Date.now() + timems;
-
-			console.log(`Se añadió un recordatorio ${new Date(reminderTime).toLocaleString()}`);
+			const reminderTime = new Date(Date.now() + timems);
 
 			// Check the current time every second
-			const intervalId = setInterval(async () => {
-				const currentTime = Date.now();
-				if (currentTime >= reminderTime) {
-					clearInterval(intervalId);
-					// Send reminder to the user or channel
-
-					await replyOk(interaction, `${message}`, undefined, undefined, undefined, `<@${interaction.user.id}>`);
-				}
-			}, 60e3); // Check every minute
-			replyOk(interaction, "Se creó tu recordatorio", undefined, undefined, undefined, undefined, true);
+			try {
+				await ExtendedClient.agenda.schedule(reminderTime, "send reminder", {
+					username: interaction.user.username,
+					message: message,
+					channelId: interaction.channelId,
+				});
+				return replyOk(interaction, "Se creó tu recordatorio.");
+			} catch (error) {
+				console.error("Error al programar el recordatorio:", error);
+				return replyError(interaction, "Hubo un error al crear tu recordatorio.");
+			}
 		}
 	),
 };

@@ -4,6 +4,8 @@ import { CommandLimits, ICommandLimits } from "../Models/Command.ts";
 import { Money, IMoney } from "../Models/Money.ts";
 import { Users } from "../Models/User.ts";
 import { COLORS, getChannel, getRoleFromEnv } from "../utils/constants.ts";
+import { Agenda, Job } from "agenda";
+import { CronMessage } from "../Models/CronMessage.ts";
 
 export default {
 	name: Events.ClientReady,
@@ -22,11 +24,50 @@ export default {
 			});
 		});
 
+		cronEventsProcessor(client);
 		voiceFarmingProcessor(client);
 		activityProcessor(client);
 		welcomeProcessor(client);
 	},
 };
+
+async function cronEventsProcessor(client: ExtendedClient) {
+	ExtendedClient.agenda = new Agenda({
+		db: { address: process.env.MONGO_URI ?? "", collection: "agenda_jobs" },
+		processEvery: "1 minute",
+	});
+
+	// Define el trabajo para enviar recordatorios
+	ExtendedClient.agenda.define("send reminder", async (job: Job) => {
+		const { username, userId, message, channelId } = job.attrs.data;
+		const channel = client.channels.cache.get(channelId) as TextChannel;
+		if (channel)
+			await channel
+				.send(`⏰ **<@${userId}>  Recordatorio:** ${message}`)
+				.then(() => console.log(`Recordatorio enviado a ${username}`))
+				.then(async () => await job.remove())
+				.catch((error) => console.error(`Error al enviar recordatorio a ${username}:`, error));
+	});
+
+	// Define el trabajo para enviar mensajes cron
+	ExtendedClient.agenda.define("send cron message", async (job: Job) => {
+		const { channelId, content, embed, cronMessageId } = job.attrs.data;
+		const channel = client.channels.cache.get(channelId) as TextChannel;
+		if (channel) {
+			const embedObject = embed ? new EmbedBuilder(embed) : null;
+			await channel
+				.send({
+					content: content || undefined,
+					embeds: embedObject ? [embedObject] : [],
+				})
+				.then((message) => console.log(`Mensaje cron enviado al canal ${channelId}`))
+				.then(async () => (job.attrs.nextRunAt ? await CronMessage.deleteOne({ _id: cronMessageId }).exec() : null))
+				.catch((error) => console.error(`Error al enviar mensaje cron al canal ${channelId}:`, error));
+		}
+	});
+
+	await ExtendedClient.agenda.start();
+}
 
 async function voiceFarmingProcessor(client: ExtendedClient) {
 	setInterval(() => {

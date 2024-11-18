@@ -5,6 +5,7 @@ import { ICooldown } from "./Models/Cooldown.ts";
 import { Rob } from "./commands/farming/rob.ts";
 import { ICommandLimits } from "./Models/Command.ts";
 import { IMoney } from "./Models/Money.ts";
+import { Agenda } from "agenda";
 
 interface VoiceFarming {
 	date: Date;
@@ -19,6 +20,7 @@ export class ExtendedClient extends Client {
 	public lastRobs: Rob[];
 	public voiceFarmers: Map<string, VoiceFarming>;
 	public newUsers: Set<string>;
+	private static agendaElement: Agenda;
 
 	constructor() {
 		super({
@@ -44,6 +46,14 @@ export class ExtendedClient extends Client {
 		this.moneyConfigs = new Map();
 		this.voiceFarmers = new Map();
 		this.newUsers = new Set();
+	}
+
+	public static set agenda(agenda: Agenda) {
+		this.agendaElement = agenda;
+	}
+
+	public static get agenda() {
+		return this.agendaElement;
 	}
 
 	public getCommandLimit(commandName: string) {
