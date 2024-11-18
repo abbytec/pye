@@ -48,7 +48,10 @@ export default {
 			);
 
 			if (!latestTimeout) {
-				return await replyError(interaction, "Este usuario no tiene bans activos.");
+				return await replyError(
+					interaction,
+					"Este usuario no tiene bans registrados en la base de datos.\nSi fue baneado manualmete, ya está desbaneado!"
+				);
 			}
 
 			// Enviar mensaje directo al usuario
