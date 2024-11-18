@@ -6,12 +6,18 @@ import { Rob } from "./commands/farming/rob.ts";
 import { ICommandLimits } from "./Models/Command.ts";
 import { IMoney } from "./Models/Money.ts";
 
+interface VoiceFarming {
+	date: Date;
+	count: number;
+}
+
 export class ExtendedClient extends Client {
 	public commands: Collection<string, Command>;
 	private readonly _commandLimits: Collection<string, ICommandLimits>;
 	public cooldowns: Map<string, ICooldown>;
 	public lastRobs: Rob[];
 	public moneyConfigs: Map<string, IMoney>;
+	public voiceFarmers: Map<string, VoiceFarming>;
 
 	constructor() {
 		super({
@@ -35,6 +41,7 @@ export class ExtendedClient extends Client {
 		this.lastRobs = [];
 		this._commandLimits = new Collection();
 		this.moneyConfigs = new Map();
+		this.voiceFarmers = new Map();
 	}
 
 	public getCommandLimit(commandName: string) {

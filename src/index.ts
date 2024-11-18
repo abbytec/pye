@@ -5,7 +5,7 @@ import { ExtendedClient } from "./client.ts";
 import { connect } from "mongoose";
 import { Command } from "./types/command.ts";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { Evento } from "./types/event.ts";
+import { Evento, EventoConClienteForzado } from "./types/event.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -47,13 +47,11 @@ const loadEvents = async () => {
 		const filePath = join(eventsPath, file);
 		await import(pathToFileURL(filePath).href)
 			.then((module) => module.default || module)
-			.then((event: Evento) => {
+			.then((event: Evento | EventoConClienteForzado) => {
 				console.log(`Cargando evento: ${event.name}`);
-				if (event.once) {
-					client.once(event.name, (...args: any[]) => event.execute(...args));
-				} else {
-					client.on(event.name, (...args: any[]) => event.execute(...args));
-				}
+				client[event.once ? "once" : "on"](event.name, (...args: any[]) =>
+					"executeWithClient" in event ? event.executeWithClient(client, ...args) : event.execute(...args)
+				);
 			})
 			.catch((error) => console.error(`Error al cargar el evento ${filePath}:`, error));
 	});
@@ -64,15 +62,17 @@ const loadEvents = async () => {
 const main = async () => {
 	try {
 		loadEnvVariables();
-		await Promise.all([
-			loadCommands().then(() => console.log("Comandos cargados.")),
-			loadEvents().then(() => console.log("Eventos cargados.")),
-		])
+
+		await connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/", {
+			connectTimeoutMS: 20000,
+		})
+			.then(() => console.log("Conectado a la base de datos."))
 			.then(
 				async () =>
-					await connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/", {
-						connectTimeoutMS: 20000,
-					}).then(() => console.log("Conectado a la base de datos."))
+					await Promise.all([
+						loadCommands().then(() => console.log("Comandos cargados.")),
+						loadEvents().then(() => console.log("Eventos cargados.")),
+					])
 			)
 			.then(async () => await client.login(process.env.TOKEN_BOT));
 	} catch (error) {
