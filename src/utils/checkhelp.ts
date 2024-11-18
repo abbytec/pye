@@ -55,9 +55,11 @@ async function fetchMessagesAndHelpers(gratitudeMessage: Message): Promise<Fetch
 		.values();
 
 	let helpers: string[] = [];
+	let msges: Message[] = [];
 	for (const msg of messages) {
 		if (!helpers.includes(msg.author.id) && msg.author.id !== gratitudeMessage.author.id) {
 			helpers.push(msg.author.id);
+			msges.push(msg);
 		}
 	}
 
@@ -66,7 +68,6 @@ async function fetchMessagesAndHelpers(gratitudeMessage: Message): Promise<Fetch
 	}
 
 	helpers = Array.from(new Set(helpers)).slice(0, 4);
-	let msges = Array.from(messages);
 	return {
 		helpers,
 		messages: msges,
