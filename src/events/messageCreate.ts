@@ -50,13 +50,13 @@ export default {
 		if (!message.content.startsWith(PREFIX)) {
 			if (![getChannelFromEnv("mudae"), getChannelFromEnv("casinoPye")].includes(message.channel.id)) {
 				const moneyConfig = (message.client as ExtendedClient).getMoneyConfig(process.env.CLIENT_ID ?? "");
-				getCooldown(message.client as ExtendedClient, message.author.id, "farm-text", moneyConfig.text.time).then((time) => {
+				getCooldown(message.client as ExtendedClient, message.author.id, "farm-text", moneyConfig.text.time).then(async (time) => {
 					if (time > 0) {
-						Users.findOneAndUpdate({ id: message.author.id }, { $inc: { cash: moneyConfig.text.coins } }, { upsert: true }).then(
-							() => {
+						Users.findOneAndUpdate({ id: message.author.id }, { $inc: { cash: moneyConfig.text.coins } }, { upsert: true })
+							.exec()
+							.then(() => {
 								setCooldown(message.client as ExtendedClient, message.author.id, "farm-text", moneyConfig.text.time);
-							}
-						);
+							});
 					}
 				});
 

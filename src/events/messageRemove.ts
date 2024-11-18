@@ -5,7 +5,6 @@ export default {
 	name: Events.MessageDelete,
 	once: false,
 	async execute(message: Message) {
-		console.log("mensaje borrado", message);
 		if (!message.guild) return;
 		if (
 			![
@@ -19,7 +18,6 @@ export default {
 
 		// Si el mensaje tiene hilos asociados, eliminarlos.
 		if (message.hasThread) {
-			console.log("hay hilo");
 			try {
 				const thread = message.thread;
 				await thread?.delete().then(() => console.log(`Hilo ${thread?.name} eliminado porque su mensaje principal fue borrado.`));
