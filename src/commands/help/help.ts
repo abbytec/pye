@@ -12,6 +12,7 @@ import { ExtendedClient } from "../../client.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 
 export default {
+	group: "📜 - Ayuda",
 	data: new SlashCommandBuilder()
 		.setName("help")
 		.setDescription("Muestra la lista de comandos disponibles agrupados por grupo.")
