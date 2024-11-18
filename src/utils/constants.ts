@@ -42,6 +42,7 @@ const CHANNELS = {
 	puntos: "925121655578173440",
 	logPuntos: "932871373280395314",
 	logs: "1145160830741135470",
+	voiceLogs: "952655229944467496",
 	bansanciones: "844385995352047646",
 	staff: "1289417254894702644",
 	moderadores: "1289416349860368425",
@@ -66,7 +67,10 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	logPuntos: "1296190632317943914",
 	bansanciones: "1296190632317943909",
 	logs: "1296190632020414594",
+	voiceLogs: "1296190632317943912",
 	staff: "1296190632020414595",
+	moderadores: "1296190630724370498",
+
 	categoryStaff: "1296190631810568283",
 };
 

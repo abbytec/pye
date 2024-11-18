@@ -18,6 +18,7 @@ export class ExtendedClient extends Client {
 	public lastRobs: Rob[];
 	public moneyConfigs: Map<string, IMoney>;
 	public voiceFarmers: Map<string, VoiceFarming>;
+	public newUsers: Set<string>;
 
 	constructor() {
 		super({
@@ -42,6 +43,7 @@ export class ExtendedClient extends Client {
 		this._commandLimits = new Collection();
 		this.moneyConfigs = new Map();
 		this.voiceFarmers = new Map();
+		this.newUsers = new Set();
 	}
 
 	public getCommandLimit(commandName: string) {
