@@ -3,7 +3,7 @@ import { ExtendedClient } from "../client.ts";
 import { CommandLimits, ICommandLimits } from "../Models/Command.ts";
 import { Money, IMoney } from "../Models/Money.ts";
 import { Users } from "../Models/User.ts";
-import { getChannel, getChannelFromEnv, getRoleFromEnv } from "../utils/constants.ts";
+import { COLORS, getChannel, getChannelFromEnv, getRoleFromEnv } from "../utils/constants.ts";
 
 export default {
 	name: Events.ClientReady,
@@ -96,7 +96,7 @@ async function welcomeProcessor(client: ExtendedClient) {
 
 			// Crear el embed
 			const embed = new EmbedBuilder()
-				.setColor(0x00ae86)
+				.setColor(COLORS.pyeWelcome)
 				.setTitle("¡Bienvenidos al servidor!")
 				.setDescription(`Nos alegra tenerte aquí. Si necesitas ayuda, no dudes en contactar a ${randomStaff}.`)
 				.setTimestamp()
