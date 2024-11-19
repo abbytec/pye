@@ -53,6 +53,8 @@ const CHANNELS = {
 const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	recursos: "1296190631269372055",
 	general: "1296190631269372046",
+	reglas: "1296190630724370503",
+	roles: "1296190631026233345",
 	filosofiaPolitica: "1296190631269372048",
 	chatProgramadores: "1296190631269372047",
 	ofreceServicios: "1296190631269372051",
