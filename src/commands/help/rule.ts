@@ -225,15 +225,16 @@ const ruleData: ICustomCommand[] = [
 ];
 
 export default {
+	group: "📜 - Ayuda",
 	data: new SlashCommandBuilder()
-		.setName("rule")
+		.setName("regla")
 		.setDescription("Muestra preguntas frecuentes.")
 		.addIntegerOption((option) =>
 			option
 				.setName("numero")
-				.setDescription("El tema de la FAQ")
+				.setDescription("La regla a mostrar.")
 				.setRequired(true)
-				.addChoices(...ruleData.map((rule) => ({ name: rule.embeds[0].title ?? "", value: Number(rule.name.slice(1)) })))
+				.addChoices(...ruleData.map((rule) => ({ name: rule.embeds?.at(0)?.title ?? "", value: Number(rule.name.slice(1)) })))
 		),
 
 	execute: composeMiddlewares(
@@ -249,7 +250,7 @@ export default {
 			try {
 				await (interaction.channel as TextChannel).send({ embeds: ruleEntry.embeds });
 			} catch (error) {
-				console.error("Error procesando el comando rule:", error);
+				console.error("Error procesando el comando regla:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
 			}
 		}

@@ -1,11 +1,11 @@
-import { Events, ActivityType, Guild, EmbedBuilder, TextChannel } from "discord.js";
+import { Events, ActivityType, EmbedBuilder, TextChannel } from "discord.js";
 import { ExtendedClient } from "../client.ts";
 import { CommandLimits, ICommandLimits } from "../Models/Command.ts";
 import { Money, IMoney } from "../Models/Money.ts";
 import { Users } from "../Models/User.ts";
-import { COLORS, getChannel, getRoleFromEnv } from "../utils/constants.ts";
 import { Agenda, Job } from "agenda";
 import { CronMessage } from "../Models/CronMessage.ts";
+import { sendWelcomeMessageProcessor } from "../utils/welcome.ts";
 
 export default {
 	name: Events.ClientReady,
@@ -27,7 +27,9 @@ export default {
 		cronEventsProcessor(client);
 		voiceFarmingProcessor(client);
 		activityProcessor(client);
-		welcomeProcessor(client);
+		setInterval(async () => {
+			sendWelcomeMessageProcessor(client);
+		}, 36e5);
 	},
 };
 
@@ -109,54 +111,4 @@ async function activityProcessor(client: ExtendedClient) {
 			40000
 		);
 	}, 50000);
-}
-
-async function welcomeProcessor(client: ExtendedClient) {
-	const guild = client.guilds.cache.get(process.env.GUILD_ID ?? "") as Guild;
-	setInterval(async () => {
-		if (client.newUsers.size === 0) return;
-		const newUserIds = Array.from(client.newUsers);
-		const MAX_MENTIONS_PER_MESSAGE = 50; // Define el límite de menciones por mensaje
-		const batches: string[][] = [];
-
-		for (let i = 0; i < newUserIds.length; i += MAX_MENTIONS_PER_MESSAGE) {
-			batches.push(newUserIds.slice(i, i + MAX_MENTIONS_PER_MESSAGE));
-		}
-		const staffMembers =
-			guild.members.cache
-				.filter((member) =>
-					member.roles.cache.some((role) => [getRoleFromEnv("staff"), getRoleFromEnv("moderadorChats")].includes(role.id))
-				)
-				.map((member) => member.user) || [];
-
-		for (const batch of batches) {
-			// Seleccionar un miembro aleatorio del staff
-			const randomStaff = staffMembers[Math.floor(Math.random() * staffMembers.length)];
-
-			const mentions = batch.map((id) => `<@${id}>`).join(", ");
-
-			// Crear el embed
-			const embed = new EmbedBuilder()
-				.setColor(COLORS.pyeWelcome)
-				.setTitle("¡Bienvenidos al servidor!")
-				.setDescription(`Nos alegra tenerte aquí. Si necesitas ayuda, no dudes en contactar a ${randomStaff}.`)
-				.setTimestamp()
-				.setFooter({ text: "¡Disfruta tu estancia!" });
-
-			try {
-				((await getChannel(guild, "general")) as TextChannel)?.send({
-					content: mentions,
-					embeds: [embed],
-				});
-				console.log(`Mensaje de bienvenida enviado a: ${batch.length} usuarios.`);
-			} catch (error) {
-				console.error("Error al enviar mensaje de bienvenida en el canal general:", error);
-			}
-
-			// Eliminar los usuarios que ya fueron mencionados
-			batch.forEach((userId) => client.newUsers.delete(userId));
-
-			await new Promise((resolve) => setTimeout(resolve, 3000));
-		}
-	}, 36e5);
 }

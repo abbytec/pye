@@ -15,5 +15,6 @@ interface IEmbed {
 
 export interface ICustomCommand {
 	name: string;
-	embeds: APIEmbed[];
+	embeds?: APIEmbed[];
+	content?: string;
 }

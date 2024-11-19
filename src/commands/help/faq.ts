@@ -98,9 +98,127 @@ const faqData: ICustomCommand[] = [
 			},
 		],
 	},
+	{
+		name: "psicologo",
+		content:
+			"Si tienes problemas emocionales o de vida personal, no confies en un chat lleno de extraños, intenta conseguir ayuda profesional.",
+	},
+	{
+		name: "nsfw",
+		content:
+			'N.S.F.W en español significa "No Apto Para Trabajo", por el bien de la comunidad, si deseas poner una imagen y esta en duda si esta rompe las reglas usa el modo spoiler.\n( Aun así poner contenido erotico o explícito puede ser motivo de ban/sanción )\nhttps://i.imgur.com/2RQENow.png',
+	},
+	{
+		name: "comandos",
+		content:
+			"### Algunos de los comandos de uso común \n* /bienvenido `Da la bienvenida y otorga información básica del servidor`\n* /stats `Obtiene una tarjeta con tus datos de valor en el servidor`\n* /faq nsfw `Ayuda a mantener una comunidad mas sana explicando el NSFW`\n* /faq ticket `Información sobre crear tickets`\n* /faq rep `Información básica sobre el sistema de reputación`\n* /faq psicologo `Pequeño consejo para aquellos que necesitan ayuda psicologica`",
+	},
+	{
+		name: "code",
+		embeds: [
+			{
+				title: "Formatear código.",
+				color: COLORS.pyeLightBlue,
+				description:
+					"Para que tu código sea más facil de leer en los chats y queden de una forma más profesional debes envolverlo al principio y al final con triple comilla invertida (backticks) Alt + 96",
+				image: {
+					url: "https://cdn.discordapp.com/attachments/809180235810734110/924734160441057360/code.png",
+				},
+			},
+		],
+	},
+	{
+		name: "check",
+		content: "**Pon el enlace que quieras analizar en:**\n> https://sitecheck.sucuri.net/",
+	},
+	{
+		name: "invite",
+		embeds: [
+			{
+				title: "Comparte este enlace con quien quieras!",
+				color: COLORS.pyeLightBlue,
+				description: "https://discord.com/invite/programacion",
+				image: {
+					url: "https://cdn.discordapp.com/attachments/809180235810734110/951210783348514866/PYEBANNERENTRADA222.jpg",
+				},
+			},
+		],
+	},
+	{
+		name: "google",
+		embeds: [
+			{
+				title: "Intenta siempre primero resolver tus dudas a través de Google",
+				color: COLORS.pyeLightBlue,
+				description:
+					"https://www.google.com/\n\n*Recuerda que las búsquedas relacionadas en programación regularmente suelen hacerse en Inglés por lo que es importante que siempre trates de hacer la búsqueda en Inglés por ejemplo : “How to create an array javascript”*",
+				image: {
+					url: "https://cdn.discordapp.com/attachments/809180235810734110/980173255023394948/jix.png",
+				},
+				footer: {
+					text: "Haz tus preguntas solamente para dudas muy concretas que no se puedan realizar en google.",
+				},
+			},
+		],
+	},
+	{
+		name: "disclaimer",
+		embeds: [
+			{
+				title: "Disclaimer",
+				color: COLORS.pyeLightBlue,
+				description:
+					"👉El staff **no** intervendrá  para resolver conflictos interpersonales que ocurran debido a los canales autocreados (véase que un usuario te expulsó de su canal). Para evitar esta clase de situaciones puedes usar los canales donde los usuarios no pueden moderar <#907484044445499432> , <#907484185688682506>, <#796580264867266581> y <#805095903618400276>\n\n👉El staff **si** puede interactuar cuando:\n**-**Un usuario esté compartiendo cosas indebidas en pantalla o haciendo ruidos molestos.\n**-**Un usuario entre y salga repetidamente de un canal con claras intenciones de molestar.\n**-**Casos extremos de acoso el cual estén bien documentados como para poder proceder.\n**-**Se muestren evidencias concretas de que un usuario se está aprovechando de otros ya sea por lo que fuese, estafa, doxeos, phising, etc.\n\n*El staff no posee clarividencia , ni tiene registros de lo que pasa en los canales de voz a cada momento (ni siquiera Discord lo tiene),  tampoco el staff tiene poder u obligación con  lo que sucede fuera de este servidor.*",
+				thumbnail: {
+					url: "https://cdn.discordapp.com/attachments/809180235810734110/1025184132675928064/testbannerpye.jpg",
+				},
+			},
+		],
+	},
+	{
+		name: "twitter",
+		embeds: [
+			{
+				title: "El Twitter del servidor <:basado:878018935772033094>",
+				color: COLORS.pyeLightBlue,
+				description: "https://twitter.com/PyE_comunidad",
+				thumbnail: {
+					url: "https://cdn.discordapp.com/attachments/1115058778736431104/1120759445249593507/Logo.png",
+				},
+				footer: {
+					text: "síguenos por favor!",
+				},
+			},
+		],
+	},
+	{
+		name: "ticket",
+		content:
+			"Crea un  <#865047053884457012>  para reportar algún problema o mala conducta de un usuario, si el ticket resulta válido se te otorgará un punto de reputación.",
+	},
+	{
+		name: "rep",
+		content:
+			"**__Los rangos《✯》son el rol principal de este servidor.__**\n\nPuedes obtener más información de como ganar puntos rep [AQUÍ](https://discord.com/channels/768278151435386900/999427534670278667/999429684473380914)\n\n❗ Puedes ver la cantidad de puntos que llevas siempre que quieras usando el comando **!stats** o puedes visualizar top general usando el comando **!rtop**",
+	},
+	{
+		name: "recuperar-cuenta",
+		embeds: [
+			{
+				title: "No puedo recuperar mi cuenta, qué puedo hacer?",
+				color: COLORS.pyeLightBlue,
+				description:
+					'Esta pregunta se da frecuentemente. Desafortunadamente, nosotros no tenemos la capacidad de hacer nada adicional a lo que tú mismo puedas hacer. Tus mejores posibilidades son:\n\n1. Usar las opciones de "olvidé mi contraseña". Te harán seguir un procedimiento.\n\n2. Si lo anterior no funciona, contacta a Soporte Técnico del proveedor de tu cuenta. Tendrás que buscar cuál es el medio de contacto de Soporte Técnico de tu proveedor.\n\nRecuerda que no hay garantía de que te restauren el acceso a tu cuenta, especialmente si no logran comprobar que tú eres el dueño. Por eso, lo más importante es que tomes las medidas necesarias para evitar perder la cuenta en primer lugar.',
+				thumbnail: {
+					url: "https://i.pinimg.com/564x/76/38/69/763869a33c8ac9e99a59500992c11127.jpg",
+				},
+			},
+		],
+	},
 ];
 
 export default {
+	group: "📜 - Ayuda",
 	data: new SlashCommandBuilder()
 		.setName("faq")
 		.setDescription("Muestra preguntas frecuentes.")
