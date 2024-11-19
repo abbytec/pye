@@ -60,24 +60,21 @@ const loadEvents = async () => {
 };
 
 const main = async () => {
-	try {
-		loadEnvVariables();
+	loadEnvVariables();
 
-		await connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/", {
-			connectTimeoutMS: 20000,
-		})
-			.then(() => console.log("Conectado a la base de datos."))
-			.then(
-				async () =>
-					await Promise.all([
-						loadCommands().then(() => console.log("Comandos cargados.")),
-						loadEvents().then(() => console.log("Eventos cargados.")),
-					])
-			)
-			.then(async () => await client.login(process.env.TOKEN_BOT));
-	} catch (error) {
-		console.error("Error en la inicialización:", error);
-	}
+	await connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/", {
+		connectTimeoutMS: 20000,
+	})
+		.then(() => console.log("Conectado a la base de datos."))
+		.then(
+			async () =>
+				await Promise.all([
+					loadCommands().then(() => console.log("Comandos cargados.")),
+					loadEvents().then(() => console.log("Eventos cargados.")),
+				])
+		)
+		.then(async () => await client.login(process.env.TOKEN_BOT))
+		.catch((error) => console.error("Error en la inicialización:", error.message));
 };
 
 main();

@@ -238,7 +238,7 @@ export default {
 		),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? "")],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const tema = interaction.options.getInteger("numero", true);
 			const ruleEntry = ruleData.find((rule) => Number(rule.name.slice(1)) === tema);
@@ -249,6 +249,7 @@ export default {
 
 			try {
 				await (interaction.channel as TextChannel).send({ embeds: ruleEntry.embeds });
+				return;
 			} catch (error) {
 				console.error("Error procesando el comando regla:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");

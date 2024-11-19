@@ -137,7 +137,7 @@ const faqData: ICustomCommand[] = [
 			{
 				title: "Comparte este enlace con quien quieras!",
 				color: COLORS.pyeLightBlue,
-				description: "https://discord.com/invite/programacion",
+				description: "https://discord.gg/programacion",
 				image: {
 					url: "https://cdn.discordapp.com/attachments/809180235810734110/951210783348514866/PYEBANNERENTRADA222.jpg",
 				},
@@ -252,7 +252,8 @@ export default {
 			}
 
 			try {
-				await (interaction.channel as TextChannel).send({ embeds: faqEntry.embeds });
+				await (interaction.channel as TextChannel).send({ embeds: faqEntry.embeds, content: faqEntry.content });
+				return;
 			} catch (error) {
 				console.error("Error procesando el comando FAQ:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");

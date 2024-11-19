@@ -202,6 +202,9 @@ const ROLES = {
 	// sanciones
 	restringido: "984278721055830047",
 	silenced: "1307455233814823014",
+
+	// categorías
+
 };
 
 export type Roles = keyof typeof ROLES;
@@ -235,6 +238,9 @@ const DEV_ROLES: Record<Roles, string> = {
 	// sanciones
 	restringido: "1296190630678233109",
 	silenced: "1307456987147141231",
+
+	// categorías
+	
 };
 
 export function getRoleFromEnv(role: Roles): string {
