@@ -57,21 +57,21 @@ async function sendMessage(content: string, guild: Guild, randomStaff: User) {
 		.setColor(COLORS.pyeWelcome)
 		.setTitle("¡Bienvenid@s a la comunidad  👋🏻!")
 		.setDescription(
-			`Nos alegra tenerlos aquí. No olviden leer <#${getChannelFromEnv("reglas")}> y de elegir sus <#${getChannelFromEnv("roles")}>. `
+			`Nos alegra tenerlos aquí. \nNo olviden leer <#${getChannelFromEnv("reglas")}> y de elegir sus <#${getChannelFromEnv("roles")}>.`
 		)
 		.setFields([
 			{
-				name: `Si tienen cualquier **pregunta **hay canales especializados`,
+				name: `Si tienen cualquier **pregunta** hay canales especializados`,
 				value:
-					`Si no encaja en ninguno de los canales usen <#${getChannelFromEnv("ayuda-general")}> <:arma:996504866673406092>\n\n` +
-					"Asegurense de usar un **título descriptivo** y poner la mayor cantidad de **detalles** así su pregunta no es *ignorada**\n\n" +
+					`Si no encaja en ninguno de los canales usen <#${getChannelFromEnv("ayuda-general")}> <a:arma:996504866673406092> \n\n` +
+					"Asegurense de usar un **título descriptivo** y poner la mayor cantidad de **detalles** así su pregunta no es **ignorada**\n\n" +
 					`👥   Usen <#${getChannelFromEnv("chatProgramadores")}> para hablar principalmente de programacion y <#${getChannelFromEnv(
 						"general"
-					)} para conversar de cualquier otro tema.`,
+					)}> para conversar de cualquier otro tema.`,
 				inline: false,
 			},
 			{
-				name: ` Y si aún necesitas ayuda...`,
+				name: ` Y si aún necesitan ayuda...`,
 				value: `No dudes en contactar a <@${randomStaff.id}>, nuestro mejor staff!!! (pero no le digas a los demás)`,
 				inline: false,
 			},
