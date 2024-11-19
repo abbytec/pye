@@ -93,42 +93,76 @@ export default {
 		}
 	},
 };
-const filterList = [
-	{ filter: "telegra.ph/Adobe-GRATIS-2024", mute: true },
-	{ filter: "steamcommunity.com/gift/", mute: true },
-	{ filter: "/freenitro", mute: true },
-	{ filter: "https://t.me", mute: false },
-	{ filter: "https://telegram.me", mute: false },
+
+export interface IFilter {
+	filter: RegExp;
+	mute: boolean;
+	staffWarn?: string;
+}
+
+const linkPeligroso = "Posible link peligroso detectado";
+const filterList: IFilter[] = [
+	{ filter: /\w+\.xyz$/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /\w+\.click$/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /\w+\.info$/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /\w+\.ru$/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /\w+\.biz$/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /\w+\.online$/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /\w+\.club$/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /^(https?:\/\/)?t\.me\/.+$/i, mute: true },
+	{ filter: /^(https?:\/\/)?telegram\.me\/.+$/i, mute: true },
+	{ filter: /^(https?:\/\/)?wa\.me\/.+$/i, mute: true },
+	{ filter: /^(https?:\/\/)?whatsapp\.me\/.+$/i, mute: true },
+	{
+		filter: /^(?!(https?:\/\/)?discord\.gg\/programacion$)(https?:\/\/)?discord\.gg\/.+$/i,
+		mute: true,
+	},
+	{
+		filter: /^(?!(https?:\/\/)?discord\.com\/invite\/programacion$)(https?:\/\/)?discord\.com\/invite\/.+$/i,
+		mute: true,
+	},
+	{ filter: /^(https?:\/\/)?steamcommunity\.com\/gift\/.+$/i, mute: false },
+	{
+		filter: /(?=.*(?:eth|ethereum|btc|bitcoin|capital|crypto|memecoins))(?=.*\b(?:gana\w*|gratis|multiplica\w*|inver\w*)\b).*/is,
+		mute: false,
+		staffWarn: "Posible estafa detectada",
+	},
 ];
 async function spamFilter(message: Message<boolean>, client: ExtendedClient) {
 	if (message.content?.length < 8) return;
 
-	const detectedFilter = filterList.find((item) => message.content.includes(item.filter));
+	const detectedFilter = filterList.find((item) => item.filter.test(message.content));
 
-	if (detectedFilter) {
+	if (detectedFilter && !detectedFilter.staffWarn) {
 		try {
 			await message.delete();
-			applyTimeout(
-				10000,
-				"Spam Filter",
-				message.member as GuildMember,
-				message.guild?.iconURL({ extension: "gif" }) ?? null,
-				message.author
-			);
+			if (detectedFilter.mute)
+				applyTimeout(
+					10000,
+					"Spam Filter",
+					message.member as GuildMember,
+					message.guild?.iconURL({ extension: "gif" }) ?? null,
+					message.author
+				);
 			console.log("Mensaje borrado que contenía texto en la black list");
 		} catch (error) {
 			console.error("spamFilter: Error al intentar borrar el mensaje:", error);
 		}
 
-		const channel = client.channels.cache.get(getChannelFromEnv("logs")) as TextChannel;
+		const logChannel = client.channels.cache.get(getChannelFromEnv("logs")) as TextChannel;
 
-		if (channel) {
-			await channel.send({
-				content: `##spamFilter: \nSe eliminó un mensaje que contenía texto no permitido.\n${message.author}(${message.author.id}) - ${message.channel} \n **spam triggered** : \`${detectedFilter.filter}\``,
-			});
-		} else {
-			console.log("spamFilter: No se encontró el canal.");
-		}
+		if (!logChannel) console.error("spamFilter: No se encontró el canal de logs.");
+
+		await logChannel.send({
+			content: `##spamFilter: \nSe eliminó un mensaje que contenía texto no permitido.\n${message.author}(${message.author.id}) - ${message.channel} \n **spam triggered** : \`${detectedFilter.filter}\``,
+		});
+	} else if (detectedFilter?.staffWarn) {
+		const moderatorChannel = client.channels.cache.get(getChannelFromEnv("moderadores")) as TextChannel;
+		if (!moderatorChannel) console.error("spamFilter: No se encontró el canal de moderadores.");
+		const messageLink = `https://discord.com/channels/${message.guild?.id}/${message.channel.id}/${message.id}`;
+		await moderatorChannel.send({
+			content: `**Advertencia:** ${detectedFilter.staffWarn}. ${messageLink}`,
+		});
 	}
 }
 

@@ -71,7 +71,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	logs: "1296190632020414594",
 	voiceLogs: "1296190632317943912",
 	staff: "1296190632020414595",
-	moderadores: "1296190630724370498",
+	moderadores: "1296190632020414596",
 
 	categoryStaff: "1296190631810568283",
 };
