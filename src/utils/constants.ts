@@ -204,7 +204,10 @@ const ROLES = {
 	silenced: "1307455233814823014",
 
 	// categorías
-
+	perfil: "809176709475074078",
+	medallas: "1075876589176361071",
+	intereses: "921211374275821629",
+	lenguajes: "831737279251742761",
 };
 
 export type Roles = keyof typeof ROLES;
@@ -240,7 +243,10 @@ const DEV_ROLES: Record<Roles, string> = {
 	silenced: "1307456987147141231",
 
 	// categorías
-	
+	perfil: "1296190630631837825",
+	medallas: "1296190630665392198",
+	intereses: "1296190630539563081",
+	lenguajes: "1296190630489362492",
 };
 
 export function getRoleFromEnv(role: Roles): string {
@@ -249,6 +255,11 @@ export function getRoleFromEnv(role: Roles): string {
 
 export function getRoles(...roles: Roles[]): string[] {
 	return roles.map((role) => getRoleFromEnv(role));
+}
+
+export function getInitialRoles(): string[] {
+	let roles = isDevelopment ? DEV_ROLES : ROLES;
+	return [roles.novato, roles.perfil, roles.medallas, roles.intereses, roles.lenguajes];
 }
 
 export function getRepRolesByOrder(): string[] {
