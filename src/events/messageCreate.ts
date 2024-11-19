@@ -4,7 +4,7 @@ import { COLORS, DISBOARD_UID, EMOJIS, getChannelFromEnv, getForumIdsFromEnv, ge
 import { applyTimeout } from "../commands/moderation/timeout.ts";
 import { Users } from "../Models/User.ts";
 import { getCooldown, setCooldown } from "../utils/cooldowns.ts";
-import { checkRole } from "../utils/generic.ts";
+import { checkRole, convertMsToUnixTimestamp } from "../utils/generic.ts";
 import { checkHelp } from "../utils/checkhelp.ts";
 import { bumpHandler } from "../utils/bumpHandler.ts";
 
@@ -60,7 +60,7 @@ export default {
 					}
 				});
 
-				specificChannels(message);
+				specificChannels(message, client);
 				checkChannel(message).then((isThankable) => {
 					if (isThankable) {
 						checkHelp(message);
@@ -132,7 +132,7 @@ async function spamFilter(message: Message<boolean>, client: ExtendedClient) {
 	}
 }
 
-function specificChannels(msg: Message<boolean>) {
+async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 	switch (msg.channel.id) {
 		case getChannelFromEnv("recursos"):
 			msg.react("💤").catch(() => null);
@@ -143,41 +143,69 @@ function specificChannels(msg: Message<boolean>) {
 			checkRole(msg, getRoleFromEnv("granAportador"), 75);
 			break;
 		case getChannelFromEnv("ofreceServicios"):
-		case getChannelFromEnv("proyectosNoPagos"):
-			msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
-				thread.send({
-					embeds: [
-						new EmbedBuilder()
-							.setTitle("¡Evita que te estafen!")
-							.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
-							.setDescription(
-								"Por favor te __recordamos__ tomar todas las precauciones posibles al interactuar en estos canales ya que el staff no puede **intervenir** con estafas. **SOLAMENTE TÚ PUEDES EVITAR SER VÍCTIMA DE UNA ESTAFA.**"
-							),
-						new EmbedBuilder()
-							.setTitle("Recomendaciones")
-							.setDescription(
-								"• No pagues ni entregues ningún trabajo y/o servicio en su totalidad hasta estar completamente seguro que la otra persona es confiable.\n • Si la publicación no ofrece muchos datos al respecto, debes dudar de la misma o bien puedes reportarla a un moderador.\n• Si tienes pruebas sobre la conducta cuestionable de un usuario, puedes reportarlo para impedirle el acceso a estos canales.\n\nDesde este servidor nos comprometemos a mantener estos canales lo más seguros y ordenados dentro de lo posible, **sin embargo** nuestro rol principal es el de brindar un lugar para que los usuarios puedan visibilizar sus publicaciones. Muchas resoluciones de conflicto *exceden* nuestro alcance y obligaciones, por eso recomendamos encarecidamente tener precaución.\n¡En nombre del Staff agradecemos tu atención!"
-							)
-							.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" })),
-					],
+		case getChannelFromEnv("proyectosNoPagos"): {
+			let cooldown = await checkCooldownComparte(msg, client);
+			if (cooldown > 0) {
+				await (msg.channel as TextChannel).send({
+					content: `🚫 <@${
+						msg.author.id
+					}>Por favor, espera 1 semana entre publicaciónes en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
+						cooldown
+					)}:R>)`,
 				});
-			});
-			break;
-		case getChannelFromEnv("ofertasDeEmpleos"):
-			msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
-				thread.send({
-					content: `Hey ${msg.author.toString()}!`,
-					embeds: [
-						new EmbedBuilder()
-							.setTitle("Protege tu dinero y asegurate de que tu trabajo sea finalizado")
-							.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
-							.setDescription(
-								"Prueba con nuestra opción <#1099082604252241920>.\nEl servidor se asegurará de que consigas alguien para realizarlo y de resguardar tu dinero hasta que el trabajo finalice."
-							),
-					],
+				await msg.delete();
+			} else {
+				msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
+					thread.send({
+						embeds: [
+							new EmbedBuilder()
+								.setTitle("¡Evita que te estafen!")
+								.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
+								.setDescription(
+									"Por favor te __recordamos__ tomar todas las precauciones posibles al interactuar en estos canales ya que el staff no puede **intervenir** con estafas. **SOLAMENTE TÚ PUEDES EVITAR SER VÍCTIMA DE UNA ESTAFA.**"
+								),
+							new EmbedBuilder()
+								.setTitle("Recomendaciones")
+								.setDescription(
+									"• No pagues ni entregues ningún trabajo y/o servicio en su totalidad hasta estar completamente seguro que la otra persona es confiable.\n • Si la publicación no ofrece muchos datos al respecto, debes dudar de la misma o bien puedes reportarla a un moderador.\n• Si tienes pruebas sobre la conducta cuestionable de un usuario, puedes reportarlo para impedirle el acceso a estos canales.\n\nDesde este servidor nos comprometemos a mantener estos canales lo más seguros y ordenados dentro de lo posible, **sin embargo** nuestro rol principal es el de brindar un lugar para que los usuarios puedan visibilizar sus publicaciones. Muchas resoluciones de conflicto *exceden* nuestro alcance y obligaciones, por eso recomendamos encarecidamente tener precaución.\n¡En nombre del Staff agradecemos tu atención!"
+								)
+								.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" })),
+						],
+					});
 				});
-			});
+				await setCooldown(client, msg.author.id, "comparte-post", 1000 * 60 * 60 * 24 * 7);
+			}
 			break;
+		}
+		case getChannelFromEnv("ofertasDeEmpleos"): {
+			let cooldown = await checkCooldownComparte(msg, client);
+			if (cooldown > 0) {
+				(msg.channel as TextChannel).send({
+					content: `🚫 <@${
+						msg.author.id
+					}>Por favor, espera 1 semana entre publicaciónes en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
+						cooldown
+					)}:R>)`,
+				});
+				await msg.delete();
+			} else {
+				msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
+					thread.send({
+						content: `Hey ${msg.author.toString()}!`,
+						embeds: [
+							new EmbedBuilder()
+								.setTitle("Protege tu dinero y asegurate de que tu trabajo sea finalizado")
+								.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
+								.setDescription(
+									"Prueba con nuestra opción <#1099082604252241920>.\nEl servidor se asegurará de que consigas alguien para realizarlo y de resguardar tu dinero hasta que el trabajo finalice."
+								),
+						],
+					});
+				});
+				await setCooldown(client, msg.author.id, "comparte-post", 1000 * 60 * 60 * 24 * 7);
+			}
+			break;
+		}
 		case getChannelFromEnv("memes"):
 			msg.react("👍").catch(() => null);
 			msg.react("👎").catch(() => null);
@@ -199,4 +227,8 @@ async function checkChannel(msg: Message<boolean>) {
 		if (threadAuthor?.id !== msg.author.id) return false;
 	} else channel = msg.channel as TextChannel;
 	return getForumIdsFromEnv().includes(channel.id ?? "");
+}
+
+async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClient) {
+	return await getCooldown(client, msg.author.id, "comparte-post", 1000 * 60 * 60 * 24 * 7);
 }

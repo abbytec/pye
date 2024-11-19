@@ -112,6 +112,12 @@ export function calculateJobMultiplier(job: string | undefined, profit: number, 
 	if ((job === "Doctor" || job === "Doctora") && couples.some((s) => s.job === "Enfermero" || s.job === "Enfermera")) {
 		profit += profit * 0.5;
 	}
-	if (job === "Bombero" || job === "Bombera") profit += Math.ceil(profit * 0.35)
-	return Math.floor(profit)
+	if (job === "Bombero" || job === "Bombera") profit += Math.ceil(profit * 0.35);
+	return Math.floor(profit);
+}
+
+export function convertMsToUnixTimestamp(millisecondsUntilEvent: number): number {
+	const targetDate = new Date(Date.now() + millisecondsUntilEvent);
+	const unixTimestamp = Math.floor(targetDate.getTime() / 1000);
+	return unixTimestamp;
 }
