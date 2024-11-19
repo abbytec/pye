@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, TextChannel } from "discord.js";
+import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, TextChannel, CacheType } from "discord.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { PostHandleable } from "../../types/middleware.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
@@ -212,6 +212,17 @@ const faqData: ICustomCommand[] = [
 				thumbnail: {
 					url: "https://i.pinimg.com/564x/76/38/69/763869a33c8ac9e99a59500992c11127.jpg",
 				},
+			},
+		],
+	},
+	{
+		name: "inayudable",
+		embeds: [
+			{
+				title: "Hola mi estimad@ colega!",
+				color: COLORS.pyeLightBlue,
+				description:
+					"Para poder ayudarte mejor, ¿Podrías compartir con nosotros mas detalles? Por ejemplo, pasar una captura de tu código e indicarnos donde necesitas ayuda",
 			},
 		],
 	},
