@@ -1,7 +1,7 @@
 import { Events, ChannelType, EmbedBuilder, ThreadChannel, TextChannel } from "discord.js";
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import loadEnvVariables from "../utils/environment.ts";
-import { COLORS, getChannel } from "../utils/constants.ts";
+import { COLORS, getChannel, getForumTopic } from "../utils/constants.ts";
 
 loadEnvVariables();
 const genAI = new GoogleGenerativeAI(process.env.gemini_API_KEY ?? "");
@@ -40,8 +40,9 @@ const model = genAI.getGenerativeModel({
 
 const threadsHelp = async function (tittle: string, pregunta: string, m: ThreadChannel) {
 	try {
-		const prompt =
-			`el contexto es: "${tittle}" si no lo entiendes no le des importancia. el prompt es: \n "${pregunta}" intenta resolver y ayudar con el prompt de manera clara y simple`.toString();
+		const prompt = `el contexto es: "${tittle}" (tema: ${getForumTopic(
+			m.parentId ?? ""
+		)}) si no lo entiendes no le des importancia. el prompt es: \n "${pregunta}" intenta resolver y ayudar con el prompt de manera clara y simple`.toString();
 		const result = await model.generateContent(prompt);
 
 		const response = result.response.text();

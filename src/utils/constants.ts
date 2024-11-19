@@ -95,15 +95,44 @@ export const forums: (keyof typeof CHANNELS)[] = [
 	"rust",
 	"python",
 	"c-sharp-dotnet",
-	"javascript",
 	"c-cpp",
 	"html-css",
-	"c",
 	"php",
 	"java-kotlin",
 	"matemáticas",
 	"física-química",
 ];
+
+const forumTopicDescriptions: Map<Partial<keyof typeof CHANNELS>, string> = new Map([
+	["discord-dev", "Desarrollo de discord, incluyendo bots"],
+	["game-dev", "Desarrollo de juegos"],
+	["c-sharp-dotnet", "C# y .NET"],
+	["c-cpp", "C y C++"],
+	["html-css", "HTML y CSS"],
+	["java-kotlin", "Java y/o Kotlin"],
+	["física-química", "Física y/o Química"],
+]);
+
+let reversedChannels: Record<string, string>;
+
+export function getForumTopic(channelId: string): string {
+	if (!reversedChannels) {
+		const channels = getChannelsFromEnv();
+
+		// Invertir el mapeo de nombre a ID
+		reversedChannels = Object.entries(channels).reduce((acc, [name, id]) => {
+			acc[id] = name;
+			return acc;
+		}, {} as Record<string, string>);
+	}
+
+	const channelName = reversedChannels[channelId];
+
+	if (channelName && forumTopicDescriptions.has(channelName as Partial<keyof typeof CHANNELS>))
+		return forumTopicDescriptions.get(channelName as Partial<keyof typeof CHANNELS>)!;
+	else if (channelName) return channelName.replace(/-/g, " ");
+	else return "generico";
+}
 
 let forumIds: string[] = [];
 
