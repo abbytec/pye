@@ -6,8 +6,8 @@ const MAX_MENTIONS_PER_MESSAGE = 3; // Define el límite de menciones por mensaj
 
 export async function sendWelcomeMessageProcessor(client: ExtendedClient, omitList: boolean = true) {
 	const guild = client.guilds.cache.get(process.env.GUILD_ID ?? "") as Guild;
-	if (omitList && client.newUsers.size === 0) return;
-	const newUserIds = Array.from(client.newUsers);
+	if (omitList && ExtendedClient.newUsers.size === 0) return;
+	const newUserIds = Array.from(ExtendedClient.newUsers);
 
 	const batches: string[][] = [];
 
@@ -43,7 +43,7 @@ export async function sendWelcomeMessageProcessor(client: ExtendedClient, omitLi
 		}
 
 		// Eliminar los usuarios que ya fueron mencionados
-		batch.forEach((userId) => client.newUsers.delete(userId));
+		batch.forEach((userId) => ExtendedClient.newUsers.delete(userId));
 
 		await new Promise((resolve) => setTimeout(resolve, 3000));
 	}

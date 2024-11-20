@@ -269,7 +269,7 @@ async function checkChannel(msg: Message<boolean>) {
 }
 
 async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClient) {
-	let lastPosts = client.ultimosCompartePosts
+	let lastPosts = ExtendedClient.ultimosCompartePosts
 		.get(msg.author.id)
 		?.filter((post) => post.date.getTime() + 1000 * 60 * 60 * 24 * 7 >= Date.now());
 

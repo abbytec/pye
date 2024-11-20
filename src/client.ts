@@ -1,5 +1,5 @@
 // src/Client.ts
-import { Client, Collection, GatewayIntentBits, Partials } from "discord.js";
+import { Client, GatewayIntentBits, Partials } from "discord.js";
 import { Command } from "./types/command.ts"; // Asegúrate de definir la interfaz Command
 import { ICooldown } from "./Models/Cooldown.ts";
 import { Rob } from "./commands/farming/rob.ts";
@@ -7,7 +7,6 @@ import { CommandLimits, ICommandLimits } from "./Models/Command.ts";
 import { IMoney, Money } from "./Models/Money.ts";
 import { Agenda } from "agenda";
 import { getRoleFromEnv } from "./utils/constants.ts";
-import client from "./redis.ts";
 
 interface VoiceFarming {
 	date: Date;
@@ -27,11 +26,12 @@ export class ExtendedClient extends Client {
 	public cooldowns: Map<string, ICooldown>;
 	public lastRobs: Rob[];
 	public voiceFarmers: Map<string, VoiceFarming>;
-	public newUsers: Set<string>;
+
 	private static agendaElement: Agenda;
 	private _staffMembers: string[] = [];
 	private _modMembers: string[] = [];
-	public ultimosCompartePosts: Map<string, CompartePost[]> = new Map();
+	public static readonly newUsers: Set<string> = new Set();
+	public static readonly ultimosCompartePosts: Map<string, CompartePost[]> = new Map();
 
 	constructor() {
 		super({
@@ -56,7 +56,6 @@ export class ExtendedClient extends Client {
 		this._commandLimits = new Map();
 		this.moneyConfigs = new Map();
 		this.voiceFarmers = new Map();
-		this.newUsers = new Set();
 	}
 
 	public static set agenda(agenda: Agenda) {
@@ -122,12 +121,12 @@ export class ExtendedClient extends Client {
 
 	private limpiarCompartePosts(): void {
 		const now = new Date();
-		for (const [clave, listaPosts] of this.ultimosCompartePosts.entries()) {
+		for (const [clave, listaPosts] of ExtendedClient.ultimosCompartePosts.entries()) {
 			const postsFiltrados = listaPosts.filter((post) => now.getTime() - post.date.getTime() <= sieteDiasEnMs);
 			if (postsFiltrados.length > 0) {
-				this.ultimosCompartePosts.set(clave, postsFiltrados);
+				ExtendedClient.ultimosCompartePosts.set(clave, postsFiltrados);
 			} else {
-				this.ultimosCompartePosts.delete(clave);
+				ExtendedClient.ultimosCompartePosts.delete(clave);
 			}
 		}
 	}
@@ -141,7 +140,7 @@ export class ExtendedClient extends Client {
 	}
 
 	public agregarCompartePost(userId: string, channelId: string, messageId: string) {
-		if (!this.ultimosCompartePosts.has(userId)) this.ultimosCompartePosts.set(userId, []);
-		this.ultimosCompartePosts.get(userId)?.push({ channelId, messageId, date: new Date() });
+		if (!ExtendedClient.ultimosCompartePosts.has(userId)) ExtendedClient.ultimosCompartePosts.set(userId, []);
+		ExtendedClient.ultimosCompartePosts.get(userId)?.push({ channelId, messageId, date: new Date() });
 	}
 }

@@ -14,6 +14,7 @@ const CHANNELS = {
 	roles: "999427534670278667",
 	chatProgramadores: "807385882868580392",
 	sugerencias: "932011356213899274",
+	starboard: "930504113718972516",
 
 	// foros
 	hardware: "1019727139173576814",
@@ -63,6 +64,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	sugerencias: "1296190631026233348",
 	casinoPye: "1296190631533608961",
 	"html-css": "1300952181171818536",
+	starboard: "1296190631026233347",
 
 	// staff
 	puntos: "1296190632317943913",
@@ -198,6 +200,7 @@ const ROLES = {
 	granDebatidor: "873597268819865671",
 	especialistaEnMemes: "873596533503848509",
 	iqNegativo: "1302062476266967201",
+	nitroBooster: "790356204001296394",
 
 	// sanciones
 	restringido: "984278721055830047",
@@ -237,6 +240,7 @@ const DEV_ROLES: Record<Roles, string> = {
 	granDebatidor: "1296190630657134618",
 	especialistaEnMemes: "1296190630657134620",
 	iqNegativo: "1307563510716432455",
+	nitroBooster: "1296190630665392189",
 
 	// sanciones
 	restringido: "1296190630678233109",
@@ -303,6 +307,7 @@ export const COLORS = {
 	okGreen: 0x43b581,
 	errRed: 0xef5250,
 	warnOrange: 0xffae42,
+	nitroBooster: 0xf47fff,
 };
 
 export const EMOJIS = {
