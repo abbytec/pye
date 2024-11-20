@@ -7,6 +7,7 @@ import { getCooldown, setCooldown } from "../utils/cooldowns.ts";
 import { checkRole, convertMsToUnixTimestamp } from "../utils/generic.ts";
 import { checkHelp } from "../utils/checkhelp.ts";
 import { bumpHandler } from "../utils/bumpHandler.ts";
+import natural from "natural";
 
 const PREFIX = "!"; // Define tu prefijo
 
@@ -149,7 +150,8 @@ async function spamFilter(message: Message<boolean>, client: ExtendedClient) {
 			console.error("spamFilter: Error al intentar borrar el mensaje:", error);
 		}
 
-		const logChannel = client.channels.cache.get(getChannelFromEnv("logs")) as TextChannel;
+		const logChannel = (client.channels.cache.get(getChannelFromEnv("logs")) ??
+			client.channels.resolve(getChannelFromEnv("logs"))) as TextChannel;
 
 		if (!logChannel) console.error("spamFilter: No se encontró el canal de logs.");
 
@@ -157,7 +159,8 @@ async function spamFilter(message: Message<boolean>, client: ExtendedClient) {
 			content: `##spamFilter: \nSe eliminó un mensaje que contenía texto no permitido.\n${message.author}(${message.author.id}) - ${message.channel} \n **spam triggered** : \`${detectedFilter.filter}\``,
 		});
 	} else if (detectedFilter?.staffWarn) {
-		const moderatorChannel = client.channels.cache.get(getChannelFromEnv("moderadores")) as TextChannel;
+		const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("moderadores")) ??
+			client.channels.resolve(getChannelFromEnv("moderadores"))) as TextChannel;
 		if (!moderatorChannel) console.error("spamFilter: No se encontró el canal de moderadores.");
 		const messageLink = `https://discord.com/channels/${message.guild?.id}/${message.channel.id}/${message.id}`;
 		await moderatorChannel.send({
@@ -179,16 +182,17 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 		case getChannelFromEnv("ofreceServicios"):
 		case getChannelFromEnv("proyectosNoPagos"): {
 			let cooldown = await checkCooldownComparte(msg, client);
-			if (cooldown > 0) {
+			if (cooldown) {
 				await (msg.channel as TextChannel).send({
 					content: `🚫 <@${
 						msg.author.id
-					}>Por favor, espera 1 semana entre publicaciónes en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
+					}>Por favor, espera 1 semana entre publicaciónes similares en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
 						cooldown
 					)}:R>)`,
 				});
 				await msg.delete();
 			} else {
+				client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id);
 				msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
 					thread.send({
 						embeds: [
@@ -213,16 +217,17 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 		}
 		case getChannelFromEnv("ofertasDeEmpleos"): {
 			let cooldown = await checkCooldownComparte(msg, client);
-			if (cooldown > 0) {
+			if (cooldown) {
 				(msg.channel as TextChannel).send({
 					content: `🚫 <@${
 						msg.author.id
-					}>Por favor, espera 1 semana entre publicaciónes en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
+					}>Por favor, espera 1 semana entre publicaciónes similares en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
 						cooldown
 					)}:R>)`,
 				});
 				await msg.delete();
 			} else {
+				client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id);
 				msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
 					thread.send({
 						content: `Hey ${msg.author.toString()}!`,
@@ -264,5 +269,28 @@ async function checkChannel(msg: Message<boolean>) {
 }
 
 async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClient) {
-	return await getCooldown(client, msg.author.id, "comparte-post", 1000 * 60 * 60 * 24 * 7);
+	let lastPosts = client.ultimosCompartePosts
+		.get(msg.author.id)
+		?.filter((post) => post.date.getTime() + 1000 * 60 * 60 * 24 * 7 >= Date.now());
+
+	if (!lastPosts) return;
+	for (const post of lastPosts) {
+		const channel = (client.channels.cache.get(post.channelId) ?? client.channels.resolve(post.channelId)) as TextChannel;
+		const message = await channel.messages.fetch(post.messageId);
+		let distance = natural.JaroWinklerDistance(message.content, msg.content, { ignoreCase: true });
+		console.log(distance, post);
+		if (distance > 0.9) {
+			return post.date.getTime() + 1000 * 60 * 60 * 24 * 7 - Date.now();
+		}
+		if (distance > 0.75) {
+			const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("moderadores")) ??
+				client.channels.resolve(getChannelFromEnv("moderadores"))) as TextChannel;
+			if (!moderatorChannel) console.error("spamFilter: No se encontró el canal de moderadores.");
+			const oldMessageLink = `https://discord.com/channels/${process.env.GUILD_ID}/${post.channelId}/${post.messageId}`;
+			const newMessageLink = `https://discord.com/channels/${process.env.GUILD_ID}/${msg.channel.id}/${msg.id}`;
+			await moderatorChannel.send({
+				content: `**Advertencia:** Posible post duplicado: #1 {${oldMessageLink}} #2 {${newMessageLink}}`,
+			});
+		}
+	}
 }

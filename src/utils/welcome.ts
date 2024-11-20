@@ -14,12 +14,9 @@ export async function sendWelcomeMessageProcessor(client: ExtendedClient, omitLi
 	for (let i = 0; i < newUserIds.length; i += MAX_MENTIONS_PER_MESSAGE) {
 		batches.push(newUserIds.slice(i, i + MAX_MENTIONS_PER_MESSAGE));
 	}
-	const staffMembers =
-		guild.members.cache
-			.filter((member) => member.roles.cache.some((role) => [getRoleFromEnv("staff"), getRoleFromEnv("moderadorChats")].includes(role.id)))
-			.map((member) => member.user) || [];
 
 	let firstMessage;
+	const staffMembers = [...client.staffMembers, ...client.modMembers];
 	// Seleccionar un miembro aleatorio del staff
 	const randomStaff = staffMembers[Math.floor(Math.random() * staffMembers.length)];
 
@@ -52,7 +49,7 @@ export async function sendWelcomeMessageProcessor(client: ExtendedClient, omitLi
 	}
 }
 
-async function sendMessage(content: string, guild: Guild, randomStaff: User) {
+async function sendMessage(content: string, guild: Guild, randomStaff: string) {
 	const embed = new EmbedBuilder()
 		.setColor(COLORS.pyeWelcome)
 		.setTitle("¡Bienvenid@s a la comunidad  👋🏻!")
@@ -72,7 +69,7 @@ async function sendMessage(content: string, guild: Guild, randomStaff: User) {
 			},
 			{
 				name: ` Y si aún necesitan ayuda...`,
-				value: `No dudes en contactar a <@${randomStaff.id}>, nuestro mejor staff!!! (pero no le digas a los demás)`,
+				value: `No dudes en contactar a <@${randomStaff}>, nuestro mejor staff!!! (pero no le digas a los demás)`,
 				inline: false,
 			},
 		])

@@ -1,7 +1,5 @@
 import { Events, ActivityType, EmbedBuilder, TextChannel } from "discord.js";
 import { ExtendedClient } from "../client.ts";
-import { CommandLimits, ICommandLimits } from "../Models/Command.ts";
-import { Money, IMoney } from "../Models/Money.ts";
 import { Users } from "../Models/User.ts";
 import { Agenda, Job } from "agenda";
 import { CronMessage } from "../Models/CronMessage.ts";
@@ -12,18 +10,7 @@ export default {
 	once: true,
 	async execute(client: ExtendedClient) {
 		console.log(`Bot Listo como: ${client.user?.tag} ! `);
-
-		await CommandLimits.find().then((res: ICommandLimits[]) => {
-			res.forEach((command) => {
-				client.setCommandLimit(command);
-			});
-		});
-		await Money.find().then((res: IMoney[]) => {
-			res.forEach((money) => {
-				client.setMoneyConfig(money);
-			});
-		});
-
+		await client.updateClientData(true);
 		cronEventsProcessor(client);
 		voiceFarmingProcessor(client);
 		activityProcessor(client);
@@ -42,7 +29,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 	// Define el trabajo para enviar recordatorios
 	ExtendedClient.agenda.define("send reminder", async (job: Job) => {
 		const { username, userId, message, channelId } = job.attrs.data;
-		const channel = client.channels.cache.get(channelId) as TextChannel;
+		const channel = (client.channels.cache.get(channelId) ?? client.channels.resolve(channelId)) as TextChannel;
 		if (channel)
 			await channel
 				.send(`⏰ **<@${userId}>  Recordatorio:** ${message}`)
@@ -54,7 +41,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 	// Define el trabajo para enviar mensajes cron
 	ExtendedClient.agenda.define("send cron message", async (job: Job) => {
 		const { channelId, content, embed, cronMessageId } = job.attrs.data;
-		const channel = client.channels.cache.get(channelId) as TextChannel;
+		const channel = (client.channels.cache.get(channelId) ?? client.channels.resolve(channelId)) as TextChannel;
 		if (channel) {
 			const embedObject = embed ? new EmbedBuilder(embed) : null;
 			await channel
@@ -68,7 +55,12 @@ async function cronEventsProcessor(client: ExtendedClient) {
 		}
 	});
 
+	ExtendedClient.agenda.define("update client data", async (job: Job) => {
+		await client.updateClientData();
+	});
+
 	await ExtendedClient.agenda.start();
+	ExtendedClient.agenda.schedule("0 0 * * *", "update client data", {});
 }
 
 async function voiceFarmingProcessor(client: ExtendedClient) {
@@ -78,10 +70,8 @@ async function voiceFarmingProcessor(client: ExtendedClient) {
 		const timeInterval = moneyConfig.voice.time;
 
 		client.voiceFarmers.forEach(async (value, userId) => {
-			console.log(value, userId);
 			const timePassed = now.getTime() - value.date.getTime();
 			const cyclesPassed = Math.floor(timePassed / timeInterval);
-			console.log(cyclesPassed);
 
 			if (cyclesPassed > value.count) {
 				const cyclesToIncrement = cyclesPassed - value.count;
