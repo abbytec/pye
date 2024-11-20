@@ -50,7 +50,7 @@ export default {
 		});
 
 		// send avatar
-		return (msg.guild?.channels.cache.get(msg.channelId) as TextChannel)
+		return ((msg.guild?.channels.cache.get(msg.channelId) ?? msg.guild?.channels.resolve(msg.channelId)) as TextChannel)
 			.send({
 				files: [new AttachmentBuilder(canvas.toBuffer("image/jpeg"), { name: "rank.png" })],
 			})

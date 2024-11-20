@@ -248,8 +248,7 @@ export default {
 			}
 
 			try {
-				await (interaction.channel as TextChannel).send({ embeds: ruleEntry.embeds });
-				return;
+				await interaction.reply({ embeds: ruleEntry.embeds });
 			} catch (error) {
 				console.error("Error procesando el comando regla:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");

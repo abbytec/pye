@@ -11,7 +11,8 @@ export default {
 		const userId = newState.member?.id ?? oldState.member?.id;
 		if (!userId) return;
 
-		const logChannel = client.channels.cache.get(getChannelFromEnv("voiceLogs")) as TextChannel;
+		const logChannel = (client.channels.cache.get(getChannelFromEnv("voiceLogs")) ??
+			client.channels.resolve(getChannelFromEnv("voiceLogs"))) as TextChannel;
 
 		let embed = new EmbedBuilder().setTimestamp();
 

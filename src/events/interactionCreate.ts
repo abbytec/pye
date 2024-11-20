@@ -118,7 +118,7 @@ async function helpPoint(interaction: ButtonInteraction): Promise<void> {
 		// Buscar o crear el documento de HelperPoint
 		let user = await HelperPoint.findOneAndUpdate({ _id: interaction.customId }, { $inc: { points: 1 } }, { new: true, upsert: true });
 
-		updateMemberReputationRoles(member, user.points);
+		updateMemberReputationRoles(member, user.points, interaction.client as ExtendedClient);
 
 		// Enviar notificación en un canal específico
 		const notificationChannel = interaction.client.channels.resolve(getChannelFromEnv("logPuntos")) as TextChannel | null;

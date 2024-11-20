@@ -252,8 +252,7 @@ export default {
 			}
 
 			try {
-				await (interaction.channel as TextChannel).send({ embeds: faqEntry.embeds, content: faqEntry.content });
-				return;
+				await interaction.reply({ embeds: faqEntry.embeds, content: faqEntry.content });
 			} catch (error) {
 				console.error("Error procesando el comando FAQ:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");

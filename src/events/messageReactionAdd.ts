@@ -49,7 +49,7 @@ async function checkReactions(reaction: MessageReaction, starboard: IStarBoardDo
 	const msg = reaction.message;
 	if (!msg.guild) return;
 
-	const postChannel = msg.guild.channels.cache.get(starboard.channel) as TextChannel;
+	const postChannel = (msg.guild.channels.cache.get(starboard.channel) ?? msg.guild.channels.resolve(starboard.channel)) as TextChannel;
 
 	if (!postChannel || reaction.count < starboard.stars) return;
 
