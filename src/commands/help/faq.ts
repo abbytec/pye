@@ -5,7 +5,7 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { ICustomCommand } from "../../interfaces/ICustomCommand.ts";
-import { COLORS } from "../../utils/constants.ts";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.ts";
 
 const faqData: ICustomCommand[] = [
 	{
@@ -45,7 +45,7 @@ const faqData: ICustomCommand[] = [
 				description:
 					"Para aclarar, IDE y Editor de Texto no es lo mismo. Un IDE tiene muchas herramientas: debugger, scaffolding, generadores, editor de texto, etc. Una app es un Editor de Texto en el momento que reconoce la sintaxis de un lenguaje de programación (se pueden agregar plugins al Editor de Texto, también al IDE).\n\nCada IDE se acopla a necesidades diferentes, utiliza el que están usando en el curso que sigues.\n\nCon los editores pasa igual que con los IDEs, cada uno tiene sus ventajas y desventajas, utiliza el que mejor se adapte a tus necesidades. Aquí algunos de los más usados actualmente:\n\n**Visual Studio Code** (El mejor para empezar)\n👉 https://code.visualstudio.com/\n\n**Sublime Text**\n👉 https://www.sublimetext.com/\n\n**Eclipse** (soporta Java, C++, PHP, TypeScript/JavaScript)\n👉 https://eclipseide.org",
 				thumbnail: {
-					url: "https://cdn.discordapp.com/attachments/1115058778736431104/1193713341995155628/Logo_Animado.gif",
+					url: "logo",
 				},
 			},
 		],
@@ -56,10 +56,11 @@ const faqData: ICustomCommand[] = [
 			{
 				title: "Reglas de Ayuda General",
 				color: COLORS.pyeLightBlue,
-				description:
-					"1️⃣ **Si existe otro canal en el servidor que trata sobre tu pregunta, entonces publica en ese canal.** Tómate un tiempo para revisar los canales de este servidor, están ordenados por categorías.\n\n2️⃣ **Tu publicación debe ser lo más detallada posible.**\n\n3️⃣ **Recuerda leer <#845314420494434355>**\n\n4️⃣ **Si tu publicación no cumple con alguna de estas reglas se eliminará.**\n\n*Muchas gracias.*",
+				description: `1️⃣ **Si existe otro canal en el servidor que trata sobre tu pregunta, entonces publica en ese canal.** Tómate un tiempo para revisar los canales de este servidor, están ordenados por categorías.\n\n2️⃣ **Tu publicación debe ser lo más detallada posible.**\n\n3️⃣ **Recuerda leer <#${getChannelFromEnv(
+					"reglas"
+				)}>**\n\n4️⃣ **Si tu publicación no cumple con alguna de estas reglas se eliminará.**\n\n*Muchas gracias.*`,
 				thumbnail: {
-					url: "https://cdn.discordapp.com/attachments/809180235810734110/1038917121549279292/Bannerreformed.jpg",
+					url: "banner",
 				},
 			},
 		],
@@ -139,7 +140,7 @@ const faqData: ICustomCommand[] = [
 				color: COLORS.pyeLightBlue,
 				description: "https://discord.gg/programacion",
 				image: {
-					url: "https://cdn.discordapp.com/attachments/809180235810734110/951210783348514866/PYEBANNERENTRADA222.jpg",
+					url: "banner",
 				},
 			},
 		],
@@ -170,7 +171,7 @@ const faqData: ICustomCommand[] = [
 				description:
 					"👉El staff **no** intervendrá  para resolver conflictos interpersonales que ocurran debido a los canales autocreados (véase que un usuario te expulsó de su canal). Para evitar esta clase de situaciones puedes usar los canales donde los usuarios no pueden moderar <#907484044445499432> , <#907484185688682506>, <#796580264867266581> y <#805095903618400276>\n\n👉El staff **si** puede interactuar cuando:\n**-**Un usuario esté compartiendo cosas indebidas en pantalla o haciendo ruidos molestos.\n**-**Un usuario entre y salga repetidamente de un canal con claras intenciones de molestar.\n**-**Casos extremos de acoso el cual estén bien documentados como para poder proceder.\n**-**Se muestren evidencias concretas de que un usuario se está aprovechando de otros ya sea por lo que fuese, estafa, doxeos, phising, etc.\n\n*El staff no posee clarividencia , ni tiene registros de lo que pasa en los canales de voz a cada momento (ni siquiera Discord lo tiene),  tampoco el staff tiene poder u obligación con  lo que sucede fuera de este servidor.*",
 				thumbnail: {
-					url: "https://cdn.discordapp.com/attachments/809180235810734110/1025184132675928064/testbannerpye.jpg",
+					url: "banner",
 				},
 			},
 		],
@@ -183,7 +184,7 @@ const faqData: ICustomCommand[] = [
 				color: COLORS.pyeLightBlue,
 				description: "https://twitter.com/PyE_comunidad",
 				thumbnail: {
-					url: "https://cdn.discordapp.com/attachments/1115058778736431104/1120759445249593507/Logo.png",
+					url: "logo",
 				},
 				footer: {
 					text: "síguenos por favor!",
@@ -193,8 +194,9 @@ const faqData: ICustomCommand[] = [
 	},
 	{
 		name: "ticket",
-		content:
-			"Crea un  <#865047053884457012>  para reportar algún problema o mala conducta de un usuario, si el ticket resulta válido se te otorgará un punto de reputación.",
+		content: `Crea un  <#${getChannelFromEnv(
+			"tickets"
+		)}>  para reportar algún problema o mala conducta de un usuario, si el ticket resulta válido se te otorgará un punto de reputación.`,
 	},
 	{
 		name: "rep",
@@ -249,6 +251,12 @@ export default {
 
 			if (!faqEntry) {
 				return await replyError(interaction, "No se encontró esa sección de FAQ.");
+			}
+
+			if (faqEntry.embeds) {
+				let embed = faqEntry.embeds.at(0);
+				if (embed?.thumbnail?.url === "banner") embed.thumbnail.url = interaction.guild?.bannerURL() ?? "";
+				if (embed?.thumbnail?.url === "logo") embed.thumbnail.url = interaction.guild?.iconURL() ?? "";
 			}
 
 			try {

@@ -56,7 +56,9 @@ export default {
 						new EmbedBuilder()
 							.setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
 							.setDescription(
-								"Has recibido una advertencia en el servidor de **PyE**.\nRecuerda leer <#845314420494434355> para evitar que vuelva a pasar y conocer las sanciones."
+								`Has recibido una advertencia en el servidor de **PyE**.\nRecuerda leer <#${getChannelFromEnv(
+									"reglas"
+								)}> para evitar que vuelva a pasar y conocer las sanciones.`
 							)
 							.addFields([
 								{ name: "Casos", value: `#${data.length}`, inline: true },
@@ -102,7 +104,9 @@ export default {
 									new EmbedBuilder()
 										.setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
 										.setDescription(
-											"Has recibido una advertencia.\nRecuerda leer <#845314420494434355> para evitar que vuelva a pasar y conocer las sanciones."
+											`Has recibido una advertencia.\nRecuerda leer <#${getChannelFromEnv(
+												"reglas"
+											)}> para evitar que vuelva a pasar y conocer las sanciones.`
 										)
 										.addFields([
 											{ name: "Casos", value: `#${data.length}`, inline: true },

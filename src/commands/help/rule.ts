@@ -5,7 +5,7 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { ICustomCommand } from "../../interfaces/ICustomCommand.ts";
-import { COLORS } from "../../utils/constants.ts";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.ts";
 
 const ruleData: ICustomCommand[] = [
 	{
@@ -18,7 +18,7 @@ const ruleData: ICustomCommand[] = [
 				fields: [
 					{
 						name: "Recuerda leer",
-						value: "<#845314420494434355>",
+						value: `<#${getChannelFromEnv("reglas")}>`,
 					},
 				],
 			},
@@ -37,7 +37,7 @@ const ruleData: ICustomCommand[] = [
 				fields: [
 					{
 						name: "Recuerda leer",
-						value: "<#845314420494434355>",
+						value: `<#${getChannelFromEnv("reglas")}>`,
 					},
 				],
 			},
@@ -57,7 +57,7 @@ const ruleData: ICustomCommand[] = [
 				fields: [
 					{
 						name: "Recuerda leer",
-						value: "<#845314420494434355>",
+						value: `<#${getChannelFromEnv("reglas")}>`,
 					},
 				],
 			},
@@ -77,7 +77,7 @@ const ruleData: ICustomCommand[] = [
 				fields: [
 					{
 						name: "Recuerda leer",
-						value: "<#845314420494434355>",
+						value: `<#${getChannelFromEnv("reglas")}>`,
 					},
 				],
 			},
@@ -97,7 +97,7 @@ const ruleData: ICustomCommand[] = [
 				fields: [
 					{
 						name: "Recuerda leer",
-						value: "<#845314420494434355>",
+						value: `<#${getChannelFromEnv("reglas")}>`,
 					},
 				],
 			},
@@ -114,7 +114,7 @@ const ruleData: ICustomCommand[] = [
 				fields: [
 					{
 						name: "Recuerda leer",
-						value: "<#845314420494434355>",
+						value: `<#${getChannelFromEnv("reglas")}>`,
 					},
 				],
 			},
@@ -134,7 +134,7 @@ const ruleData: ICustomCommand[] = [
 				fields: [
 					{
 						name: "Recuerda leer",
-						value: "<#845314420494434355>",
+						value: `<#${getChannelFromEnv("reglas")}>`,
 					},
 				],
 			},
@@ -150,7 +150,7 @@ const ruleData: ICustomCommand[] = [
 				fields: [
 					{
 						name: "Recuerda leer",
-						value: "<#845314420494434355>",
+						value: `<#${getChannelFromEnv("reglas")}>`,
 					},
 				],
 			},
@@ -167,7 +167,7 @@ const ruleData: ICustomCommand[] = [
 				fields: [
 					{
 						name: "Recuerda leer",
-						value: "<#845314420494434355>",
+						value: `<#${getChannelFromEnv("reglas")}>`,
 					},
 				],
 			},
@@ -183,7 +183,7 @@ const ruleData: ICustomCommand[] = [
 				fields: [
 					{
 						name: "Recuerda leer",
-						value: "<#845314420494434355>",
+						value: `<#${getChannelFromEnv("reglas")}>`,
 					},
 				],
 			},
@@ -203,7 +203,7 @@ const ruleData: ICustomCommand[] = [
 				fields: [
 					{
 						name: "Recuerda leer",
-						value: "<#845314420494434355>",
+						value: `<#${getChannelFromEnv("reglas")}>`,
 					},
 				],
 			},

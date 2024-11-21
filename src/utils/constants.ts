@@ -38,6 +38,7 @@ const CHANNELS = {
 	"java-kotlin": "1122390294973915176",
 	matemáticas: "1305675508637499493",
 	"física-química": "867526069875507240",
+	tickets: "865047053884457012",
 
 	// staff
 	puntos: "925121655578173440",
@@ -65,6 +66,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	casinoPye: "1296190631533608961",
 	"html-css": "1300952181171818536",
 	starboard: "1296190631026233347",
+	tickets: "1296190631026233346",
 
 	// staff
 	puntos: "1296190632317943913",

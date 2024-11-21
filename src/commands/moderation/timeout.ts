@@ -84,7 +84,9 @@ export async function applyTimeout(
 						iconURL: member.user.displayAvatarURL(),
 					})
 					.setDescription(
-						"Has sido aislado en el servidor de **PyE**.\nPodrás interactuar en los canales una vez tu sanción haya terminado. Recuerda leer <#845314420494434355> para evitar que vuelva a pasar y conocer las sanciones. \nTambién puedes intentar apelar a tu des-aislamiento desde este otro servidor: https://discord.gg/F8QxEMtJ3B"
+						`Has sido aislado en el servidor de **PyE**.\nPodrás interactuar en los canales una vez tu sanción haya terminado. Recuerda leer <#${getChannelFromEnv(
+							"reglas"
+						)}> para evitar que vuelva a pasar y conocer las sanciones. \nTambién puedes intentar apelar a tu des-aislamiento desde este otro servidor: https://discord.gg/F8QxEMtJ3B`
 					)
 					.addFields([
 						{ name: "Tiempo", value: `\`${ms(duration, { long: true })}\``, inline: true },
