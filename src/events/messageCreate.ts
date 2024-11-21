@@ -132,6 +132,8 @@ const filterList: IFilter[] = [
 async function spamFilter(message: Message<boolean>, client: ExtendedClient) {
 	if (message.content?.length < 8) return;
 
+	if ((message.mentions.members?.size ?? 0) > 0) checkMentionSpam(message, client);
+
 	const detectedFilter = filterList.find((item) => item.filter.test(message.content));
 
 	if (detectedFilter && !detectedFilter.staffWarn) {
@@ -151,22 +153,66 @@ async function spamFilter(message: Message<boolean>, client: ExtendedClient) {
 		}
 
 		const logChannel = (client.channels.cache.get(getChannelFromEnv("logs")) ??
-			client.channels.resolve(getChannelFromEnv("logs"))) as TextChannel;
+			client.channels.resolve(getChannelFromEnv("logs"))) as TextChannel | null;
 
-		if (!logChannel) console.error("spamFilter: No se encontró el canal de logs.");
-
-		await logChannel.send({
-			content: `##spamFilter: \nSe eliminó un mensaje que contenía texto no permitido.\n${message.author}(${message.author.id}) - ${message.channel} \n **spam triggered** : \`${detectedFilter.filter}\``,
-		});
+		await logChannel
+			?.send({
+				content: `##spamFilter: \nSe eliminó un mensaje que contenía texto no permitido.\n${message.author}(${message.author.id}) - ${message.channel} \n **spam triggered** : \`${detectedFilter.filter}\``,
+			})
+			.catch((err) => console.warn("spamFilter: Error al intentar enviar el log.", err));
 	} else if (detectedFilter?.staffWarn) {
 		const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("moderadores")) ??
-			client.channels.resolve(getChannelFromEnv("moderadores"))) as TextChannel;
-		if (!moderatorChannel) console.error("spamFilter: No se encontró el canal de moderadores.");
+			client.channels.resolve(getChannelFromEnv("moderadores"))) as TextChannel | null;
 		const messageLink = `https://discord.com/channels/${message.guild?.id}/${message.channel.id}/${message.id}`;
-		await moderatorChannel.send({
-			content: `**Advertencia:** ${detectedFilter.staffWarn}. ${messageLink}`,
-		});
+		await moderatorChannel
+			?.send({
+				content: `**Advertencia:** ${detectedFilter.staffWarn}. ${messageLink}`,
+			})
+			.catch((err) => console.error("spamFilter: Error al enviar el mensaje de advertencia:", err));
 	}
+}
+const mentionTracker = new Map();
+async function checkMentionSpam(message: Message<boolean>, client: ExtendedClient) {
+	const mentionedUsers = message.mentions.users;
+	const authorId = message.author.id;
+
+	mentionedUsers.forEach(async (mentionedUser) => {
+		const mentionedId = mentionedUser.id;
+		const key = `${authorId}-${mentionedId}`;
+
+		if (!mentionTracker.has(key)) {
+			mentionTracker.set(key, {
+				count: 1,
+				timeout: setTimeout(() => {
+					mentionTracker.delete(key);
+				}, 5000),
+			});
+		} else {
+			const entry = mentionTracker.get(key);
+			entry.count += 1;
+
+			if (entry.count >= 3) {
+				clearTimeout(entry.timeout);
+				let warn = await (message.channel as TextChannel).send({
+					content: `<@${message.author.id}> Mencionar tanto a una misma persona puede traerte problemas. No seas bot, que para eso estoy yo!`,
+				});
+				await client.guilds.cache
+					.get(process.env.GUILD_ID ?? "")
+					?.members.cache.get(message.author.id)
+					?.timeout(10000, "Spam de menciones")
+					.catch(() => null);
+				await message.delete().catch(() => null);
+				mentionTracker.set(key, {
+					count: entry.count,
+					timeout: setTimeout(() => {
+						mentionTracker.delete(key);
+					}, 5000),
+				});
+
+				setTimeout(() => warn.delete().catch(() => null), 10000);
+			}
+		}
+	});
 }
 
 async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
