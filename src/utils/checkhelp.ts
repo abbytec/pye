@@ -50,7 +50,7 @@ async function fetchMessagesAndHelpers(gratitudeMessage: Message): Promise<Fetch
 	}
 
 	const messages = messagesFetched
-		.filter((msg) => !msg.author.bot && msg.content)
+		.filter((msg) => !msg.author.bot && !msg.system && msg.content)
 		.sort((a, b) => a.createdTimestamp - b.createdTimestamp)
 		.values();
 
