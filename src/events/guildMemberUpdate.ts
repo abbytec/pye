@@ -1,9 +1,10 @@
 // src/events/guildMemberUpdate.ts
 
-import { EmbedBuilder, Events, GuildMember, PartialGuildMember, TextChannel } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, Events, GuildMember, PartialGuildMember, TextChannel } from "discord.js";
 import { ExtendedClient } from "../client.ts";
 import { Evento, EventoConClienteForzado } from "../types/event.ts";
 import { COLORS, getChannelFromEnv, getInitialRoles, getRoleFromEnv } from "../utils/constants.ts";
+import generateCanvaBoosterId from "../utils/canvas.ts";
 
 // Expresión regular para detectar URLs en el apodo
 const urlRegex = /(https?:\/\/[^\s]+)/i;
@@ -36,7 +37,7 @@ export default {
  * @param oldMember El estado anterior del miembro.
  * @param newMember El estado nuevo del miembro.
  */
-function handleRoleChanges(oldMember: GuildMember | PartialGuildMember, newMember: GuildMember, client: ExtendedClient) {
+async function handleRoleChanges(oldMember: GuildMember | PartialGuildMember, newMember: GuildMember, client: ExtendedClient) {
 	const oldRoles = oldMember.roles.cache;
 	const newRoles = newMember.roles.cache;
 
@@ -60,17 +61,18 @@ function handleRoleChanges(oldMember: GuildMember | PartialGuildMember, newMembe
 			.setTitle("🎉 Nuevo PyE-Booster 🎉")
 			.setDescription("¡Gracias por apoyar nuestra comunidad! 🦄")
 			.addFields(
-				{ name: "😎 @Usuario ha mejorado el servidor 🚀", value: "\u200B" },
+				{ name: `😎 ${newMember.user.username} ha mejorado el servidor 🚀`, value: "\u200B" },
 				{
 					name: "Algunas de las ventajas para ti:",
 					value: "🔹 Prioridad de voz en los canales.\n🔹 Capacidad de crear hilos.\n🔹 Rol permanente que demuestra tu apoyo.\n🔹 Acceso a las postulaciones de empleo.\n🔹 Atención priorizada en el servidor.\n🔹 ¡Muchas más ventajas que iremos agregando!",
 				},
-				{ name: "💡 ¿Tienes sugerencias para boosters?", value: "¡Déjalas en <#id-del-canal-de-sugerencias>!" }
+				{ name: "💡 ¿Tienes sugerencias para boosters?", value: `¡Déjalas en <#${getChannelFromEnv("sugerencias")}>!` }
 			)
 			.setColor(COLORS.nitroBooster)
-			.setThumbnail("https://ruta-de-tu-icono.png")
+			.setImage("attachment://booster.png")
 			.setFooter({ text: "¡Este lugar del starboard es para ti!" });
-		channel.send({ content: `<@${newMember.id}>`, embeds: [embed] });
+		let boosterImg = new AttachmentBuilder(await generateCanvaBoosterId(newMember), { name: "booster.png" });
+		channel.send({ content: `<@${newMember.id}>`, embeds: [embed], files: [boosterImg] });
 	}
 }
 

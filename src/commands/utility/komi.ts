@@ -173,7 +173,6 @@ export default {
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false)],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const textoInput = interaction.options.getString("texto", true)?.trim();
-			const user = interaction.user;
 			const guild = interaction.guild as Guild;
 
 			// Si el usuario solicita la lista de opciones
