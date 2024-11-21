@@ -223,7 +223,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 			msg.react("922955890200576001").catch(() => null);
 			msg.react("796227219591921704").catch(() => null);
 			msg.startThread({ name: `${msg.author.username}'s Thread` });
-			checkRole(msg, getRoleFromEnv("granAportador"), 75);
+			checkRole(msg, getRoleFromEnv("granAportador"), 50);
 			break;
 		case getChannelFromEnv("ofreceServicios"):
 		case getChannelFromEnv("proyectosNoPagos"): {
@@ -298,7 +298,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 			checkRole(msg, getRoleFromEnv("especialistaEnMemes"), 75);
 			break;
 		case getChannelFromEnv("filosofiaPolitica"):
-			checkRole(msg, getRoleFromEnv("granDebatidor"), 75);
+			checkRole(msg, getRoleFromEnv("granDebatidor"), 500);
 			break;
 	}
 }
