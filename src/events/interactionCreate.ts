@@ -122,9 +122,14 @@ async function helpPoint(interaction: ButtonInteraction): Promise<void> {
 
 		// Enviar notificación en un canal específico
 		const notificationChannel = interaction.client.channels.resolve(getChannelFromEnv("logPuntos")) as TextChannel | null;
-		if (notificationChannel) {
-			await notificationChannel.send(`**${interaction.user.username}** le ha dado un rep al usuario: \`${member.user.username}\``);
-		}
+		if (notificationChannel)
+			await notificationChannel.send(
+				`**${interaction.user.username}** le ha dado un rep al usuario: \`${member.user.username}\`, en el canal: <#\`${interaction.channelId}\`>`
+			);
+		if (interaction.channel?.isTextBased())
+			await (interaction.channel as TextChannel).send({
+				content: `🥳 - Puntos otorgados al usuario <@${member.user.username}>`,
+			});
 
 		// Verificar quests
 		checkQuestLevel({ userId: interaction.customId, rep: 1 } as IQuest);
