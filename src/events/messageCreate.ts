@@ -1,6 +1,6 @@
 import { DMChannel, EmbedBuilder, Events, Guild, GuildBasedChannel, GuildMember, Message, PublicThreadChannel, TextChannel } from "discord.js";
 import { ExtendedClient } from "../client.ts";
-import { COLORS, DISBOARD_UID, EMOJIS, getChannelFromEnv, getForumIdsFromEnv, getRoleFromEnv } from "../utils/constants.ts";
+import { COLORS, DISBOARD_UID, EMOJIS, getChannelFromEnv, getHelpForumsIdsFromEnv, getRoleFromEnv } from "../utils/constants.ts";
 import { applyTimeout } from "../commands/moderation/timeout.ts";
 import { Users } from "../Models/User.ts";
 import { getCooldown, setCooldown } from "../utils/cooldowns.ts";
@@ -311,7 +311,7 @@ async function checkChannel(msg: Message<boolean>) {
 		const threadAuthor = await (msg.channel as PublicThreadChannel).fetchOwner();
 		if (threadAuthor?.id !== msg.author.id) return false;
 	} else channel = msg.channel as TextChannel;
-	return getForumIdsFromEnv().includes(channel.id ?? "");
+	return getHelpForumsIdsFromEnv().includes(channel.id ?? "");
 }
 
 async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClient) {

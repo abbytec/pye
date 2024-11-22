@@ -45,12 +45,12 @@ export default {
 	),
 };
 
-export async function addRep(user: User | null, guild: Guild | null) {
+export async function addRep(user: User | null, guild: Guild | null, points: number = 1) {
 	if (user?.bot) throw new Error("No puedo darle puntos a los bots.\nUso: `add-rep [@Usuario]`");
 	const member = await guild?.members.fetch(user?.id ?? "").catch(() => null);
 	if (!member) throw new Error("No se pudo encontrar al usuario en el servidor.");
 
-	let data = await HelperPoint.findOneAndUpdate({ _id: user?.id }, { $inc: { points: 1 } }, { new: true });
+	let data = await HelperPoint.findOneAndUpdate({ _id: user?.id }, { $inc: { points: points } }, { new: true });
 
 	if (!data) data = await HelperPoint.create({ _id: user?.id, points: 1 });
 

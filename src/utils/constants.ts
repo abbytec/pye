@@ -15,6 +15,7 @@ const CHANNELS = {
 	chatProgramadores: "807385882868580392",
 	sugerencias: "932011356213899274",
 	starboard: "930504113718972516",
+	retos: "1141493769699606528",
 
 	// foros
 	hardware: "1019727139173576814",
@@ -67,6 +68,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	"html-css": "1300952181171818536",
 	starboard: "1296190631026233347",
 	tickets: "1296190631026233346",
+	retos: "1309615377235312681",
 
 	// staff
 	puntos: "1296190632317943913",
@@ -86,7 +88,7 @@ function getChannelsFromEnv() {
 	return isDevelopment ? CHANNELS_DEV : CHANNELS;
 }
 
-export const forums: (keyof typeof CHANNELS)[] = [
+export const helpForums: (keyof typeof CHANNELS)[] = [
 	"hardware",
 	"linux",
 	"discord-dev",
@@ -142,9 +144,9 @@ export function getForumTopic(channelId: string): string {
 
 let forumIds: string[] = [];
 
-export function getForumIdsFromEnv() {
+export function getHelpForumsIdsFromEnv() {
 	if (forumIds.length) return forumIds;
-	for (const forum of forums) {
+	for (const forum of helpForums) {
 		forumIds.push(getChannelFromEnv(forum));
 	}
 	return forumIds;

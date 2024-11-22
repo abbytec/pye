@@ -1,7 +1,8 @@
 import { Events, ChannelType, EmbedBuilder, ThreadChannel, TextChannel, MessageFlags } from "discord.js";
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import loadEnvVariables from "../utils/environment.ts";
-import { COLORS, getChannel, getForumTopic } from "../utils/constants.ts";
+import { COLORS, getChannel, getChannelFromEnv, getForumTopic, getHelpForumsIdsFromEnv } from "../utils/constants.ts";
+import { addRep } from "../commands/rep/add-rep.ts";
 
 loadEnvVariables();
 const genAI = new GoogleGenerativeAI(process.env.gemini_API_KEY ?? "");
@@ -93,7 +94,7 @@ export default {
 			thread.name.includes(".gg")
 		)
 			return thread.delete("spam detectado");
-		if (thread.parent?.type == ChannelType.GuildForum) {
+		if (thread.parent?.type == ChannelType.GuildForum && getHelpForumsIdsFromEnv().includes(thread.parent.id)) {
 			try {
 				const canal = (await getChannel(thread.guild, "chatProgramadores", true)) as TextChannel;
 				if (!canal) return console.error('No se pudo encontrar el canal "chatProgramadores".');
@@ -154,6 +155,13 @@ export default {
 					console.log(err);
 				});
 			});
+		} else if (thread.parent?.id == getChannelFromEnv("retos")) {
+			let owner = await thread.fetchOwner().catch(() => null);
+			await addRep(owner?.user ?? null, thread.guild).then(async ({ member }) =>
+				(thread.guild.channels.resolve(getChannelFromEnv("logPuntos")) as TextChannel | null)?.send(
+					`${member.user.username} ha obtenido 1 punto porque creó un reto: ${thread.url}`
+				)
+			);
 		}
 	},
 };
