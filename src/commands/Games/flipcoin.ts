@@ -31,18 +31,13 @@ export default {
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
-			const user = interaction.user;
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			let side: string = interaction.options.getString("lado", true);
+			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 
-			if (amount < 0) return replyError(interaction, "Se ingresó una cantidad inválida");
-			if (amount > 4000) return replyError(interaction, "No puedes apostar mas de 4000 PyE Coins.");
-
-			let userData: IUserModel = await getOrCreateUser(user.id);
+			if (amount < 1 || amount > 4000 || amount > userData.cash) return replyError(interaction, `Se ingresó una cantidad inválida, debe ser ${amount < 100 ? "mayor que 100" : "menor que 500"} o no tienes suficiente dinero`);
 
 			const flipcoin = ["cara", "cruz"][Math.floor(Math.random() * 2)];
-
-			if (amount > userData.cash) return await replyError(interaction, "No tienes suficientes PyE Coins para apostar.");
 
 			if (flipcoin == side) {
 				amount = calculateJobMultiplier(userData.profile?.job, amount, userData.couples || [])
@@ -51,7 +46,7 @@ export default {
 			}
 
 			try {
-				await Users.updateOne({ id: user.id }, { $inc: { cash: amount } });
+				await Users.updateOne({ id: interaction.user.id }, { $inc: { cash: amount } });
 			} catch (error) {
 				console.error("Error actualizando el usuario:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
@@ -61,15 +56,14 @@ export default {
 			const embed = new EmbedBuilder()
 				.setAuthor({ name: "Cruz o cara", iconURL: "https://cdn.discordapp.com/emojis/911087695864950854.gif?size=96" })
 				.setDescription(`Ha salido \`${flipcoin}\` y ${flipcoin == side ? "ganaste" : "perdiste"} ${Math.abs(amount)}.`)
-				.setColor(flipcoin != side ? COLORS.errRed : COLORS.okGreen)
-				.setTimestamp();
+				.setColor(flipcoin != side ? COLORS.errRed : COLORS.okGreen);
 
 			await replyOk(interaction, [embed]);
 
 			if (flipcoin == side) {
 				try {
-					await increaseHomeMonthlyIncome(user.id, amount);
-					await checkQuestLevel({ msg: interaction, money: amount, userId: user.id } as IQuest);
+					await increaseHomeMonthlyIncome(interaction.user.id, amount);
+					await checkQuestLevel({ msg: interaction, money: amount, userId: interaction.user.id } as IQuest);
 				} catch (error) {
 					console.error("Error actualizando la quest:", error);
 					// Opcional: puedes enviar una advertencia al usuario o simplemente registrar el error
