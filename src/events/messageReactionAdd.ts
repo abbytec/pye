@@ -14,8 +14,9 @@ export default {
 	async execute(reaction: MessageReaction, user: User) {
 		if (!reaction || !user || user.bot || !reaction.message?.guild) return;
 		let fullReaction = await fetchStructure(reaction);
-		let category = (reaction.message.channel as TextChannel).parentId;
-		if (reaction.emoji.name === "⭐" && category !== getChannelFromEnv("categoryStaff")) {
+		const textChannel = reaction.message.channel as TextChannel;
+		let category = textChannel.parentId;
+		if (reaction.emoji.name === "⭐" && category !== getChannelFromEnv("categoryStaff") && !textChannel.nsfw) {
 			const data = await StarBoard.findOne({ id: process.env.GUILD_ID });
 			if (!data) return;
 			await checkReactions(fullReaction, data).catch((error: any) => console.error("Error al procesar la reacción:", error));
