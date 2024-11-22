@@ -3,6 +3,7 @@ import { IStarBoardDocument, StarBoard } from "../Models/StarBoard.ts";
 import { StarMessage } from "../Models/StarMessage.ts";
 import { Evento } from "../types/event.ts";
 import { getChannelFromEnv, getRoleFromEnv } from "../utils/constants.ts";
+import { addRep } from "../commands/rep/add-rep.ts";
 
 /**
  * Maneja el evento messageReactionAdd
@@ -109,7 +110,15 @@ async function checkReactions(reaction: MessageReaction, starboard: IStarBoardDo
 				content: `**${reaction.count}** ⭐ ${msg.channel.toString()}`,
 				embeds: [embed],
 			})
-			.then(async (msg) => await StarMessage.create({ msgId: msg.id, responseId: msg.id }))
+			.then(async (starboardMessage) => await StarMessage.create({ msgId: msg.id, responseId: starboardMessage.id }))
+			.then(
+				async () =>
+					await addRep(reaction.message.author, reaction.message.guild).then(({ member }) =>
+						(reaction.message.guild?.channels.resolve(getChannelFromEnv("logPuntos")) as TextChannel | null)?.send(
+							`${member.user.username} ha obtenido 1 punto porque su mensaje ${msg.url} llegó a la starboard`
+						)
+					)
+			)
 			.catch(() => null);
 	}
 }

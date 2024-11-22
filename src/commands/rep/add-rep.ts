@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, Guild, SlashCommandBuilder, User } from "discord.js";
 import { getChannelFromEnv } from "../../utils/constants.ts";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
@@ -23,27 +23,36 @@ export default {
 			const user = interaction.options.getUser("usuario", true);
 			const channel = interaction.options.getChannel("canal", true);
 
-			if (user.bot) return await replyError(interaction, "No puedo darle puntos a los bots.\nUso: `add-rep [@Usuario]`");
-			const member = await interaction.guild?.members.fetch(user.id);
-			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
+			try {
+				const { member, data } = await addRep(user, interaction.guild);
+				await replyOk(interaction, `se le ha dado un rep al usuario: \`${user.tag}\``);
 
-			let data = await HelperPoint.findOneAndUpdate({ _id: user.id }, { $inc: { points: 1 } }, { new: true });
-
-			if (!data) data = await HelperPoint.create({ _id: user.id, points: 1 });
-
-			await replyOk(interaction, `se le ha dado un rep al usuario: \`${user.tag}\``);
-
-			return {
-				guildMember: member,
-				helperPoint: data,
-				logMessages: [
-					{
-						channel: getChannelFromEnv("logPuntos"),
-						content: `**${interaction.user.tag}** le ha dado un rep al usuario: \`${user.tag}\` en el canal: <#\`${channel.id}\`>`,
-					},
-				],
-			};
+				return {
+					guildMember: member,
+					helperPoint: data,
+					logMessages: [
+						{
+							channel: getChannelFromEnv("logPuntos"),
+							content: `**${interaction.user.tag}** le ha dado un rep al usuario: \`${user.tag}\` en el canal: <#\`${channel.id}\`>`,
+						},
+					],
+				};
+			} catch (error: any) {
+				return await replyError(interaction, error.message);
+			}
 		},
 		[updateRepRoles, logMessages]
 	),
 };
+
+export async function addRep(user: User | null, guild: Guild | null) {
+	if (user?.bot) throw new Error("No puedo darle puntos a los bots.\nUso: `add-rep [@Usuario]`");
+	const member = await guild?.members.fetch(user?.id ?? "").catch(() => null);
+	if (!member) throw new Error("No se pudo encontrar al usuario en el servidor.");
+
+	let data = await HelperPoint.findOneAndUpdate({ _id: user?.id }, { $inc: { points: 1 } }, { new: true });
+
+	if (!data) data = await HelperPoint.create({ _id: user?.id, points: 1 });
+
+	return { member, data };
+}
