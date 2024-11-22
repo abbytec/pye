@@ -22,23 +22,16 @@ export default {
     execute: composeMiddlewares(
         [verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
         async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
-            const user = interaction.user;
             let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
-
-            if (amount < 0) return replyError(interaction, "Se ingresó una cantidad inválida");
-            if (amount > 300) return replyError(interaction, "No puedes apostar mas de 4000 PyE Coins.");
-
-            let userData: IUserModel = await getOrCreateUser(user.id);
-
-            if (amount > userData.cash) return await replyError(interaction, "No tienes suficientes PyE Coins para apostar.");
+            let userData: IUserModel = await getOrCreateUser(interaction.user.id);
+            if (amount < 1 || amount > 300 || amount > userData.cash) return replyError(interaction, `Se ingresó una cantidad inválida, debe ser ${amount < 100 ? "mayor que 100" : "menor que 500"} o no tienes suficiente dinero`);
 
             const game = [[], [], []].map(() => [Math.random(), Math.random(), Math.random()].map((v) => Math.floor(v * 7)))
             const loseWinRate = Math.random() < 0.5
 
             // Crear embed de respuesta
             const embed = new EmbedBuilder()
-                .setAuthor({ name: "🎰 Tragamonedas 🎰", iconURL: "https://cdn.discordapp.com/emojis/911087695864950854.gif?size=96" })
-                .setTimestamp();
+                .setAuthor({ name: "🎰 Tragamonedas 🎰", iconURL: "https://cdn.discordapp.com/emojis/911087695864950854.gif?size=96" });
 
             if (loseWinRate || (game[1][1] == game[1][2] && game[1][1] == game[1][0])) {
                 game[1][1] = game[1][2] = game[1][0]
@@ -51,6 +44,7 @@ export default {
                     `)
                 embed.setColor(COLORS.okGreen)
             } else {
+                amount = 0 - amount
                 embed.setDescription(`Has perdido ${amount}.\n
                     ${game.map((l, i) =>
                     l.map((n) => (emojis[n]))
@@ -61,7 +55,7 @@ export default {
             }
 
             try {
-                await Users.updateOne({ id: user.id }, { $inc: { cash: amount } });
+                await Users.updateOne({ id: interaction.user.id }, { $inc: { cash: amount } });
             } catch (error) {
                 console.error("Error actualizando el usuario:", error);
                 return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
@@ -71,8 +65,8 @@ export default {
 
             if (loseWinRate || (game[1][1] == game[1][2] && game[1][1] == game[1][0])) {
                 try {
-                    await increaseHomeMonthlyIncome(user.id, amount);
-                    await checkQuestLevel({ msg: interaction, money: amount, userId: user.id } as IQuest);
+                    await increaseHomeMonthlyIncome(interaction.user.id, amount);
+                    await checkQuestLevel({ msg: interaction, money: amount, userId: interaction.user.id } as IQuest);
                 } catch (error) {
                     console.error("Error actualizando la quest:", error);
                     // Opcional: puedes enviar una advertencia al usuario o simplemente registrar el error
