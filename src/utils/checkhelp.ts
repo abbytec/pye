@@ -1,7 +1,7 @@
 // src/utils/checkHelp.ts
 
 import { ActionRowBuilder, ButtonBuilder, AttachmentBuilder, ButtonStyle, Message, TextChannel, EmbedBuilder, APIEmbedField } from "discord.js";
-import { getChannelFromEnv, getRoleFromEnv } from "./constants.ts";
+import { COLORS, getChannelFromEnv, getRoleFromEnv } from "./constants.ts";
 
 /**
  * Normalize a string by converting it to lowercase, removing diacritics, apostrophes, and commas.
@@ -189,7 +189,7 @@ async function sendHelpNotification(msg: Message, fields: APIEmbedField[], butto
 		.setTitle("Se ha encontrado una nueva ayuda!")
 		.addFields(fields)
 		.setTimestamp(new Date())
-		.setColor(0x00ff00); // Puedes cambiar el color según prefieras
+		.setColor(COLORS.pyeLightBlue); // Puedes cambiar el color según prefieras
 
 	const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons);
 

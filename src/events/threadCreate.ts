@@ -1,4 +1,4 @@
-import { Events, ChannelType, EmbedBuilder, ThreadChannel, TextChannel } from "discord.js";
+import { Events, ChannelType, EmbedBuilder, ThreadChannel, TextChannel, MessageFlags } from "discord.js";
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import loadEnvVariables from "../utils/environment.ts";
 import { COLORS, getChannel, getForumTopic } from "../utils/constants.ts";
@@ -53,6 +53,22 @@ const threadsHelp = async function (tittle: string, pregunta: string, m: ThreadC
 		console.log(error);
 	}
 };
+async function sendTagReminder(thread: ThreadChannel) {
+	try {
+		const owner = await thread.fetchOwner();
+		if (owner) {
+			const embed = new EmbedBuilder()
+				.setDescription(
+					`¡Hola! Vi que tu post no tiene etiquetas. Puedes obtener una respuesta más rápida teniendo algunas.\nAprende como usarlas [Ir allí...](https://discord.com/channels/768278151435386900/1309363726553448459/1309363726553448459) 😊`
+				)
+				.setColor(COLORS.pyeLightBlue);
+
+			await thread.send({ embeds: [embed] });
+		}
+	} catch (error) {
+		console.error(`Error al enviar mensaje de recordatorio en el hilo "${thread.name}":`, error);
+	}
+}
 const spamPattern = new RegExp(
 	"(?:discord[\\s/.,-]*(?:gg|li|me|io|com/invite)[/\\\\]?[a-z0-9-.]*|" +
 		"discord[.,]?gg|" +
@@ -125,6 +141,10 @@ export default {
 				}
 			} catch (error) {
 				console.error("Error al enviar o actualizar el embed de publicación:", error);
+			}
+
+			if (thread.appliedTags.length === 0) {
+				await sendTagReminder(thread);
 			}
 
 			// GEMINI Api para responder threads.
