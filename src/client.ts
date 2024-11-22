@@ -1,5 +1,5 @@
 // src/Client.ts
-import { Client, GatewayIntentBits, Partials } from "discord.js";
+import { Client, GatewayIntentBits, Partials, VoiceChannel } from "discord.js";
 import { Command } from "./types/command.ts"; // Asegúrate de definir la interfaz Command
 import { ICooldown } from "./Models/Cooldown.ts";
 import { Rob } from "./commands/farming/rob.ts";
@@ -36,13 +36,13 @@ export class ExtendedClient extends Client {
 	constructor() {
 		super({
 			intents: [
+				GatewayIntentBits.DirectMessages,
 				GatewayIntentBits.Guilds,
 				GatewayIntentBits.GuildMembers,
-				GatewayIntentBits.GuildPresences,
 				GatewayIntentBits.GuildModeration,
 				GatewayIntentBits.GuildMessages,
 				GatewayIntentBits.GuildMessageReactions,
-				GatewayIntentBits.DirectMessages,
+				GatewayIntentBits.GuildPresences,
 				GatewayIntentBits.GuildVoiceStates,
 				GatewayIntentBits.MessageContent,
 			],
@@ -92,13 +92,14 @@ export class ExtendedClient extends Client {
 	}
 
 	public async updateClientData(firstTime: boolean = false) {
+		const guild = (await this.guilds.cache.get(process.env.GUILD_ID ?? "")) ?? (await this.guilds.fetch(process.env.GUILD_ID ?? ""));
 		this._staffMembers =
-			(await this.guilds.cache.get(process.env.GUILD_ID ?? "")?.members.fetch())
+			(await guild?.members.fetch())
 				?.filter((member) => member.roles.cache.some((role) => [getRoleFromEnv("staff")].includes(role.id)))
 				.map((member) => member.user.id) || this._staffMembers;
 
 		this._modMembers =
-			(await this.guilds.cache.get(process.env.GUILD_ID ?? "")?.members.fetch())
+			(await guild?.members.fetch())
 				?.filter((member) => member.roles.cache.some((role) => [getRoleFromEnv("moderadorChats")].includes(role.id)))
 				.map((member) => member.user.id) || this._modMembers;
 
@@ -115,7 +116,16 @@ export class ExtendedClient extends Client {
 					this.moneyConfigs.set(money._id, money);
 				});
 			});
-			// TODO: chequear users en el voice
+			const voiceChannels = guild.channels.cache.filter((channel) => channel.isVoiceBased());
+			voiceChannels.forEach((channel) => {
+				const voiceChannel = channel as VoiceChannel;
+				const members = voiceChannel.members.filter((member) => !member.user.bot).map((member) => member);
+				if (members.length > 0) {
+					members.forEach((member) => {
+						this.voiceFarmers.set(member.id, { date: new Date(), count: 0 });
+					});
+				}
+			});
 		}
 	}
 

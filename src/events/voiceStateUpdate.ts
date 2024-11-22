@@ -9,7 +9,8 @@ export default {
 	once: false,
 	async executeWithClient(client: ExtendedClient, oldState: VoiceState, newState: VoiceState) {
 		const userId = newState.member?.id ?? oldState.member?.id;
-		if (!userId) return;
+		const isBot = newState.member?.user.bot ?? oldState.member?.user.bot;
+		if (!userId || isBot) return;
 
 		const logChannel = (client.channels.cache.get(getChannelFromEnv("voiceLogs")) ??
 			client.channels.resolve(getChannelFromEnv("voiceLogs"))) as TextChannel;

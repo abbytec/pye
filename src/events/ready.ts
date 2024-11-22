@@ -73,6 +73,12 @@ async function voiceFarmingProcessor(client: ExtendedClient) {
 			const timePassed = now.getTime() - value.date.getTime();
 			const cyclesPassed = Math.floor(timePassed / timeInterval);
 
+			let voice = client.guilds.cache.get(process.env.GUILD_ID ?? "")?.members.cache.get(userId)?.voice;
+			if (!voice) {
+				client.voiceFarmers.delete(userId);
+				return;
+			}
+
 			if (cyclesPassed > value.count) {
 				const cyclesToIncrement = cyclesPassed - value.count;
 				value.count = cyclesPassed;
