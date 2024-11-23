@@ -124,7 +124,7 @@ const filterList: IFilter[] = [
 	},
 	{ filter: /^(https?:\/\/)?steamcommunity\.com\/gift\/.+$/i, mute: false },
 	{
-		filter: /(?=.*(?:eth|ethereum|btc|bitcoin|capital|crypto|memecoins))(?=.*\b(?:gana\w*|gratis|multiplica\w*|inver\w*)\b).*/is,
+		filter: /(?=.*(?:eth|ethereum|btc|bitcoin|capital|crypto|memecoins|\$|nsfw))(?=.*\b(?:gana\w*|gratis|multiplica\w*|inver\w*|giveaway|server|free)\b).*/is,
 		mute: false,
 		staffWarn: "Posible estafa detectada",
 	},
