@@ -97,12 +97,12 @@ export default {
 				.addFields([
 					{
 						name: "Aceptar propuesta",
-						value: `Usa: \`/acceptmarriage @${user.username}\``,
+						value: `Usa: \`/marriage accept @${user.username}\``,
 						inline: true,
 					},
 					{
 						name: "Rechazar propuesta",
-						value: `Usa: \`/declinemarriage @${user.username}\``,
+						value: `Usa: \`/marriage decline @${user.username}\``,
 						inline: true,
 					},
 				])

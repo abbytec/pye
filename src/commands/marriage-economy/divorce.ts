@@ -20,6 +20,7 @@ import { PostHandleable } from "../../types/middleware.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.ts";
+import { replyWarning } from "../../utils/messages/replyWarning.ts";
 
 export default {
 	group: "💍 - Matrimonios (Casino)",
@@ -37,7 +38,10 @@ export default {
 			const targetUser: User = interaction.options.getUser("usuario", true);
 			const targetMember: GuildMember | undefined = guild.members.cache.get(targetUser.id);
 
-			if (!targetMember) return await replyError(interaction, "No se pudo encontrar al usuario especificado en este servidor.");
+			if (!targetMember) {
+				await replyWarning(interaction, "No se pudo encontrar al usuario especificado en este servidor, se procederá con el divorcio.");
+				return await processDivorce(user.id, targetUser.id);
+			}
 
 			let userData: IUserModel = await getOrCreateUser(user.id);
 
@@ -113,8 +117,8 @@ export default {
 
 async function processDivorce(userId: string, targetUserId: string) {
 	const [userData, targetData] = await Promise.all([Users.findOne({ id: userId }), Users.findOne({ id: targetUserId })]);
-	if (!userData || !targetData) return;
+	if (!userData) return;
 	userData.couples = userData.couples.filter((couple) => couple.user !== targetUserId);
-	targetData.couples = targetData.couples.filter((couple) => couple.user !== userId);
-	await Promise.all([userData.save(), targetData.save()]);
+	if (targetData) targetData.couples = targetData.couples.filter((couple) => couple.user !== userId);
+	await Promise.all([userData.save(), targetData?.save()]);
 }

@@ -72,7 +72,7 @@ export default {
 				.setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
 				.setThumbnail(interaction.guild?.iconURL() ?? null)
 				.setDescription(
-					`Hola \`${interaction.user.tag}\` 👋, bienvenido al menú para crear tu perfil en el sistema de economía de **Programadores y Estudiantes**. La creación de tu perfil comenzará en 10 segundos...`
+					`Hola \`${interaction.user.tag}\` 👋, bienvenido al menú para crear tu perfil en el sistema de economía de **Programadores y Estudiantes**. La creación de tu perfil comenzará pronto...`
 				)
 				.setTimestamp();
 
@@ -83,7 +83,7 @@ export default {
 			});
 
 			// Esperar 10 segundos antes de comenzar
-			setTimeout(async () => await startProfile(message, interaction), 10_000);
+			setTimeout(async () => await startProfile(message, interaction), 6_000);
 		},
 		[]
 	),

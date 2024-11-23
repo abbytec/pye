@@ -40,6 +40,7 @@ export default {
 					redis.sendCommand(["ZREM", "top:all", memberId]),
 					redis.sendCommand(["ZREM", "top:cash", memberId]),
 					redis.sendCommand(["ZREM", "top:rob", memberId]),
+					redis.sendCommand(["ZREM", "top:rep", memberId]),
 				]);
 
 				const channel = guild.channels.resolve(getChannelFromEnv("bansanciones")) as TextChannel;

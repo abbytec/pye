@@ -14,7 +14,6 @@ import { COLORS, getChannelFromEnv } from "../../utils/constants.ts";
 // Lista de GIFs para la confirmación de matrimonio
 const gifs: string[] = [
 	"https://tenor.com/view/marriage-marry-up-kiss-gif-4360989",
-	"https://cdn.discordapp.com/attachments/782457646439202838/782806401285226506/2b1e948a75a312607af84d302b1cb35174db1ece_hq.gif",
 	"https://tenor.com/view/goku-chichi-wedding-dragon-ball-married-gif-18174144",
 	"https://tenor.com/view/anime-ring-married-marriage-marry-me-gif-12390162",
 	"https://tenor.com/view/muppet-show-muppets-kermit-miss-piggy-married-gif-25739714",
@@ -35,7 +34,7 @@ export default {
 		)
 		.addSubcommand((subcommand) =>
 			subcommand
-				.setName("refuse")
+				.setName("decline")
 				.setDescription("Rechaza una propuesta de matrimonio.")
 				.addUserOption((option) =>
 					option.setName("usuario").setDescription("La persona cuya propuesta deseas rechazar.").setRequired(true)
