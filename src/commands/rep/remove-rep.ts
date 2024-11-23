@@ -20,13 +20,17 @@ export default {
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "repatidorDeRep"), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
-			const channel = interaction.options.getChannel("canal", true);
+			const channel = interaction.channel;
 
 			if (user.bot) return await replyError(interaction, "No puedo quitarle puntos a los bots.\nUso: `add-rep [@Usuario]`");
 			const member = await interaction.guild?.members.fetch(user.id);
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
-			let data = await HelperPoint.findOneAndUpdate({ _id: user.id, points: { $gt: 0 } }, { $inc: { points: -1 } }, { new: true });
+			let data = await HelperPoint.findOneAndUpdate(
+				{ _id: user.id, points: { $gt: 0 } },
+				{ $inc: { points: -1 } },
+				{ new: true, upsert: true }
+			);
 
 			if (!data) return replyError(interaction, "No se encontraron puntos para restar.");
 
@@ -38,7 +42,7 @@ export default {
 				logMessages: [
 					{
 						channel: getChannelFromEnv("logPuntos"),
-						content: `**${interaction.user.tag}** le ha quitado un rep al usuario: \`${user.tag}\` en el canal: <#\`${channel.id}\`>`,
+						content: `**${interaction.user.tag}** le ha quitado un rep al usuario: \`${user.tag}\` en el canal: <#${channel?.id}>`,
 					},
 				],
 			};

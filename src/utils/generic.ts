@@ -24,6 +24,10 @@ export function formatTime(milliseconds: number): string {
 	return `${hoursDisplay}${minutesDisplay}${secondsDisplay}`.trim();
 }
 
+export function capitalizeFirstLetter(string: string) {
+	return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 export async function generateLeaderboard(
 	page: number,
 	user: any,

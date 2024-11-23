@@ -21,7 +21,7 @@ export default {
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "repatidorDeRep"), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
-			const channel = interaction.options.getChannel("canal", true);
+			const channel = interaction.channel;
 
 			try {
 				const { member, data } = await addRep(user, interaction.guild);
@@ -33,7 +33,7 @@ export default {
 					logMessages: [
 						{
 							channel: getChannelFromEnv("logPuntos"),
-							content: `**${interaction.user.tag}** le ha dado un rep al usuario: \`${user.tag}\` en el canal: <#\`${channel.id}\`>`,
+							content: `**${interaction.user.tag}** le ha dado un rep al usuario: \`${user.tag}\` en el canal: <#${channel?.id}>`,
 						},
 					],
 				};
@@ -50,7 +50,7 @@ export async function addRep(user: User | null, guild: Guild | null, points: num
 	const member = await guild?.members.fetch(user?.id ?? "").catch(() => null);
 	if (!member) throw new Error("No se pudo encontrar al usuario en el servidor.");
 
-	let data = await HelperPoint.findOneAndUpdate({ _id: user?.id }, { $inc: { points: points } }, { new: true });
+	let data = await HelperPoint.findOneAndUpdate({ _id: user?.id }, { $inc: { points: points } }, { new: true, upsert: true });
 
 	if (!data) data = await HelperPoint.create({ _id: user?.id, points: 1 });
 

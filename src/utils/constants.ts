@@ -16,6 +16,7 @@ const CHANNELS = {
 	sugerencias: "932011356213899274",
 	starboard: "930504113718972516",
 	retos: "1141493769699606528",
+	anuncios: "797974300283240489",
 
 	// foros
 	hardware: "1019727139173576814",
@@ -69,6 +70,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	starboard: "1296190631026233347",
 	tickets: "1296190631026233346",
 	retos: "1309615377235312681",
+	anuncios: "1310011599003586600",
 
 	// staff
 	puntos: "1296190632317943913",
@@ -190,6 +192,7 @@ const ROLES = {
 	experto: "838285410995929119",
 	adalovelace: "1190365725865545828",
 	alanturing: "1190366029633814570",
+	usuarioDelMes: "1169106408856363058",
 
 	// team
 	staff: "808889381187485736",
@@ -230,6 +233,7 @@ const DEV_ROLES: Record<Roles, string> = {
 	experto: "1296190630686494852",
 	adalovelace: "1296190630686494853",
 	alanturing: "1296190630686494854",
+	usuarioDelMes: "1296190630724370499",
 
 	// team
 	staff: "1296190630724370500",

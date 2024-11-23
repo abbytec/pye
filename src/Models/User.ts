@@ -78,11 +78,11 @@ userSchema.virtual("total").get(function (this: IUserModel) {
  */
 userSchema.post(["save", "findOneAndUpdate"], async function (doc: IUserModel | null) {
 	if (!doc) return;
-	await client.sendCommand(["ZADD", "top:all", doc.total.toString() ?? 0, doc.id]);
-	await client.sendCommand(["ZADD", "top:cash", doc.cash.toString() ?? 0, doc.id]);
-	await client.sendCommand(["ZADD", "top:rob", doc.rob.toString() ?? 0, doc.id]);
-	await client.sendCommand(["ZADD", "top:apostador", (doc.earnings - doc.bet).toString() ?? 0, doc.id]);
-	await client.sendCommand(["ZADD", "top:caps", doc.caps.toString() ?? 0, doc.id]);
+	await client.sendCommand(["ZADD", "top:all", (doc.total ?? 0).toString(), doc.id]);
+	await client.sendCommand(["ZADD", "top:cash", (doc.cash ?? 0).toString(), doc.id]);
+	await client.sendCommand(["ZADD", "top:rob", (doc.rob ?? 0).toString(), doc.id]);
+	await client.sendCommand(["ZADD", "top:apostador", ((doc.earnings ?? 0) - (doc.bet ?? 0)).toString(), doc.id]);
+	await client.sendCommand(["ZADD", "top:caps", (doc.caps ?? 0).toString(), doc.id]);
 });
 
 userSchema.post(["updateOne", "updateMany"], async function (result) {
@@ -121,84 +121,6 @@ userSchema.post(["updateOne", "updateMany"], async function (result) {
 	} catch (error) {
 		console.error(`Error actualizando Redis en 'updateOne'/'updateMany' con filtro ${JSON.stringify(filter)}:`, error);
 	}
-});
-
-/**
- * Middleware pre-updateOne para capturar las condiciones y las actualizaciones.
- */
-interface IUpdateOneContext {
-	conditions: any;
-	update: any;
-}
-
-userSchema.pre("updateOne", function (this: any, next: () => void) {
-	const context: IUpdateOneContext = {
-		conditions: this.getFilter(),
-		update: this.getUpdate(),
-	};
-	// Guardar el contexto en el objeto de consulta
-	this._updateContext = context;
-	next();
-});
-
-/**
- * Middleware post-updateOne para actualizar los rankings en Redis.
- */
-userSchema.post("updateOne", async function (result: any, next: () => void) {
-	const context: IUpdateOneContext = (this as any)._updateContext;
-	const { conditions, update } = context;
-
-	if (update.$inc) {
-		if (update.$inc.total) {
-			await client.sendCommand(["ZINCRBY", "top:all", update.$inc.total.toString(), conditions.id]);
-		}
-		if (update.$inc.cash) {
-			await client.sendCommand(["ZINCRBY", "top:cash", update.$inc.cash.toString(), conditions.id]);
-		}
-		if (update.$inc.rob) {
-			await client.sendCommand(["ZINCRBY", "top:rob", update.$inc.rob.toString(), conditions.id]);
-		}
-	}
-	next();
-});
-
-/**
- * Middleware pre-updateMany para capturar las condiciones y las actualizaciones.
- */
-interface IUpdateManyContext {
-	conditions: any;
-	update: any;
-}
-
-userSchema.pre("updateMany", function (this: any, next: () => void) {
-	const context: IUpdateManyContext = {
-		conditions: this.getFilter(),
-		update: this.getUpdate(),
-	};
-	// Guardar el contexto en el objeto de consulta
-	this._updateContext = context;
-	next();
-});
-
-/**
- * Middleware post-updateMany para actualizar los rankings en Redis.
- */
-userSchema.post("updateMany", async function (result: any, next: () => void) {
-	const context: IUpdateManyContext = (this as any)._updateContext;
-	const { conditions, update } = context;
-
-	if (update.$inc && conditions?.id?.$in) {
-		const multi = client.multi();
-		for (const userId of conditions.id.$in) {
-			if (update.$inc.total) {
-				multi.zIncrBy("top:all", update.$inc.total.toString(), userId);
-			}
-			if (update.$inc.cash) {
-				multi.zIncrBy("top:cash", update.$inc.cash.toString(), userId);
-			}
-		}
-	}
-	next();
 });
 
 /**
