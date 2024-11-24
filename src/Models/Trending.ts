@@ -173,7 +173,7 @@ class Trending {
 					name: "🥇 Top 3 Emojis en Tendencia",
 					value:
 						this.getTop("emoji", 3)
-							.map((item) => `<a:emoji:${item.id}>`)
+							.map((item) => `<:${item.id}>`)
 							.join("\n") || "No hay datos",
 					inline: true,
 				},
@@ -181,7 +181,7 @@ class Trending {
 					name: "🔻 3 Emojis con Menor Tendencia",
 					value:
 						this.getBottom("emoji", 3)
-							.map((item) => `<a:emoji:${item.id}>`)
+							.map((item) => `<:${item.id}>`)
 							.join("\n") || "No hay datos",
 					inline: true,
 				},
@@ -189,7 +189,7 @@ class Trending {
 					name: "🚫 Emojis No Utilizados",
 					value:
 						this.getUnused("emoji")
-							.map((id) => `<a:${id}>`)
+							.map((id) => `<:${id}>`)
 							.join(", ") || "Ninguno",
 				},
 				{
@@ -198,6 +198,7 @@ class Trending {
 						this.getTop("threadPost", 3)
 							.map((item) => `<#${item.id}>`)
 							.join("\n") || "No hay datos",
+					inline: true,
 				},
 				{
 					name: "🔻 3 Foros con Menor Tendencia",
@@ -205,6 +206,7 @@ class Trending {
 						this.getBottom("threadPost", 3)
 							.map((item) => `<#${item.id}>`)
 							.join("\n") || "No hay datos",
+					inline: true,
 				},
 				{
 					name: "🚫 Foros No Utilizados",
@@ -219,6 +221,7 @@ class Trending {
 						this.getTop("sticker", 3)
 							.map((item) => `<:${item.id}>`)
 							.join("\n") || "No hay datos",
+					inline: true,
 				},
 				{
 					name: "🔻 3 Stickers con Menor Tendencia",
@@ -226,6 +229,7 @@ class Trending {
 						this.getBottom("sticker", 3)
 							.map((item) => `<:${item.id}>`)
 							.join("\n") || "No hay datos",
+					inline: true,
 				},
 				{
 					name: "🚫 Stickers No Utilizados",
@@ -265,7 +269,7 @@ class Trending {
 	private getBottom(type: TrendingType, count: number = 3): { id: string; score: number }[] {
 		const map = this.getMapByType(type);
 		const entries = Array.from(map.entries());
-		entries.sort((a, b) => a[1] - b[1]); // Orden ascendente
+		entries.filter(([, score]) => score > 0).sort((a, b) => a[1] - b[1]); // Orden ascendente
 		return entries.slice(0, count).map(([id, score]) => ({ id, score }));
 	}
 

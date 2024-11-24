@@ -136,7 +136,6 @@ async function cronEventsProcessor(client: ExtendedClient) {
 			}
 		}
 		ExtendedClient.trending.dailySave();
-		ExtendedClient.trending.getStats();
 	});
 
 	await ExtendedClient.agenda.start();
