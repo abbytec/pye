@@ -1,6 +1,7 @@
 // Importaciones necesarias
 import { name } from "agenda/dist/agenda/name.js";
 import mongoose, { Schema, Document, Model } from "mongoose";
+import { COLORS } from "../utils/constants.ts";
 
 interface TrendingDocument extends Document {
 	emojis: Map<string, number>;
@@ -167,7 +168,7 @@ class Trending {
 		// Construir el embed en formato JSON
 		const embed = {
 			title: "Estadísticas Mensuales de Tendencias",
-			color: 0x00ff00,
+			color: COLORS.pyeLightBlue,
 			fields: [
 				{
 					name: "🥇 Top 3 Emojis en Tendencia",
