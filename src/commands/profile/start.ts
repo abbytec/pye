@@ -9,6 +9,10 @@ import {
 	ButtonStyle,
 	AttachmentBuilder,
 	StringSelectMenuBuilder,
+	InteractionResponse,
+	StringSelectMenuInteraction,
+	Message,
+	OmitPartialGroupDMChannel,
 } from "discord.js";
 import { Users } from "../../Models/User.ts";
 import { Home } from "../../Models/Home.ts";
@@ -63,7 +67,11 @@ export default {
 			if (userData?.profile) return await replyWarning(interaction, "Ya tienes un perfil.");
 
 			// Verificar si el usuario está en proceso de creación
-			if (onIt.has(userId)) return await replyWarning(interaction, "Ya estás en un proceso de creación.");
+			if (onIt.has(userId))
+				return await replyWarning(
+					interaction,
+					"Ya estás en un proceso de creación. Por favor espera un minuto antes de volver a intentarlo."
+				);
 
 			onIt.add(userId);
 
@@ -83,14 +91,14 @@ export default {
 			});
 
 			// Esperar 10 segundos antes de comenzar
-			setTimeout(async () => await startProfile(message, interaction), 6_000);
+			setTimeout(async () => await startProfile(message, interaction), 10_000);
 		},
 		[]
 	),
 };
 
 // Función principal para manejar el proceso de creación del perfil
-async function startProfile(message: any, interaction: ChatInputCommandInteraction) {
+async function startProfile(message: InteractionResponse, interaction: ChatInputCommandInteraction) {
 	const userId = interaction.user.id;
 
 	try {
@@ -175,7 +183,7 @@ async function startProfile(message: any, interaction: ChatInputCommandInteracti
 
 // Función para manejar la selección de opciones (género, tono de piel, profesión)
 async function selectOption(
-	message: any,
+	message: InteractionResponse,
 	interaction: ChatInputCommandInteraction,
 	description: string,
 	placeholder: string,
@@ -196,15 +204,14 @@ async function selectOption(
 	await message.edit({
 		embeds: [embed],
 		components: [row],
-		ephemeral: true,
 	});
 
-	const response = await message
+	const response = (await message
 		.awaitMessageComponent({
 			filter: (i: any) => i.user.id === interaction.user.id && i.customId === customId,
-			time: 120_000,
+			time: 40_000,
 		})
-		.catch(() => null);
+		.catch(() => null)) as StringSelectMenuInteraction | null;
 
 	if (!response) return null;
 

@@ -1,12 +1,13 @@
 // src/Client.ts
-import { Client, GatewayIntentBits, Partials, VoiceChannel } from "discord.js";
+import { ChannelType, Client, GatewayIntentBits, Partials, VoiceChannel } from "discord.js";
 import { Command } from "./types/command.ts"; // Asegúrate de definir la interfaz Command
 import { ICooldown } from "./Models/Cooldown.ts";
 import { Rob } from "./commands/farming/rob.ts";
 import { CommandLimits, ICommandLimits } from "./Models/Command.ts";
 import { IMoney, Money } from "./Models/Money.ts";
 import { Agenda } from "agenda";
-import { getRoleFromEnv } from "./utils/constants.ts";
+import { getChannelFromEnv, getRoleFromEnv } from "./utils/constants.ts";
+import Trending from "./Models/Trending.ts";
 
 interface VoiceFarming {
 	date: Date;
@@ -32,6 +33,7 @@ export class ExtendedClient extends Client {
 	private _modMembers: string[] = [];
 	public static readonly newUsers: Set<string> = new Set();
 	public static readonly ultimosCompartePosts: Map<string, CompartePost[]> = new Map();
+	public static readonly trending: Trending = new Trending();
 
 	constructor() {
 		super({
@@ -126,6 +128,20 @@ export class ExtendedClient extends Client {
 					});
 				}
 			});
+			console.log("loading emojis");
+			let emojis = (await guild.emojis.fetch()).map((emoji) => emoji.name + ":" + emoji.id);
+			console.log("loading stickers");
+			let stickers = (await guild.stickers.fetch()).map((sticker) => sticker.id);
+			console.log("loading channels");
+			let forumChannels = (await guild.channels.fetch())
+				.filter((channel) => {
+					return channel?.type === ChannelType.GuildForum && channel?.parent?.id === getChannelFromEnv("categoryForos");
+				})
+				.filter((channel) => channel != null)
+				.map((channel) => channel.id);
+			ExtendedClient.trending.load(emojis, stickers, forumChannels);
+		} else {
+			ExtendedClient.trending.dailySave();
 		}
 	}
 

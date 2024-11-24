@@ -51,7 +51,10 @@ const CHANNELS = {
 	staff: "1289417254894702644",
 	moderadores: "1289416349860368425",
 
+	// categorias
 	categoryStaff: "837035918187298836",
+	categoryComunidad: "781678453309177877",
+	categoryForos: "1290372079279145092",
 };
 
 const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
@@ -81,7 +84,10 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	staff: "1296190632020414595",
 	moderadores: "1296190632020414596",
 
+	// categorias
 	categoryStaff: "1296190631810568283",
+	categoryComunidad: "1296190631026233354",
+	categoryForos: "1296190631533608965",
 };
 
 const isDevelopment = process.env.NODE_ENV === "development";

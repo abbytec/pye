@@ -3,6 +3,7 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/ge
 import loadEnvVariables from "../utils/environment.ts";
 import { COLORS, getChannel, getChannelFromEnv, getForumTopic, getHelpForumsIdsFromEnv } from "../utils/constants.ts";
 import { addRep } from "../commands/rep/add-rep.ts";
+import { ExtendedClient } from "../client.ts";
 
 loadEnvVariables();
 const genAI = new GoogleGenerativeAI(process.env.gemini_API_KEY ?? "");
@@ -155,6 +156,7 @@ export default {
 					console.log(err);
 				});
 			});
+			ExtendedClient.trending.add("threadPost", thread.parentId ?? "");
 		} else if (thread.parent?.id == getChannelFromEnv("retos")) {
 			let owner = await thread.fetchOwner().catch(() => null);
 			await addRep(owner?.user ?? null, thread.guild).then(async ({ member }) =>

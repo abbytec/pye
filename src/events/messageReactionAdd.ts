@@ -4,6 +4,7 @@ import { StarMessage } from "../Models/StarMessage.ts";
 import { Evento } from "../types/event.ts";
 import { getChannelFromEnv, getRoleFromEnv } from "../utils/constants.ts";
 import { addRep } from "../commands/rep/add-rep.ts";
+import { ExtendedClient } from "../client.ts";
 
 /**
  * Maneja el evento messageReactionAdd
@@ -28,6 +29,7 @@ export default {
 		) {
 			await (reaction.message.member as GuildMember).roles.add(getRoleFromEnv("iqNegativo"));
 		}
+		ExtendedClient.trending.add("emoji", fullReaction.emoji.id ?? "");
 	},
 } as Evento;
 

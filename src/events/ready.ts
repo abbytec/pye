@@ -52,7 +52,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 					content: content || undefined,
 					embeds: embedObject ? [embedObject] : [],
 				})
-				.then((message) => console.log(`Mensaje cron enviado al canal ${channelId}`))
+				.then(() => console.log(`Mensaje cron enviado al canal ${channelId}`))
 				.then(async () => (job.attrs.nextRunAt ? await CronMessage.deleteOne({ _id: cronMessageId }).exec() : null))
 				.catch((error) => console.error(`Error al enviar mensaje cron al canal ${channelId}:`, error));
 		}
@@ -72,6 +72,11 @@ async function cronEventsProcessor(client: ExtendedClient) {
 		}
 		if (job.attrs.data.userReps.month !== currentMonthNumber) {
 			// Actualiza el mes en los datos del trabajo
+
+			let stats = ExtendedClient.trending.getStats();
+			(client.channels.resolve(getChannelFromEnv("moderadores")) as TextChannel | null)?.send({
+				embeds: [stats],
+			});
 			job.attrs.data.userReps.month = currentMonthNumber;
 			await job.save();
 
@@ -130,6 +135,8 @@ async function cronEventsProcessor(client: ExtendedClient) {
 				console.error("Error al procesar el top de reputación mensual:", error);
 			}
 		}
+		ExtendedClient.trending.dailySave();
+		ExtendedClient.trending.getStats();
 	});
 
 	await ExtendedClient.agenda.start();

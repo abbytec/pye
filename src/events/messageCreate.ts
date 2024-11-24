@@ -1,4 +1,16 @@
-import { DMChannel, EmbedBuilder, Events, Guild, GuildBasedChannel, GuildMember, Message, PublicThreadChannel, TextChannel } from "discord.js";
+import {
+	ChannelType,
+	DMChannel,
+	EmbedBuilder,
+	Events,
+	Guild,
+	GuildBasedChannel,
+	GuildMember,
+	Message,
+	PublicThreadChannel,
+	Sticker,
+	TextChannel,
+} from "discord.js";
 import { ExtendedClient } from "../client.ts";
 import { COLORS, DISBOARD_UID, EMOJIS, getChannelFromEnv, getHelpForumsIdsFromEnv, getRoleFromEnv } from "../utils/constants.ts";
 import { applyTimeout } from "../commands/moderation/timeout.ts";
@@ -66,6 +78,13 @@ export default {
 					if (isThankable) {
 						checkHelp(message);
 					}
+				});
+				message.stickers.forEach((sticker: Sticker) => {
+					ExtendedClient.trending.add("sticker", sticker.id);
+				});
+				const emojiIds = [...message.content.matchAll(/<a?:\w+:(\d+)>/g)].map((match) => match[1]) || [];
+				emojiIds.forEach((emojiId: string) => {
+					ExtendedClient.trending.add("emoji", emojiId);
 				});
 			}
 		} else {
