@@ -39,7 +39,7 @@ const schemaGiveaway = new Schema({
     required: true
   },
   fin: {
-    type: Number, //Epoch
+    type: Number,
     required: true
   },
   acabado: {

@@ -17,6 +17,7 @@ const CHANNELS = {
 	starboard: "930504113718972516",
 	retos: "1141493769699606528",
 	anuncios: "797974300283240489",
+	invitaciones: "1169865263718600704",
 
 	// foros
 	hardware: "1019727139173576814",
@@ -74,6 +75,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	tickets: "1296190631026233346",
 	retos: "1309615377235312681",
 	anuncios: "1310011599003586600",
+	invitaciones: "1296190632317943908",
 
 	// staff
 	puntos: "1296190632317943913",

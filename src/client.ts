@@ -40,6 +40,7 @@ export class ExtendedClient extends Client {
 			intents: [
 				GatewayIntentBits.DirectMessages,
 				GatewayIntentBits.Guilds,
+				GatewayIntentBits.GuildInvites,
 				GatewayIntentBits.GuildMembers,
 				GatewayIntentBits.GuildModeration,
 				GatewayIntentBits.GuildMessages,
@@ -94,7 +95,7 @@ export class ExtendedClient extends Client {
 	}
 
 	public async updateClientData(firstTime: boolean = false) {
-		const guild = (await this.guilds.cache.get(process.env.GUILD_ID ?? "")) ?? (await this.guilds.fetch(process.env.GUILD_ID ?? ""));
+		const guild = this.guilds.cache.get(process.env.GUILD_ID ?? "") ?? (await this.guilds.fetch(process.env.GUILD_ID ?? ""));
 		this._staffMembers =
 			(await guild?.members.fetch())
 				?.filter((member) => member.roles.cache.some((role) => [getRoleFromEnv("staff")].includes(role.id)))
