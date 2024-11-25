@@ -178,7 +178,7 @@ async function sendErrorReport(message: Message<boolean>, error: any, method: st
  */
 async function sendHelpNotification(msg: Message, fields: APIEmbedField[], buttons: ButtonBuilder[]): Promise<void> {
 	const pointsChannelId = getChannelFromEnv("puntos");
-	const pointsChannel = msg.client.channels.resolve(pointsChannelId) as TextChannel | null;
+	const pointsChannel = (msg.client.channels.cache.get(pointsChannelId) ?? msg.client.channels.resolve(pointsChannelId)) as TextChannel | null;
 
 	if (!pointsChannel) {
 		throw new Error(`No se pudo encontrar el canal con ID ${pointsChannelId}`);
@@ -188,8 +188,17 @@ async function sendHelpNotification(msg: Message, fields: APIEmbedField[], butto
 		.setThumbnail(msg.guild?.iconURL() ?? null)
 		.setTitle("Se ha encontrado una nueva ayuda!")
 		.addFields(fields)
-		.setTimestamp(new Date())
-		.setColor(COLORS.pyeLightBlue); // Puedes cambiar el color según prefieras
+		.setTimestamp(new Date());
+
+	const user = await msg.author.fetch();
+	const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+	if ((user.createdAt?.getTime() ?? 0) > daysAgo(2).getTime()) {
+		embed.setDescription(`\`\`\`ansi\n[35mEl miembro que agradeció (${msg.author.username})\nCreó su cuenta recientemente.\n\`\`\``);
+		embed.setColor(COLORS.warnOrange);
+	} else if ((msg.member?.joinedTimestamp ?? 0) > daysAgo(5).getTime()) {
+		embed.setDescription(`\`\`\`ansi\n[32mEl miembro que agradeció (${msg.author.username})\nSe unió al servidor recientemente.\n\`\`\``);
+		embed.setColor(COLORS.okGreen);
+	} else embed.setColor(COLORS.pyeLightBlue);
 
 	const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons);
 

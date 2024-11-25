@@ -324,13 +324,16 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 
 /** Check channels to trigger Point Helper system */
 async function checkChannel(msg: Message<boolean>) {
-	let channel: GuildBasedChannel | TextChannel;
+	let channel: GuildBasedChannel | TextChannel | null;
 	if (msg.channel.type === 11) {
-		channel = (msg.guild as Guild).channels.resolve((msg.channel as PublicThreadChannel).parentId ?? "") as GuildBasedChannel;
+		const channels = (msg.guild as Guild).channels;
+		channel =
+			channels.cache.get((msg.channel as PublicThreadChannel).parentId ?? "") ??
+			channels.resolve((msg.channel as PublicThreadChannel).parentId ?? "");
 		const threadAuthor = await (msg.channel as PublicThreadChannel).fetchOwner();
 		if (threadAuthor?.id !== msg.author.id) return false;
 	} else channel = msg.channel as TextChannel;
-	return getHelpForumsIdsFromEnv().includes(channel.id ?? "");
+	return getHelpForumsIdsFromEnv().includes(channel?.id ?? "");
 }
 
 async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClient) {
