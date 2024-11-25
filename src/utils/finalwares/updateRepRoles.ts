@@ -64,14 +64,16 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 		})
 		.map((role) => role.id);
 
-	if (rolesToRemove.length > 0)
+	const changeRole = rolesToRemove.length === 1 && rolesToRemove.at(0) !== newRoleId;
+
+	if (rolesToRemove.length > 1 || changeRole)
 		await member.roles
 			.remove(rolesToRemove)
-			.then(() => console.log(`Roles ${rolesToRemove.join(", ")} eliminados de ${member.user.tag}`))
+			.then(() => console.log(`Roles [${rolesToRemove.join(", ")}] eliminados de ${member.user.tag}`))
 			.catch((error) => console.error(`Error al eliminar roles de ${member.user.tag}:`, error));
 
 	// Añadimos el nuevo rol si es necesario
-	if (newRoleId && !member.roles.cache.has(newRoleId))
+	if (newRoleId && (!member.roles.cache.has(newRoleId) || changeRole))
 		await member.roles
 			.add(newRoleId)
 			.then(() => console.log(`Rol ${newRoleId} añadido a ${member.user.tag}`))
