@@ -252,7 +252,7 @@ export async function checkHelp(msg: Message): Promise<void> {
 		helpers.forEach((id, index) => {
 			buttons.push(
 				new ButtonBuilder()
-					.setCustomId(id)
+					.setCustomId("point-" + id)
 					.setLabel(`${index + 1}`)
 					.setStyle(ButtonStyle.Primary)
 			);

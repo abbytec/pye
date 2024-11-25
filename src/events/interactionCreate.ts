@@ -1,4 +1,14 @@
-import { ButtonInteraction, EmbedBuilder, Events, Interaction, TextChannel } from "discord.js";
+import {
+	ActionRowBuilder,
+	APIButtonComponent,
+	ButtonBuilder,
+	ButtonInteraction,
+	ComponentType,
+	EmbedBuilder,
+	Events,
+	Interaction,
+	TextChannel,
+} from "discord.js";
 import { ExtendedClient } from "../client.ts";
 import { COLORS, getChannelFromEnv, USERS } from "../utils/constants.ts";
 import { checkQuestLevel, IQuest } from "../utils/quest.ts";
@@ -30,7 +40,7 @@ export default {
 			return;
 		}
 		if (interaction.inGuild() && interaction.isButton()) {
-			const customId = interaction.customId;
+			let customId = interaction.customId;
 			const userId = interaction.user.id;
 
 			// Boton de cerrar el warn cuando el user no tenía md abierto
@@ -39,17 +49,16 @@ export default {
 			// Boton de eliminar el mensaje de #puntos
 			if (customId === "cancel-point") return cancelPoint(interaction);
 
-			// Boton de dar puntos en #puntos
-			if (/^\d{17,19}$/.test(customId)) {
+			// Boton de dar puntos en #puntos TODO: sacar el signo de pregunta
+			if (/^(point-)?\d{17,19}$/.test(customId)) {
 				if (userId === USERS.maby) {
 					await interaction.reply({
-						content:
-							"No vas a dar puntos hoy mi reina <a:JigglerLove:994460658089328710>\nSi ves esto te amo mucho ♥, *No te enojes :c*",
+						content: "Tranquila, tenés un equipo hermoso que tambien se podría encargar de esto! :D",
 						ephemeral: true,
 					});
-					return;
 				}
-				return helpPoint(interaction);
+				if (customId.startsWith("point-")) customId = customId.slice(6);
+				return helpPoint(interaction, customId);
 			}
 		}
 	},
@@ -81,20 +90,25 @@ async function cancelPoint(interaction: ButtonInteraction): Promise<void> {
 }
 
 // Función para otorgar un punto de ayuda
-async function helpPoint(interaction: ButtonInteraction): Promise<void> {
+async function helpPoint(interaction: ButtonInteraction, customId: string): Promise<void> {
 	try {
 		// Obtener el miembro que recibirá el punto
 		const member = interaction.guild?.members.cache.get(interaction.customId);
 		if (!member) {
-			await interaction.reply({ content: "Usuario no encontrado.", ephemeral: true });
+			if (interaction.replied) await interaction.followUp({ content: "Usuario no encontrado.", ephemeral: true });
+			else await interaction.reply({ content: "Usuario no encontrado.", ephemeral: true });
+
 			return;
 		}
 
 		// Responder al usuario que ha otorgado el punto
-		await interaction.reply({
-			content: `Le has dado un punto al usuario: \`${member.user.username}\``,
-			ephemeral: true,
-		});
+		if (interaction.replied)
+			await interaction.followUp({ content: `Le has dado un punto al usuario: \`${member.user.username}\``, ephemeral: true });
+		else
+			await interaction.reply({
+				content: `Le has dado un punto al usuario: \`${member.user.username}\``,
+				ephemeral: true,
+			});
 
 		const embed = EmbedBuilder.from(interaction.message.embeds[0]);
 
@@ -113,34 +127,44 @@ async function helpPoint(interaction: ButtonInteraction): Promise<void> {
 			});
 		}
 		embed.setColor(COLORS.warnOrange);
-		await interaction.message.edit({ embeds: [embed] });
+
+		const components = interaction.message.components.map((row) => {
+			const newComponents = (row.components as APIButtonComponent[])
+				.map((component) => {
+					if (component.type === ComponentType.Button && "customId" in component && component.customId === customId) {
+						const button = ButtonBuilder.from(component);
+						button.setDisabled(true); // Deshabilitar el botón
+						return button;
+					} else if (component.type === ComponentType.Button) {
+						return ButtonBuilder.from(component);
+					} else {
+						return component;
+					}
+				})
+				.filter((component): component is ButtonBuilder => component instanceof ButtonBuilder);
+			return new ActionRowBuilder<ButtonBuilder>().addComponents(newComponents);
+		});
 
 		// Buscar o crear el documento de HelperPoint
 		let user = await HelperPoint.findOneAndUpdate({ _id: interaction.customId }, { $inc: { points: 1 } }, { new: true, upsert: true });
+
+		await interaction.message.edit({ embeds: [embed], components });
 
 		updateMemberReputationRoles(member, user.points, interaction.client as ExtendedClient);
 
 		// Enviar notificación en un canal específico
 		const notificationChannel = interaction.client.channels.resolve(getChannelFromEnv("logPuntos")) as TextChannel | null;
-		if (notificationChannel)
-			await notificationChannel.send(
-				`**${interaction.user.username}** le ha dado un rep al usuario: \`${member.user.username}\`, en el canal: <#\`${interaction.channelId}\`>`
-			);
-		if (interaction.channel?.isTextBased())
-			await (interaction.channel as TextChannel).send({
-				content: `🥳 - Puntos otorgados al usuario <@${member.user.username}>`,
-			});
+		if (notificationChannel) {
+			let message = `**${interaction.user.username}** le ha dado un rep al usuario: \`${member.user.username}\`, en el canal: <#${interaction.channelId}>`;
+			interaction.message.embeds.at(0)?.description && (message += `\n${interaction.message.embeds.at(0)?.description}`);
+			await notificationChannel.send(message);
+		}
 
 		// Verificar quests
 		checkQuestLevel({ userId: interaction.customId, rep: 1 } as IQuest);
-
-		// Avisarle con un puntito a maby que se le dio puntos al user
-		if (interaction.user.id === USERS.maby) {
-			await interaction.reply({ content: ".", ephemeral: true });
-			return;
-		}
 	} catch (error) {
 		console.error("Error al otorgar punto de ayuda:", error);
-		await interaction.reply({ content: "Hubo un error al otorgar el punto.", ephemeral: true });
+		if (interaction.replied) await interaction.followUp({ content: "Hubo un error al otorgar el punto.", ephemeral: true });
+		else await interaction.reply({ content: "Hubo un error al otorgar el punto.", ephemeral: true });
 	}
 }
