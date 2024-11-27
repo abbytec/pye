@@ -1,16 +1,17 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, TextChannel } from "discord.js"
+import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, TextChannel, Guild } from "discord.js"
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts"
 import { increaseHomeMonthlyIncome } from "../../Models/Home.ts"
 import { IUserModel, getOrCreateUser, Users } from "../../Models/User.ts"
 import { PostHandleable } from "../../types/middleware.ts"
-import { getChannelFromEnv, COLORS, pyecoin, getForumIdsFromEnv } from "../../utils/constants.ts"
+import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.ts"
 import { calculateJobMultiplier } from "../../utils/generic.ts"
 import { replyError } from "../../utils/messages/replyError.ts"
-import { replyOk } from "../../utils/messages/replyOk.ts"
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts"
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts"
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts"
 import { checkQuestLevel, IQuest } from "../../utils/quest.ts"
+import { replyInfo } from "../../utils/messages/replyInfo.ts"
+import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.ts"
 let data: {
     fin: number;
     apuestas: { jugador: string; cantidad: number; apuesta: string }[];
@@ -46,7 +47,7 @@ export default {
         ),
 
     execute: composeMiddlewares(
-        [verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
+        [verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), verifyCooldown("roulette", 5), deferInteraction()],
         async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
             let userData: IUserModel = await getOrCreateUser(interaction.user.id);
             let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
@@ -66,7 +67,7 @@ export default {
             // Añadir apuestas
             data.apuestas?.push({ jugador: interaction.user.id, cantidad: amount, apuesta: choice })
             // Mensaje de respuesta del comando
-            await replyOk(interaction, `Tu apuesta (${amount}${pyecoin}, ${choice}) se realizó con éxito. Aún faltan ${Math.round((data.fin - Date.now()) / 1000)} segundos para terminar.`)
+            await replyInfo(interaction, `Tu apuesta (${amount}${pyecoin}, ${choice}) se realizó con éxito. Aún faltan ${Math.round((data.fin - Date.now()) / 1000)} segundos para terminar.`)
         }
     ),
 };
@@ -95,7 +96,7 @@ async function roulette(interaction: ChatInputCommandInteraction) { // Se ejecut
 
         let userData: IUserModel = await getOrCreateUser(apuesta.jugador);
         if (initValue != apuesta.cantidad) { // si ganó el valor inicial es dintinto, evitamos volver a calcular si ganó
-            apuesta.cantidad = calculateJobMultiplier(userData.profile?.job, apuesta.cantidad, userData.couples || [])
+            apuesta.cantidad += calculateJobMultiplier(userData.profile?.job, apuesta.cantidad, userData.couples || [])
         } else {
             apuesta.cantidad = 0 - apuesta.cantidad
         }
@@ -140,9 +141,10 @@ async function roulette(interaction: ChatInputCommandInteraction) { // Se ejecut
     // Enviar mensaje al terminar los 30s
     (interaction.client.channels.cache.get(getChannelFromEnv("casinoPye")) as TextChannel | undefined)?.send({
         embeds: [new EmbedBuilder()
-            .setAuthor({ name: 'Ruleta' }) // Agregar iconurl
+            .setAuthor({ name: 'Ruleta', iconURL: (interaction.guild as Guild).iconURL() ?? undefined })
             .setDescription(`La bola ha caído en: **${bola.valor}**, \`${bola.color}\`.`)
             .addFields([{ name: 'Resultados', value: msg }])
+            .setColor(COLORS.okGreen)
             .setThumbnail('https://media.discordapp.net/attachments/687397125793120288/917501566527868968/spin.gif')
             .setTimestamp()
         ]

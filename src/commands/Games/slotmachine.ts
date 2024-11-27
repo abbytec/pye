@@ -11,6 +11,7 @@ import { checkQuestLevel, IQuest } from "../../utils/quest.ts";
 import { calculateJobMultiplier } from "../../utils/generic.ts";
 import { IUserModel, Users, getOrCreateUser } from "../../Models/User.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
+import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.ts";
 const emojis = ['🍒', '🍉', '🍑', '🥥', '🍍', '🍇', '🥝', '🍄', '🍓', '🍀']
 
 export default {
@@ -20,7 +21,7 @@ export default {
         .addIntegerOption((option) => option.setName("cantidad").setDescription("la cantidad que quieres apostar (Máximo 300)").setRequired(true)),
 
     execute: composeMiddlewares(
-        [verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
+        [verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), verifyCooldown("roulette", 3), deferInteraction()],
         async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
             let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
             let userData: IUserModel = await getOrCreateUser(interaction.user.id);
@@ -35,7 +36,7 @@ export default {
 
             if (loseWinRate || (game[1][1] == game[1][2] && game[1][1] == game[1][0])) {
                 game[1][1] = game[1][2] = game[1][0]
-                amount = calculateJobMultiplier(userData.profile?.job, amount, userData.couples || []) * 2
+                amount += calculateJobMultiplier(userData.profile?.job, amount, userData.couples || [])
                 embed.setDescription(`Has ganado ${amount}.\n
                     ${game.map((l, i) =>
                     l.map((n) => (i === 1 ? pyecoin : emojis[n]))
