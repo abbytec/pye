@@ -15,6 +15,7 @@ import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.ts";
 const emojis = ['🍒', '🍉', '🍑', '🥥', '🍍', '🍇', '🥝', '🍄', '🍓', '🍀']
 
 export default {
+    group: "🎮 • Juegos",
     data: new SlashCommandBuilder()
         .setName("slotmachine")
         .setDescription("Tira del tragaperras y apuesta tu dinero.")

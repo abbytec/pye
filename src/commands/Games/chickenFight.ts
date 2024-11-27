@@ -8,13 +8,14 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
 import { replyError } from "../../utils/messages/replyError.ts";
 import { getOrCreateUser, IUserModel, Users } from "../../Models/User.ts";
 import { Shop } from "../../Models/Shop.ts";
-import { calculateJobMultiplier } from "../../utils/generic.ts";
+import { calculateJobMultiplier, checkRole } from "../../utils/generic.ts";
 import { increaseHomeMonthlyIncome } from "../../Models/Home.ts";
 import { replyOk } from "../../utils/messages/replyOk.ts";
 import { checkQuestLevel, IQuest } from "../../utils/quest.ts";
 const level = new Map();
 
 export default {
+    group: "🎮 • Juegos",
     data: new SlashCommandBuilder()
         .setName("chicken-fight")
         .setDescription("Apuesta dinero metiendo tu pollo a una pelea 🐔.")

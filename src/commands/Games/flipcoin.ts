@@ -11,10 +11,10 @@ import { replyOk } from "../../utils/messages/replyOk.ts";
 import { increaseHomeMonthlyIncome } from "../../Models/Home.ts";
 import { checkQuestLevel, IQuest } from "../../utils/quest.ts";
 import { calculateJobMultiplier } from "../../utils/generic.ts";
-import { replyInfo } from "../../utils/messages/replyInfo.ts";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.ts";
 
 export default {
+	group: "🎮 • Juegos",
 	data: new SlashCommandBuilder()
 		.setName("flipcoin")
 		.setDescription("Tira la moneda y prueba tu suerte.")

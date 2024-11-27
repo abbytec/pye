@@ -28,6 +28,7 @@ const negros = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 
 const colores = { red: 'red', black: 'black', green: 'green', even: 'even', odd: 'odd' }
 
 export default {
+    group: "🎮 • Juegos",
     data: new SlashCommandBuilder()
         .setName("roulette")
         .setDescription("Inicia un juego de ruleta o coloca tu apuesta en un juego existente.")
