@@ -8,14 +8,16 @@ import {
 	EmbedBuilder,
 	Events,
 	Interaction,
+	TextBasedChannel,
 	TextChannel,
 } from "discord.js";
 import { ExtendedClient } from "../client.js";
-import { COLORS, getChannelFromEnv, USERS } from "../utils/constants.js";
+import { COLORS, getChannelFromEnv, getRoleFromEnv, USERS } from "../utils/constants.js";
 import { checkQuestLevel, IQuest } from "../utils/quest.js";
 import { HelperPoint } from "../Models/HelperPoint.js";
 import { updateMemberReputationRoles } from "../utils/finalwares/updateRepRoles.js";
 import Bottleneck from "bottleneck";
+import { checkRole } from "../utils/generic.js";
 
 const limiter = new Bottleneck({
 	maxConcurrent: 15, // Máximo de comandos en paralelo
@@ -70,6 +72,7 @@ export default {
 async function executeCommand(interaction: ChatInputCommandInteraction, command: any) {
 	try {
 		await command.execute(interaction);
+		await handleGameCommands(interaction);
 	} catch (error) {
 		console.error(error);
 		if (interaction.replied || interaction.deferred) {
@@ -182,5 +185,19 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 		console.error("Error al otorgar punto de ayuda:", error);
 		if (interaction.replied) await interaction.followUp({ content: "Hubo un error al otorgar el punto.", ephemeral: true });
 		else await interaction.reply({ content: "Hubo un error al otorgar el punto.", ephemeral: true });
+	}
+}
+
+// Función para otorgar rol granApostador
+async function handleGameCommands(interaction: ChatInputCommandInteraction) {
+	const channelId = interaction.channel?.id;
+	const client = interaction.client as ExtendedClient;
+	if (channelId !== getChannelFromEnv("casinoPye")) return;
+
+	// Verificar si el comando ejecutado tiene el grupo "juegos"
+	const command = client.commands.get(interaction.commandName);
+	if (!command || !command.group) return;
+	if (command.group.toLowerCase().includes("juegos")) {
+		checkRole(interaction, getRoleFromEnv("granApostador"), 75);
 	}
 }

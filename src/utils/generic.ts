@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, Message } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, GuildMember, Message } from "discord.js";
 import { COLORS } from "./constants.js";
 import { TextMessages } from "../Models/TextMessages.js";
 import { ICouple } from "../interfaces/IUser.js";
@@ -97,15 +97,20 @@ export async function generateLeaderboard(
 	return { embed, actionRow };
 }
 
-export async function checkRole(msg: Message<boolean>, roleId: string, limit: number, roleName?: string) {
+export async function checkRole(msg: Message<boolean> | ChatInputCommandInteraction, roleId: string, limit: number, roleName?: string) {
 	if ((msg.member as GuildMember).roles.cache.has(roleId)) return;
+	let autor = msg instanceof Message ? msg.author.id : msg.user.id;
 	let data = await TextMessages.findOneAndUpdate(
-		{ channelId: roleName ?? msg.channel.id, id: msg.author.id },
+		{ channelId: roleName ?? msg.channel?.id, id: autor },
 		{ $inc: { messages: 1 } },
 		{ new: true, upsert: true }
 	);
 	if (data?.messages >= limit) {
-		(msg.member as GuildMember).roles.add(roleId).catch(() => null);
+		if (!msg.guild) return;
+		let member = msg instanceof Message ? msg.member : msg.guild.members.cache.get(msg.user.id);
+		if (member && !member.roles.cache.has(roleId)) {
+			member.roles.add(roleId).catch(() => null);
+		}
 	}
 }
 
