@@ -29,7 +29,7 @@ export default {
 			const command = (interaction.client as ExtendedClient).commands.get(interaction.commandName);
 
 			if (!command) {
-				console.error(`No command matching ${interaction.commandName} was found.`);
+				console.error(`No existe un comando llamado ${interaction.commandName}.`);
 				return;
 			}
 
