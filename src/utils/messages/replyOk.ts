@@ -25,7 +25,7 @@ export async function replyOk(
 		messageToSend.embeds = [
 			new EmbedBuilder()
 				.setAuthor({ name: author ?? interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
-				.setDescription("✅ • " + message)
+				.setDescription(message)
 				.setColor(COLORS.okGreen)
 				.setTimestamp(),
 		];
