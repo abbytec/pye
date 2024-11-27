@@ -12,7 +12,15 @@ import {
 	TextChannel,
 } from "discord.js";
 import { ExtendedClient } from "../client.ts";
-import { COLORS, DISBOARD_UID, EMOJIS, getChannelFromEnv, getHelpForumsIdsFromEnv, getRoleFromEnv } from "../utils/constants.ts";
+import {
+	AUTHORIZED_BOTS,
+	COLORS,
+	DISBOARD_UID,
+	EMOJIS,
+	getChannelFromEnv,
+	getHelpForumsIdsFromEnv,
+	getRoleFromEnv,
+} from "../utils/constants.ts";
 import { applyTimeout } from "../commands/moderation/timeout.ts";
 import { Users } from "../Models/User.ts";
 import { getCooldown, setCooldown } from "../utils/cooldowns.ts";
@@ -34,8 +42,7 @@ export default {
 		) {
 			return bumpHandler(message.client as ExtendedClient, message);
 		}
-		// Evita mensajes de bots o mensajes que no tengan el prefijo
-		if (message.author.bot || message.author.system) return;
+
 		const client = message.client as ExtendedClient;
 
 		if (!message.inGuild()) {
@@ -56,9 +63,17 @@ export default {
 			});
 		}
 
-		if (message.channel.id !== getChannelFromEnv("logs")) {
+		if (
+			!(
+				message.channel.parentId === getChannelFromEnv("categoryStaff") ||
+				message.member?.permissions.has("Administrator") ||
+				AUTHORIZED_BOTS.includes(message.author.id) ||
+				client.staffMembers.includes(message.author.id)
+			)
+		) {
 			await spamFilter(message, client);
 		}
+		if (message.author.bot || message.author.system) return;
 
 		if (!message.content.startsWith(PREFIX)) {
 			if (![getChannelFromEnv("mudae"), getChannelFromEnv("casinoPye")].includes(message.channel.id)) {

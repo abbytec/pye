@@ -333,3 +333,12 @@ export const EMOJIS = {
 export const DISBOARD_UID = "302050872383242240";
 
 export const pyecoin = "<a:pyecoin:911087695864950854>";
+
+// Bots autorizados a enviar enlaces de discord
+export const AUTHORIZED_BOTS = [
+	process.env.CLIENT_ID ?? "",
+	// Auxilio me sancionaron (el webhook de #tickets donde figura el server de apelaciones)
+	"1295616037974311012",
+	// Hook de reglas
+	"926516578315563008",
+];
