@@ -60,62 +60,61 @@ export async function applyTimeout(
 	moderator?: User
 ): Promise<PostHandleable | void> {
 	// Aplicar el timeout
-	await member
-		.timeout(duration, reason)
-		.then(async () => {
-			// Registrar en ModLogs
-			await ModLogs.create({
-				id: member.id,
-				moderator: moderator?.tag ?? "BotPyE",
-				reason: reason,
-				date: new Date(),
-				type: "Timeout",
-			});
+	console.log("Aplicando timeout", duration, reason);
+	return await member.timeout(duration, reason).then(async () => {
+		// Registrar en ModLogs
+		console.log("Aaaaaa");
+		await ModLogs.create({
+			id: member.id,
+			moderator: moderator?.tag ?? "BotPyE",
+			reason: reason,
+			date: new Date(),
+			type: "Timeout",
+		});
 
-			// Obtener todos los casos actuales del usuario
-			const data = await ModLogs.find({ id: member.id });
+		// Obtener todos los casos actuales del usuario
+		const data = await ModLogs.find({ id: member.id });
 
-			// Enviar mensaje directo al usuario
-			await member
-				.send({
-					embeds: [
-						new EmbedBuilder()
-							.setAuthor({
-								name: member.user.tag,
-								iconURL: member.user.displayAvatarURL(),
-							})
-							.setDescription(
-								`Has sido aislado en el servidor de **PyE**.\nPodrás interactuar en los canales una vez tu sanción haya terminado. Recuerda leer <#${getChannelFromEnv(
-									"reglas"
-								)}> para evitar que vuelva a pasar y conocer las sanciones. \nTambién puedes intentar apelar a tu des-aislamiento desde este otro servidor: https://discord.gg/F8QxEMtJ3B`
-							)
-							.addFields([
-								{ name: "Tiempo", value: `\`${ms(duration, { long: true })}\``, inline: true },
-								{ name: "Casos", value: `#${data.length}`, inline: true },
-								{ name: "Razón", value: reason, inline: true },
-							])
-							.setThumbnail(interactionGuildIconURL)
-							.setTimestamp(),
-					],
-				})
-				.catch(() => null); // Ignorar errores si el usuario no acepta DMs
-
-			return {
-				logMessages: [
-					{
-						channel: getChannelFromEnv("bansanciones"),
-						user: member.user,
-						description: `**${member.user.tag}** ha sido aislado del servidor.`,
-						fields: [
+		// Enviar mensaje directo al usuario
+		await member
+			.send({
+				embeds: [
+					new EmbedBuilder()
+						.setAuthor({
+							name: member.user.tag,
+							iconURL: member.user.displayAvatarURL(),
+						})
+						.setDescription(
+							`Has sido aislado en el servidor de **PyE**.\nPodrás interactuar en los canales una vez tu sanción haya terminado. Recuerda leer <#${getChannelFromEnv(
+								"reglas"
+							)}> para evitar que vuelva a pasar y conocer las sanciones. \nTambién puedes intentar apelar a tu des-aislamiento desde este otro servidor: https://discord.gg/F8QxEMtJ3B`
+						)
+						.addFields([
 							{ name: "Tiempo", value: `\`${ms(duration, { long: true })}\``, inline: true },
-							{ name: "Razón", value: reason, inline: true },
-							{ name: "ID", value: `${member.id}`, inline: true },
-							{ name: "Moderador", value: moderator?.tag ?? "BotPyE", inline: true },
 							{ name: "Casos", value: `#${data.length}`, inline: true },
-						],
-					},
+							{ name: "Razón", value: reason, inline: true },
+						])
+						.setThumbnail(interactionGuildIconURL)
+						.setTimestamp(),
 				],
-			};
-		})
-		.catch(() => null);
+			})
+			.catch(() => console.error("Error al aplicar el timeout:", member.user.username)); // Ignorar errores si el usuario no acepta DMs
+
+		return {
+			logMessages: [
+				{
+					channel: getChannelFromEnv("bansanciones"),
+					user: member.user,
+					description: `**${member.user.tag}** ha sido aislado del servidor.`,
+					fields: [
+						{ name: "Tiempo", value: `\`${ms(duration, { long: true })}\``, inline: true },
+						{ name: "Razón", value: reason, inline: true },
+						{ name: "ID", value: `${member.id}`, inline: true },
+						{ name: "Moderador", value: moderator?.username ?? "BotPyE", inline: true },
+						{ name: "Casos", value: `#${data.length}`, inline: true },
+					],
+				},
+			],
+		} as PostHandleable;
+	});
 }

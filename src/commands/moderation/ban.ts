@@ -65,7 +65,7 @@ export default {
 						],
 					})
 					.catch(() => null)
-					.finally(async () => await interaction.guild?.members.ban(user.id, { reason }));
+					.finally(async () => (await interaction.guild?.members.ban(user.id, { reason }).catch((error) => console.error(`Error al banear al usuario: ${error}`))));
 
 				// Registrar en ModLogs
 				await ModLogs.create({

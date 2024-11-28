@@ -16,11 +16,12 @@ export default {
 		.setName("unwarn")
 		.setDescription("Remueve una advertencia a un usuario.")
 		.addUserOption((option) => option.setName("usuario").setDescription("Selecciona el usuario").setRequired(true))
-		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo para remover la advertencia").setRequired(false)),
+		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo para remover la advertencia").setRequired(true)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "moderadorChats"), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
+			const reason = interaction.options.getString("razon", true);
 			const member = await interaction.guild?.members.fetch(user.id);
 
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
@@ -33,7 +34,7 @@ export default {
 			// Buscar la advertencia más reciente que no esté oculta
 			const latestWarn = await ModLogs.findOneAndUpdate(
 				{ id: user.id, type: "Warn", hiddenCase: { $ne: true } },
-				{ $set: { hiddenCase: true } },
+				{ $set: { hiddenCase: true, reasonUnpenalized: reason } },
 				{ sort: { date: -1 }, new: true }
 			);
 
@@ -48,7 +49,7 @@ export default {
 						new EmbedBuilder()
 							.setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
 							.setDescription("Se te ha removido una advertencia en **PyE**.\n¡Recuerda no romper las reglas!")
-							.addFields([{ name: "Razón", value: interaction.options.getString("razon") ?? "No hubo razón." }])
+							.addFields([{ name: "Razón", value: reason }])
 							.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)
 							.setTimestamp(),
 					],
@@ -63,7 +64,7 @@ export default {
 						user: user,
 						description: `Se ha removido una advertencia a: **${member.user.tag}**`,
 						fields: [
-							{ name: "Razón", value: interaction.options.getString("razon") ?? "No hubo razón.", inline: true },
+							{ name: "Razón", value: reason, inline: true },
 							{ name: "Moderador", value: interaction.user.tag, inline: true },
 						],
 					},

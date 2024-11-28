@@ -10,6 +10,7 @@ import {
 	CacheType,
 	User,
 	GuildMember,
+	EmbedField,
 } from "discord.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
@@ -92,7 +93,7 @@ const generateEmbed = (
 							.map(
 								(c, index) =>
 									`**#${start + index + 1}** | Moderador: \`${c.moderator}\` | ${
-										c.hiddenCase ? "sancion removida" : `Razón: ${c.reason}`
+										c.hiddenCase ? "Sancion removida" : `Razón: ${c.reason}`
 									}`
 							)
 							.join("\n")
@@ -170,29 +171,35 @@ export default {
 					const selectedCase = data.find((c) => (c._id as ObjectId).toString() === caseId);
 
 					if (selectedCase) {
+						const fields: EmbedField[] = [
+							{ name: "Moderador", value: selectedCase.moderator, inline: true },
+							{
+								name: "Fecha",
+								value: `<t:${Math.floor(selectedCase.date.getTime() / 1000)}:f>`,
+								inline: true,
+							},
+							{
+								name: `Sanción ${selectedCase.hiddenCase ? "removida" : "aplicada"}`,
+								value: selectedCase.type || "Timeout",
+								inline: true,
+							},
+							{
+								name: `Razón ${selectedCase.hiddenCase ? "anterior" : ""}`,
+								value: selectedCase.reason || "No especificada.",
+								inline: false,
+							},
+						];
+						if (selectedCase.hiddenCase) {
+							fields.push({ name: "Motivo actual", value: selectedCase.reasonUnpenalized ?? "", inline: false });
+						}
+
 						const caseEmbed = new EmbedBuilder()
 							.setAuthor({
 								name: user.tag,
 								iconURL: user.displayAvatarURL(),
 							})
-							.setTitle(`📝 Caso #${data.findIndex((c) => c.id.toString() === caseId) + 1}`)
-							.addFields([
-								{ name: "Razón", value: selectedCase.reason || "No especificada.", inline: true },
-								{ name: "Moderador", value: selectedCase.moderator, inline: true },
-								{
-									name: "Fecha",
-									value: `${new Date(selectedCase.date).toLocaleString("es-ES", {
-										hour12: true,
-										timeZone: "America/Argentina/Buenos_Aires",
-									})}`,
-									inline: true,
-								},
-								{
-									name: `Sanción ${selectedCase.hiddenCase ? "removida" : "aplicada"}`,
-									value: selectedCase.type || "Timeout",
-									inline: true,
-								},
-							])
+							.setTitle(`📝 Caso #${data.findIndex((c) => (c._id as ObjectId).toString() === caseId) + 1}`)
+							.addFields(fields)
 							.setColor(COLORS.warnOrange)
 							.setTimestamp()
 							.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null);

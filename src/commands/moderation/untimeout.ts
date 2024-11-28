@@ -16,12 +16,12 @@ export default {
 		.setName("untimeout")
 		.setDescription("Remueve el timeout de un usuario.")
 		.addUserOption((option) => option.setName("usuario").setDescription("Selecciona el usuario").setRequired(true))
-		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo para remover el timeout").setRequired(false)),
+		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo para remover el timeout").setRequired(true)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "moderadorChats"), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction) => {
 			const user = interaction.options.getUser("usuario", true);
-			const reason = interaction.options.getString("razon") ?? "No hubo razón.";
+			const reason = interaction.options.getString("razon", true);
 
 			const member = await interaction.guild?.members.fetch(user.id);
 
@@ -42,7 +42,7 @@ export default {
 				// Buscar el timeout más reciente que no esté oculto
 				const latestTimeout = await ModLogs.findOneAndUpdate(
 					{ id: user.id, type: "Timeout", hiddenCase: { $ne: true } }, // Filtro
-					{ $set: { hiddenCase: true } }, // Actualización
+					{ $set: { hiddenCase: true, reasonUnpenalized: reason } }, // Actualización
 					{ sort: { date: -1 }, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
 				);
 

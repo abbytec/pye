@@ -7,6 +7,7 @@ interface IModLogs {
 	date: Date;
 	type: "Warn" | "Timeout" | "Ban" | "Voice-mute";
 	hiddenCase?: boolean;
+	reasonUnpenalized?: string;
 }
 
 export interface IModLogsDocument extends IModLogs, Document {
@@ -39,6 +40,9 @@ const modlogsSchema = new Schema<IModLogsDocument>(
 		hiddenCase: {
 			type: Boolean,
 			default: false,
+		},
+		reasonUnpenalized: {
+			type: String,
 		},
 	},
 	{ versionKey: false }

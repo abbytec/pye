@@ -18,12 +18,12 @@ export default {
 		.setDescription("Desbanea a un usuario del servidor.")
 		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
 		.addStringOption((option) => option.setName("id").setDescription("ID del usuario a desbanear").setRequired(true))
-		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo del desban").setRequired(false)),
+		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo del desban").setRequired(true)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction) => {
 			const userId = interaction.options.getString("id", true);
-			const reason = interaction.options.getString("razon") ?? "No se proporcionó una razón.";
+			const reason = interaction.options.getString("razon", true);
 
 			// Validar el ID del usuario
 			const user = await interaction.client.users.fetch(userId).catch(() => null);
@@ -43,7 +43,7 @@ export default {
 			// Buscar el ban más reciente que no esté oculto
 			const latestTimeout = await ModLogs.findOneAndUpdate(
 				{ id: user.id, type: "Ban", hiddenCase: { $ne: true } }, // Filtro
-				{ $set: { hiddenCase: true } }, // Actualización
+				{ $set: { hiddenCase: true, reasonUnpenalized: reason } }, // Actualización
 				{ sort: { date: -1 }, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
 			);
 
