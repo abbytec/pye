@@ -18,10 +18,8 @@ export const spamFilterList: IFilter[] = [
 	{ filter: /\w+\.biz$/i, mute: false, staffWarn: linkPeligroso },
 	{ filter: /\w+\.online$/i, mute: false, staffWarn: linkPeligroso },
 	{ filter: /\w+\.club$/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /(https?:\/\/)?t\.me\/.+/i, mute: true },
-	{ filter: /(https?:\/\/)?telegram\.me\/.+/i, mute: true },
-	{ filter: /(https?:\/\/)?wa\.me\/.+/i, mute: true },
-	{ filter: /(https?:\/\/)?whatsapp\.me\/.+/i, mute: true },
+	{ filter: /(https?:\/\/)?(t\.me|telegram\.me|wa\.me|whatsapp\.me)\/.+/i, mute: true },
+	{ filter: /(https?:\/\/)?(pornhub\.\w+|xvideos\.com|xhamster\.com|xnxx\.com|hentaila.\w+)\/.+/i, mute: true },
 	{
 		filter: /(?!(https?:\/\/)?discord\.gg\/programacion$)(https?:\/\/)?discord\.gg\/.+/i,
 		mute: true,
