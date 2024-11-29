@@ -5,7 +5,6 @@ import {
 	Events,
 	Guild,
 	GuildBasedChannel,
-	GuildMember,
 	Message,
 	PublicThreadChannel,
 	Sticker,
@@ -15,25 +14,28 @@ import { ExtendedClient } from "../client.ts";
 import {
 	AUTHORIZED_BOTS,
 	COLORS,
+	commandProcessingLimiter,
 	DISBOARD_UID,
 	EMOJIS,
 	getChannelFromEnv,
 	getHelpForumsIdsFromEnv,
 	getRoleFromEnv,
+	messagesProcessingLimiter,
 } from "../utils/constants.ts";
-import { applyTimeout } from "../commands/moderation/timeout.ts";
 import { Users } from "../Models/User.ts";
 import { getCooldown, setCooldown } from "../utils/cooldowns.ts";
 import { checkRole, convertMsToUnixTimestamp } from "../utils/generic.ts";
 import { checkHelp } from "../utils/checkhelp.ts";
 import { bumpHandler } from "../utils/bumpHandler.ts";
 import natural from "natural";
+import { checkMentionSpam, IDeletableContent, spamFilter } from "../security/spamFilters.ts";
 
 const PREFIX = "!"; // Define tu prefijo
 
 export default {
 	name: Events.MessageCreate,
 	async execute(message: Message) {
+		if (AUTHORIZED_BOTS.includes(message.author.id)) return;
 		if (
 			message.author.id === DISBOARD_UID &&
 			message.embeds.length &&
@@ -67,186 +69,77 @@ export default {
 			!(
 				message.channel.parentId === getChannelFromEnv("categoryStaff") ||
 				message.member?.permissions.has("Administrator") ||
-				AUTHORIZED_BOTS.includes(message.author.id) ||
 				client.staffMembers.includes(message.author.id)
 			)
 		) {
-			await spamFilter(message, client);
+			if (
+				(await spamFilter(message.member, client, message as IDeletableContent, message.content)) ||
+				(await checkMentionSpam(message, client))
+			)
+				return;
 		}
 		if (message.author.bot || message.author.system) return;
 
 		if (!message.content.startsWith(PREFIX)) {
-			if (![getChannelFromEnv("mudae"), getChannelFromEnv("casinoPye")].includes(message.channel.id)) {
-				const moneyConfig = (message.client as ExtendedClient).getMoneyConfig(process.env.CLIENT_ID ?? "");
-				getCooldown(message.client as ExtendedClient, message.author.id, "farm-text", moneyConfig.text.time).then(async (time) => {
-					if (time > 0) {
-						Users.findOneAndUpdate({ id: message.author.id }, { $inc: { cash: moneyConfig.text.coins } }, { upsert: true })
-							.exec()
-							.then(() => {
-								setCooldown(message.client as ExtendedClient, message.author.id, "farm-text", moneyConfig.text.time);
-							});
-					}
-				});
-
-				specificChannels(message, client);
-				checkChannel(message).then((isThankable) => {
-					if (isThankable) {
-						checkHelp(message);
-					}
-				});
-				message.stickers.forEach((sticker: Sticker) => {
-					ExtendedClient.trending.add("sticker", sticker.id);
-				});
-				const emojiIds = [...message.content.matchAll(/<a?:\w+:(\d+)>/g)].map((match) => match[1]) || [];
-				emojiIds.forEach((emojiId: string) => {
-					ExtendedClient.trending.add("emoji", emojiId);
-				});
-			}
+			messagesProcessingLimiter.schedule(async () => processCommonMessage(message, client));
 		} else {
-			const commandBody = message.content.slice(PREFIX.length).trim();
-			const commandName = commandBody.split(/ +/, 1).shift()?.toLowerCase() ?? "";
-			const commandArgs = commandBody.slice(commandName.length).trim();
-
-			// Verifica si el comando existe en la colección de comandos
-			const command = client.commands.get(commandName);
-
-			if (!command) {
-				message.reply("Ese comando no existe.");
-				return;
-			}
-
-			try {
-				if (command.executePrefix) {
-					await command.executePrefix(message, commandArgs);
-				} else {
-					message.reply("Este comando no soporta prefijos.");
-				}
-			} catch (error) {
-				console.error(`Error ejecutando el comando ${commandName}:`, error);
-				message.reply("Hubo un error ejecutando ese comando.");
-			}
+			commandProcessingLimiter.schedule(async () => processPrefixCommand(message, client));
 		}
 	},
 };
 
-export interface IFilter {
-	filter: RegExp;
-	mute: boolean;
-	staffWarn?: string;
-}
+function processCommonMessage(message: Message, client: ExtendedClient) {
+	if (![getChannelFromEnv("mudae"), getChannelFromEnv("casinoPye")].includes(message.channel.id)) {
+		const moneyConfig = (message.client as ExtendedClient).getMoneyConfig(process.env.CLIENT_ID ?? "");
+		getCooldown(message.client as ExtendedClient, message.author.id, "farm-text", moneyConfig.text.time).then(async (time) => {
+			if (time > 0) {
+				Users.findOneAndUpdate({ id: message.author.id }, { $inc: { cash: moneyConfig.text.coins } }, { upsert: true })
+					.exec()
+					.then(() => {
+						setCooldown(message.client as ExtendedClient, message.author.id, "farm-text", moneyConfig.text.time);
+					});
+			}
+		});
 
-const linkPeligroso = "Posible link peligroso detectado";
-const filterList: IFilter[] = [
-	{ filter: /\w+\.xyz$/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.click$/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.info$/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.ru$/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.biz$/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.online$/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.club$/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /^(https?:\/\/)?t\.me\/.+$/i, mute: true },
-	{ filter: /^(https?:\/\/)?telegram\.me\/.+$/i, mute: true },
-	{ filter: /^(https?:\/\/)?wa\.me\/.+$/i, mute: true },
-	{ filter: /^(https?:\/\/)?whatsapp\.me\/.+$/i, mute: true },
-	{
-		filter: /^(?!(https?:\/\/)?discord\.gg\/programacion$)(https?:\/\/)?discord\.gg\/.+$/i,
-		mute: true,
-	},
-	{
-		filter: /^(?!(https?:\/\/)?discord\.com\/invite\/programacion$)(https?:\/\/)?discord\.com\/invite\/.+$/i,
-		mute: true,
-	},
-	{ filter: /^(https?:\/\/)?steamcommunity\.com\/gift\/.+$/i, mute: false },
-	{
-		filter: /(?=.*(?:eth|ethereum|btc|bitcoin|capital|crypto|memecoins|\$|nsfw))(?=.*\b(?:gana\w*|gratis|multiplica\w*|inver\w*|giveaway|server|free)\b).*/is,
-		mute: false,
-		staffWarn: "Posible estafa detectada",
-	},
-];
-async function spamFilter(message: Message<boolean>, client: ExtendedClient) {
-	if (message.content?.length < 8) return;
-
-	if ((message.mentions.members?.size ?? 0) > 0) checkMentionSpam(message, client);
-
-	const detectedFilter = filterList.find((item) => item.filter.test(message.content));
-
-	if (detectedFilter && !detectedFilter.staffWarn) {
-		try {
-			await message.delete();
-			if (detectedFilter.mute)
-				applyTimeout(
-					10000,
-					"Spam Filter",
-					message.member as GuildMember,
-					message.guild?.iconURL({ extension: "gif" }) ?? null,
-					message.author
-				);
-			console.log("Mensaje borrado que contenía texto en la black list");
-		} catch (error) {
-			console.error("spamFilter: Error al intentar borrar el mensaje:", error);
-		}
-
-		const logChannel = (client.channels.cache.get(getChannelFromEnv("logs")) ??
-			client.channels.resolve(getChannelFromEnv("logs"))) as TextChannel | null;
-
-		await logChannel
-			?.send({
-				content: `##spamFilter: \nSe eliminó un mensaje que contenía texto no permitido.\n${message.author}(${message.author.id}) - ${message.channel} \n **spam triggered** : \`${detectedFilter.filter}\``,
-			})
-			.catch((err) => console.warn("spamFilter: Error al intentar enviar el log.", err));
-	} else if (detectedFilter?.staffWarn) {
-		const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("moderadores")) ??
-			client.channels.resolve(getChannelFromEnv("moderadores"))) as TextChannel | null;
-		const messageLink = `https://discord.com/channels/${message.guild?.id}/${message.channel.id}/${message.id}`;
-		await moderatorChannel
-			?.send({
-				content: `**Advertencia:** ${detectedFilter.staffWarn}. ${messageLink}`,
-			})
-			.catch((err) => console.error("spamFilter: Error al enviar el mensaje de advertencia:", err));
+		specificChannels(message, client);
+		checkChannel(message).then((isThankable) => {
+			if (isThankable) {
+				checkHelp(message);
+			}
+		});
+		message.stickers.forEach((sticker: Sticker) => {
+			ExtendedClient.trending.add("sticker", sticker.id);
+		});
+		const emojiIds = [...message.content.matchAll(/<a?:\w+:(\d+)>/g)].map((match) => match[1]) || [];
+		emojiIds.forEach((emojiId: string) => {
+			ExtendedClient.trending.add("emoji", emojiId);
+		});
 	}
 }
-const mentionTracker = new Map();
-async function checkMentionSpam(message: Message<boolean>, client: ExtendedClient) {
-	const mentionedUsers = message.mentions.users;
-	const authorId = message.author.id;
 
-	mentionedUsers.forEach(async (mentionedUser) => {
-		const mentionedId = mentionedUser.id;
-		const key = `${authorId}-${mentionedId}`;
+async function processPrefixCommand(message: Message, client: ExtendedClient) {
+	const commandBody = message.content.slice(PREFIX.length).trim();
+	const commandName = commandBody.split(/ +/, 1).shift()?.toLowerCase() ?? "";
+	const commandArgs = commandBody.slice(commandName.length).trim();
 
-		if (!mentionTracker.has(key)) {
-			mentionTracker.set(key, {
-				count: 1,
-				timeout: setTimeout(() => {
-					mentionTracker.delete(key);
-				}, 5000),
-			});
+	// Verifica si el comando existe en la colección de comandos
+	const command = client.commands.get(commandName);
+
+	if (!command) {
+		message.reply("Ese comando no existe.");
+		return;
+	}
+
+	try {
+		if (command.executePrefix) {
+			await command.executePrefix(message, commandArgs);
 		} else {
-			const entry = mentionTracker.get(key);
-			entry.count += 1;
-
-			if (entry.count >= 3) {
-				clearTimeout(entry.timeout);
-				let warn = await (message.channel as TextChannel).send({
-					content: `<@${message.author.id}> Mencionar tanto a una misma persona puede traerte problemas. No seas bot, que para eso estoy yo!`,
-				});
-				await client.guilds.cache
-					.get(process.env.GUILD_ID ?? "")
-					?.members.cache.get(message.author.id)
-					?.timeout(10000, "Spam de menciones")
-					.catch(() => null);
-				await message.delete().catch(() => null);
-				mentionTracker.set(key, {
-					count: entry.count,
-					timeout: setTimeout(() => {
-						mentionTracker.delete(key);
-					}, 5000),
-				});
-
-				setTimeout(() => warn.delete().catch(() => null), 10000);
-			}
+			message.reply("Este comando no soporta prefijos.");
 		}
-	});
+	} catch (error) {
+		console.error(`Error ejecutando el comando ${commandName}:`, error);
+		message.reply("Hubo un error ejecutando ese comando.");
+	}
 }
 
 async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
@@ -340,12 +233,12 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 /** Check channels to trigger Point Helper system */
 async function checkChannel(msg: Message<boolean>) {
 	let channel: GuildBasedChannel | TextChannel | null;
-	if (msg.channel.type === 11) {
+	if (msg.channel.type === ChannelType.PublicThread) {
 		const channels = (msg.guild as Guild).channels;
 		channel =
 			channels.cache.get((msg.channel as PublicThreadChannel).parentId ?? "") ??
 			channels.resolve((msg.channel as PublicThreadChannel).parentId ?? "");
-		const threadAuthor = await (msg.channel as PublicThreadChannel).fetchOwner();
+		const threadAuthor = await (msg.channel as PublicThreadChannel).fetchOwner().catch(() => null);
 		if (threadAuthor?.id !== msg.author.id) return false;
 	} else channel = msg.channel as TextChannel;
 	return getHelpForumsIdsFromEnv().includes(channel?.id ?? "");

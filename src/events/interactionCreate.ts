@@ -3,6 +3,7 @@ import {
 	APIButtonComponent,
 	ButtonBuilder,
 	ButtonInteraction,
+	ChatInputCommandInteraction,
 	ComponentType,
 	EmbedBuilder,
 	Events,
@@ -14,11 +15,16 @@ import { COLORS, getChannelFromEnv, USERS } from "../utils/constants.ts";
 import { checkQuestLevel, IQuest } from "../utils/quest.ts";
 import { HelperPoint } from "../Models/HelperPoint.ts";
 import { updateMemberReputationRoles } from "../utils/finalwares/updateRepRoles.ts";
+import Bottleneck from "bottleneck";
+
+const limiter = new Bottleneck({
+	maxConcurrent: 15, // Máximo de comandos en paralelo
+	minTime: 5, // Tiempo mínimo entre ejecuciones (ms)
+});
 
 export default {
 	name: Events.InteractionCreate,
 	async execute(interaction: Interaction) {
-		// Verifica si la interacción es un comando de texto
 		if (interaction.isChatInputCommand()) {
 			const command = (interaction.client as ExtendedClient).commands.get(interaction.commandName);
 
@@ -27,15 +33,12 @@ export default {
 				return;
 			}
 
-			try {
-				await command.execute(interaction);
-			} catch (error) {
-				console.error(error);
-				if (interaction.replied || interaction.deferred) {
-					await interaction.followUp({ content: "Un error ejecutando este comando!", ephemeral: true });
-				} else {
-					await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
-				}
+			if (command.isAdmin) {
+				// Ejecuta comandos de administrador inmediatamente
+				executeCommand(interaction, command);
+			} else {
+				// Ejecuta comandos genéricos a través del limitador
+				limiter.schedule(() => executeCommand(interaction, command));
 			}
 			return;
 		}
@@ -63,6 +66,19 @@ export default {
 		}
 	},
 };
+
+async function executeCommand(interaction: ChatInputCommandInteraction, command: any) {
+	try {
+		await command.execute(interaction);
+	} catch (error) {
+		console.error(error);
+		if (interaction.replied || interaction.deferred) {
+			await interaction.followUp({ content: "¡Ocurrió un error al ejecutar este comando!", ephemeral: true });
+		} else {
+			await interaction.reply({ content: "Hubo un error al ejecutar este comando.", ephemeral: true });
+		}
+	}
+}
 
 // Función para eliminar el canal
 async function deleteChannel(interaction: ButtonInteraction): Promise<void> {

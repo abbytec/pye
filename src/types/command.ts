@@ -18,4 +18,6 @@ export interface Command {
 	executePrefix?(msg: Message, arg: string): Promise<void>;
 
 	group?: string;
+
+	isAdmin?: boolean;
 }

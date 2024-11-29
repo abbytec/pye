@@ -1,4 +1,9 @@
+import Bottleneck from "bottleneck";
 import { Channel, ChatInputCommandInteraction, Guild, Message } from "discord.js";
+import loadEnvVariables from "./environment.ts";
+
+loadEnvVariables();
+
 const CHANNELS = {
 	ayuda: "916353103534632964",
 	casinoPye: "973425187301261393",
@@ -342,3 +347,18 @@ export const AUTHORIZED_BOTS = [
 	// Hook de reglas
 	"926516578315563008",
 ];
+
+export const messagesProcessingLimiter = new Bottleneck({
+	maxConcurrent: 5, // Máximo de mensajes a procesar en paralelo
+	minTime: 10, // Tiempo mínimo entre procesamientos (ms)
+});
+
+export const commandProcessingLimiter = new Bottleneck({
+	maxConcurrent: 15, // Máximo de comandos en paralelo
+	minTime: 2, // Tiempo mínimo entre ejecuciones (ms)
+});
+
+export const threadForumProcessingLimiter = new Bottleneck({
+	maxConcurrent: 3, // Máximo de posts a procesar en paralelo
+	minTime: 20, // Tiempo mínimo entre ejecuciones (ms)
+});

@@ -18,6 +18,7 @@
 		"@google/generative-ai": "^0.17.1",
 		"@napi-rs/canvas": "^0.1.55",
 		"agenda": "^5.0.0",
+		"bottleneck": "^2.19.5",
 		"discord.js": "^14.16.3",
 		"dotenv": "^16.4.5",
 		"gif-encoder": "^0.7.2",
