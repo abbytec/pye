@@ -27,7 +27,10 @@ export default {
 			(fullReaction.count ?? 0) > 5 &&
 			!(reaction.message.member as GuildMember).roles.cache.get(getRoleFromEnv("iqNegativo"))
 		) {
-			await (reaction.message.member as GuildMember).roles.add(getRoleFromEnv("iqNegativo"));
+			await (reaction.message.member as GuildMember).roles.add(getRoleFromEnv("iqNegativo")).catch(() => null);
+			setTimeout(() => {
+				(reaction.message.member as GuildMember).roles.remove(getRoleFromEnv("iqNegativo")).catch(() => null);
+			}, 1000 * 60 * 60);
 		}
 		ExtendedClient.trending.add("emoji", fullReaction.emoji.id ?? "");
 	},
