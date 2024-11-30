@@ -63,7 +63,6 @@ export async function applyTimeout(
 	console.log("Aplicando timeout", duration, reason);
 	return await member.timeout(duration, reason).then(async () => {
 		// Registrar en ModLogs
-		console.log("Aaaaaa");
 		await ModLogs.create({
 			id: member.id,
 			moderator: moderator?.tag ?? "BotPyE",
