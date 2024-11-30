@@ -181,7 +181,7 @@ export async function getChannel(
 	const canal = interaction.client.channels.resolve(getChannelFromEnv(channel));
 	if (textBased && !canal?.isTextBased() && !(interaction instanceof Guild)) {
 		await interaction.reply({
-			content: "No se pudo encontrar el canal de sugerencias. Por favor, contacta al administrador.",
+			content: `No se pudo encontrar el canal de texto ${channel}. Por favor, contacta al administrador.`,
 			ephemeral: true,
 		});
 		return undefined;

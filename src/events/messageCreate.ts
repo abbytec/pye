@@ -29,6 +29,8 @@ import { checkHelp } from "../utils/checkhelp.ts";
 import { bumpHandler } from "../utils/bumpHandler.ts";
 import natural from "natural";
 import { checkMentionSpam, IDeletableContent, spamFilter } from "../security/spamFilters.ts";
+import { hashMessage } from "../security/messageHashing.ts";
+import timeout from "../commands/moderation/timeout.ts";
 
 const PREFIX = "!"; // Define tu prefijo
 
@@ -156,16 +158,17 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 		case getChannelFromEnv("proyectosNoPagos"): {
 			let cooldown = await checkCooldownComparte(msg, client);
 			if (cooldown) {
-				await (msg.channel as TextChannel).send({
+				let warn = await (msg.channel as TextChannel).send({
 					content: `🚫 <@${
 						msg.author.id
 					}>Por favor, espera 1 semana entre publicaciónes similares en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
 						cooldown
 					)}:R>)`,
 				});
-				await msg.delete();
+				await msg.delete().catch(() => null);
+				setTimeout(async () => await warn.delete().catch(() => null), 10000);
 			} else {
-				client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id);
+				client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
 				msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
 					thread.send({
 						embeds: [
@@ -191,7 +194,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 		case getChannelFromEnv("ofertasDeEmpleos"): {
 			let cooldown = await checkCooldownComparte(msg, client);
 			if (cooldown) {
-				(msg.channel as TextChannel).send({
+				let warn = await (msg.channel as TextChannel).send({
 					content: `🚫 <@${
 						msg.author.id
 					}>Por favor, espera 1 semana entre publicaciónes similares en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
@@ -199,8 +202,10 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 					)}:R>)`,
 				});
 				await msg.delete();
+
+				await setTimeout(() => warn.delete(), 10000);
 			} else {
-				client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id);
+				client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
 				msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
 					thread.send({
 						content: `Hey ${msg.author.toString()}!`,
@@ -250,23 +255,31 @@ async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClie
 		?.filter((post) => post.date.getTime() + 1000 * 60 * 60 * 24 * 7 >= Date.now());
 
 	if (!lastPosts) return;
+	let cooldownPost: number | undefined = undefined;
 	for (const post of lastPosts) {
 		const channel = (client.channels.cache.get(post.channelId) ?? client.channels.resolve(post.channelId)) as TextChannel;
-		const message = await channel.messages.fetch(post.messageId);
-		let distance = natural.JaroWinklerDistance(message.content, msg.content, { ignoreCase: true });
-		console.log(distance, post);
-		if (distance > 0.9) {
-			return post.date.getTime() + 1000 * 60 * 60 * 24 * 7 - Date.now();
-		}
-		if (distance > 0.75) {
-			const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("moderadores")) ??
-				client.channels.resolve(getChannelFromEnv("moderadores"))) as TextChannel;
-			if (!moderatorChannel) console.error("spamFilter: No se encontró el canal de moderadores.");
-			const oldMessageLink = `https://discord.com/channels/${process.env.GUILD_ID}/${post.channelId}/${post.messageId}`;
-			const newMessageLink = `https://discord.com/channels/${process.env.GUILD_ID}/${msg.channel.id}/${msg.id}`;
-			await moderatorChannel.send({
-				content: `**Advertencia:** Posible post duplicado: #1 {${oldMessageLink}} #2 {${newMessageLink}}`,
+		await channel.messages
+			.fetch(post.messageId)
+			.then(async (message) => {
+				let distance = natural.JaroWinklerDistance(message.content, msg.content, { ignoreCase: true });
+				if (distance > 0.9) {
+					if (cooldownPost === undefined) cooldownPost = post.date.getTime() + 1000 * 60 * 60 * 24 * 7 - Date.now();
+				}
+				if (distance > 0.75) {
+					const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("moderadores")) ??
+						client.channels.resolve(getChannelFromEnv("moderadores"))) as TextChannel;
+					if (!moderatorChannel) console.error("spamFilter: No se encontró el canal de moderadores.");
+					const oldMessageLink = `https://discord.com/channels/${process.env.GUILD_ID}/${post.channelId}/${post.messageId}`;
+					const newMessageLink = `https://discord.com/channels/${process.env.GUILD_ID}/${msg.channel.id}/${msg.id}`;
+					await moderatorChannel.send({
+						content: `**Advertencia:** Posible post duplicado: #1 {${oldMessageLink}} #2 {${newMessageLink}}`,
+					});
+				}
+			})
+			.catch(() => {
+				if (cooldownPost === undefined && hashMessage(msg.content) === post.hash)
+					cooldownPost = post.date.getTime() + 1000 * 60 * 60 * 24 * 7 - Date.now();
 			});
-		}
 	}
+	return cooldownPost;
 }

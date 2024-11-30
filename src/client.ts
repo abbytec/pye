@@ -8,17 +8,14 @@ import { IMoney, Money } from "./Models/Money.ts";
 import { Agenda } from "agenda";
 import { getChannelFromEnv, getRoleFromEnv } from "./utils/constants.ts";
 import Trending from "./Models/Trending.ts";
+import { ICompartePost, ICompartePostModel, UltimosCompartePosts } from "./Models/CompartePostModel.ts";
+import { AnyBulkWriteOperation } from "mongoose";
 
 interface VoiceFarming {
 	date: Date;
 	count: number;
 }
 
-interface CompartePost {
-	date: Date;
-	messageId: string;
-	channelId: string;
-}
 const sieteDiasEnMs = 7 * 24 * 60 * 60 * 1000; // 7 días en milisegundos
 export class ExtendedClient extends Client {
 	public commands: Map<string, Command>;
@@ -32,7 +29,7 @@ export class ExtendedClient extends Client {
 	private _staffMembers: string[] = [];
 	private _modMembers: string[] = [];
 	public static readonly newUsers: Set<string> = new Set();
-	public static readonly ultimosCompartePosts: Map<string, CompartePost[]> = new Map();
+	public static readonly ultimosCompartePosts: Map<string, ICompartePost[]> = new Map();
 	public static readonly trending: Trending = new Trending();
 
 	constructor() {
@@ -94,6 +91,7 @@ export class ExtendedClient extends Client {
 		);
 	}
 
+	// Funcion llamada diariamente, firstTime es para que se ejecute cuando se corre el bot por primera vez
 	public async updateClientData(firstTime: boolean = false) {
 		const guild = this.guilds.cache.get(process.env.GUILD_ID ?? "") ?? (await this.guilds.fetch(process.env.GUILD_ID ?? ""));
 		this._staffMembers =
@@ -109,16 +107,25 @@ export class ExtendedClient extends Client {
 		this.limpiarCompartePosts();
 
 		if (firstTime) {
-			await CommandLimits.find().then((res: ICommandLimits[]) => {
-				res.forEach((command) => {
-					this.setCommandLimit(command);
-				});
-			});
-			await Money.find().then((res: IMoney[]) => {
-				res.forEach((money) => {
-					this.moneyConfigs.set(money._id, money);
-				});
-			});
+			console.log("loading latest CompartePosts");
+			await this.loadCompartePosts();
+			console.log("loading commands");
+			await CommandLimits.find()
+				.then((res: ICommandLimits[]) => {
+					res.forEach((command) => {
+						this.setCommandLimit(command);
+					});
+				})
+				.catch((error) => console.error(error));
+
+			console.log("loading money configs");
+			await Money.find()
+				.then((res: IMoney[]) => {
+					res.forEach((money) => {
+						this.moneyConfigs.set(money._id, money);
+					});
+				})
+				.catch((error) => console.error(error));
 			const voiceChannels = guild.channels.cache.filter((channel) => channel.isVoiceBased());
 			voiceChannels.forEach((channel) => {
 				const voiceChannel = channel as VoiceChannel;
@@ -143,6 +150,7 @@ export class ExtendedClient extends Client {
 			ExtendedClient.trending.load(emojis, stickers, forumChannels);
 		} else {
 			ExtendedClient.trending.dailySave();
+			await this.saveCompartePosts().catch((error) => console.error(error));
 		}
 	}
 
@@ -166,8 +174,69 @@ export class ExtendedClient extends Client {
 		return this._modMembers;
 	}
 
-	public agregarCompartePost(userId: string, channelId: string, messageId: string) {
+	public agregarCompartePost(userId: string, channelId: string, messageId: string, hash: string) {
 		if (!ExtendedClient.ultimosCompartePosts.has(userId)) ExtendedClient.ultimosCompartePosts.set(userId, []);
-		ExtendedClient.ultimosCompartePosts.get(userId)?.push({ channelId, messageId, date: new Date() });
+		ExtendedClient.ultimosCompartePosts.get(userId)?.push({ channelId, messageId, date: new Date(), hash });
+	}
+
+	public async loadCompartePosts(): Promise<void> {
+		try {
+			const document = await UltimosCompartePosts.find().sort({ date: -1 }).exec();
+
+			if (document) {
+				document.forEach((post: ICompartePost) => {
+					if (!ExtendedClient.ultimosCompartePosts.has(post.userId ?? "")) {
+						ExtendedClient.ultimosCompartePosts.set(post.userId ?? "", []);
+					}
+					ExtendedClient.ultimosCompartePosts.get(post.userId ?? "")?.push({
+						channelId: post.channelId,
+						messageId: post.messageId,
+						hash: post.hash,
+						date: post.date,
+					});
+				});
+				console.log("CompartePosts cargados exitosamente desde la base de datos.");
+			} else {
+				console.log("No se encontraron CompartePosts previos en la base de datos.");
+			}
+		} catch (error) {
+			console.error("Error al cargar CompartePosts:", error);
+		}
+	}
+
+	public async saveCompartePosts(): Promise<void> {
+		try {
+			const bulkOps: AnyBulkWriteOperation<ICompartePost>[] = [];
+
+			// Operación para eliminar todos los documentos existentes
+			bulkOps.push({
+				deleteMany: {
+					filter: {},
+				},
+			});
+
+			// Operaciones para insertar nuevos documentos
+			ExtendedClient.ultimosCompartePosts.forEach((posts, userId) => {
+				posts.forEach((post) => {
+					bulkOps.push({
+						insertOne: {
+							document: {
+								userId,
+								channelId: post.channelId,
+								messageId: post.messageId,
+								hash: post.hash,
+								date: post.date,
+							},
+						},
+					});
+				});
+			});
+
+			// Ejecutar todas las operaciones en bulk
+			await UltimosCompartePosts.bulkWrite<ICompartePost>(bulkOps);
+			console.log("CompartePosts guardados exitosamente en la base de datos.");
+		} catch (error) {
+			console.error("Error al guardar CompartePosts:", error);
+		}
 	}
 }

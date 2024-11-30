@@ -95,7 +95,7 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 			.catch((err) => console.error("spamFilter: Error al enviar el mensaje de advertencia:", err));
 	}
 
-	return !!detectedFilter;
+	return !detectedFilter;
 }
 
 const mentionTracker = new Map();
