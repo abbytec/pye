@@ -63,7 +63,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 
 		const now = new Date();
 		const currentMonthNumber = now.getMonth();
-		const currentMonthName = now.toLocaleString("default", { month: "long" }); // Nombre del mes en español
+		const lastMonthName = new Date(2024, -2, 1).toLocaleString("es", { month: "long" }); // Nombre del mes en español
 
 		if (!job.attrs.data) job.attrs.data = {};
 		if (!job.attrs.data.userReps) {
@@ -87,8 +87,8 @@ async function cronEventsProcessor(client: ExtendedClient) {
 				// Calcular el total de puntos sumando los scores de todos los usuarios
 				const totalPoints = allUsers.reduce((acc, user) => acc + user.score, 0);
 
-				let message = `**${capitalizeFirstLetter(
-					currentMonthName
+				let message = `En **${capitalizeFirstLetter(
+					lastMonthName
 				)} se repartieron ${totalPoints} puntos de reputación en el servidor.**\n\n`;
 
 				const medals = ["🥇", "🥈", "🥉"];
