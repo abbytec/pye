@@ -1,13 +1,13 @@
 // src/utils/bumpHandler.ts
 
 import { GuildMember, EmbedBuilder, Message, Guild, TextChannel } from "discord.js";
-import { Money } from "../Models/Money.ts";
-import { Users } from "../Models/User.ts";
-import { Bumps } from "../Models/Bump.ts";
-import { pyecoin } from "./constants.ts";
-import { ExtendedClient } from "../client.ts";
-import { checkQuestLevel, IQuest } from "./quest.ts";
-import { increaseHomeMonthlyIncome } from "../Models/Home.ts";
+import { Money } from "../Models/Money.js";
+import { Users } from "../Models/User.js";
+import { Bumps } from "../Models/Bump.js";
+import { pyecoin } from "./constants.js";
+import { ExtendedClient } from "../client.js";
+import { checkQuestLevel, IQuest } from "./quest.js";
+import { increaseHomeMonthlyIncome } from "../Models/Home.js";
 
 /**
  * Maneja el evento de bump de un usuario.

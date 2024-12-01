@@ -12,16 +12,16 @@ import {
 	ButtonStyle,
 	MessageActionRowComponentBuilder,
 } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
-import { logMessages } from "../../utils/finalwares/logMessages.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { IShop, IShopDocument, Shop } from "../../Models/Shop.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
+import { logMessages } from "../../utils/finalwares/logMessages.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { IShop, IShopDocument, Shop } from "../../Models/Shop.js";
+import { replyError } from "../../utils/messages/replyError.js";
 import ms from "ms";
-import { COLORS, getChannelFromEnv } from "../../utils/constants.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
 
 function getId(items: any[]): number {
 	if (!items || items.length === 0) return 1;

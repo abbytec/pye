@@ -7,8 +7,8 @@ import {
 	TextChannel,
 	ButtonStyle,
 } from "discord.js";
-import { HelperPoint } from "../../Models/HelperPoint.ts";
-import client from "../../redis.ts";
+import { HelperPoint } from "../../Models/HelperPoint.js";
+import client from "../../redis.js";
 
 export default {
 	group: "🥳 - Puntos de reputación",

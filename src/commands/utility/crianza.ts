@@ -1,9 +1,9 @@
 // src/commands/General/crianza.ts
 import { SlashCommandBuilder, ChatInputCommandInteraction, AttachmentBuilder, GuildMember } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { loadImage, createCanvas } from "@napi-rs/canvas";
 
 export default {

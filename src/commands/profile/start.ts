@@ -14,19 +14,19 @@ import {
 	Message,
 	OmitPartialGroupDMChannel,
 } from "discord.js";
-import { Users } from "../../Models/User.ts";
-import { Home } from "../../Models/Home.ts";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { PostHandleable } from "../../types/middleware.ts";
+import { Users } from "../../Models/User.js";
+import { Home } from "../../Models/Home.js";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { PostHandleable } from "../../types/middleware.js";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import path from "path";
 import fs from "fs";
-import { replyWarning } from "../../utils/messages/replyWarning.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
-import { getChannelFromEnv } from "../../utils/constants.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
+import { replyWarning } from "../../utils/messages/replyWarning.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
+import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
+import { getChannelFromEnv } from "../../utils/constants.js";
+import { replyError } from "../../utils/messages/replyError.js";
 
 // Enumeraciones para género, tono de piel y profesiones
 enum Gender {

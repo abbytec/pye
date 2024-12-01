@@ -1,5 +1,5 @@
 // middlewares/deferInteraction.ts
-import { Middleware } from "../../types/middleware.ts";
+import { Middleware } from "../../types/middleware.js";
 
 export const deferInteraction = (ephemeral = true): Middleware => {
 	return async (interaction, next) => {

@@ -1,6 +1,6 @@
 import Bottleneck from "bottleneck";
 import { Channel, ChatInputCommandInteraction, Guild, Message } from "discord.js";
-import loadEnvVariables from "./environment.ts";
+import loadEnvVariables from "./environment.js";
 
 loadEnvVariables();
 
@@ -8,7 +8,7 @@ const CHANNELS = {
 	ayuda: "916353103534632964",
 	casinoPye: "973425187301261393",
 	recursos: "924436818718494740",
-	general: "1142244181587263511", // chequear
+	general: "768329192131526686",
 	filosofiaPolitica: "847920994156806194",
 	memes: "783188322087993346",
 	mudae: "875535411924062279",

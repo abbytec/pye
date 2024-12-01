@@ -1,14 +1,14 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { getChannelFromEnv } from "../../utils/constants.ts";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
-import { updateRepRoles } from "../../utils/finalwares/updateRepRoles.ts";
-import { HelperPoint } from "../../Models/HelperPoint.ts";
-import { logMessages } from "../../utils/finalwares/logMessages.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
+import { getChannelFromEnv } from "../../utils/constants.js";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
+import { updateRepRoles } from "../../utils/finalwares/updateRepRoles.js";
+import { HelperPoint } from "../../Models/HelperPoint.js";
+import { logMessages } from "../../utils/finalwares/logMessages.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
 
 export default {
 	group: "🥳 - Puntos de reputación",

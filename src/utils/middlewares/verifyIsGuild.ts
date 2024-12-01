@@ -1,5 +1,5 @@
 // middlewares/verifyIsGuild.ts
-import { Middleware } from "../../types/middleware.ts";
+import { Middleware } from "../../types/middleware.js";
 
 /**
  * Middleware para verificar que la interacción se realizó en un guild.

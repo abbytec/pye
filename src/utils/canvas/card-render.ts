@@ -1,7 +1,7 @@
 import { createCanvas, Image } from "@napi-rs/canvas";
 import { Role } from "discord.js";
-import { getRoleName } from "../constants.ts";
-import cardRoles from "../constants/card-roles.ts";
+import { getRoleName } from "../constants.js";
+import cardRoles from "../constants/card-roles.js";
 
 function formatNumber(numStr: string) {
 	let num = parseFloat(numStr.replace(/,/g, ""));

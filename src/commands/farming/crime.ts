@@ -1,20 +1,20 @@
 // src/commands/Currency/crime.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { getOrCreateUser, Users } from "../../Models/User.ts";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { PostHandleable } from "../../types/middleware.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
+import { getOrCreateUser, Users } from "../../Models/User.js";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { PostHandleable } from "../../types/middleware.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
+import { replyError } from "../../utils/messages/replyError.js";
 
-import { IUser } from "../../interfaces/IUser.ts";
-import { increaseHomeMonthlyIncome } from "../../Models/Home.ts";
-import { checkQuestLevel, IQuest } from "../../utils/quest.ts";
-import { calculateJobMultiplier, getRandomNumber } from "../../utils/generic.ts";
-import { getChannelFromEnv } from "../../utils/constants.ts";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
-import { ExtendedClient } from "../../client.ts";
+import { IUser } from "../../interfaces/IUser.js";
+import { increaseHomeMonthlyIncome } from "../../Models/Home.js";
+import { checkQuestLevel, IQuest } from "../../utils/quest.js";
+import { calculateJobMultiplier, getRandomNumber } from "../../utils/generic.js";
+import { getChannelFromEnv } from "../../utils/constants.js";
+import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
+import { ExtendedClient } from "../../client.js";
 
 // Definición de los textos de éxito
 const texts: Array<(profit: string) => string> = [
@@ -71,7 +71,7 @@ export default {
 				}
 			} else {
 				// El usuario gana, ajustar profit por bonificaciones de trabajo
-				profit = calculateJobMultiplier(userData.profile?.job, profit, userData.couples || [])
+				profit = calculateJobMultiplier(userData.profile?.job, profit, userData.couples || []);
 
 				profit = Math.floor(profit);
 				userData.cash = (userData.cash ?? 0) + profit;

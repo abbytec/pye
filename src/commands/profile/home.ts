@@ -1,23 +1,23 @@
 // home.ts
 
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, AttachmentBuilder, GuildMember, User, APIUser } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { replyWarning } from "../../utils/messages/replyWarning.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { replyWarning } from "../../utils/messages/replyWarning.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
 
 import path from "path";
 import fs from "fs/promises";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 
-import { Home, IHomeDocument } from "../../Models/Home.ts";
-import { Users } from "../../Models/User.ts";
-import { Pets } from "../../Models/Pets.ts";
-import { PostHandleable } from "../../types/middleware.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { getChannelFromEnv } from "../../utils/constants.ts";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
+import { Home, IHomeDocument } from "../../Models/Home.js";
+import { Users } from "../../Models/User.js";
+import { Pets } from "../../Models/Pets.js";
+import { PostHandleable } from "../../types/middleware.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { getChannelFromEnv } from "../../utils/constants.js";
+import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 
 const jobs: Record<string, string> = {
 	Policia:

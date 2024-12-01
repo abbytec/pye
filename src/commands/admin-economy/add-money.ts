@@ -1,15 +1,15 @@
 // src/commands/admin/add-money.ts
 
 import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
-import { logMessages } from "../../utils/finalwares/logMessages.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { Users } from "../../Models/User.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { getChannelFromEnv, pyecoin } from "../../utils/constants.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
+import { logMessages } from "../../utils/finalwares/logMessages.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { Users } from "../../Models/User.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { getChannelFromEnv, pyecoin } from "../../utils/constants.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
 
 export default {
 	group: "⚙️ - Administración de Economía",

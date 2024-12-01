@@ -1,7 +1,7 @@
 // src/models/User.ts
 import { Schema, model, Document } from "mongoose";
-import client from "../redis.ts";
-import { IUser } from "../interfaces/IUser.ts";
+import client from "../redis.js";
+import { IUser } from "../interfaces/IUser.js";
 
 export interface IUserModel extends IUser, Document {
 	id: string;

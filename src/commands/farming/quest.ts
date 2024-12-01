@@ -2,14 +2,14 @@
 
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, User, Guild } from "discord.js";
 
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { Home, IHomeDocument } from "../../Models/Home.ts";
-import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.ts";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { Home, IHomeDocument } from "../../Models/Home.js";
+import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 
 // Definición de las tareas según el nivel
 const tasks: Array<{

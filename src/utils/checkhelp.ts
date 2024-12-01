@@ -1,7 +1,7 @@
 // src/utils/checkHelp.ts
 
 import { ActionRowBuilder, ButtonBuilder, AttachmentBuilder, ButtonStyle, Message, TextChannel, EmbedBuilder, APIEmbedField } from "discord.js";
-import { COLORS, getChannelFromEnv, getRoleFromEnv } from "./constants.ts";
+import { COLORS, getChannelFromEnv, getRoleFromEnv } from "./constants.js";
 
 /**
  * Normalize a string by converting it to lowercase, removing diacritics, apostrophes, and commas.

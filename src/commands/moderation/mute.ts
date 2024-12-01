@@ -1,16 +1,16 @@
 // src/commands/Moderation/mute.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, GuildMember } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { PostHandleable } from "../../types/middleware.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { logMessages } from "../../utils/finalwares/logMessages.ts";
-import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../../utils/constants.ts";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
-import { replyWarning } from "../../utils/messages/replyWarning.ts";
-import { ModLogs } from "../../Models/ModLogs.ts";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { PostHandleable } from "../../types/middleware.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { logMessages } from "../../utils/finalwares/logMessages.js";
+import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../../utils/constants.js";
+import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
+import { replyWarning } from "../../utils/messages/replyWarning.js";
+import { ModLogs } from "../../Models/ModLogs.js";
 
 export default {
 	data: new SlashCommandBuilder()

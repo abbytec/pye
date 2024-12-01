@@ -1,10 +1,10 @@
 // src/utils/middlewares/verifyCooldown.ts
 
-import { Middleware } from "../../types/middleware.ts";
-import { getCooldown } from "../../utils/cooldowns.ts";
+import { Middleware } from "../../types/middleware.js";
+import { getCooldown } from "../../utils/cooldowns.js";
 import { ChatInputCommandInteraction } from "discord.js";
-import { formatTime } from "../generic.ts";
-import { ExtendedClient } from "../../client.ts";
+import { formatTime } from "../generic.js";
+import { ExtendedClient } from "../../client.js";
 
 /**
  * Middleware para verificar si un usuario tiene un cooldown activo para un comando específico.

@@ -1,8 +1,8 @@
 // voiceStateUpdate.ts
 import { EmbedBuilder, Events, TextChannel, VoiceState } from "discord.js";
-import { ExtendedClient } from "../client.ts";
-import { EventoConClienteForzado } from "../types/event.ts";
-import { COLORS, getChannelFromEnv } from "../utils/constants.ts";
+import { ExtendedClient } from "../client.js";
+import { EventoConClienteForzado } from "../types/event.js";
+import { COLORS, getChannelFromEnv } from "../utils/constants.js";
 
 export default {
 	name: Events.VoiceStateUpdate,

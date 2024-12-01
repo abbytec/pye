@@ -1,11 +1,11 @@
 import { ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder, TextChannel } from "discord.js";
-import { StarBoard } from "../../Models/StarBoard.ts";
-import { Command } from "../../types/command.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
+import { StarBoard } from "../../Models/StarBoard.js";
+import { Command } from "../../types/command.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 
 // Export command
 export default {

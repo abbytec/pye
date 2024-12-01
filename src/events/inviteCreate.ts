@@ -1,7 +1,7 @@
 import { EmbedBuilder, Events, Invite, TextChannel, GuildMember } from "discord.js";
-import { ExtendedClient } from "../client.ts";
-import { Evento } from "../types/event.ts";
-import { COLORS, getChannelFromEnv } from "../utils/constants.ts";
+import { ExtendedClient } from "../client.js";
+import { Evento } from "../types/event.js";
+import { COLORS, getChannelFromEnv } from "../utils/constants.js";
 
 // Mapa para rastrear la creación de invitaciones por usuario
 const inviteTracker = new Map<string, { count: number; timeout: NodeJS.Timeout }>();

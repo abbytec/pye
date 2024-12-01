@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
-import loadEnvVariables from "../environment.ts";
+import loadEnvVariables from "../environment.js";
 
 loadEnvVariables();
 const genAI = new GoogleGenerativeAI(process.env.gemini_API_KEY ?? "");

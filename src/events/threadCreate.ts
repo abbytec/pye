@@ -6,11 +6,11 @@ import {
 	getForumTopic,
 	getHelpForumsIdsFromEnv,
 	threadForumProcessingLimiter,
-} from "../utils/constants.ts";
-import { addRep } from "../commands/rep/add-rep.ts";
-import { ExtendedClient } from "../client.ts";
-import { spamFilter } from "../security/spamFilters.ts";
-import { geminiModel } from "../utils/ai/gemini.ts";
+} from "../utils/constants.js";
+import { addRep } from "../commands/rep/add-rep.js";
+import { ExtendedClient } from "../client.js";
+import { spamFilter } from "../security/spamFilters.js";
+import { geminiModel } from "../utils/ai/gemini.js";
 
 export default {
 	name: Events.ThreadCreate,

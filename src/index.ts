@@ -1,11 +1,11 @@
-import loadEnvVariables from "./utils/environment.ts";
+import loadEnvVariables from "./utils/environment.js";
 import { readdirSync } from "node:fs";
 import path, { dirname, join } from "node:path";
-import { ExtendedClient } from "./client.ts";
+import { ExtendedClient } from "./client.js";
 import { connect } from "mongoose";
-import { Command } from "./types/command.ts";
+import { Command } from "./types/command.js";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { Evento, EventoConClienteForzado } from "./types/event.ts";
+import { Evento, EventoConClienteForzado } from "./types/event.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

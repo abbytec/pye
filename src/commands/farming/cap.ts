@@ -1,19 +1,19 @@
 // src/commands/Currency/cap.ts
 
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, Guild } from "discord.js";
-import { getOrCreateUser, IUserModel, Users } from "../../Models/User.ts";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { PostHandleable } from "../../types/middleware.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { IUser } from "../../interfaces/IUser.ts";
-import { checkQuestLevel, IQuest } from "../../utils/quest.ts";
-import { setCooldown } from "../../utils/cooldowns.ts";
-import { ExtendedClient } from "../../client.ts";
-import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.ts";
-import { Rob } from "./rob.ts";
+import { getOrCreateUser, IUserModel, Users } from "../../Models/User.js";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { PostHandleable } from "../../types/middleware.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { IUser } from "../../interfaces/IUser.js";
+import { checkQuestLevel, IQuest } from "../../utils/quest.js";
+import { setCooldown } from "../../utils/cooldowns.js";
+import { ExtendedClient } from "../../client.js";
+import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { Rob } from "./rob.js";
 
 const cooldownDuration = 2 * 60 * 60 * 1000;
 

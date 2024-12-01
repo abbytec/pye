@@ -10,11 +10,11 @@ import {
 	Interaction,
 	TextChannel,
 } from "discord.js";
-import { ExtendedClient } from "../client.ts";
-import { COLORS, getChannelFromEnv, USERS } from "../utils/constants.ts";
-import { checkQuestLevel, IQuest } from "../utils/quest.ts";
-import { HelperPoint } from "../Models/HelperPoint.ts";
-import { updateMemberReputationRoles } from "../utils/finalwares/updateRepRoles.ts";
+import { ExtendedClient } from "../client.js";
+import { COLORS, getChannelFromEnv, USERS } from "../utils/constants.js";
+import { checkQuestLevel, IQuest } from "../utils/quest.js";
+import { HelperPoint } from "../Models/HelperPoint.js";
+import { updateMemberReputationRoles } from "../utils/finalwares/updateRepRoles.js";
 import Bottleneck from "bottleneck";
 
 const limiter = new Bottleneck({

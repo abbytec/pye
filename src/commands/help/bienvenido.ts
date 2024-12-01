@@ -1,10 +1,10 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { ExtendedClient } from "../../client.ts";
-import { sendWelcomeMessageProcessor } from "../../utils/welcome.ts";
-import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { ExtendedClient } from "../../client.js";
+import { sendWelcomeMessageProcessor } from "../../utils/welcome.js";
+import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 
 export default {
 	group: "📜 - Ayuda",

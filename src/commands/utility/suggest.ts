@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, TextChannel, Message } from "discord.js";
-import { Command } from "../../types/command.ts";
-import { getChannel } from "../../utils/constants.ts";
+import { Command } from "../../types/command.js";
+import { getChannel } from "../../utils/constants.js";
 
 const data = new SlashCommandBuilder()
 	.setName("sugerir")

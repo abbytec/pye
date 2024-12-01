@@ -1,5 +1,5 @@
-import { ExtendedClient } from "../client.ts";
-import { Cooldowns, ICooldown } from "../Models/Cooldown.ts";
+import { ExtendedClient } from "../client.js";
+import { Cooldowns, ICooldown } from "../Models/Cooldown.js";
 
 const thirtyMinutes = 30 * 60 * 1000;
 

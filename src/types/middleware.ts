@@ -1,6 +1,6 @@
 // types/middleware.ts
 import { APIEmbedField, AttachmentBuilder, ChatInputCommandInteraction, EmbedBuilder, GuildMember, RestOrArray, User } from "discord.js";
-import { IHelperPointDocument } from "../Models/HelperPoint.ts";
+import { IHelperPointDocument } from "../Models/HelperPoint.js";
 
 export interface CommonMessage {
 	channel: string;

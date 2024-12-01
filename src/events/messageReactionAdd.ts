@@ -1,10 +1,10 @@
 import { MessageReaction, User, TextChannel, EmbedBuilder, Events, GuildMember } from "discord.js";
-import { IStarBoardDocument, StarBoard } from "../Models/StarBoard.ts";
-import { StarMessage } from "../Models/StarMessage.ts";
-import { Evento } from "../types/event.ts";
-import { getChannelFromEnv, getRoleFromEnv } from "../utils/constants.ts";
-import { addRep } from "../commands/rep/add-rep.ts";
-import { ExtendedClient } from "../client.ts";
+import { IStarBoardDocument, StarBoard } from "../Models/StarBoard.js";
+import { StarMessage } from "../Models/StarMessage.js";
+import { Evento } from "../types/event.js";
+import { getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
+import { addRep } from "../commands/rep/add-rep.js";
+import { ExtendedClient } from "../client.js";
 
 /**
  * Maneja el evento messageReactionAdd

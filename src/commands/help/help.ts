@@ -2,14 +2,14 @@
 
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember } from "discord.js";
 
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { PostHandleable } from "../../types/middleware.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
-import { COLORS, getRoles } from "../../utils/constants.ts";
-import { ExtendedClient } from "../../client.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { PostHandleable } from "../../types/middleware.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
+import { COLORS, getRoles } from "../../utils/constants.js";
+import { ExtendedClient } from "../../client.js";
+import { replyError } from "../../utils/messages/replyError.js";
 
 export default {
 	group: "📜 - Ayuda",

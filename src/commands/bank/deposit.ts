@@ -1,13 +1,13 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { getOrCreateUser, IUserModel, Users } from "../../Models/User.ts";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { PostHandleable } from "../../types/middleware.ts";
-import { pyecoin } from "../../utils/constants.ts";
-import { IUser } from "../../interfaces/IUser.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
-import { replyWarning } from "../../utils/messages/replyWarning.ts";
+import { getOrCreateUser, IUserModel, Users } from "../../Models/User.js";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { PostHandleable } from "../../types/middleware.js";
+import { pyecoin } from "../../utils/constants.js";
+import { IUser } from "../../interfaces/IUser.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
+import { replyWarning } from "../../utils/messages/replyWarning.js";
 
 export default {
 	group: "🏦 - Finanzas del server (Casino)",

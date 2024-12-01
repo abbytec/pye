@@ -1,6 +1,6 @@
 import { Events, Message } from "discord.js";
 
-import { getChannelFromEnv } from "../utils/constants.ts";
+import { getChannelFromEnv } from "../utils/constants.js";
 export default {
 	name: Events.MessageDelete,
 	once: false,

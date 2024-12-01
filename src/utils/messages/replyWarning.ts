@@ -8,7 +8,7 @@ import {
 	StringSelectMenuBuilder,
 	TextChannel,
 } from "discord.js";
-import { COLORS } from "../constants.ts";
+import { COLORS } from "../constants.js";
 
 export async function replyWarning(
 	interaction: ChatInputCommandInteraction,

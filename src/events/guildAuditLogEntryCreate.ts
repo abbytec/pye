@@ -1,12 +1,12 @@
 // src/events/guildAuditLogEntryCreate.ts
 import { AuditLogEvent, EmbedBuilder, Events, Guild, GuildAuditLogsEntry, TextChannel, User } from "discord.js";
-import { HelperPoint } from "../Models/HelperPoint.ts";
-import { Home } from "../Models/Home.ts";
-import { Pets } from "../Models/Pets.ts";
-import { Users } from "../Models/User.ts";
-import redis from "../redis.ts";
-import { COLORS, getChannelFromEnv } from "../utils/constants.ts";
-import { Evento } from "../types/event.ts";
+import { HelperPoint } from "../Models/HelperPoint.js";
+import { Home } from "../Models/Home.js";
+import { Pets } from "../Models/Pets.js";
+import { Users } from "../Models/User.js";
+import redis from "../redis.js";
+import { COLORS, getChannelFromEnv } from "../utils/constants.js";
+import { Evento } from "../types/event.js";
 
 export default {
 	name: Events.GuildAuditLogEntryCreate,

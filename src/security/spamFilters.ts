@@ -1,7 +1,7 @@
 import { Message, GuildMember, TextChannel, User, ForumChannel, MediaChannel, NewsChannel, Guild } from "discord.js";
-import { ExtendedClient } from "../client.ts";
-import { applyTimeout } from "../commands/moderation/timeout.ts";
-import { COLORS, getChannelFromEnv } from "../utils/constants.ts";
+import { ExtendedClient } from "../client.js";
+import { applyTimeout } from "../commands/moderation/timeout.js";
+import { COLORS, getChannelFromEnv } from "../utils/constants.js";
 
 export interface IFilter {
 	filter: RegExp;

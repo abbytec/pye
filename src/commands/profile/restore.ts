@@ -1,15 +1,15 @@
 // src/commands/Currency/restore.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, Guild } from "discord.js";
-import { Users } from "../../Models/User.ts";
-import { Shop } from "../../Models/Shop.ts";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { PostHandleable } from "../../types/middleware.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { getChannelFromEnv } from "../../utils/constants.ts";
+import { Users } from "../../Models/User.js";
+import { Shop } from "../../Models/Shop.js";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { PostHandleable } from "../../types/middleware.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { getChannelFromEnv } from "../../utils/constants.js";
 
 export default {
 	group: "👤 - Perfiles (Casino)",

@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, Message } from "discord.js";
-import { COLORS } from "./constants.ts";
-import { TextMessages } from "../Models/TextMessages.ts";
-import { ICouple } from "../interfaces/IUser.ts";
+import { COLORS } from "./constants.js";
+import { TextMessages } from "../Models/TextMessages.js";
+import { ICouple } from "../interfaces/IUser.js";
 
 export const getRandomNumber = (min = 0, max = 1) => (Math.random() * (max - min) + min) | 0;
 

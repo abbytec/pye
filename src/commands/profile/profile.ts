@@ -1,20 +1,20 @@
 // profile.ts
 
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } from "discord.js";
-import { getOrCreateUser } from "../../Models/User.ts";
-import { HelperPoint, IHelperPointDocument } from "../../Models/HelperPoint.ts";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { PostHandleable } from "../../types/middleware.ts";
-import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.ts";
+import { getOrCreateUser } from "../../Models/User.js";
+import { HelperPoint, IHelperPointDocument } from "../../Models/HelperPoint.js";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { PostHandleable } from "../../types/middleware.js";
+import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import path from "path";
 import fs from "fs/promises"; // Usar promesas para operaciones de archivos
-import redisClient from "../../redis.ts"; // Asegúrate de exportar correctamente tu cliente redis
-import { replyWarning } from "../../utils/messages/replyWarning.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
+import redisClient from "../../redis.js"; // Asegúrate de exportar correctamente tu cliente redis
+import { replyWarning } from "../../utils/messages/replyWarning.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
+import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 
 const jobs: Record<string, string> = {
 	Policia:

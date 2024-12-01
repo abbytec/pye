@@ -1,14 +1,14 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { getRoleFromEnv } from "../../utils/constants.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { HelperPoint } from "../../Models/HelperPoint.ts";
-import { Users } from "../../Models/User.ts";
-import redis from "../../redis.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
+import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { getRoleFromEnv } from "../../utils/constants.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { HelperPoint } from "../../Models/HelperPoint.js";
+import { Users } from "../../Models/User.js";
+import redis from "../../redis.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
 
 export default {
 	group: "⚙️ - Administración - General",

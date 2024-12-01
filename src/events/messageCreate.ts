@@ -10,7 +10,7 @@ import {
 	Sticker,
 	TextChannel,
 } from "discord.js";
-import { ExtendedClient } from "../client.ts";
+import { ExtendedClient } from "../client.js";
 import {
 	AUTHORIZED_BOTS,
 	COLORS,
@@ -21,16 +21,15 @@ import {
 	getHelpForumsIdsFromEnv,
 	getRoleFromEnv,
 	messagesProcessingLimiter,
-} from "../utils/constants.ts";
-import { Users } from "../Models/User.ts";
-import { getCooldown, setCooldown } from "../utils/cooldowns.ts";
-import { checkRole, convertMsToUnixTimestamp } from "../utils/generic.ts";
-import { checkHelp } from "../utils/checkhelp.ts";
-import { bumpHandler } from "../utils/bumpHandler.ts";
+} from "../utils/constants.js";
+import { Users } from "../Models/User.js";
+import { getCooldown, setCooldown } from "../utils/cooldowns.js";
+import { checkRole, convertMsToUnixTimestamp } from "../utils/generic.js";
+import { checkHelp } from "../utils/checkhelp.js";
+import { bumpHandler } from "../utils/bumpHandler.js";
 import natural from "natural";
-import { checkMentionSpam, IDeletableContent, spamFilter } from "../security/spamFilters.ts";
-import { hashMessage } from "../security/messageHashing.ts";
-import timeout from "../commands/moderation/timeout.ts";
+import { checkMentionSpam, IDeletableContent, spamFilter } from "../security/spamFilters.js";
+import { hashMessage } from "../security/messageHashing.js";
 
 const PREFIX = "!"; // Define tu prefijo
 

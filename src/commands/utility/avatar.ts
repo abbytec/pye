@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { COLORS } from "../../utils/constants.ts";
+import { COLORS } from "../../utils/constants.js";
 
 export default {
 	data: new SlashCommandBuilder()

@@ -1,7 +1,7 @@
 import { Events, GuildMember } from "discord.js";
-import { ExtendedClient } from "../client.ts";
-import { Evento } from "../types/event.ts";
-import { getInitialRoles } from "../utils/constants.ts";
+import { ExtendedClient } from "../client.js";
+import { Evento } from "../types/event.js";
+import { getInitialRoles } from "../utils/constants.js";
 
 const regex = new RegExp(/(https?:\/\/[^\s]+)/i);
 export default {

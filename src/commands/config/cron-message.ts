@@ -1,13 +1,13 @@
 // commands/admin/cron-message.ts
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder, ChannelType } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
-import { CronMessage } from "../../Models/CronMessage.ts";
-import { ExtendedClient } from "../../client.ts";
-import { replyWarning } from "../../utils/messages/replyWarning.ts";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
+import { CronMessage } from "../../Models/CronMessage.js";
+import { ExtendedClient } from "../../client.js";
+import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { DateTime } from "luxon";
 
 export default {

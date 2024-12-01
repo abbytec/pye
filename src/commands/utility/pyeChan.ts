@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, DMChannel, TextChannel, GuildMember } from "discord.js";
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
-import loadEnvVariables from "../../utils/environment.ts";
+import loadEnvVariables from "../../utils/environment.js";
 
 loadEnvVariables();
 

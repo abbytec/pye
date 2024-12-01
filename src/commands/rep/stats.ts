@@ -1,12 +1,12 @@
 import { SlashCommandBuilder, AttachmentBuilder, ChatInputCommandInteraction, TextChannel, GuildMember } from "discord.js";
-import { Users } from "../../Models/User.ts";
+import { Users } from "../../Models/User.js";
 import { loadImage } from "@napi-rs/canvas";
-import { HelperPoint } from "../../Models/HelperPoint.ts";
-import { getRepRolesByOrder, getRoleName } from "../../utils/constants.ts";
+import { HelperPoint } from "../../Models/HelperPoint.js";
+import { getRepRolesByOrder, getRoleName } from "../../utils/constants.js";
 import path from "path";
 import { fileURLToPath } from "url";
-import { getRender } from "../../utils/canvas/card-render.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
+import { getRender } from "../../utils/canvas/card-render.js";
+import { replyError } from "../../utils/messages/replyError.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

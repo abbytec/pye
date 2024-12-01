@@ -1,19 +1,19 @@
 // src/commands/Currency/rob.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { getOrCreateUser, IUserModel, Users } from "../../Models/User.ts";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { PostHandleable } from "../../types/middleware.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { checkQuestLevel, IQuest } from "../../utils/quest.ts";
-import { IUser } from "../../interfaces/IUser.ts";
-import { setCooldown } from "../../utils/cooldowns.ts";
-import { getChannelFromEnv } from "../../utils/constants.ts";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
-import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.ts";
-import { ExtendedClient } from "../../client.ts";
+import { getOrCreateUser, IUserModel, Users } from "../../Models/User.js";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { PostHandleable } from "../../types/middleware.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { checkQuestLevel, IQuest } from "../../utils/quest.js";
+import { IUser } from "../../interfaces/IUser.js";
+import { setCooldown } from "../../utils/cooldowns.js";
+import { getChannelFromEnv } from "../../utils/constants.js";
+import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
+import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { ExtendedClient } from "../../client.js";
 
 const cooldownDuration = 5 * 60 * 60 * 1000;
 

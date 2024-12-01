@@ -1,7 +1,7 @@
 // Importaciones necesarias
 import { name } from "agenda/dist/agenda/name.js";
 import mongoose, { Schema, Document, Model } from "mongoose";
-import { COLORS } from "../utils/constants.ts";
+import { COLORS } from "../utils/constants.js";
 
 interface TrendingDocument extends Document {
 	emojis: Map<string, number>;

@@ -1,13 +1,13 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, GuildMember } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { replyError } from "../../utils/messages/replyError.js";
 import ms from "ms";
-import { replyOk } from "../../utils/messages/replyOk.ts";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.ts";
-import { getChannelFromEnv } from "../../utils/constants.ts";
-import { ExtendedClient } from "../../client.ts";
+import { replyOk } from "../../utils/messages/replyOk.js";
+import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
+import { getChannelFromEnv } from "../../utils/constants.js";
+import { ExtendedClient } from "../../client.js";
 
 export default {
 	data: new SlashCommandBuilder()

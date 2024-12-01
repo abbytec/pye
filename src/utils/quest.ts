@@ -1,5 +1,5 @@
-import { Home, levelUpHome } from "../Models/Home.ts";
-import { Users } from "../Models/User.ts";
+import { Home, levelUpHome } from "../Models/Home.js";
+import { Users } from "../Models/User.js";
 import { readdirSync } from "fs";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import path from "path";
@@ -15,7 +15,7 @@ import {
 	StringSelectMenuInteraction,
 	Message,
 } from "discord.js";
-import { COLORS } from "./constants.ts";
+import { COLORS } from "./constants.js";
 const Choose = new Set();
 
 export interface IQuest {

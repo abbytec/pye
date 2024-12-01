@@ -12,12 +12,12 @@ import {
 	GuildMember,
 	EmbedField,
 } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { IModLogsDocument, ModLogs } from "../../Models/ModLogs.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
-import { COLORS, getRoleFromEnv } from "../../utils/constants.ts";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { IModLogsDocument, ModLogs } from "../../Models/ModLogs.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
+import { COLORS, getRoleFromEnv } from "../../utils/constants.js";
 import { ObjectId } from "mongoose";
 
 // Función para generar las Action Rows

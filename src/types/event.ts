@@ -1,4 +1,4 @@
-import { ExtendedClient } from "../client.ts";
+import { ExtendedClient } from "../client.js";
 
 export interface Evento {
 	name: string;

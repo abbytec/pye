@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { ExtendedClient } from "../../client.ts";
+import { ExtendedClient } from "../../client.js";
 
 export default {
 	data: new SlashCommandBuilder()

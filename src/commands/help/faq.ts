@@ -1,11 +1,11 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, TextChannel, CacheType } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { PostHandleable } from "../../types/middleware.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { ICustomCommand } from "../../interfaces/ICustomCommand.ts";
-import { COLORS, getChannelFromEnv } from "../../utils/constants.ts";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { PostHandleable } from "../../types/middleware.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { ICustomCommand } from "../../interfaces/ICustomCommand.js";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 
 const faqData: ICustomCommand[] = [
 	{

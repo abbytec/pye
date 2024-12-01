@@ -1,12 +1,12 @@
 import { Events, ActivityType, EmbedBuilder, TextChannel } from "discord.js";
-import { ExtendedClient } from "../client.ts";
-import { Users } from "../Models/User.ts";
+import { ExtendedClient } from "../client.js";
+import { Users } from "../Models/User.js";
 import { Agenda, Job } from "agenda";
-import { CronMessage } from "../Models/CronMessage.ts";
-import { sendWelcomeMessageProcessor } from "../utils/welcome.ts";
-import redisClient from "../redis.ts";
-import { getChannelFromEnv, getRoleFromEnv } from "../utils/constants.ts";
-import { capitalizeFirstLetter } from "../utils/generic.ts";
+import { CronMessage } from "../Models/CronMessage.js";
+import { sendWelcomeMessageProcessor } from "../utils/welcome.js";
+import redisClient from "../redis.js";
+import { getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
+import { capitalizeFirstLetter } from "../utils/generic.js";
 
 export default {
 	name: Events.ClientReady,

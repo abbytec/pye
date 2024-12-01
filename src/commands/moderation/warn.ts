@@ -6,15 +6,15 @@ import {
 	ActionRowBuilder,
 	ButtonBuilder,
 } from "discord.js";
-import { getChannelFromEnv, getRoleFromEnv, USERS } from "../../utils/constants.ts";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
-import { logMessages } from "../../utils/finalwares/logMessages.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { ModLogs } from "../../Models/ModLogs.ts";
-import { replyWarning } from "../../utils/messages/replyWarning.ts";
+import { getChannelFromEnv, getRoleFromEnv, USERS } from "../../utils/constants.js";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
+import { logMessages } from "../../utils/finalwares/logMessages.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { ModLogs } from "../../Models/ModLogs.js";
+import { replyWarning } from "../../utils/messages/replyWarning.js";
 
 export default {
 	group: "⚙️ - Administración y Moderación",

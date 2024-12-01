@@ -1,7 +1,7 @@
 // helpers/composeMiddlewares.ts
-import { Finalware, Middleware, PostHandleable } from "../types/middleware.ts";
+import { Finalware, Middleware, PostHandleable } from "../types/middleware.js";
 import { ChatInputCommandInteraction, TextChannel } from "discord.js";
-import { getChannelFromEnv } from "../utils/constants.ts";
+import { getChannelFromEnv } from "../utils/constants.js";
 
 /**
  * Componer múltiples middlewares en una única función.

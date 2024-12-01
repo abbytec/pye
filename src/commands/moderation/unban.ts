@@ -1,15 +1,15 @@
 // src/commands/Staff/unban.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } from "discord.js";
-import { getChannelFromEnv } from "../../utils/constants.ts";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { ModLogs } from "../../Models/ModLogs.ts";
-import { logMessages } from "../../utils/finalwares/logMessages.ts";
-import { PostHandleable } from "../../types/middleware.ts";
-import { replyOk } from "../../utils/messages/replyOk.ts";
+import { getChannelFromEnv } from "../../utils/constants.js";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { ModLogs } from "../../Models/ModLogs.js";
+import { logMessages } from "../../utils/finalwares/logMessages.js";
+import { PostHandleable } from "../../types/middleware.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
 
 export default {
 	group: "⚙️ - Administración y Moderación",

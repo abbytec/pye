@@ -1,5 +1,5 @@
 import { EmbedBuilder, GuildMember, TextChannel } from "discord.js";
-import { Finalware } from "../../types/middleware.ts";
+import { Finalware } from "../../types/middleware.js";
 
 export const logMessages: Finalware = async (postHandleableInteraction, result) => {
 	result.logMessages?.forEach((message) => {

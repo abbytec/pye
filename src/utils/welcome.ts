@@ -1,6 +1,6 @@
 import { Guild, EmbedBuilder, TextChannel, User } from "discord.js";
-import { ExtendedClient } from "../client.ts";
-import { getRoleFromEnv, COLORS, getChannel, getChannelFromEnv } from "./constants.ts";
+import { ExtendedClient } from "../client.js";
+import { getRoleFromEnv, COLORS, getChannel, getChannelFromEnv } from "./constants.js";
 
 const MAX_MENTIONS_PER_MESSAGE = 3; // Define el límite de menciones por mensaje
 

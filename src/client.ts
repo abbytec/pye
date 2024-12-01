@@ -1,14 +1,14 @@
 // src/Client.ts
 import { ChannelType, Client, GatewayIntentBits, Partials, VoiceChannel } from "discord.js";
-import { Command } from "./types/command.ts"; // Asegúrate de definir la interfaz Command
-import { ICooldown } from "./Models/Cooldown.ts";
-import { Rob } from "./commands/farming/rob.ts";
-import { CommandLimits, ICommandLimits } from "./Models/Command.ts";
-import { IMoney, Money } from "./Models/Money.ts";
+import { Command } from "./types/command.js"; // Asegúrate de definir la interfaz Command
+import { ICooldown } from "./Models/Cooldown.js";
+import { Rob } from "./commands/farming/rob.js";
+import { CommandLimits, ICommandLimits } from "./Models/Command.js";
+import { IMoney, Money } from "./Models/Money.js";
 import { Agenda } from "agenda";
-import { getChannelFromEnv, getRoleFromEnv } from "./utils/constants.ts";
-import Trending from "./Models/Trending.ts";
-import { ICompartePost, ICompartePostModel, UltimosCompartePosts } from "./Models/CompartePostModel.ts";
+import { getChannelFromEnv, getRoleFromEnv } from "./utils/constants.js";
+import Trending from "./Models/Trending.js";
+import { ICompartePost, ICompartePostModel, UltimosCompartePosts } from "./Models/CompartePostModel.js";
 import { AnyBulkWriteOperation } from "mongoose";
 
 interface VoiceFarming {

@@ -1,5 +1,5 @@
 import { Schema, Document, model } from "mongoose";
-import client from "../redis.ts";
+import client from "../redis.js";
 
 interface IHelperPoint {
 	_id: string;

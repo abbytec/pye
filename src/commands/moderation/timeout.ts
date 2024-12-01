@@ -1,16 +1,16 @@
 // src/commands/Staff/timeout.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, User, GuildMember } from "discord.js";
-import { getChannelFromEnv, getRoleFromEnv, USERS } from "../../utils/constants.ts";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.ts";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.ts";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.ts";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.ts";
-import { replyError } from "../../utils/messages/replyError.ts";
-import { ModLogs } from "../../Models/ModLogs.ts";
+import { getChannelFromEnv, getRoleFromEnv, USERS } from "../../utils/constants.js";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { replyError } from "../../utils/messages/replyError.js";
+import { ModLogs } from "../../Models/ModLogs.js";
 import ms from "ms";
-import { logMessages } from "../../utils/finalwares/logMessages.ts";
-import { replyWarning } from "../../utils/messages/replyWarning.ts";
-import { PostHandleable } from "../../types/middleware.ts";
+import { logMessages } from "../../utils/finalwares/logMessages.js";
+import { replyWarning } from "../../utils/messages/replyWarning.js";
+import { PostHandleable } from "../../types/middleware.js";
 
 export default {
 	group: "⚙️ - Administración y Moderación",

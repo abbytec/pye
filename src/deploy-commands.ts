@@ -2,9 +2,9 @@
 import { REST, Routes } from "discord.js";
 import fs from "node:fs";
 import path, { dirname } from "node:path";
-import { Command } from "./types/command.ts"; // Asegúrate de tener esta interfaz
+import { Command } from "./types/command.js"; // Asegúrate de tener esta interfaz
 import { fileURLToPath, pathToFileURL } from "node:url";
-import loadEnvVariables from "./utils/environment.ts";
+import loadEnvVariables from "./utils/environment.js";
 import { exit } from "node:process";
 
 const isDevelopment = process.env.NODE_ENV === "development";
