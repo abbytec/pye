@@ -145,7 +145,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 	if (existingJobs.length === 0) {
 		// Programar el trabajo con condición de unicidad
 		await ExtendedClient.agenda.every(
-			"*/1 * * * *",
+			"0 0 * * *",
 			"daily update client data",
 			{ userReps: { month: new Date().getMonth() } },
 			{ skipImmediate: true }
