@@ -95,7 +95,7 @@ export default {
 
 async function showPet(interaction: ChatInputCommandInteraction, member: GuildMember, homeData: IHomeDocument, petInfo: IPetDocument) {
 	const mood = getMood(petInfo);
-	const rutaImagen = path.join(__dirname, `../../Utils/Pictures/Profiles/Pets/${homeData.pet}${mood}.png`);
+	const rutaImagen = path.join(__dirname, `../../utils/Pictures/Profiles/Pets/${homeData.pet}${mood}.png`);
 
 	// Crear el canvas y dibujar la imagen
 	const canvas = createCanvas(550, 550);

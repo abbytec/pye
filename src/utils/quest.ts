@@ -2,7 +2,7 @@ import { Home, levelUpHome } from "../Models/Home.js";
 import { Users } from "../Models/User.js";
 import { readdirSync } from "fs";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import path from "path";
+import path, { dirname } from "path";
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
@@ -14,19 +14,22 @@ import {
 	MessageCreateOptions,
 	StringSelectMenuInteraction,
 	Message,
+	InteractionResponse,
+	Guild,
 } from "discord.js";
 import { COLORS } from "./constants.js";
+import { fileURLToPath } from "node:url";
 const Choose = new Set();
 
 export interface IQuest {
-	msg: ChatInputCommandInteraction | Message;
+	msg: ChatInputCommandInteraction | Message | InteractionResponse;
 	money: number;
-	bump: number;
+	bump?: number;
 	text?: number;
 	rep?: number;
 	userId: string;
 }
-
+const __dirname = dirname(fileURLToPath(import.meta.url));
 export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: IQuest, game = false) {
 	const user = await Home.findOne({ id: userId });
 	const dateZ = await Users.findOne({ id: userId });
@@ -34,20 +37,31 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 	if (!user || !user.active) return;
 	const person = msg.client.users.resolve(userId);
 	if (!person) return;
+	let guild: Guild | null = null;
+	let channelId: string = "";
+	if ("interaction" in msg && msg.interaction && "guildId" in msg.interaction && msg.interaction.channelId) {
+		guild =
+			msg.client?.guilds.cache.get(msg.interaction.guildId ?? process.env.GUILD_ID ?? "") ??
+			msg.client?.guilds.resolve(msg.interaction.guildId ?? process.env.GUILD_ID ?? "");
+		channelId = msg.interaction.channelId ?? "";
+	} else if ("guild" in msg && msg.guild) {
+		guild = msg.guild;
+		channelId = msg.channelId ?? "";
+	}
 	switch (user.house.level) {
 		case 1:
 			if (!money) return;
 			if (Choose.has(person.id)) return;
 			if (user.money + money >= 3e3) {
-				const casas = readdirSync(path.join(__dirname, "../Utils/Pictures/Profiles/Casa"));
+				const casas = readdirSync(path.join(__dirname, "../utils/Pictures/Profiles/Casa"));
 				const rutasCasas: string[] = [];
 				for (const Color of casas) {
-					rutasCasas.push(path.join(__dirname, `../Utils/Pictures/Profiles/Casa/${Color}/${2}.png`));
+					rutasCasas.push(path.join(__dirname, `../utils/Pictures/Profiles/Casa/${Color}/${2}.png`));
 				}
 
 				let page = 0;
 				const all = rutasCasas.length;
-				const contenido = async (disable = false) => {
+				const contenido = async (disable = false): Promise<MessageCreateOptions> => {
 					const canvas = createCanvas(470, 708);
 					const ctx = canvas.getContext("2d");
 					const img = await loadImage(rutasCasas[page]);
@@ -68,7 +82,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 								.setFooter({ text: "Tienes 4 minutos para responder, usas las flechas para cambiar de imagen." }),
 						],
 						components: [
-							new ActionRowBuilder().addComponents(
+							new ActionRowBuilder<ButtonBuilder>().addComponents(
 								[
 									new ButtonBuilder()
 										.setStyle(1)
@@ -82,7 +96,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 										.setDisabled(page + 1 >= all),
 								].map((b) => (disable ? b.setDisabled(true) : b))
 							),
-							new ActionRowBuilder().addComponents(
+							new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 								new StringSelectMenuBuilder()
 									.addOptions([
 										{
@@ -114,8 +128,9 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 					};
 				};
 				Choose.add(person.id);
-				let m = await (msg.guild?.channels.resolve(msg?.channelId) as TextChannel)?.send((await contenido()) as MessageCreateOptions);
-				m.createMessageComponentCollector({
+				let m = await (guild?.channels.resolve(channelId) as TextChannel | null)?.send(await contenido());
+
+				m?.createMessageComponentCollector({
 					filter: (i: any) => i.user.id === person.id && ["nextS", "backS"].includes(i.customId),
 					time: 60e3,
 				})
@@ -128,13 +143,13 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 					.on("end", async () => m.edit({ components: [] }).catch(() => null));
 
 				const res = (await m
-					.awaitMessageComponent({
+					?.awaitMessageComponent({
 						filter: (i: any) => i.user.id === person.id && ["color"].includes(i.customId),
 						time: 240e3,
 					})
 					.catch(() => null)) as StringSelectMenuInteraction | null;
 				if (!res) {
-					m.edit({
+					m?.edit({
 						embeds: [
 							new EmbedBuilder()
 								.setDescription("<:cross_custom:913093934832578601> - Se acabó el tiempo...")
@@ -167,7 +182,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 		case 2:
 			if (!money) return;
 			if (user.money + money >= 10e3) {
-				(msg.guild?.channels.resolve(msg?.channelId) as TextChannel)?.send({
+				(guild?.channels.resolve(channelId) as TextChannel)?.send({
 					embeds: [
 						new EmbedBuilder()
 							.setAuthor({ name: "🏠 Nuevo nivel en tu casa.", iconURL: person.displayAvatarURL() })
@@ -183,7 +198,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 		case 3:
 			if (!game) return;
 			if (user.money + money >= 10e3) {
-				(msg.guild?.channels.resolve(msg?.channelId) as TextChannel)?.send({
+				(guild?.channels.resolve(channelId) as TextChannel)?.send({
 					embeds: [
 						new EmbedBuilder()
 							.setAuthor({ name: "🏠 Nuevo nivel en tu casa.", iconURL: person.displayAvatarURL() })
@@ -200,7 +215,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 			if (!money) money = 0;
 			if (!bump) bump = 0;
 			if (user.money + money >= 15e3 && user.bump + bump >= 1) {
-				(msg.guild?.channels.resolve(msg?.channelId) as TextChannel)?.send({
+				(guild?.channels.resolve(channelId) as TextChannel)?.send({
 					embeds: [
 						new EmbedBuilder()
 							.setAuthor({ name: "🏠 Nuevo nivel en tu casa.", iconURL: person.displayAvatarURL() })
@@ -218,7 +233,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 		case 5:
 			if (!text) return;
 			if (user.text + text >= 300) {
-				(msg.guild?.channels.resolve(msg?.channelId) as TextChannel)?.send({
+				(guild?.channels.resolve(channelId) as TextChannel)?.send({
 					embeds: [
 						new EmbedBuilder()
 							.setAuthor({ name: "🏠 Nuevo nivel en tu casa.", iconURL: person.displayAvatarURL() })
@@ -235,7 +250,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 		case 6:
 			if (!money) return;
 			if (user.money + money >= 30e3) {
-				(msg.guild?.channels.resolve(msg?.channelId) as TextChannel)?.send({
+				(guild?.channels.resolve(channelId) as TextChannel)?.send({
 					embeds: [
 						new EmbedBuilder()
 							.setAuthor({ name: "🏠 Nuevo nivel en tu casa.", iconURL: person.displayAvatarURL() })
@@ -252,7 +267,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 		case 7:
 			if (!game) return;
 			if (user.money + money >= 30e3) {
-				(msg.guild?.channels.resolve(msg?.channelId) as TextChannel)?.send({
+				(guild?.channels.resolve(channelId) as TextChannel)?.send({
 					embeds: [
 						new EmbedBuilder()
 							.setAuthor({ name: "🏠 Nuevo nivel en tu casa.", iconURL: person.displayAvatarURL() })
@@ -268,7 +283,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 		case 8:
 			if (!text) return;
 			if (user.text + text >= 500) {
-				(msg.guild?.channels.resolve(msg?.channelId) as TextChannel)?.send({
+				(guild?.channels.resolve(channelId) as TextChannel)?.send({
 					embeds: [
 						new EmbedBuilder()
 							.setAuthor({ name: "🏠 Nuevo nivel en tu casa.", iconURL: person.displayAvatarURL() })
@@ -286,7 +301,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 			if (!bump) bump = 0;
 			if (!rep) rep = 0;
 			if (user.money + money >= 50e3 && user.bump + bump >= 2 && user.rep + rep >= 1) {
-				(msg.guild?.channels.resolve(msg?.channelId) as TextChannel)?.send({
+				(guild?.channels.resolve(channelId) as TextChannel)?.send({
 					embeds: [
 						new EmbedBuilder()
 							.setAuthor({ name: "🏠 Nuevo nivel en tu casa.", iconURL: person.displayAvatarURL() })
@@ -304,7 +319,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 		case 10:
 			if (!game) return;
 			if (user.money + money >= 50e3) {
-				(msg.guild?.channels.resolve(msg?.channelId) as TextChannel)?.send({
+				(guild?.channels.resolve(channelId) as TextChannel)?.send({
 					embeds: [
 						new EmbedBuilder()
 							.setAuthor({ name: "🏠 Nuevo nivel en tu casa.", iconURL: person.displayAvatarURL() })
@@ -321,7 +336,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 			if (!money) money = 0;
 			if (!rep) rep = 0;
 			if (user.money + money >= 100e3 && user.rep + rep >= 2) {
-				(msg.guild?.channels.resolve(msg?.channelId) as TextChannel)?.send({
+				(guild?.channels.resolve(channelId) as TextChannel)?.send({
 					embeds: [
 						new EmbedBuilder()
 							.setAuthor({ name: "🏠 Nuevo nivel en tu casa.", iconURL: person.displayAvatarURL() })
@@ -341,7 +356,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 			if (user.text + text >= 1e3) {
 				if (Choose.has(person.id)) return false;
 				const mascotas = readdirSync(
-					path.join(__dirname, `../Utils/Pictures/Profiles/Casa/${user.house.color}/${user.house.level + 1}`)
+					path.join(__dirname, `../utils/Pictures/Profiles/Casa/${user.house.color}/${user.house.level + 1}`)
 				);
 				const rutasPets = mascotas.filter((m) => m.includes("Feliz"));
 
@@ -351,7 +366,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 					const canvas = createCanvas(670, 408);
 					const ctx = canvas.getContext("2d");
 					const img = await loadImage(
-						path.join(__dirname, `../Utils/Pictures/Profiles/Casa/${user.house.color}/${user.house.level + 1}/${rutasPets[page]}`)
+						path.join(__dirname, `../utils/Pictures/Profiles/Casa/${user.house.color}/${user.house.level + 1}/${rutasPets[page]}`)
 					);
 					ctx.drawImage(img, 0, 0, 670, 408);
 
@@ -422,7 +437,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 				};
 				Choose.add(person.id);
 				//error de permisos en esta linea
-				let m = await (msg.guild?.channels.resolve(msg?.channelId) as TextChannel)?.send((await contenido()) as MessageCreateOptions);
+				let m = await (guild?.channels.resolve(channelId) as TextChannel)?.send((await contenido()) as MessageCreateOptions);
 				m.createMessageComponentCollector({
 					filter: (i: any) => i.user.id === person.id && ["nextS", "backS"].includes(i.customId),
 					time: 60e3,
@@ -465,7 +480,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 					files: [],
 					components: [],
 				});
-				(msg.guild?.channels.resolve(msg?.channelId) as TextChannel)?.send({
+				(guild?.channels.resolve(channelId) as TextChannel)?.send({
 					embeds: [
 						new EmbedBuilder()
 							.setTitle("Mini tutorial de mascotas !")
