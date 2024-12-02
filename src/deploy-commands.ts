@@ -16,7 +16,6 @@ const token = process.env.TOKEN_BOT;
 const clientId = process.env.CLIENT_ID;
 const guildId = process.env.GUILD_ID;
 const commands: any[] = [];
-const extension = isDevelopment ? ".ts" : ".js";
 if (!token || !clientId || !guildId) {
 	throw new Error("Las variables de entorno TOKEN_BOT, CLIENT_ID y GUILD_ID deben estar definidas.");
 }
@@ -28,12 +27,13 @@ const commandFolders = fs.readdirSync(foldersPath);
 for (const folder of commandFolders) {
 	// Obtiene todos los archivos de comandos dentro de cada carpeta
 	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(extension));
+	const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".ts"));
 
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
 		const commandModule = await import(pathToFileURL(filePath).href);
 		const command: Command = commandModule.default || commandModule;
+		console.log(commandModule);
 		if ("data" in command && "execute" in command) {
 			commands.push(command.data.toJSON());
 		} else {
