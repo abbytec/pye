@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "cross-env NODE_ENV=development node --loader ts-node/esm src/index.ts",
-		"build": "tsc",
+		"build": "tsc && cp -R src/utils/Pictures dist/utils/Pictures && cp -R src/utils/Images dist/utils/Images",
 		"start": "node dist/index.js",
 		"deploy-slash-commands-dev": "cross-env NODE_ENV=development node --loader ts-node/esm src/deploy-commands.ts",
 		"deploy-slash-commands": "node --loader ts-node/esm src/deploy-commands.ts"
