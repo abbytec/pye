@@ -19,6 +19,7 @@ import { IModLogsDocument, ModLogs } from "../../Models/ModLogs.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { COLORS, getRoleFromEnv } from "../../utils/constants.js";
 import { ObjectId } from "mongoose";
+import { replyError } from "../../utils/messages/replyError.js";
 
 // Función para generar las Action Rows
 const generateActionRows = (page: number, data: IModLogsDocument[], itemsPerPage: number, totalPages: number) => {
@@ -147,13 +148,7 @@ export default {
 			collector.on("collect", async (i: Interaction<CacheType>) => {
 				if (!i.isButton() && !i.isStringSelectMenu()) return;
 
-				if (i.user.id !== interaction.user.id) {
-					i.reply({
-						content: "❌ No puedes interactuar con estos controles.",
-						ephemeral: true,
-					});
-					return;
-				}
+				if (i.user.id !== interaction.user.id) return replyError(i, "No puedes interactuar con estos controles.");
 
 				if (i.isButton()) {
 					if (i.customId === "back") {
@@ -208,12 +203,7 @@ export default {
 							embeds: [caseEmbed],
 							ephemeral: true,
 						});
-					} else {
-						await i.reply({
-							content: "❌ No se encontró el caso seleccionado.",
-							ephemeral: true,
-						});
-					}
+					} else await replyError(i, "No se encontró el caso seleccionado.");
 				}
 			});
 

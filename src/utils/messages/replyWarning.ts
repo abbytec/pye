@@ -3,15 +3,15 @@ import {
 	ActionRowBuilder,
 	AttachmentBuilder,
 	ButtonBuilder,
-	ChatInputCommandInteraction,
 	EmbedBuilder,
+	RepliableInteraction,
 	StringSelectMenuBuilder,
 	TextChannel,
 } from "discord.js";
 import { COLORS } from "../constants.js";
 
 export async function replyWarning(
-	interaction: ChatInputCommandInteraction,
+	interaction: RepliableInteraction,
 	message: string | EmbedBuilder[],
 	author?: string,
 	components?: (ActionRowBuilder<ButtonBuilder> | ActionRowBuilder<StringSelectMenuBuilder>)[],
@@ -38,7 +38,7 @@ export async function replyWarning(
 	if ((interaction.deferred || interaction.replied) && !components) {
 		if (!ephemeral) {
 			await interaction.deleteReply().catch((e) => null);
-			await (interaction.guild?.channels.resolve(interaction?.channelId) as TextChannel)?.send(messageToSend);
+			await (interaction.guild?.channels.resolve(interaction?.channelId ?? "") as TextChannel)?.send(messageToSend);
 		} else await interaction.followUp(messageToSend);
 	} else if (components) {
 		await interaction.editReply(messageToSend).catch((e) => null);

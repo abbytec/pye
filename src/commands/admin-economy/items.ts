@@ -165,12 +165,7 @@ async function visualizarItems(interaction: ChatInputCommandInteraction) {
 	});
 
 	collector.on("collect", async (i) => {
-		if (i.user.id !== interaction.user.id) {
-			return await i.reply({
-				content: "No puedes interactuar con este menú.",
-				ephemeral: true,
-			});
-		}
+		if (i.user.id !== interaction.user.id) return await replyError(i, "No puedes interactuar con este menú.");
 
 		if (i.customId === "prev" && page > 0) {
 			page--;
@@ -187,22 +182,12 @@ async function visualizarItems(interaction: ChatInputCommandInteraction) {
 	});
 
 	selectCollector.on("collect", async (i) => {
-		if (i.user.id !== interaction.user.id) {
-			return await i.reply({
-				content: "No puedes interactuar con este menú.",
-				ephemeral: true,
-			});
-		}
+		if (i.user.id !== interaction.user.id) return await replyError(interaction, "No puedes interactuar con este menú.");
 
 		const itemId = i.values[0];
 		const item = items.find((item) => item._id.toString() === itemId);
 
-		if (!item) {
-			return await i.reply({
-				content: "Ítem no encontrado.",
-				ephemeral: true,
-			});
-		}
+		if (!item) return await replyError(interaction, "Ítem no encontrado.");
 
 		const embed = new EmbedBuilder()
 			.setTitle(`${item.name}`)
