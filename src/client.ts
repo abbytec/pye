@@ -1,5 +1,5 @@
 // src/Client.ts
-import { ChannelType, Client, GatewayIntentBits, Partials, VoiceChannel } from "discord.js";
+import { ChannelType, Client, GatewayIntentBits, Partials, TextChannel, VoiceChannel } from "discord.js";
 import { Command } from "./types/command.js"; // Asegúrate de definir la interfaz Command
 import { ICooldown } from "./Models/Cooldown.js";
 import { Rob } from "./commands/farming/rob.js";
@@ -107,6 +107,24 @@ export class ExtendedClient extends Client {
 		this.limpiarCompartePosts();
 
 		if (firstTime) {
+			process.on("unhandledRejection", (reason, promise) => {
+				console.error("Unhandled Rejection at:", promise, "reason:", reason);
+				(this.guilds.cache.get(process.env.GUILD_ID ?? "")?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({
+					content: `${
+						process.env.NODE_ENV === "development" ? `@here` : "<@220683580467052544> <@1088883078405038151> <@602240617862660096>"
+					}Error en promesa no capturado, razon: ${reason}`,
+				});
+			});
+
+			// Manejar excepciones no capturadas
+			process.on("uncaughtException", (error) => {
+				console.error("Uncaught Exception:", error);
+				(this.guilds.cache.get(process.env.GUILD_ID ?? "")?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({
+					content: `${
+						process.env.NODE_ENV === "development" ? `@here` : "<@220683580467052544> <@1088883078405038151> <@602240617862660096>"
+					}Error no capturado (${error.message}):\n \`\`\`js\n${error.stack}\`\`\``,
+				});
+			});
 			console.log("loading latest CompartePosts");
 			await this.loadCompartePosts();
 			console.log("loading commands");
