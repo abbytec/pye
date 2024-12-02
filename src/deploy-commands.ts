@@ -7,7 +7,6 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import loadEnvVariables from "./utils/environment.js";
 import { exit } from "node:process";
 
-const isDevelopment = process.env.NODE_ENV === "development";
 loadEnvVariables();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -33,7 +32,6 @@ for (const folder of commandFolders) {
 		const filePath = path.join(commandsPath, file);
 		const commandModule = await import(pathToFileURL(filePath).href);
 		const command: Command = commandModule.default || commandModule;
-		console.log(commandModule);
 		if ("data" in command && "execute" in command) {
 			commands.push(command.data.toJSON());
 		} else {
