@@ -37,7 +37,7 @@ export default {
 		const name = member.username.length > 9 ? member.username.substring(0, 8).trim() + "..." : member.username;
 		const role = getRole(msg, guildMember);
 		if (!role) return;
-		const background = await loadImage(path.join(__dirname, `../../utils/Images/reputation/${getRoleName(role.id)}.jpg`));
+		const background = await loadImage(path.join(__dirname, `../../assets/Images/reputation/${getRoleName(role.id)}.jpg`));
 
 		const canvas = getRender({
 			name,

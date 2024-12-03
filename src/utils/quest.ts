@@ -53,10 +53,10 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 			if (!money) return;
 			if (Choose.has(person.id)) return;
 			if (user.money + money >= 3e3) {
-				const casas = readdirSync(path.join(__dirname, "../utils/Pictures/Profiles/Casa"));
+				const casas = readdirSync(path.join(__dirname, "../assets/Pictures/Profiles/Casa"));
 				const rutasCasas: string[] = [];
 				for (const Color of casas) {
-					rutasCasas.push(path.join(__dirname, `../utils/Pictures/Profiles/Casa/${Color}/${2}.png`));
+					rutasCasas.push(path.join(__dirname, `../assets/Pictures/Profiles/Casa/${Color}/${2}.png`));
 				}
 
 				let page = 0;
@@ -354,7 +354,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 			if (user.text + text >= 1e3) {
 				if (Choose.has(person.id)) return false;
 				const mascotas = readdirSync(
-					path.join(__dirname, `../utils/Pictures/Profiles/Casa/${user.house.color}/${user.house.level + 1}`)
+					path.join(__dirname, `../assets/Pictures/Profiles/Casa/${user.house.color}/${user.house.level + 1}`)
 				);
 				const rutasPets = mascotas.filter((m) => m.includes("Feliz"));
 
@@ -364,7 +364,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 					const canvas = createCanvas(670, 408);
 					const ctx = canvas.getContext("2d");
 					const img = await loadImage(
-						path.join(__dirname, `../utils/Pictures/Profiles/Casa/${user.house.color}/${user.house.level + 1}/${rutasPets[page]}`)
+						path.join(__dirname, `../assets/Pictures/Profiles/Casa/${user.house.color}/${user.house.level + 1}/${rutasPets[page]}`)
 					);
 					ctx.drawImage(img, 0, 0, 670, 408);
 

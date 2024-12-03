@@ -93,12 +93,12 @@ export default {
 	),
 };
 async function getHouseImage(data: IHomeDocument): Promise<AttachmentBuilder> {
-	let imagePath = path.join(process.cwd(), "src", "utils", "Pictures", "Profiles", "Casa", data.house.color, `${data.house.level}.png`);
+	let imagePath = path.join(process.cwd(), "src", "assets", "Pictures", "Profiles", "Casa", data.house.color, `${data.house.level}.png`);
 
 	if (data.pet !== "none") {
 		let petInfo = (await Pets.findOne({ id: data.id })) ?? (await Pets.create({ id: data.id }));
 
-		const houseDir = path.join(process.cwd(), "src", "utils", "Pictures", "Profiles", "Casa", data.house.color, `${data.house.level}`);
+		const houseDir = path.join(process.cwd(), "src", "assets", "Pictures", "Profiles", "Casa", data.house.color, `${data.house.level}`);
 		const files = await fs.readdir(houseDir);
 		const mood = getMood(petInfo);
 		const petFiles = files.filter((file) => file.includes(mood) && file.includes(data.pet));

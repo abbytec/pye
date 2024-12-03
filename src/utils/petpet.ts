@@ -140,7 +140,7 @@ function render(
  */
 async function img(toConvert: Image, dy: number = g.delay): Promise<Buffer> {
 	if (!sprite) {
-		sprite = await loadImage(path.join(dirname(fileURLToPath(import.meta.url)), "../utils/Pictures/sprite.png"));
+		sprite = await loadImage(path.join(dirname(fileURLToPath(import.meta.url)), "../assets/Pictures/sprite.png"));
 	}
 
 	const frames = [0, 1, 2, 3, 4].map(getFrame);

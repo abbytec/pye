@@ -20,7 +20,7 @@ async function generateCanvaBoosterId(member: GuildMember): Promise<Buffer> {
 	const ctx = canvas.getContext("2d");
 
 	// Ruta a la imagen de fondo
-	const backgroundPath = path.join(__dirname, "Images", "boost.png");
+	const backgroundPath = path.join(__dirname, "../assets/Images", "boost.png");
 
 	// Cargar y dibujar la imagen de fondo
 	try {

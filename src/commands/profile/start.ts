@@ -269,7 +269,7 @@ export async function selectStyle(
 	skin: string,
 	job: string
 ): Promise<string | null> {
-	const stylesPath = path.resolve(process.cwd(), "src", "utils", "Pictures", "Profiles", gender, skin);
+	const stylesPath = path.resolve(process.cwd(), "src", "assets", "Pictures", "Profiles", gender, skin);
 
 	if (!fs.existsSync(stylesPath)) return null;
 

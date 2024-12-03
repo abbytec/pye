@@ -59,15 +59,15 @@ export default {
 				const homeData = await Home.findOne({ id: member.id });
 				if (!homeData) return await replyError(interaction, "No se pudo encontrar la información de la casa del usuario.");
 
-				let imagePath = `../../utils/Pictures/Profiles/Casa/${homeData.house.color}/${homeData.house.level}.png`;
+				let imagePath = `../../assets/Pictures/Profiles/Casa/${homeData.house.color}/${homeData.house.level}.png`;
 
 				if (homeData.pet !== "none") {
-					const petDir = path.join(__dirname, `../../utils/Pictures/Profiles/Casa/${homeData.house.color}/${homeData.house.level}`);
+					const petDir = path.join(__dirname, `../../assets/Pictures/Profiles/Casa/${homeData.house.color}/${homeData.house.level}`);
 					const pets = await fs.readdir(petDir);
 					const happyPets = pets.filter((m) => m.includes("Feliz"));
 					const selectedPet = happyPets.find((r) => r.includes(homeData.pet));
 					if (selectedPet)
-						imagePath = `../../utils/Pictures/Profiles/Casa/${homeData.house.color}/${homeData.house.level}/${selectedPet}`;
+						imagePath = `../../assets/Pictures/Profiles/Casa/${homeData.house.color}/${homeData.house.level}/${selectedPet}`;
 				}
 
 				const canvas = createCanvas(590, 458);

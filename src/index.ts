@@ -1,5 +1,6 @@
 import loadEnvVariables from "./utils/environment.js";
 import { readdirSync } from "node:fs";
+import { GlobalFonts } from "@napi-rs/canvas";
 import path, { dirname, join } from "node:path";
 import { ExtendedClient } from "./client.js";
 import { connect } from "mongoose";
@@ -8,6 +9,18 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { Evento, EventoConClienteForzado } from "./types/event.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/bold-font.ttf"), "Manrope");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/regular-font.ttf"), "Manrope");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/OpenSans.ttf"), "Open Sans");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Aaargh.ttf"), "Argh");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/BunnyBear.otf"), "Bunny");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Green-London.ttf"), "Greeen");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Rajdhani-Bold.ttf"), "Rajdhani");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Rajdhani-Light.ttf"), "Rajdhani");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Rajdhani-Medium.ttf"), "Rajdhani");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Rajdhani-Regular.ttf"), "Rajdhani");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Rajdhani-SemiBold.ttf"), "Rajdhani");
 
 const client = new ExtendedClient();
 const extension = process.env.NODE_ENV === "development" ? ".ts" : ".js";

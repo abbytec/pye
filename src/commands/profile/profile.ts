@@ -146,7 +146,7 @@ async function getJobImage(profile: any): Promise<AttachmentBuilder> {
 	const skin = profile.skin;
 	const styleIndex = Number(profile.style) - 1 || 0;
 
-	const stylesPath = path.resolve(process.cwd(), "src", "utils", "Pictures", "Profiles", sex, skin);
+	const stylesPath = path.resolve(process.cwd(), "src", "assets", "Pictures", "Profiles", sex, skin);
 	const styles = await fs.readdir(stylesPath);
 	const imagePath = path.join(stylesPath, styles[styleIndex] || styles[0], `${job}.png`);
 
