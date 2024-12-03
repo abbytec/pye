@@ -151,9 +151,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 				if (!res) {
 					m?.edit({
 						embeds: [
-							new EmbedBuilder()
-								.setDescription("<:cross_custom:913093934832578601> - Se acabó el tiempo...")
-								.setColor(COLORS.errRed),
+							new EmbedBuilder().setDescription("<:cross:1282933529566511155> - Se acabó el tiempo...").setColor(COLORS.errRed),
 						],
 						components: [],
 						files: [],
@@ -459,9 +457,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 				if (!res) {
 					m.edit({
 						embeds: [
-							new EmbedBuilder()
-								.setDescription("<:cross_custom:913093934832578601> - Se acabó el tiempo...")
-								.setColor(COLORS.errRed),
+							new EmbedBuilder().setDescription("<:cross:1282933529566511155> - Se acabó el tiempo...").setColor(COLORS.errRed),
 						],
 						components: [],
 						files: [],
@@ -474,7 +470,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 					embeds: [
 						new EmbedBuilder()
 							.setAuthor({ name: person.tag, iconURL: person.displayAvatarURL() })
-							.setDescription(`<:check:913199297678434374> - **${person.username}** ha escogido el \`${pet}\` para su casa.`)
+							.setDescription(`<:cross:1282933529566511155> - **${person.username}** ha escogido el \`${pet}\` para su casa.`)
 							.setTimestamp(),
 					],
 					files: [],

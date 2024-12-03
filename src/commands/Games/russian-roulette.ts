@@ -112,7 +112,7 @@ async function russianRoulette(interaction: ChatInputCommandInteraction) {
 						new EmbedBuilder()
 							.setAuthor({ name: "Un vagabundo", iconURL: (interaction.guild as Guild).iconURL() ?? undefined })
 							.setDescription(
-								`\`Un vagabundo\` tiró del gatillo por ${i + 1}ª vez y no sobrevivió para contarla... <:rip:917865084997484645>`
+								`\`Un vagabundo\` tiró del gatillo por ${i + 1}ª vez y no sobrevivió para contarla... <:rip:1313345158301089792>`
 							)
 							.setColor(COLORS.errRed)
 							.setThumbnail("https://cdn.discordapp.com/emojis/770482910918082571.png?size=96"),
@@ -169,7 +169,7 @@ async function russianRoulette(interaction: ChatInputCommandInteraction) {
 						.setDescription(
 							`\`${interaction.guild?.members.resolve(data.apuestas[i].jugador)?.user.tag}\` tiró del gatillo por ${
 								i + 1
-							}ª vez y no sobrevivió para contarla... <:rip:917865084997484645>`
+							}ª vez y no sobrevivió para contarla... <:rip:1313345158301089792>`
 						)
 						.setColor(COLORS.errRed)
 						.setThumbnail("https://cdn.discordapp.com/emojis/770482910918082571.png?size=96"),

@@ -254,7 +254,7 @@ async function generateRedisLeaderboard(
 
 				let rankIcon = `${start + index + 1}`;
 				if (start + index + 1 === 1) {
-					rankIcon = type === "caps" ? "<:policebage:1019809933451071519>" : "<:6632serverowner:935013107946889267>";
+					rankIcon = type === "caps" ? "<:policebadge:1313338489290489897>" : "<:server_owner:1313337498893815858>";
 				}
 
 				return `**${rankIcon}.** [${member?.user.tag}](https://discord.com/users/${id}) • ${pyecoin} ${score.toLocaleString()}`;

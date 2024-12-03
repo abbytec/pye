@@ -127,7 +127,7 @@ export default {
 					.addFields(
 						{
 							name: "• Propietario",
-							value: `<:6632serverowner:935013107946889267> ${owner.username}`,
+							value: `<:server_owner:1313337498893815858> ${owner.username}`,
 						},
 						{
 							name: "Descripción",
@@ -139,7 +139,7 @@ export default {
 						},
 						{
 							name: "• Canales",
-							value: `<:1153lockedtextchannel:935009804966035516> Texto: ${textChannels}\n<:3025lockedvc:935009792576077865> Voz: ${voiceChannels}\n<:5001threadchannel:935009784493645844> Hilos: ${threadChannels}`,
+							value: `<:lockedtextchannel:1313340708324638801> Texto: ${textChannels}\n<:lockedvc:1313340710468194424> Voz: ${voiceChannels}\n<:threadchannel:1313340715237118012> Hilos: ${threadChannels}`,
 							inline: true,
 						},
 						{
@@ -168,7 +168,7 @@ export default {
 						},
 						{
 							name: "• Boost",
-							value: `<:thonkeyes:913096578879868979> Nivel de boost: ${premiumTier}\n<:3874boostwithsparkles:935020482435104788> Boost: ${boostCount}\n<:PARTNER:933594339047768094> Características: ${mappedFeatures}`,
+							value: `<:thonkeyes:1313340713634893854> Nivel de boost: ${premiumTier}\n<:boostwithsparkles:1313340706873540608> Boost: ${boostCount}\n<:PARTNER:933594339047768094> Características: ${mappedFeatures}`,
 						}
 					);
 

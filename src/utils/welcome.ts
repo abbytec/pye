@@ -60,7 +60,7 @@ async function sendMessage(content: string, guild: Guild, randomStaff: string, c
 			{
 				name: `Si tienen cualquier **pregunta** hay canales especializados`,
 				value:
-					`Si no encaja en ninguno de los canales usen <#${getChannelFromEnv("ayuda-general")}> <a:arma:996504866673406092> \n\n` +
+					`Si no encaja en ninguno de los canales usen <#${getChannelFromEnv("ayuda-general")}> <:arma:996504866673406092> \n\n` +
 					"Asegurense de usar un **título descriptivo** y poner la mayor cantidad de **detalles** así su pregunta no es **ignorada**\n\n" +
 					`👥   Usen <#${getChannelFromEnv("chatProgramadores")}> para hablar principalmente de programacion y <#${getChannelFromEnv(
 						"general"

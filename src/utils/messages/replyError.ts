@@ -28,7 +28,7 @@ export async function replyError(
 		messageToSend.embeds = [
 			new EmbedBuilder()
 				.setAuthor({ name: author ?? interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
-				.setDescription("❌ • " + message)
+				.setDescription(process.env.NODE_ENV === "development" ? "❌ • " + message : "<:cross:1282933529566511155> • " + message)
 				.setColor(COLORS.errRed)
 				.setTimestamp(),
 		];

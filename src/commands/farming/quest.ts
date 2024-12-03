@@ -70,7 +70,7 @@ const tasks: Array<{
 		name: "Tarea #9",
 		description: "Recolectar 50k PyE coins + 2 bumps + 1 punto rep.",
 		progress: (data) =>
-			`${pyecoin} \`PyE coins\`: ${data.money.toLocaleString()} / 50,000\n👍 \`Bumps\`: ${data.bump.toLocaleString()} / 2\n<:pyestar:926334569903435776> \`Puntos de reputación\`: ${data.rep.toLocaleString()} / 1`,
+			`${pyecoin} \`PyE coins\`: ${data.money.toLocaleString()} / 50,000\n👍 \`Bumps\`: ${data.bump.toLocaleString()} / 2\n<:pyestar:1313345160549105774> \`Puntos de reputación\`: ${data.rep.toLocaleString()} / 1`,
 	},
 	// Nivel 10
 	{
@@ -83,7 +83,7 @@ const tasks: Array<{
 		name: "Tarea #11",
 		description: "Recolectar 100k PyE coins + 2 puntos rep.",
 		progress: (data) =>
-			`${pyecoin} \`PyE coins\`: ${data.money.toLocaleString()} / 100,000\n<:pyestar:926334569903435776> \`Puntos de reputación\`: ${data.rep.toLocaleString()} / 2`,
+			`${pyecoin} \`PyE coins\`: ${data.money.toLocaleString()} / 100,000\n<:pyestar:1313345160549105774> \`Puntos de reputación\`: ${data.rep.toLocaleString()} / 2`,
 	},
 	// Nivel 12
 	{

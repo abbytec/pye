@@ -22,7 +22,7 @@ async function sugerir(sugerencia: string | null, interaction: ChatInputCommandI
 		suggest.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() });
 	else suggest.setAuthor({ name: interaction.member?.user.username ?? "Anonimo", iconURL: interaction.member?.user.displayAvatarURL() });
 
-	interaction.reply("<:check:1282933528580849664> - Se ha enviado tu sugerencia correctamente.");
+	interaction.reply("<:cross:1282933529566511155> - Se ha enviado tu sugerencia correctamente.");
 
 	canal
 		?.send({
