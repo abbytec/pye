@@ -11,7 +11,6 @@ export default {
 		const userId = newState.member?.id ?? oldState.member?.id;
 		const isBot = newState.member?.user.bot ?? oldState.member?.user.bot;
 		if (!userId || isBot) return;
-
 		const logChannel = (client.channels.cache.get(getChannelFromEnv("voiceLogs")) ??
 			client.channels.resolve(getChannelFromEnv("voiceLogs"))) as TextChannel;
 
@@ -55,7 +54,6 @@ export default {
 				}
 			);
 		}
-
-		if (embed.data.title) await logChannel.send({ embeds: [embed] });
+		if (embed.data.description) await logChannel.send({ embeds: [embed] });
 	},
 } as EventoConClienteForzado;
