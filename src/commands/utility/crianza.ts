@@ -5,7 +5,10 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { loadImage, createCanvas } from "@napi-rs/canvas";
+import path, { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 export default {
 	data: new SlashCommandBuilder()
 		.setName("crianza")
@@ -18,7 +21,7 @@ export default {
 			const canvas = createCanvas(565, 637);
 			const ctx = canvas.getContext("2d");
 
-			const backgroundImage = await loadImage("https://i.imgur.com/jiEe1xQ.png");
+			const backgroundImage = await loadImage(path.join(__dirname, `../../assets/Images/crianza.png`)); // https://i.imgur.com/jiEe1xQ.png
 			ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
 			const texto = interaction.options.getString("texto", true);

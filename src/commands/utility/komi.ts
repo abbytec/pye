@@ -9,6 +9,10 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
+import path, { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const GITHUB_API_URL = "https://api.github.com";
 const REPO_OWNER = "cat-milk";
@@ -179,7 +183,7 @@ export default {
 			if (/^(list|lista)$/i.test(textoInput)) {
 				const optionsList = Object.keys(optionAliases)
 					.map((opt) => `❥ \`${opt}\``)
-					.join("\n");
+					.join(" - ");
 				const listEmbed = new EmbedBuilder()
 					.setTitle("__**Lista de Opciones**__")
 					.setDescription(optionsList || "No hay opciones disponibles en este momento.")
@@ -204,7 +208,7 @@ export default {
 			// Cargar la imagen de fondo
 			const canvas = Canvas.createCanvas(640, 480);
 			const ctx = canvas.getContext("2d");
-			const backgroundImage = await Canvas.loadImage("https://i.imgur.com/9udmQFS.png");
+			const backgroundImage = await Canvas.loadImage(path.join(__dirname, `../../assets/Images/komi.png`)); // https://i.imgur.com/9udmQFS.png
 			ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
 			// Procesar el texto
