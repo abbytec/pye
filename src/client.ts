@@ -1,5 +1,5 @@
 // src/Client.ts
-import { ChannelType, Client, GatewayIntentBits, Partials, TextChannel, VoiceChannel } from "discord.js";
+import { ChannelType, Client, GatewayIntentBits, MessageFlags, Partials, TextChannel, VoiceChannel } from "discord.js";
 import { Command } from "./types/command.js"; // Asegúrate de definir la interfaz Command
 import { ICooldown } from "./Models/Cooldown.js";
 import { Rob } from "./commands/farming/rob.js";
@@ -8,8 +8,9 @@ import { IMoney, Money } from "./Models/Money.js";
 import { Agenda } from "agenda";
 import { getChannelFromEnv, getRoleFromEnv } from "./utils/constants.js";
 import Trending from "./Models/Trending.js";
-import { ICompartePost, ICompartePostModel, UltimosCompartePosts } from "./Models/CompartePostModel.js";
+import { ICompartePost, UltimosCompartePosts } from "./Models/CompartePostModel.js";
 import { AnyBulkWriteOperation } from "mongoose";
+import { inspect } from "util";
 
 interface VoiceFarming {
 	date: Date;
@@ -112,7 +113,8 @@ export class ExtendedClient extends Client {
 				(this.guilds.cache.get(process.env.GUILD_ID ?? "")?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({
 					content: `${
 						process.env.NODE_ENV === "development" ? `@here` : "<@220683580467052544> <@1088883078405038151> <@602240617862660096>"
-					}Error en promesa no capturado, razon: ${reason}`,
+					}Error en promesa no capturado, razon: ${reason}. Promesa: \`\`\`js\n${inspect(promise)}\`\`\``,
+					flags: MessageFlags.SuppressNotifications,
 				});
 			});
 
@@ -123,6 +125,7 @@ export class ExtendedClient extends Client {
 					content: `${
 						process.env.NODE_ENV === "development" ? `@here` : "<@220683580467052544> <@1088883078405038151> <@602240617862660096>"
 					}Error no capturado (${error.message}):\n \`\`\`js\n${error.stack}\`\`\``,
+					flags: MessageFlags.SuppressNotifications,
 				});
 			});
 			console.log("loading latest CompartePosts");
