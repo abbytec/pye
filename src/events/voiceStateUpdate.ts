@@ -21,7 +21,7 @@ export default {
 		if (!oldState.channelId && newState.channelId) {
 			embed.setColor(COLORS.okGreen);
 			embed.setAuthor({ name: newState.member?.user.tag ?? "Usuario", iconURL: newState.member?.user.displayAvatarURL() });
-			embed.setDescription(`${newState.member?.user.tag} has joined a voice channel.`);
+			embed.setDescription(`<@${newState.member?.user.id}> has joined a voice channel.`);
 			embed.setFields(
 				{ name: "Channel", value: newState.channel?.name ?? "Unknown", inline: true },
 				{ name: "Member Count", value: `${newState.channel?.members.size ?? 0}`, inline: true }
@@ -41,7 +41,7 @@ export default {
 		} else if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
 			embed.setColor(COLORS.warnOrange);
 			embed.setAuthor({ name: oldState.member?.user.tag ?? "Usuario", iconURL: oldState.member?.user.displayAvatarURL() });
-			embed.setDescription(`${oldState.member?.user.tag} has moved to a different voice channel.`);
+			embed.setDescription(`<@${oldState.member?.user.id}> has moved to a different voice channel.`);
 			embed.setFields(
 				{
 					name: "Previous Channel",
@@ -55,7 +55,6 @@ export default {
 				}
 			);
 		}
-		embed.addFields({ name: "User ID", value: userId, inline: false });
 
 		if (embed.data.title) await logChannel.send({ embeds: [embed] });
 	},
