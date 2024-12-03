@@ -143,7 +143,7 @@ async function getCouplesList(interaction: ChatInputCommandInteraction, couples:
 async function getJobImage(profile: any): Promise<AttachmentBuilder> {
 	const job = profile.job;
 	const sex = profile.gender;
-	const skin = profile.skin;
+	const skin = profile.skin === "Normal" ? "Intermedio" : profile.skin;
 	const styleIndex = Number(profile.style) - 1 || 0;
 
 	const stylesPath = path.resolve(process.cwd(), "src", "assets", "Pictures", "Profiles", sex, skin);

@@ -12,7 +12,7 @@ import { IUser } from "../../interfaces/IUser.js";
 import { increaseHomeMonthlyIncome } from "../../Models/Home.js";
 import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { calculateJobMultiplier, getRandomNumber } from "../../utils/generic.js";
-import { getChannelFromEnv } from "../../utils/constants.js";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { ExtendedClient } from "../../client.js";
 
@@ -70,7 +70,7 @@ export default {
 			const embed = new EmbedBuilder()
 				.setAuthor({ name: user.tag, iconURL: user.displayAvatarURL() })
 				.setDescription(texts[Math.floor(Math.random() * texts.length)](profitFormatted))
-				.setColor(0x00ff00)
+				.setColor(COLORS.okGreen)
 				.setTimestamp();
 
 			await replyOk(interaction, [embed]);
