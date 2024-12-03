@@ -26,7 +26,7 @@ export async function replyWarning(
 		messageToSend.embeds = [
 			new EmbedBuilder()
 				.setAuthor({ name: author ?? interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
-				.setDescription(process.env.NODE_ENV === "development" ? "⚠️ • " + message : "<:warning_custom:913093934832578601> • " + message)
+				.setDescription("⚠️ • " + message)
 				.setColor(COLORS.warnOrange)
 				.setTimestamp(),
 		];
