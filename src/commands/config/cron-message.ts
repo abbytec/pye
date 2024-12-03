@@ -48,11 +48,6 @@ export default {
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction) => {
-			// Verifica si el usuario tiene permisos de administrador
-			if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
-				return replyError(interaction, "No tienes permisos para usar este comando.");
-			}
-
 			const subcommand = interaction.options.getSubcommand();
 
 			if (subcommand === "view") {
