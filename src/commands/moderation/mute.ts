@@ -73,8 +73,8 @@ async function handleView(interaction: ChatInputCommandInteraction, member: Guil
 		const mutedRole = interaction.guild?.roles.cache.get(mutedRoleId);
 		const isVoiceMuted = member.voice.mute;
 
-		let description = "**Muteado por Rol:" + hasMutedRole ? "Sí (" + mutedRole?.name + ")" : "No";
-		description += "**En Canal de Voz:" + (member.voice.channel ? member.voice.channel.name : "No está conectado a ningú canal de voz.");
+		let description = "**Muteado por Rol:**" + (hasMutedRole ? "Sí (" + mutedRole?.name + ")" : "No");
+		description += "**En Canal de Voz:**" + (member.voice.channel ? member.voice.channel.name : "No está conectado a ningú canal de voz.");
 
 		if (!hasMutedRole && isVoiceMuted) {
 			description += "**Silenciado manualmente:** Sí";
