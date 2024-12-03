@@ -352,7 +352,7 @@ export const AUTHORIZED_BOTS = [
 ];
 
 export const messagesProcessingLimiter = new Bottleneck({
-	maxConcurrent: 5, // Máximo de mensajes a procesar en paralelo
+	maxConcurrent: 35, // Máximo de mensajes a procesar en paralelo
 	minTime: 10, // Tiempo mínimo entre procesamientos (ms)
 });
 

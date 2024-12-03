@@ -82,14 +82,14 @@ export default {
 		if (message.author.bot || message.author.system) return;
 
 		if (!message.content.startsWith(PREFIX)) {
-			messagesProcessingLimiter.schedule(async () => processCommonMessage(message, client));
+			messagesProcessingLimiter.schedule(async () => await processCommonMessage(message, client));
 		} else {
 			commandProcessingLimiter.schedule(async () => processPrefixCommand(message, client));
 		}
 	},
 };
 
-function processCommonMessage(message: Message, client: ExtendedClient) {
+async function processCommonMessage(message: Message, client: ExtendedClient) {
 	if (![getChannelFromEnv("mudae"), getChannelFromEnv("casinoPye")].includes(message.channel.id)) {
 		const moneyConfig = (message.client as ExtendedClient).getMoneyConfig(process.env.CLIENT_ID ?? "");
 		getCooldown(message.client as ExtendedClient, message.author.id, "farm-text", moneyConfig.text.time).then(async (time) => {
@@ -102,8 +102,8 @@ function processCommonMessage(message: Message, client: ExtendedClient) {
 			}
 		});
 
-		specificChannels(message, client);
-		checkChannel(message).then((isThankable) => {
+		await specificChannels(message, client);
+		await checkChannel(message).then((isThankable) => {
 			if (isThankable) {
 				checkHelp(message);
 			}
