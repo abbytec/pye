@@ -347,6 +347,8 @@ export const AUTHORIZED_BOTS = [
 	"1295616037974311012",
 	// Hook de reglas
 	"926516578315563008",
+	// Mudae
+	"432610292342587392",
 ];
 
 export const messagesProcessingLimiter = new Bottleneck({
