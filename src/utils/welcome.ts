@@ -4,7 +4,7 @@ import { getRoleFromEnv, COLORS, getChannel, getChannelFromEnv } from "./constan
 
 const MAX_MENTIONS_PER_MESSAGE = 3; // Define el límite de menciones por mensaje
 
-export async function sendWelcomeMessageProcessor(client: ExtendedClient, omitList: boolean = true) {
+export async function sendWelcomeMessageProcessor(client: ExtendedClient, omitList: boolean = true, channelId?: string) {
 	const guild = client.guilds.cache.get(process.env.GUILD_ID ?? "") as Guild;
 	if (omitList && ExtendedClient.newUsers.size === 0) return;
 	const newUserIds = Array.from(ExtendedClient.newUsers);
@@ -21,14 +21,14 @@ export async function sendWelcomeMessageProcessor(client: ExtendedClient, omitLi
 	const randomStaff = staffMembers[Math.floor(Math.random() * staffMembers.length)];
 
 	if (batches.length === 0) {
-		await sendMessage("", guild, randomStaff);
+		await sendMessage("", guild, randomStaff, channelId);
 	}
 
 	for (const batch of batches) {
 		const mentions = batch.map((id) => `<@${id}>`).join(", ");
 
 		if (!firstMessage) {
-			firstMessage = await sendMessage(mentions, guild, randomStaff);
+			firstMessage = await sendMessage(mentions, guild, randomStaff, channelId);
 		} else {
 			((await getChannel(guild, "general")) as TextChannel)
 				?.send({
@@ -49,7 +49,7 @@ export async function sendWelcomeMessageProcessor(client: ExtendedClient, omitLi
 	}
 }
 
-async function sendMessage(content: string, guild: Guild, randomStaff: string) {
+async function sendMessage(content: string, guild: Guild, randomStaff: string, channelId?: string) {
 	const embed = new EmbedBuilder()
 		.setColor(COLORS.pyeWelcome)
 		.setTitle("¡Bienvenid@s a la comunidad  👋🏻!")
@@ -75,7 +75,7 @@ async function sendMessage(content: string, guild: Guild, randomStaff: string) {
 		])
 		.setTimestamp()
 		.setFooter({ text: "¡Disfruten tu estancia!" });
-	return await ((await getChannel(guild, "general")) as TextChannel)
+	return await ((await getChannel(guild, "general", undefined, channelId)) as TextChannel)
 		?.send({
 			content: content,
 			embeds: [embed],

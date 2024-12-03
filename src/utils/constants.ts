@@ -174,11 +174,12 @@ export function getChannelFromEnv(channel: keyof typeof CHANNELS): string {
 export async function getChannel(
 	interaction: ChatInputCommandInteraction | Message | Guild,
 	channel: keyof typeof CHANNELS,
-	textBased?: boolean
+	textBased?: boolean,
+	channelId?: string
 ): Promise<Channel | undefined> {
 	getChannelFromEnv(channel);
 
-	const canal = interaction.client.channels.resolve(getChannelFromEnv(channel));
+	const canal = interaction.client.channels.resolve(channelId ?? getChannelFromEnv(channel));
 	if (textBased && !canal?.isTextBased() && !(interaction instanceof Guild)) {
 		await interaction.reply({
 			content: `No se pudo encontrar el canal de texto ${channel}. Por favor, contacta al administrador.`,
