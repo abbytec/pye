@@ -12,7 +12,7 @@ import { IUser } from "../../interfaces/IUser.js";
 import { increaseHomeMonthlyIncome } from "../../Models/Home.js";
 import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { calculateJobMultiplier, getRandomNumber } from "../../utils/generic.js";
-import { getChannelFromEnv } from "../../utils/constants.js";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { ExtendedClient } from "../../client.js";
 
@@ -98,7 +98,7 @@ export default {
 			// Crear embed de respuesta
 			const embed = new EmbedBuilder()
 				.setAuthor({ name: user.tag, iconURL: user.displayAvatarURL() })
-				.setColor(lose ? 0xff7f7f : 0x00ff00)
+				.setColor(lose ? COLORS.errRed : COLORS.okGreen)
 				.setTimestamp();
 
 			// Establecer la descripción
