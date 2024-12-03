@@ -130,7 +130,7 @@ async function handleToggle(interaction: ChatInputCommandInteraction, member: Gu
 
 			await ModLogs.findOneAndUpdate(
 				{ id: member.id, type: "Voice-mute", hiddenCase: { $ne: true } },
-				{ $set: { hiddenCase: true } },
+				{ $set: { hiddenCase: true, reasonUnpenalized: reason } },
 				{ sort: { date: -1 }, new: true, upsert: true }
 			);
 

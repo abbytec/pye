@@ -185,7 +185,7 @@ export default {
 							},
 						];
 						if (selectedCase.hiddenCase) {
-							fields.push({ name: "Motivo actual", value: selectedCase.reasonUnpenalized ?? "", inline: false });
+							fields.push({ name: "Motivo actual", value: selectedCase.reasonUnpenalized ?? "Razon desconocida", inline: false });
 						}
 
 						const caseEmbed = new EmbedBuilder()
