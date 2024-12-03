@@ -84,7 +84,7 @@ export default {
 		if (!message.content.startsWith(PREFIX)) {
 			messagesProcessingLimiter.schedule(async () => await processCommonMessage(message, client));
 		} else {
-			commandProcessingLimiter.schedule(async () => processPrefixCommand(message, client));
+			commandProcessingLimiter.schedule(async () => await processPrefixCommand(message, client));
 		}
 	},
 };
