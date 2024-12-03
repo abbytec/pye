@@ -307,7 +307,6 @@ function startGame(
 					otherCard = cards.randomKey(1);
 					changeCard(null, otherCard, cardsGame, cards);
 					removeCards(null, otherCard, cards);
-					await i.deferUpdate();
 					await splitGame(
 						interactionResponse,
 						gameCards,
