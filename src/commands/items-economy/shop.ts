@@ -147,7 +147,7 @@ export default {
 						}))
 					)
 					.setFooter({ text: `Página ${page}/${totalPages}` })
-					.setColor(0x0000ff)
+					.setColor(COLORS.pyeLightBlue)
 					.setTimestamp();
 
 				// Actualizar botones
