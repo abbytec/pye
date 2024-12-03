@@ -79,8 +79,8 @@ async function processHelpForumPost(thread: ThreadChannel) {
 		const guild = await thread.guild.fetch();
 
 		const newField = {
-			name: `:large_blue_diamond: <${(await thread.fetchOwner())?.user?.username}> necesita tu ayuda en **${thread.parent?.name}**`,
-			value: `> Su problema : <#${thread.id}>`,
+			name: `:large_blue_diamond: Se necesita tu ayuda en **${thread.parent?.name}**`,
+			value: `	 <#${thread.id}>`,
 		};
 
 		const fetchedMessages = await canal.messages.fetch({ limit: 2 });
