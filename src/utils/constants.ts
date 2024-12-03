@@ -337,7 +337,7 @@ export const EMOJIS = {
 
 export const DISBOARD_UID = "302050872383242240";
 
-export const pyecoin = "<a:pyecoin:911087695864950854>";
+export const pyecoin = "<a:PyEcoin:908088648245850142>";
 
 // Bots autorizados a enviar enlaces de discord
 export const AUTHORIZED_BOTS = [
