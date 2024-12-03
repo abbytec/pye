@@ -146,10 +146,9 @@ async function processPrefixCommand(message: Message, client: ExtendedClient) {
 async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 	switch (msg.channel.id) {
 		case getChannelFromEnv("recursos"):
-			msg.react("💤").catch(() => null);
-			msg.react("♻").catch(() => null);
-			msg.react("922955890200576001").catch(() => null);
-			msg.react("796227219591921704").catch(() => null);
+			msg.react("👍").catch(() => null);
+			msg.react("👎").catch(() => null);
+			msg.react("⭐").catch(() => null);
 			msg.startThread({ name: `${msg.author.username}'s Thread` });
 			checkRole(msg, getRoleFromEnv("granAportador"), 50);
 			break;
