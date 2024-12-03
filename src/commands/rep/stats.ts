@@ -15,11 +15,11 @@ export default {
 	group: "🥳 - Puntos de reputación",
 	data: new SlashCommandBuilder()
 		.setName("stats")
-		.addUserOption((option) => option.setName("usuario").setDescription("menciona a un usuario").setRequired(true))
+		.addUserOption((option) => option.setName("usuario").setDescription("menciona a un usuario").setRequired(false))
 		.setDescription("Muestra todas las estadisticas de tu perfil dentro del servidor"),
 	execute: async (msg: ChatInputCommandInteraction) => {
 		// get user
-		const member = msg.options.getUser("usuario", true);
+		const member = msg.options.getUser("usuario", false) ?? msg.user;
 		const guildMember = await msg.guild?.members.fetch(member.id); // 'user' es de tipo 'User'
 
 		// validate bot
