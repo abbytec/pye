@@ -1,6 +1,6 @@
 // helpers/composeMiddlewares.ts
 import { Finalware, Middleware, PostHandleable } from "../types/middleware.js";
-import { ChatInputCommandInteraction, TextChannel } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags, TextChannel } from "discord.js";
 import { getChannelFromEnv } from "../utils/constants.js";
 
 /**
@@ -38,6 +38,7 @@ export const composeMiddlewares = (
 									? `<@${interaction.user.id}>`
 									: "<@220683580467052544> <@1088883078405038151> <@602240617862660096>"
 							}Error en el comando: \`${interaction.commandName}\`\n\`\`\`js\n${e.stack}\`\`\``,
+							flags: MessageFlags.SuppressNotifications,
 						});
 					})) || {};
 				// Después de ejecutar el handler final, ejecutamos los postHandlers si existen
