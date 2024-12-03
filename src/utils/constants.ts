@@ -81,6 +81,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	retos: "1309615377235312681",
 	anuncios: "1310011599003586600",
 	invitaciones: "1296190632317943908",
+	memes: "1296190631533608960",
 
 	// staff
 	puntos: "1296190632317943913",

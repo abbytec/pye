@@ -223,9 +223,10 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 			break;
 		}
 		case getChannelFromEnv("memes"):
-			msg.react("👍").catch(() => null);
-			msg.react("👎").catch(() => null);
-			msg.react("⭐").catch(() => null);
+			msg.react("💤").catch(() => null);
+			msg.react("♻️").catch(() => null);
+			msg.react("<:xdlol:922955890200576001>").catch(() => null);
+			msg.react("<:KEKW:796227219591921704>").catch(() => null);
 			checkRole(msg, getRoleFromEnv("especialistaEnMemes"), 75);
 			break;
 		case getChannelFromEnv("filosofiaPolitica"):
