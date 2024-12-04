@@ -10,7 +10,7 @@ import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
-import { getChannelFromEnv } from "../../utils/constants.js";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 
 export default {
 	group: "💍 - Matrimonios (Casino)",
@@ -106,7 +106,7 @@ export default {
 						inline: true,
 					},
 				])
-				.setColor(0xff69b4) // Color rosa para simbolizar el amor
+				.setColor(COLORS.pyeCutePink)
 				.setTimestamp();
 
 			// Enviar la propuesta en el canal

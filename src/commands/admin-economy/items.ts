@@ -276,7 +276,7 @@ async function añadirItem(interaction: ChatInputCommandInteraction) {
 				{ name: "Grupo", value: group ?? "Ninguno", inline: true },
 				{ name: "Timeout", value: timeoutStr ?? "No tiene.", inline: true }
 			)
-			.setColor(0x90ee90);
+			.setColor(COLORS.okGreen);
 
 		await replyOk(interaction, [embed]);
 
@@ -401,7 +401,7 @@ async function editarItem(interaction: ChatInputCommandInteraction) {
 			.setTitle("Ítem editado")
 			.setDescription(`Se ha editado el ítem \`${item.name}\`.`)
 			.addFields(fields)
-			.setColor(0x90ee90);
+			.setColor(COLORS.okGreen);
 
 		await replyOk(interaction, [embed]);
 
@@ -433,7 +433,9 @@ async function eliminarItem(interaction: ChatInputCommandInteraction) {
 	try {
 		await item.deleteOne();
 
-		await replyOk(interaction, [new EmbedBuilder().setDescription(`Se ha eliminado el ítem llamado \`${item.name}\`.`).setColor(0x90ee90)]);
+		await replyOk(interaction, [
+			new EmbedBuilder().setDescription(`Se ha eliminado el ítem llamado \`${item.name}\`.`).setColor(COLORS.okGreen),
+		]);
 
 		// Registrar en el canal de logs
 		return {

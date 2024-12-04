@@ -4,6 +4,7 @@ import path, { dirname } from "path";
 import GIFEncoder from "gif-encoder";
 import { createCanvas, Image, loadImage } from "@napi-rs/canvas";
 import { fileURLToPath } from "url";
+import { COLORS } from "./constants.js";
 
 const SIZE = 112;
 
@@ -89,7 +90,7 @@ function render(
 			// Configuración de los GIF frames
 			const gif = new GIFEncoder(size, size);
 			gif.setDelay(delay);
-			gif.setTransparent(0x00ff00);
+			gif.setTransparent(COLORS.okGreen);
 			gif.setRepeat(0);
 
 			const chunks: Buffer[] = [];

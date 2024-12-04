@@ -6,7 +6,7 @@ import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { replyError } from "../../utils/messages/replyError.js";
-import { getChannelFromEnv } from "../../utils/constants.js";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { IPetDocument, Pets } from "../../Models/Pets.js";
@@ -124,7 +124,7 @@ async function showPet(interaction: ChatInputCommandInteraction, member: GuildMe
 			{ name: "Higiene", value: getBars(petInfo.shower), inline: true },
 		])
 		.setTimestamp()
-		.setColor(0x00ff00);
+		.setColor(COLORS.okGreen);
 
 	await replyOk(interaction, [embed], undefined, undefined, [attachment]);
 }

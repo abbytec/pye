@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, DMChannel, TextChannel, GuildMember } from "discord.js";
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
 import loadEnvVariables from "../../utils/environment.js";
+import { COLORS } from "../../utils/constants.js";
 
 loadEnvVariables();
 
@@ -43,7 +44,7 @@ export default {
 		const displayName = interaction.member instanceof GuildMember ? interaction.member.displayName : interaction.user.username;
 
 		const exampleEmbed = new EmbedBuilder()
-			.setColor(0xff69b4)
+			.setColor(COLORS.pyeCutePink)
 			.setTitle(`Holi ${displayName} charla un ratito conmigo seré buena c:`)
 
 			.setAuthor({

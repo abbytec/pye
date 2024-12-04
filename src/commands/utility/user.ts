@@ -7,6 +7,7 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
+import { COLORS } from "../../utils/constants.js";
 
 // Mapeo de estados de presencia
 const statusMap: Record<string, string> = {
@@ -118,7 +119,7 @@ export default {
 						text: `Pedido por: ${interaction.user.username}`,
 						iconURL: interaction.user.displayAvatarURL(),
 					})
-					.setColor(0x00ff00)
+					.setColor(COLORS.okGreen)
 					.setTimestamp();
 
 				// Enviar el embed como respuesta

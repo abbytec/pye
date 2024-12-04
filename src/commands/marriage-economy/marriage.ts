@@ -131,7 +131,7 @@ async function handleAcceptMarriage(
 		.setTitle("Felicidades, tienen boda 🎉!")
 		.setDescription(`¡ \`${interaction.user.username}\` y \`${targetUser.username}\` ahora están casados 🎉!\nVivan los novios 💕`)
 		.setImage(randomGif)
-		.setColor(0xff69b4)
+		.setColor(COLORS.pyeCutePink)
 		.setTimestamp();
 
 	return await replyOk(interaction, [embed]);

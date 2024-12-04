@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, TextChannel, Message } from "discord.js";
 import { Command } from "../../types/command.js";
-import { getChannel } from "../../utils/constants.js";
+import { COLORS, getChannel } from "../../utils/constants.js";
 
 const data = new SlashCommandBuilder()
 	.setName("sugerir")
@@ -13,7 +13,7 @@ async function sugerir(sugerencia: string | null, interaction: ChatInputCommandI
 	const canal = (await getChannel(interaction, "sugerencias", true)) as TextChannel | null;
 
 	let suggest = new EmbedBuilder()
-		.setColor(0x1414b8)
+		.setColor(COLORS.pyeLightBlue)
 		.setTitle("Nueva sugerencia !")
 		.setDescription(sugerencia)
 		.setTimestamp()

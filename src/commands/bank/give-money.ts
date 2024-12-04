@@ -4,7 +4,7 @@ import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
-import { pyecoin } from "../../utils/constants.js";
+import { COLORS, pyecoin } from "../../utils/constants.js";
 import { IUser } from "../../interfaces/IUser.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
@@ -70,7 +70,7 @@ export default {
 				new EmbedBuilder()
 					.setAuthor({ name: author.tag, iconURL: author.displayAvatarURL() })
 					.setDescription(`**${pyecoin} ${cantidad.toLocaleString()}** PyE Coins han sido transferidas a ${targetUser.toString()}.`)
-					.setColor(0x00ff00)
+					.setColor(COLORS.okGreen)
 					.setTimestamp(),
 			]);
 		},

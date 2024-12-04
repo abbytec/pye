@@ -4,7 +4,7 @@ import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
-import { pyecoin } from "../../utils/constants.js";
+import { COLORS, pyecoin } from "../../utils/constants.js";
 import { IUser } from "../../interfaces/IUser.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
@@ -46,7 +46,7 @@ export default {
 				new EmbedBuilder()
 					.setAuthor({ name: user.tag, iconURL: user.displayAvatarURL() })
 					.setDescription(`**${pyecoin} ${cantidad.toLocaleString()}** PyE Coins fueron sacadas del banco.`)
-					.setColor(0xebae34)
+					.setColor(COLORS.okGreen)
 					.setTimestamp(),
 			]);
 		},

@@ -4,7 +4,7 @@ import { GuildMember, EmbedBuilder, Message, Guild, TextChannel } from "discord.
 import { Money } from "../Models/Money.js";
 import { Users } from "../Models/User.js";
 import { Bumps } from "../Models/Bump.js";
-import { pyecoin } from "./constants.js";
+import { COLORS, pyecoin } from "./constants.js";
 import { ExtendedClient } from "../client.js";
 import { checkQuestLevel, IQuest } from "./quest.js";
 import { increaseHomeMonthlyIncome } from "../Models/Home.js";
@@ -71,7 +71,7 @@ export async function bumpHandler(client: ExtendedClient, message: Message): Pro
 
 		// Crear y enviar el embed de agradecimiento
 		const embed = new EmbedBuilder()
-			.setColor(0x00ff00)
+			.setColor(COLORS.okGreen)
 			.setAuthor({
 				name: member.user.tag,
 				iconURL: member.user.displayAvatarURL(),
@@ -84,7 +84,7 @@ export async function bumpHandler(client: ExtendedClient, message: Message): Pro
 		setTimeout(async () => {
 			try {
 				await member.send({
-					embeds: [new EmbedBuilder().setDescription("¡ Ya puedes hacer bump de nuevo !").setColor(0x00ff00)],
+					embeds: [new EmbedBuilder().setDescription("¡ Ya puedes hacer bump de nuevo !").setColor(COLORS.okGreen)],
 				});
 			} catch (error) {
 				console.error(`No se pudo enviar el DM al usuario con ID: ${ganadorId}`, error);

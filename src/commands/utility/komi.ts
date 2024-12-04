@@ -11,6 +11,7 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { COLORS } from "../../utils/constants.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -187,7 +188,7 @@ export default {
 				const listEmbed = new EmbedBuilder()
 					.setTitle("__**Lista de Opciones**__")
 					.setDescription(optionsList || "No hay opciones disponibles en este momento.")
-					.setColor(0x00ae86)
+					.setColor(COLORS.pyeWelcome)
 					.setTimestamp();
 				return await replyOk(interaction, [listEmbed]);
 			}

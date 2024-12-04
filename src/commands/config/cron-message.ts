@@ -9,6 +9,7 @@ import { CronMessage } from "../../Models/CronMessage.js";
 import { ExtendedClient } from "../../client.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { DateTime } from "luxon";
+import { COLORS } from "../../utils/constants.js";
 
 export default {
 	group: "⚙️ - Administración - General",
@@ -58,7 +59,7 @@ export default {
 				}
 
 				// Crea un embed con la lista de mensajes programados
-				const embed = new EmbedBuilder().setTitle("📋 Mensajes Programados").setColor(0x00ae86).setTimestamp();
+				const embed = new EmbedBuilder().setTitle("📋 Mensajes Programados").setColor(COLORS.pyeLightBlue).setTimestamp();
 
 				cronMessages.forEach((cronMsg) => {
 					embed.addFields({

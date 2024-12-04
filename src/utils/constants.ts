@@ -331,6 +331,7 @@ export const COLORS = {
 	errRed: 0xef5250,
 	warnOrange: 0xffae42,
 	nitroBooster: 0xf47fff,
+	pyeCutePink: 0xff69b4,
 };
 
 export const EMOJIS = {
