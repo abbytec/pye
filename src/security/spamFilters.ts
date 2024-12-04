@@ -1,4 +1,4 @@
-import { Message, GuildMember, TextChannel, User, ForumChannel, MediaChannel, NewsChannel, Guild } from "discord.js";
+import { Message, GuildMember, TextChannel, User, ForumChannel, MediaChannel, NewsChannel, Guild, Collection, Role } from "discord.js";
 import { ExtendedClient } from "../client.js";
 import { applyTimeout } from "../commands/moderation/timeout.js";
 import { COLORS, getChannelFromEnv } from "../utils/constants.js";
@@ -100,12 +100,12 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 
 const mentionTracker = new Map();
 export async function checkMentionSpam(message: Message<boolean>, client: ExtendedClient) {
-	const mentionedUsers = message.mentions.users;
+	const mentions = new Collection<string, User | Role>(message.mentions.users).concat(message.mentions.roles);
 	const authorId = message.author.id;
 
 	let deleted = false;
 
-	mentionedUsers.forEach(async (mentionedUser) => {
+	mentions.forEach(async (mentionedUser) => {
 		const mentionedId = mentionedUser.id;
 		const key = `${authorId}-${mentionedId}`;
 
