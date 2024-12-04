@@ -119,6 +119,8 @@ class Trending {
 		let map: Map<string, number>;
 		let factor: number;
 
+		if (!id) return;
+
 		switch (type) {
 			case "emoji":
 				map = this.emojis;
