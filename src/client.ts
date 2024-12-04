@@ -1,5 +1,5 @@
 // src/Client.ts
-import { ChannelType, Client, GatewayIntentBits, MessageFlags, Partials, TextChannel, VoiceChannel } from "discord.js";
+import { ChannelType, Client, GatewayIntentBits, MessageFlags, Partials, StickerType, TextChannel, VoiceChannel } from "discord.js";
 import { Command } from "./types/command.js"; // Asegúrate de definir la interfaz Command
 import { ICooldown } from "./Models/Cooldown.js";
 import { Rob } from "./commands/farming/rob.js";
@@ -11,6 +11,7 @@ import Trending from "./Models/Trending.js";
 import { ICompartePost, UltimosCompartePosts } from "./Models/CompartePostModel.js";
 import { AnyBulkWriteOperation } from "mongoose";
 import { inspect } from "util";
+import { Sticker } from "discord.js";
 
 interface VoiceFarming {
 	date: Date;
@@ -32,6 +33,7 @@ export class ExtendedClient extends Client {
 	public static readonly newUsers: Set<string> = new Set();
 	public static readonly ultimosCompartePosts: Map<string, ICompartePost[]> = new Map();
 	public static readonly trending: Trending = new Trending();
+	private static readonly stickerTypeCache: Map<string, StickerType> = new Map();
 
 	constructor() {
 		super({
@@ -259,5 +261,15 @@ export class ExtendedClient extends Client {
 		} catch (error) {
 			console.error("Error al guardar CompartePosts:", error);
 		}
+	}
+
+	public getStickerTypeCache(sticker: Sticker) {
+		return (
+			ExtendedClient.stickerTypeCache.get(sticker.id) ??
+			sticker.fetch().then((sticker) => {
+				ExtendedClient.stickerTypeCache.set(sticker.id, sticker.type ?? StickerType.Guild);
+				return sticker.type;
+			})
+		);
 	}
 }

@@ -8,6 +8,7 @@ import {
 	Message,
 	PublicThreadChannel,
 	Sticker,
+	StickerType,
 	TextChannel,
 } from "discord.js";
 import { ExtendedClient } from "../client.js";
@@ -109,7 +110,7 @@ async function processCommonMessage(message: Message, client: ExtendedClient) {
 			}
 		});
 		message.stickers.forEach((sticker: Sticker) => {
-			ExtendedClient.trending.add("sticker", sticker.id);
+			if (client.getStickerTypeCache(sticker) === StickerType.Guild) ExtendedClient.trending.add("sticker", sticker.id);
 		});
 		const emojiIds = [...message.content.matchAll(/<a?:\w+:(\d+)>/g)].map((match) => match[1]) || [];
 		emojiIds.forEach((emojiId: string) => {
