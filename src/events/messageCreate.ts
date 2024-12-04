@@ -127,7 +127,7 @@ async function processPrefixCommand(message: Message, client: ExtendedClient) {
 	const command = client.commands.get(commandName);
 
 	if (!command) {
-		message.reply("Ese comando no existe.");
+		message.reply("Ese comando no existe. Prueba escribiendo /help.");
 		return;
 	}
 
@@ -135,7 +135,7 @@ async function processPrefixCommand(message: Message, client: ExtendedClient) {
 		if (command.executePrefix) {
 			await command.executePrefix(message, commandArgs);
 		} else {
-			message.reply("Este comando no soporta prefijos.");
+			message.reply("Este comando se actualizó a Slash Command :point_right: /.");
 		}
 	} catch (error) {
 		console.error(`Error ejecutando el comando ${commandName}:`, error);

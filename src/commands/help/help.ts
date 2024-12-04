@@ -10,6 +10,7 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 import { COLORS, getRoles } from "../../utils/constants.js";
 import { ExtendedClient } from "../../client.js";
 import { replyError } from "../../utils/messages/replyError.js";
+import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 
 export default {
 	group: "📜 - Ayuda",
@@ -18,7 +19,7 @@ export default {
 		.setDescription("Muestra la lista de comandos disponibles agrupados por grupo.")
 		.addStringOption((option) => option.setName("grupo").setDescription("Nombre del grupo para filtrar").setRequired(false)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("help", 6e4), deferInteraction()],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const client = interaction.client as ExtendedClient;
 			const member = interaction.member as GuildMember;
