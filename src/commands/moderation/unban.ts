@@ -10,6 +10,7 @@ import { ModLogs } from "../../Models/ModLogs.js";
 import { logMessages } from "../../utils/finalwares/logMessages.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
+import { replyWarning } from "../../utils/messages/replyWarning.js";
 
 export default {
 	group: "⚙️ - Administración y Moderación",
@@ -48,9 +49,9 @@ export default {
 			);
 
 			if (!latestTimeout) {
-				return await replyError(
+				return await replyWarning(
 					interaction,
-					"Este usuario no tiene bans registrados en la base de datos.\nSi fue baneado manualmete, ya está desbaneado!"
+					"Este usuario no tiene bans registrados en la base de datos.\nSi ha sido baneado manualmete, a partir de ahora está desbaneado!"
 				);
 			}
 

@@ -26,7 +26,7 @@ export default {
 				// Verificar si el baneo fue realizado por un bot
 				if (!executor.bot) {
 					await channel?.send({
-						content: `El miembro ${targetUser.username} (${memberId}) fue baneado manualmente por ${executor.tag}.\nPor lo que sus datos permanecerán en la db.`,
+						content: `El miembro **${targetUser.username} (${memberId})** fue baneado manualmente por **${executor.tag}**.\nPor lo que sus datos permanecerán en la db.`,
 					});
 					return;
 				}
@@ -65,6 +65,20 @@ export default {
 				channel?.send({ embeds: [embed] });
 
 				console.log(`Datos de ${targetUser.username} eliminados y removidos de Redis.`);
+			} else if (entry.action === AuditLogEvent.MemberBanRemove) {
+				if (!target || entry.targetType !== "User" || !executor) return;
+				let targetUser = target as User;
+				const memberId = targetUser.id;
+
+				const channel = guild.channels.resolve(getChannelFromEnv("bansanciones")) as TextChannel | null;
+
+				// Verificar si el baneo fue realizado por un bot
+				if (!executor.bot) {
+					await channel?.send({
+						content: `El miembro **${targetUser.username} (${memberId})** fue desbaneado manualmente por **${executor.tag}**.`,
+					});
+					return;
+				}
 			}
 		} catch (error) {
 			console.error(`Error en el handler de GuildAuditLogEntryCreate:`, error);
