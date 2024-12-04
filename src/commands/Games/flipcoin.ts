@@ -36,7 +36,7 @@ export default {
 		[
 			verifyIsGuild(process.env.GUILD_ID ?? ""),
 			verifyChannel(getChannelFromEnv("casinoPye")),
-			verifyCooldown("roulette", 3),
+			verifyCooldown("flipcoin", 3000),
 			deferInteraction(),
 		],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {

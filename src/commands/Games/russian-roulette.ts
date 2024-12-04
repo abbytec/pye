@@ -11,6 +11,7 @@ import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { replyInfo } from "../../utils/messages/replyInfo.js";
+import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 
 let data: {
 	fin: number;
@@ -29,20 +30,25 @@ export default {
 		.setName("russian-roulette")
 		.setDescription("Inicia un juego de ruleta o coloca tu apuesta en un juego existente.")
 		.addIntegerOption((option) =>
-			option.setName("cantidad").setDescription("la cantidad que quieres apostar (Máximo 1000)").setRequired(true)
+			option.setName("cantidad").setDescription("la cantidad que quieres apostar (Máximo 7300)").setRequired(true)
 		),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
+		[
+			verifyIsGuild(process.env.GUILD_ID ?? ""),
+			verifyChannel(getChannelFromEnv("casinoPye")),
+			verifyCooldown("russian-roulette", 3000),
+			deferInteraction(),
+		],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			// Validar datos
-			if (amount < 0 || amount > 1000 || amount > userData.cash)
+			if (amount < 0 || amount > 7300 || amount > userData.cash)
 				return replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "mayor que 100" : "menor que 500"
+						amount < 100 ? "mayor que 100" : "menor que 7300"
 					} o no tienes suficiente dinero`
 				);
 			// Comenzar el juego

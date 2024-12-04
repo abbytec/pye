@@ -20,24 +20,24 @@ export default {
 		.setName("slotmachine")
 		.setDescription("Tira del tragaperras y apuesta tu dinero.")
 		.addIntegerOption((option) =>
-			option.setName("cantidad").setDescription("la cantidad que quieres apostar (Máximo 300)").setRequired(true)
+			option.setName("cantidad").setDescription("la cantidad que quieres apostar (Máximo 900)").setRequired(true)
 		),
 
 	execute: composeMiddlewares(
 		[
 			verifyIsGuild(process.env.GUILD_ID ?? ""),
 			verifyChannel(getChannelFromEnv("casinoPye")),
-			verifyCooldown("roulette", 3),
+			verifyCooldown("slotmachine", 3000),
 			deferInteraction(),
 		],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
-			if (amount < 1 || amount > 300 || amount > userData.cash)
+			if (amount < 1 || amount > 900 || amount > userData.cash)
 				return replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "mayor que 100" : "menor que 500"
+						amount < 100 ? "mayor que 100" : "menor que 900"
 					} o no tienes suficiente dinero`
 				);
 

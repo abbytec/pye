@@ -12,6 +12,7 @@ import { calculateJobMultiplier, checkRole } from "../../utils/generic.js";
 import { increaseHomeMonthlyIncome } from "../../Models/Home.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { checkQuestLevel, IQuest } from "../../utils/quest.js";
+import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 const level = new Map();
 
 export default {
@@ -20,21 +21,26 @@ export default {
 		.setName("chicken-fight")
 		.setDescription("Apuesta dinero metiendo tu pollo a una pelea 🐔.")
 		.addIntegerOption((option) =>
-			option.setName("cantidad").setDescription("la cantidad que quieres apostar (Máximo 500 pyecoins)").setRequired(true)
+			option.setName("cantidad").setDescription("la cantidad que quieres apostar (Máximo 750 pyecoins)").setRequired(true)
 		),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
+		[
+			verifyIsGuild(process.env.GUILD_ID ?? ""),
+			verifyChannel(getChannelFromEnv("casinoPye")),
+			verifyCooldown("chicken-fight", 3000),
+			deferInteraction(),
+		],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 
 			// Verificar que el monto sea válido
-			if (amount < 0 || amount > 300 || amount > userData.cash)
+			if (amount < 0 || amount > 750 || amount > userData.cash)
 				return await replyError(interaction, "Se ingresó una cantidad inválida o no tienes suficiente dinero");
 
 			// Verificar si el usuario posee el ítem en su inventario
-			const data = await Shop.findOne({ name: { $regex: RegExp("chicken", "gi") } })
+			const data = await Shop.findOne({ name: { $regex: /chicken/gi } })
 				.lean()
 				.exec();
 			if (!data)

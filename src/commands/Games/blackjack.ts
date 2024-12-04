@@ -28,6 +28,7 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { checkQuestLevel, IQuest } from "../../utils/quest.js";
+import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 const game = new Set();
 const Aces = [
 	"<:A_clubs:917537119772213289>",
@@ -60,58 +61,58 @@ const buttons = [
 ];
 
 const STATIC_CARDS: Record<string, number | "relatable"> = {
-	"<:2_clubs:917517033036455956>": 2,
-	"<:2_diamonds:917517047162867732>": 2,
-	"<:2_hearts:917517059213115422>": 2,
-	"<:2_spades:917517069061328946>": 2,
-	"<:3_clubs:917517080629223466>": 3,
-	"<:3_diamonds:917517092788514866>": 3,
-	"<:3_hearts:917517108785598484>": 3,
-	"<:3_spades:917517116226306088>": 3,
-	"<:4_clubs:917517128507215953>": 4,
-	"<:4_diamonds:917517140817489980>": 4,
-	"<:4_hearts:917517148673425418>": 4,
-	"<:4_spades:917517156441284608>": 4,
-	"<:5_clubs:917517170580275260>": 5,
-	"<:5_diamonds:917517186124349511>": 5,
-	"<:5_hearts:917517203698491412>": 5,
-	"<:5_spades:917517221327147018>": 5,
-	"<:6_hearts:917517288956121149>": 6,
-	"<:6_diamonds:917537622048526417>": 6,
-	"<:6_clubs:917537642311217193>": 6,
-	"<:6_spades:917537841129619506>": 6,
-	"<:7_clubs:917517371546152971>": 7,
-	"<:7_diamonds:917517387711016960>": 7,
-	"<:7_hearts:917517408787370024>": 7,
-	"<:7_spades:917537540922282085>": 7,
-	"<:8_clubs:917517528224383058>": 8,
-	"<:8_diamonds:917517544041086976>": 8,
-	"<:8_hearts:917517559304167485>": 8,
-	"<:8_spades:917517594368557066>": 8,
-	"<:9_diamonds:917517667697590392>": 9,
-	"<:9_hearts:917517686202826782>": 9,
-	"<:9_spades:917517710932443166>": 9,
-	"<:9_clubs:917537476971749446>": 9,
-	"<:10_clubs:917517756398714951>": 10,
-	"<:10_hearts:917517806973640726>": 10,
-	"<:10_spades:917517827253108807>": 10,
-	"<:10_diamonds:917537410785615942>": 10,
-	"<:J_clubs:917518083646693438>": 10,
-	"<:J_diamonds:917536769430396968>": 10,
-	"<:J_spades:917536971260305428>": 10,
-	"<:J_hearts:917537022485348434>": 10,
-	"<:Q_clubs:917518386601295882>": 10,
-	"<:Q_diamonds:917518418750603265>": 10,
-	"<:Q_hearts:917518431585181707>": 10,
-	"<:Q_spades:917518454813245452>": 10,
-	"<:K_diamonds:917518209991725057>": 10,
-	"<:K_hearts:917518224625655828>": 10,
-	"<:K_spades:917536416798478408>": 10,
-	"<:K_clubs:917536705656008754>": 10,
-	"<:A_clubs:917537119772213289>": "relatable",
-	"<:A_diamonds:917537145315524658>": "relatable",
-	"<:A_hearts:917537176001052672>": "relatable",
-	"<:A_spades:917537196402176041>": "relatable",
+	"<:clubs_2:1313496389254381589>": 2,
+	"<:diamonds_2:1313494931733610646>": 2,
+	"<:hearts_2:1313495120900919336>": 2,
+	"<:spades_2:1313496103852834887>": 2,
+	"<:clubs_3:1313496390789365902>": 3,
+	"<:diamonds_3:1313501116285190156>": 3,
+	"<:hearts_3:1313495122897272914>": 3,
+	"<:spades_3:1313496105459253319>": 3,
+	"<:clubs_4:1313494910326018139>": 4,
+	"<:diamonds_4:1313494936091492424>": 4,
+	"<:hearts_4:1313495302350700614>": 4,
+	"<:spades_4:1313496107715657839>": 4,
+	"<:clubs_5:1313494911923781634>": 5,
+	"<:diamonds_5:1313494964990115931>": 5,
+	"<:hearts_5:1313495303869173851>": 5,
+	"<:spades_5:1313496109213290506>": 5,
+	"<:hearts_6:1313495305462878260>": 6,
+	"<:diamonds_6:1313494967754424340>": 6,
+	"<:clubs_6:1313494913614217246>": 6,
+	"<:spades_6:1313496110941343786>": 6,
+	"<:clubs_7:1313494915237412884>": 7,
+	"<:diamonds_7:1313494969431887893>": 7,
+	"<:hearts_7:1313496023208820788>": 7,
+	"<:spades_7:1313496112543436880>": 7,
+	"<:clubs_8:1313494917237968896>": 8,
+	"<:diamonds_8:1313494971147616366>": 8,
+	"<:hearts_8:1313496025209765958>": 8,
+	"<:spades_8:1313496114573479957>": 8,
+	"<:diamonds_9:1313494973118943272>": 9,
+	"<:hearts_9:1313496027235614783>": 9,
+	"<:spades_9:1313496116716638260>": 9,
+	"<:clubs_9:1313494919024738366>": 9,
+	"<:clubs_10:1313494921231077446>": 10,
+	"<:hearts_10:1313496029076656281>": 10,
+	"<:spades_10:1313504994925744180>": 10,
+	"<:diamonds_10:1313494975412965458>": 10,
+	"<:clubs_J:1313494925685555240>": 10,
+	"<:diamonds_J:1313495114475245648>": 10,
+	"<:spades_J:1313496184635134042>": 10,
+	"<:hearts_J:1313496097263452210>": 10,
+	"<:clubs_Q:1313494929619812392>": 10,
+	"<:diamonds_Q:1313495119101427792>": 10,
+	"<:hearts_Q:1313496101927780392>": 10,
+	"<:spades_Q:1313496187944566885>": 10,
+	"<:diamonds_K:1313495116647895111>": 10,
+	"<:hearts_K:1313496099717251092>": 10,
+	"<:spades_K:1313496186245611550>": 10,
+	"<:clubs_K:1313494927656620062>": 10,
+	"<:clubs_A:1313494923487612978>": "relatable",
+	"<:diamonds_A:1313494976914653258>": "relatable",
+	"<:hearts_A:1313496031165681674>": "relatable",
+	"<:spades_A:1313496182923989142>": "relatable",
 };
 
 export default {
@@ -119,17 +120,17 @@ export default {
 		.setName("blackjack")
 		.setDescription("Juega a las cartas con el bot, quien llegue a estar más cerca sin pasarse u obtenga 21, gana.")
 		.addIntegerOption((option) =>
-			option.setName("cantidad").setDescription("la cantidad que quieres apostar (Máximo 350)").setRequired(true)
+			option.setName("cantidad").setDescription("la cantidad que quieres apostar (Máximo 1100)").setRequired(true)
 		),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye"))],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), verifyCooldown("blackjack", 3000)],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const amount = interaction.options.getInteger("cantidad", true);
 			let data = await getOrCreateUser(interaction.user.id);
 			if (amount < 0) return replyError(interaction, "Debe ser mayor a 0 claro.");
 			if (data.cash < amount) return replyError(interaction, "No tienes suficiente para apostar.");
-			if (amount > 350) return replyError(interaction, "No puedes apostar más de 350 PyE Coins.");
+			if (amount > 1100) return replyError(interaction, "No puedes apostar más de 1100 PyE Coins.");
 			if (game.has(interaction.user.id)) return replyError(interaction, "Ya te encuentras jugando.");
 			game.add(interaction.user.id);
 			const cardsGame = new Collection<string, "relatable" | number>();

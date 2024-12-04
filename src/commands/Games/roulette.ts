@@ -33,7 +33,7 @@ export default {
 		.setName("roulette")
 		.setDescription("Inicia un juego de ruleta o coloca tu apuesta en un juego existente.")
 		.addIntegerOption((option) =>
-			option.setName("cantidad").setDescription("la cantidad que quieres apostar (entre 100 y 500)").setRequired(true)
+			option.setName("cantidad").setDescription("la cantidad que quieres apostar (entre 100 y 1500)").setRequired(true)
 		)
 		.addStringOption((option) =>
 			option
@@ -53,7 +53,7 @@ export default {
 		[
 			verifyIsGuild(process.env.GUILD_ID ?? ""),
 			verifyChannel(getChannelFromEnv("casinoPye")),
-			verifyCooldown("roulette", 5),
+			verifyCooldown("roulette", 3000),
 			deferInteraction(),
 		],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
@@ -61,11 +61,11 @@ export default {
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			let choice: string = interaction.options.getString("eleccion", true);
 			// Validar datos
-			if (amount < 100 || amount > 500 || amount > userData.cash)
+			if (amount < 100 || amount > 1500 || amount > userData.cash)
 				return replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "mayor que 100" : "menor que 500"
+						amount < 100 ? "mayor que 100" : "menor que 1500"
 					} o no tienes suficiente dinero`
 				);
 			// Comenzar el juego
