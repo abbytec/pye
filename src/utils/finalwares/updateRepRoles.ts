@@ -73,14 +73,14 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 			.catch((error) => console.error(`Error al eliminar roles de ${member.user.tag}:`, error));
 
 	// Añadimos el nuevo rol si es necesario
-	if (newRoleId && (!member.roles.cache.has(newRoleId) || changeRole))
+	if (newRoleId && (!member.roles.cache.has(newRoleId) || changeRole)) {
 		await member.roles
 			.add(newRoleId)
 			.then(() => console.log(`Rol ${newRoleId} añadido a ${member.user.tag}`))
 			.catch((error) => console.error(`Error al añadir el rol ${newRoleId} a ${member.user.tag}:`, error));
-
-	if (maxOldRoleId && newRoleId && maxOldRoleId !== newRoleId) {
-		await sendAnnoucement(member, newRoleId, client, actualRoleMinPoints >= ROLES_REP_RANGE.veterano);
+		if (maxOldRoleId && maxOldRoleId !== newRoleId) {
+			await sendAnnoucement(member, newRoleId, client, actualRoleMinPoints >= ROLES_REP_RANGE.veterano);
+		}
 	}
 }
 async function sendAnnoucement(member: GuildMember, roleId: string, client: ExtendedClient, veterano: boolean) {
