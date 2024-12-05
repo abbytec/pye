@@ -38,6 +38,7 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 		minPoints,
 	}));
 
+	console.log("rolesWithPoints", rolesWithPoints);
 	// Determinamos el rol más alto que el miembro debe tener
 	let newRoleId: string | null = null;
 	let actualRoleMinPoints = 0;
@@ -48,6 +49,9 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 			actualRoleMinPoints = role.minPoints;
 		}
 	}
+
+	console.log("newRoleId", newRoleId);
+	console.log("actualRoleMinPoints", actualRoleMinPoints);
 
 	let maxOldRoleId: string | null = null;
 	let maxOldRoleMinPoints = 0;
@@ -66,6 +70,8 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 
 	const changeRole = rolesToRemove.length === 1 && rolesToRemove.at(0) !== newRoleId;
 
+	console.log("rolesToRemove", rolesToRemove);
+
 	if (rolesToRemove.length > 1 || changeRole)
 		await member.roles
 			.remove(rolesToRemove)
@@ -80,7 +86,7 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 			.catch((error) => console.error(`Error al añadir el rol ${newRoleId} a ${member.user.tag}:`, error));
 
 	if (maxOldRoleId && newRoleId && maxOldRoleId !== newRoleId) {
-		await sendAnnoucement(member, maxOldRoleId, client, actualRoleMinPoints >= ROLES_REP_RANGE.veterano);
+		await sendAnnoucement(member, newRoleId, client, actualRoleMinPoints >= ROLES_REP_RANGE.veterano);
 	}
 }
 async function sendAnnoucement(member: GuildMember, roleId: string, client: ExtendedClient, veterano: boolean) {
