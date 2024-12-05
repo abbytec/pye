@@ -112,7 +112,7 @@ async function cancelPoint(interaction: ButtonInteraction): Promise<void> {
 async function helpPoint(interaction: ButtonInteraction, customId: string): Promise<void> {
 	try {
 		// Obtener el miembro que recibirá el punto
-		const member = interaction.guild?.members.cache.get(interaction.customId);
+		const member = interaction.guild?.members.cache.get(interaction.customId)?? interaction.guild?.members.resolve(customId);
 		if (!member) {
 			if (interaction.replied) await interaction.followUp({ content: "Usuario no encontrado.", ephemeral: true });
 			else await interaction.reply({ content: "Usuario no encontrado.", ephemeral: true });
@@ -196,7 +196,7 @@ async function handleGameCommands(interaction: ChatInputCommandInteraction) {
 
 	// Verificar si el comando ejecutado tiene el grupo "juegos"
 	const command = client.commands.get(interaction.commandName);
-	if (!command || !command.group) return;
+	if (!command?.group) return;
 	if (command.group.toLowerCase().includes("juegos")) {
 		checkRole(interaction, getRoleFromEnv("granApostador"), 75);
 	}

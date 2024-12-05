@@ -62,6 +62,7 @@ export default {
                     `);
 				embed.setColor(COLORS.errRed);
 			}
+			embed.setTitle("🎰 Tragamonedas 🎰");
 
 			try {
 				await Users.updateOne({ id: interaction.user.id }, { $inc: { cash: amount } });

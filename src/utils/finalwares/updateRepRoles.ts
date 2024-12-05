@@ -90,7 +90,7 @@ async function sendAnnoucement(member: GuildMember, roleId: string, client: Exte
 	const canvas = createCanvas(1101, 301);
 	const ctx = canvas.getContext("2d");
 
-	const rankCard = await loadImage(path.join(__dirname, `../assets/Images/reputationAnnouncement/${imageName}.png`));
+	const rankCard = await loadImage(path.join(__dirname, `../../assets/Images/reputationAnnouncement/${imageName}.png`));
 	ctx.drawImage(rankCard, 0, 0, canvas.width, canvas.height);
 
 	const avatar = await loadImage(member.user.displayAvatarURL({ extension: "png", forceStatic: true }));
