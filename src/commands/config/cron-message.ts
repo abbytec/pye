@@ -76,10 +76,10 @@ export default {
 				const embedJson = interaction.options.getString("embed") ?? null;
 				const channel = interaction.options.getChannel("canal", true);
 				const startDateInput = interaction.options.getString("startdate") ?? null;
-				const minutes = interaction.options.getInteger("minutes") ?? "*";
-				const hours = interaction.options.getInteger("hours") ?? "*";
-				const days = interaction.options.getInteger("days") ?? "*";
-				const months = interaction.options.getInteger("months") ?? "*";
+				let minutes = interaction.options.getInteger("minutes") ?? "*";
+				let hours = interaction.options.getInteger("hours") ?? "*";
+				let days = interaction.options.getInteger("days") ?? "*";
+				let months = interaction.options.getInteger("months") ?? "*";
 				const repeat = interaction.options.getBoolean("repeat") ?? false;
 
 				let embedData = null;
@@ -108,12 +108,34 @@ export default {
 					startDate = parsedDate.toJSDate();
 				}
 
+				if (typeof months === "number") {
+					days = 0;
+					hours = 0;
+					minutes = 0;
+					months = "*/" + months;
+				}
+
+				if (typeof days === "number") {
+					hours = 0;
+					minutes = 0;
+					days = "*/" + days;
+				}
+
+				if (typeof hours === "number") {
+					minutes = 0;
+					hours = "*/" + hours;
+				}
+
+				if (typeof minutes === "number") {
+					minutes = "*/" + minutes;
+				}
+
 				// Genera el cron string
 				const cronParts = [
-					typeof minutes === "number" ? `*/${minutes}` : "*",
-					typeof hours === "number" ? `*/${hours}` : "*",
-					typeof days === "number" ? `*/${days}` : "*",
-					typeof months === "number" ? `*/${months}` : "*",
+					minutes,
+					hours,
+					days,
+					months,
 					"*", // Día de la semana
 				];
 				const cronString = cronParts.join(" ");
