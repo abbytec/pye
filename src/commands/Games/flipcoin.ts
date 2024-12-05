@@ -47,8 +47,7 @@ export default {
 			if (amount < 1 || amount > 4000 || amount > userData.cash)
 				return await replyError(
 					interaction,
-					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "mayor que 100" : "menor que 500"
+					`Se ingresó una cantidad inválida, debe ser ${amount < 100 ? "mayor que 100" : "menor que 500"
 					} o no tienes suficiente dinero`
 				);
 
@@ -69,7 +68,7 @@ export default {
 
 			// Crear embed de respuesta
 			const embed = new EmbedBuilder()
-				.setAuthor({ name: "Cruz o cara", iconURL: "https://cdn.discordapp.com/emojis/911087695864950854.gif?size=96" })
+				.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
 				.setDescription(`Ha salido \`${flipcoin}\` y ${flipcoin == side ? "ganaste" : "perdiste"} ${Math.abs(amount)}.`)
 				.setColor(flipcoin != side ? COLORS.errRed : COLORS.okGreen);
 

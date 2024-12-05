@@ -72,7 +72,7 @@ export default {
 
 			// Crear embed de respuesta
 			const embed = new EmbedBuilder()
-				.setAuthor({ name: "Pelea de gallos", iconURL: "https://cdn.discordapp.com/emojis/911087695864950854.gif?size=96" })
+				.setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatar ?? "" })
 				.setDescription(
 					`Tu pollo 🐔 ha ${win ? "ganado" : "perdido"} la pelea y se te ${win ? "incrementaron" : "quitaron"} ${amount} PyE Coins.`
 				)

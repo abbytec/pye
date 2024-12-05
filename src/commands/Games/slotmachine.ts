@@ -36,8 +36,7 @@ export default {
 			if (amount < 1 || amount > 900 || amount > userData.cash)
 				return replyError(
 					interaction,
-					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "mayor que 100" : "menor que 900"
+					`Se ingresó una cantidad inválida, debe ser ${amount < 100 ? "mayor que 100" : "menor que 900"
 					} o no tienes suficiente dinero`
 				);
 
@@ -46,8 +45,7 @@ export default {
 
 			// Crear embed de respuesta
 			const embed = new EmbedBuilder().setAuthor({
-				name: "🎰 Tragamonedas 🎰",
-				iconURL: "https://cdn.discordapp.com/emojis/911087695864950854.gif?size=96",
+				name: interaction.user.username, iconURL: interaction.user.displayAvatarURL()
 			});
 
 			if (loseWinRate || (game[1][1] == game[1][2] && game[1][1] == game[1][0])) {

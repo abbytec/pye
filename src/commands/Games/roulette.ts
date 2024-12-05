@@ -64,8 +64,7 @@ export default {
 			if (amount < 100 || amount > 1500 || amount > userData.cash)
 				return replyError(
 					interaction,
-					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "mayor que 100" : "menor que 1500"
+					`Se ingresó una cantidad inválida, debe ser ${amount < 100 ? "mayor que 100" : "menor que 1500"
 					} o no tienes suficiente dinero`
 				);
 			// Comenzar el juego
