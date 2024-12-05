@@ -125,11 +125,9 @@ export async function checkMentionSpam(message: Message<boolean>, client: Extend
 				let warn = await (message.channel as TextChannel).send({
 					content: `<@${message.author.id}> Mencionar tanto a una misma persona puede traerte problemas. No seas bot, que para eso estoy yo!`,
 				});
-				await client.guilds.cache
-					.get(process.env.GUILD_ID ?? "")
-					?.members.cache.get(message.author.id)
-					?.timeout(10000, "Spam de menciones")
-					.catch(() => null);
+				let guild = client.guilds.cache.get(process.env.GUILD_ID ?? "") ?? client.guilds.resolve(process.env.GUILD_ID ?? "");
+				let member = guild?.members.cache.get(message.author.id) ?? guild?.members.resolve(message.author.id);
+				await member?.timeout(45000, "Spam de menciones").catch(() => null);
 				await message.delete().catch(() => null);
 				mentionTracker.set(key, {
 					count: entry.count,
