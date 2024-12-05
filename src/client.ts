@@ -160,7 +160,7 @@ export class ExtendedClient extends Client {
 				}
 			});
 			console.log("loading emojis");
-			let emojis = (await guild.emojis.fetch()).map((emoji) => emoji.name + ":" + emoji.id);
+			let emojis = (await guild.emojis.fetch()).map((emoji) => emoji.name ?? "_" + ":" + emoji.id);
 			console.log("loading stickers");
 			let stickers = (await guild.stickers.fetch()).map((sticker) => sticker.id);
 			console.log("loading channels");

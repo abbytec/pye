@@ -108,7 +108,7 @@ class Trending {
 			data.stickers = this.stickers;
 			data.month = this.month;
 
-			await data.save();
+			await data.save().catch(console.error);
 		}
 
 		this.decay();
