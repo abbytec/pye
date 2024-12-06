@@ -32,6 +32,7 @@ export const updateRepRoles: Finalware = async (postHandleableInteraction, resul
 };
 
 export async function updateMemberReputationRoles(member: GuildMember, points: number, client: ExtendedClient): Promise<void> {
+	member = await member.guild.members.fetch({ user: member.user.id, force: true });
 	// Definimos los roles y sus puntos mínimos, ordenados de mayor a menor
 	const rolesWithPoints = Object.entries(ROLES_REP_RANGE).map(([roleName, minPoints]) => ({
 		id: getRoleFromEnv(roleName as keyof typeof ROLES_REP_RANGE),
@@ -40,12 +41,12 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 
 	// Determinamos el rol más alto que el miembro debe tener
 	let newRoleId: string | null = null;
-	let actualRoleMinPoints = 0;
+	let newRoleMinPoints = 0;
 
 	for (const role of rolesWithPoints) {
-		if (points >= role.minPoints) {
+		if (points >= role.minPoints && role.minPoints > newRoleMinPoints) {
 			newRoleId = role.id;
-			actualRoleMinPoints = role.minPoints;
+			newRoleMinPoints = role.minPoints;
 		}
 	}
 
@@ -64,22 +65,14 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 		})
 		.map((role) => role.id);
 
-	const changeRole = rolesToRemove.length === 1 && rolesToRemove.at(0) !== newRoleId;
-
-	if (rolesToRemove.length > 1 || changeRole)
-		await member.roles
-			.remove(rolesToRemove)
-			.then(() => console.log(`Roles [${rolesToRemove.join(", ")}] eliminados de ${member.user.tag}`))
-			.catch((error) => console.error(`Error al eliminar roles de ${member.user.tag}:`, error));
+	if (rolesToRemove.length > 1)
+		await member.roles.remove(rolesToRemove).catch((error) => console.error(`Error al eliminar roles de ${member.user.tag}:`, error));
 
 	// Añadimos el nuevo rol si es necesario
-	if (newRoleId && (!member.roles.cache.has(newRoleId) || changeRole)) {
-		await member.roles
-			.add(newRoleId)
-			.then(() => console.log(`Rol ${newRoleId} añadido a ${member.user.tag}`))
-			.catch((error) => console.error(`Error al añadir el rol ${newRoleId} a ${member.user.tag}:`, error));
+	if (newRoleId && !member.roles.cache.has(newRoleId)) {
+		await member.roles.add(newRoleId).catch((error) => console.error(`Error al añadir el rol ${newRoleId} a ${member.user.tag}:`, error));
 		if (maxOldRoleId && maxOldRoleId !== newRoleId) {
-			await sendAnnoucement(member, newRoleId, client, actualRoleMinPoints >= ROLES_REP_RANGE.veterano);
+			await sendAnnoucement(member, newRoleId, client, newRoleMinPoints >= ROLES_REP_RANGE.veterano);
 		}
 	}
 }
@@ -101,7 +94,7 @@ async function sendAnnoucement(member: GuildMember, roleId: string, client: Exte
 	ctx.clip();
 	ctx.drawImage(avatar, 45, 45, 200, 200);
 
-	let channelToSend = veterano ? getChannelFromEnv("casinoPye") : getChannelFromEnv("chatProgramadores");
+	let channelToSend = veterano ? getChannelFromEnv("chatProgramadores") : getChannelFromEnv("casinoPye");
 
 	let channel = client.channels.resolve(channelToSend) as TextChannel;
 	if (!channel) return;

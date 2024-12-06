@@ -10,7 +10,7 @@ export default {
 	async execute(member: GuildMember) {
 		if (regex.test(member?.user.displayName.toLocaleLowerCase())) return member.ban({ reason: "spam" });
 		if (member.user.bot) return;
-		member.roles.add(getInitialRoles()).catch(() => null);
+		member.roles.add(getInitialRoles(["novato"])).catch(() => null);
 		ExtendedClient.newUsers.add(member.id);
 	},
 } as Evento;

@@ -284,9 +284,13 @@ export function getRoles(...roles: Roles[]): string[] {
 	return roles.map((role) => getRoleFromEnv(role));
 }
 
-export function getInitialRoles(): string[] {
+export function getInitialRoles(customRole: (keyof typeof ROLES)[]): string[] {
 	let roles = isDevelopment ? DEV_ROLES : ROLES;
-	return [roles.novato, roles.perfil, roles.medallas, roles.intereses, roles.lenguajes];
+	let roleList = [roles.perfil, roles.medallas, roles.intereses, roles.lenguajes];
+	customRole.forEach((role) => {
+		roleList.push(roles[role]);
+	});
+	return roleList;
 }
 
 export function getRepRolesByOrder(): string[] {

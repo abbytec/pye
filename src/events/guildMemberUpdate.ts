@@ -46,7 +46,7 @@ async function handleRoleChanges(oldMember: GuildMember | PartialGuildMember, ne
 	// Detectar roles eliminados
 	const removedRoles = oldRoles.filter((role) => !newRoles.has(role.id)).map((role) => role.id);
 
-	const initialRoles = getInitialRoles();
+	const initialRoles = getInitialRoles([]);
 
 	removedRoles.forEach(async (element) => {
 		if (initialRoles.includes(element)) {
