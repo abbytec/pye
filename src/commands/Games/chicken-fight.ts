@@ -66,7 +66,7 @@ export default {
 
 			// Crear embed de respuesta
 			const embed = new EmbedBuilder()
-				.setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatar ?? "" })
+				.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
 				.setDescription(
 					`Tu pollo 🐔 ha ${win ? "ganado" : "perdido"} la pelea y se te ${win ? "incrementaron" : "quitaron"} ${amount} PyE Coins.`
 				)
