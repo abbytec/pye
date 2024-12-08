@@ -116,7 +116,7 @@ async function cancelPoint(interaction: ButtonInteraction): Promise<void> {
 async function helpPoint(interaction: ButtonInteraction, customId: string): Promise<void> {
 	try {
 		// Obtener el miembro que recibirá el punto
-		const member = interaction.guild?.members.cache.get(interaction.customId) ?? interaction.guild?.members.resolve(customId);
+		const member = interaction.guild?.members.cache.get(customId) ?? interaction.guild?.members.resolve(customId);
 		if (!member) {
 			if (interaction.replied) await interaction.followUp({ content: "Usuario no encontrado.", ephemeral: true });
 			else await interaction.reply({ content: "Usuario no encontrado.", ephemeral: true });
@@ -169,10 +169,9 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 		});
 
 		// Buscar o crear el documento de HelperPoint
-		let user = await HelperPoint.findOneAndUpdate({ _id: interaction.customId }, { $inc: { points: 1 } }, { new: true, upsert: true });
+		let user = await HelperPoint.findOneAndUpdate({ _id: customId }, { $inc: { points: 1 } }, { new: true, upsert: true }).exec();
 
 		await interaction.message.edit({ embeds: [embed], components });
-
 		updateMemberReputationRoles(member, user.points, interaction.client as ExtendedClient);
 
 		// Enviar notificación en un canal específico
@@ -184,7 +183,7 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 		}
 
 		// Verificar quests
-		checkQuestLevel({ userId: interaction.customId, rep: 1 } as IQuest);
+		checkQuestLevel({ userId: customId, rep: 1 } as IQuest);
 	} catch (error) {
 		console.error("Error al otorgar punto de ayuda:", error);
 		if (interaction.replied) await interaction.followUp({ content: "Hubo un error al otorgar el punto.", ephemeral: true });
