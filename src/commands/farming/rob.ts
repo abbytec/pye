@@ -15,7 +15,7 @@ import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { ExtendedClient } from "../../client.js";
 
-const cooldownDuration = 60 * 60 * 1000;
+const cooldownDuration = 30 * 60 * 1000;
 
 export interface Rob {
 	userId: string;

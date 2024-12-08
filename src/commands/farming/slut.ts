@@ -15,6 +15,7 @@ import { calculateJobMultiplier, getRandomNumber } from "../../utils/generic.js"
 import { getChannelFromEnv } from "../../utils/constants.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { ExtendedClient } from "../../client.js";
+import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 
 // Definición de los textos de respuesta para éxito
 const successTexts: Array<(profit: string) => string> = [
@@ -38,7 +39,12 @@ export default {
 	group: "💰 - Farmeo de PyeCoins (Casino)",
 	data: new SlashCommandBuilder().setName("slut").setDescription("Véndete para ganar dinero."),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
+		[
+			verifyIsGuild(process.env.GUILD_ID ?? ""),
+			verifyChannel(getChannelFromEnv("casinoPye")),
+			verifyCooldown("slut", 18e5),
+			deferInteraction(),
+		],
 		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
