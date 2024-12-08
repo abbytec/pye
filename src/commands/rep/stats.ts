@@ -13,6 +13,7 @@ import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,9 +26,9 @@ export default {
 		.setDescription("Muestra todas las estadisticas de tu perfil dentro del servidor"),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
-		async (msg: ChatInputCommandInteraction) => {
+		async (msg: IPrefixChatInputCommand) => {
 			// get user
-			const member = msg.options.getUser("usuario", false) ?? msg.user;
+			const member = (await msg.options.getUser("usuario", false)) ?? msg.user;
 			const guildMember = await msg.guild?.members.fetch(member.id); // 'user' es de tipo 'User'
 
 			// validate bot
@@ -43,7 +44,7 @@ export default {
 			const rank = (people.findIndex((memberFromDB) => memberFromDB._id === member.id) + 1).toLocaleString() || "-";
 			const avatar = await loadImage(member.displayAvatarURL({ extension: "png", forceStatic: true }));
 			const name = member.username.length > 9 ? member.username.substring(0, 8).trim() + "..." : member.username;
-			const role = getRole(msg, guildMember);
+			const role = getRole(guildMember);
 			if (!role) return;
 			const background = await loadImage(path.join(__dirname, `../../assets/Images/reputation/${getRoleName(role.id)}.jpg`));
 
@@ -62,9 +63,9 @@ export default {
 		},
 		[]
 	),
-};
+} as Command;
 
-function getRole(interaction: ChatInputCommandInteraction, member: GuildMember | undefined) {
+function getRole(member: GuildMember | undefined) {
 	if (!member) return;
 	for (const roleId of getRepRolesByOrder()) {
 		const role = member.roles.cache.get(roleId);

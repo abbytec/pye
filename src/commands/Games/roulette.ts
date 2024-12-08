@@ -12,6 +12,7 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { replyInfo } from "../../utils/messages/replyInfo.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 let data: {
 	fin: number;
 	apuestas: { jugador: string; cantidad: number; apuesta: string }[];
@@ -56,7 +57,7 @@ export default {
 			verifyCooldown("roulette", 3000),
 			deferInteraction(),
 		],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			let choice: string = interaction.options.getString("eleccion", true);
@@ -64,7 +65,8 @@ export default {
 			if (amount < 100 || amount > 1500 || amount > userData.cash)
 				return replyError(
 					interaction,
-					`Se ingresó una cantidad inválida, debe ser ${amount < 100 ? "mayor que 100" : "menor que 1500"
+					`Se ingresó una cantidad inválida, debe ser ${
+						amount < 100 ? "mayor que 100" : "menor que 1500"
 					} o no tienes suficiente dinero`
 				);
 			// Comenzar el juego
@@ -88,9 +90,9 @@ export default {
 			);
 		}
 	),
-};
+} as Command;
 
-async function roulette(interaction: ChatInputCommandInteraction) {
+async function roulette(interaction: IPrefixChatInputCommand) {
 	// Se ejecuta luego de 30s
 	let msg = "";
 	data.fin = -1;

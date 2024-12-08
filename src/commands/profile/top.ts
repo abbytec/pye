@@ -22,6 +22,7 @@ import redis from "../../redis.js";
 import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { Bumps } from "../../Models/Bump.js";
 import { generateLeaderboard } from "../../utils/generic.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const key = {
 	rob: {
@@ -80,7 +81,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction(false)],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
 			const type = (interaction.options.getString("tipo") ?? "cash") as LeaderboardType;
@@ -96,7 +97,7 @@ export default {
 				const content = await generateContent(type, page, user, interaction, position, totalPages);
 				await replyOk(interaction, content.embeds, undefined, content.components);
 
-				const message = await interaction.fetchReply();
+				const message = await interaction._reply;
 
 				if (!(message instanceof Message)) return console.error("El mensaje obtenido no es una instancia de Message.");
 
@@ -127,13 +128,13 @@ export default {
 			}
 		}
 	),
-};
+} as Command;
 
 async function generateContent(
 	type: LeaderboardType,
 	page: number,
 	user: any,
-	interaction: ChatInputCommandInteraction,
+	interaction: IPrefixChatInputCommand,
 	position: number,
 	totalPages: number,
 	disable: boolean = false
@@ -166,7 +167,7 @@ async function generateContent(
 }
 
 // Función para generar el leaderboard de bumps
-async function generateBumpsLeaderboard(page: number, user: any, interaction: ChatInputCommandInteraction, disable: boolean) {
+async function generateBumpsLeaderboard(page: number, user: any, interaction: IPrefixChatInputCommand, disable: boolean) {
 	return generateLeaderboard(page, user, disable, {
 		title: `🎉 Bump Leaderboard`,
 		dataFetch: async () => {
@@ -194,7 +195,7 @@ async function generateBumpsLeaderboard(page: number, user: any, interaction: Ch
 }
 
 // Función para generar el leaderboard de casas
-async function generateHouseLeaderboard(page: number, user: any, interaction: ChatInputCommandInteraction, disable: boolean) {
+async function generateHouseLeaderboard(page: number, user: any, interaction: IPrefixChatInputCommand, disable: boolean) {
 	return generateLeaderboard(page, user, disable, {
 		title: "🏡 Top de casas.",
 		dataFetch: async () => {
@@ -218,13 +219,7 @@ async function generateHouseLeaderboard(page: number, user: any, interaction: Ch
 	});
 }
 
-async function generateRedisLeaderboard(
-	type: LeaderboardType,
-	page: number,
-	user: any,
-	interaction: ChatInputCommandInteraction,
-	disable: boolean
-) {
+async function generateRedisLeaderboard(type: LeaderboardType, page: number, user: any, interaction: IPrefixChatInputCommand, disable: boolean) {
 	const ITEMS_PER_PAGE = 10;
 	const leaderboardKey = type === "all" ? "all" : type;
 	let totalItems = await redis.zCount(`top:${leaderboardKey}`, "-inf", "+inf");

@@ -10,6 +10,7 @@ import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "👤 - Perfiles (Casino)",
@@ -20,7 +21,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 			const guild = interaction.guild as Guild;
 
@@ -56,4 +57,4 @@ export default {
 			return await replyOk(interaction, `¡Has desusado el ítem **${item.name}**!`);
 		}
 	),
-};
+} as Command;

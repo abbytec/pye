@@ -10,6 +10,7 @@ import { Users } from "../../Models/User.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "⚙️ - Administración de Economía",
@@ -32,10 +33,10 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
+		async (interaction: IPrefixChatInputCommand) => {
 			const place = interaction.options.getString("place", true).toLowerCase();
 			const amount = interaction.options.getInteger("cantidad", true);
-			const user = interaction.options.getUser("usuario") ?? interaction.user;
+			const user = (await interaction.options.getUser("usuario")) ?? interaction.user;
 
 			// Validaciones
 			if (!["cash", "bank"].includes(place)) return await replyError(interaction, "Debes seleccionar un lugar válido (`cash` o `bank`).");
@@ -81,4 +82,4 @@ export default {
 		},
 		[logMessages]
 	),
-};
+} as Command;

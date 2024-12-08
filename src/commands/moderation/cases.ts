@@ -20,6 +20,7 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 import { COLORS, getRoleFromEnv } from "../../utils/constants.js";
 import { ObjectId } from "mongoose";
 import { replyError } from "../../utils/messages/replyError.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 // Función para generar las Action Rows
 const generateActionRows = (page: number, data: IModLogsDocument[], itemsPerPage: number, totalPages: number) => {
@@ -73,7 +74,7 @@ const generateEmbed = (
 	itemsPerPage: number,
 	totalPages: number,
 	user: User,
-	interaction: ChatInputCommandInteraction,
+	interaction: IPrefixChatInputCommand,
 	member?: GuildMember | null
 ) => {
 	const start = page * itemsPerPage;
@@ -117,8 +118,8 @@ export default {
 		.addUserOption((option) => option.setName("usuario").setDescription("Selecciona el usuario").setRequired(true)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
-			const user = interaction.options.getUser("usuario", true);
+		async (interaction: IPrefixChatInputCommand) => {
+			const user = await interaction.options.getUser("usuario", true);
 			const member = await interaction.guild?.members.fetch(user.id).catch(() => null);
 			const viewer = await interaction.guild?.members.fetch(interaction.user.id);
 
@@ -216,4 +217,4 @@ export default {
 			});
 		}
 	),
-};
+} as Command;

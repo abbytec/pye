@@ -16,6 +16,7 @@ import { getChannelFromEnv } from "../../utils/constants.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { ExtendedClient } from "../../client.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 // Definición de los textos de respuesta para éxito
 const successTexts: Array<(profit: string) => string> = [
@@ -45,13 +46,13 @@ export default {
 			verifyCooldown("slut", 18e5),
 			deferInteraction(),
 		],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
 			// Obtener datos del usuario
 			let userData: Partial<IUser> = await getOrCreateUser(user.id);
 
-			let command = (interaction.client as ExtendedClient).getCommandLimit("slut") ?? {
+			let command = interaction.client.getCommandLimit("slut") ?? {
 				lowestMoney: 500,
 				highestMoney: 1000,
 				failRate: 55,
@@ -115,4 +116,4 @@ export default {
 		},
 		[]
 	),
-};
+} as Command;

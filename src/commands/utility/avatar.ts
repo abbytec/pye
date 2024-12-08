@@ -1,13 +1,14 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { COLORS } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName("avatar")
 		.setDescription("Muestra el avatar de un usuario")
 		.addUserOption((option) => option.setName("usuario").setDescription("menciona a un usuario").setRequired(true)),
-	async execute(interaction: ChatInputCommandInteraction) {
-		const user = interaction.options.getUser("usuario", true);
+	async execute(interaction: IPrefixChatInputCommand) {
+		const user = await interaction.options.getUser("usuario", true);
 
 		const embed = new EmbedBuilder()
 			.setColor(COLORS.pyeLightBlue)
@@ -25,4 +26,4 @@ export default {
 
 		interaction.reply({ embeds: [embed] });
 	},
-};
+} as Command;

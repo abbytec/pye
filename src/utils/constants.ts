@@ -1,6 +1,7 @@
 import Bottleneck from "bottleneck";
 import { Channel, ChatInputCommandInteraction, Guild, Message } from "discord.js";
 import loadEnvVariables from "./environment.js";
+import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 
 loadEnvVariables();
 
@@ -173,7 +174,7 @@ export function getChannelFromEnv(channel: keyof typeof CHANNELS): string {
 }
 
 export async function getChannel(
-	interaction: ChatInputCommandInteraction | Message | Guild,
+	interaction: ChatInputCommandInteraction | Message | Guild | IPrefixChatInputCommand,
 	channel: keyof typeof CHANNELS,
 	textBased?: boolean,
 	channelId?: string
@@ -371,3 +372,5 @@ export const threadForumProcessingLimiter = new Bottleneck({
 	maxConcurrent: 3, // Máximo de posts a procesar en paralelo
 	minTime: 20, // Tiempo mínimo entre ejecuciones (ms)
 });
+
+export const PREFIX = "!";

@@ -7,6 +7,7 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { loadImage, createCanvas } from "@napi-rs/canvas";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export default {
@@ -17,7 +18,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false)],
-		async (interaction: ChatInputCommandInteraction): Promise<void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<void> => {
 			const canvas = createCanvas(565, 637);
 			const ctx = canvas.getContext("2d");
 
@@ -33,7 +34,7 @@ export default {
 
 			// Verificar la longitud del texto
 			if (text.length > 16) {
-				await replyError(interaction, "❌ No puedes ingresar más de 16 caracteres. Inténtalo de nuevo.");
+				await replyError(interaction, "No puedes ingresar más de 16 caracteres. Inténtalo de nuevo.");
 				return;
 			}
 
@@ -61,4 +62,4 @@ export default {
 			await interaction.editReply({ files: [attachment] });
 		}
 	),
-};
+} as Command;

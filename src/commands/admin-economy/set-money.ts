@@ -9,6 +9,7 @@ import { Money } from "../../Models/Money.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "⚙️ - Administración de Economía",
@@ -50,7 +51,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
+		async (interaction: IPrefixChatInputCommand) => {
 			const subcommand = interaction.options.getSubcommand();
 			const amount = interaction.options.getInteger("cantidad", true);
 			let timeInput: string | null = null;
@@ -125,4 +126,4 @@ export default {
 		},
 		[logMessages]
 	),
-};
+} as Command;

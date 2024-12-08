@@ -13,6 +13,7 @@ import isSvg from "is-svg";
 import fetch from "node-fetch";
 import { loadImage } from "@napi-rs/canvas";
 import sharp from "sharp";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -25,7 +26,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			// Obtener opciones
 			const targetOption = interaction.options.getString("objetivo", true);
 			let fpsOption = interaction.options.getInteger("fps");
@@ -120,4 +121,4 @@ export default {
 			}
 		}
 	),
-};
+} as Command;

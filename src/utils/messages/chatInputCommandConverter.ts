@@ -1,0 +1,273 @@
+import { Message, User, TextChannel, Role, Channel } from "discord.js";
+import { PREFIX } from "../constants.js";
+import { ExtendedClient } from "../../client.js";
+import { IOptions, IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+
+interface IPrefixChatInputCommandOption {
+	name: string;
+	type: string;
+	required: boolean;
+}
+
+export class PrefixChatInputCommand {
+	private readonly client: ExtendedClient;
+	private readonly commandName: string;
+	private readonly argsDefinition: IPrefixChatInputCommandOption[];
+	private readonly argsMap: Map<string, string> = new Map();
+	private message?: Message;
+	private _reply?: Message;
+	private _isReplied = false;
+	private _isDeferred = false;
+
+	constructor(client: ExtendedClient, commandName: string, argsDefinition: IPrefixChatInputCommandOption[]) {
+		this.client = client;
+		this.commandName = commandName;
+		this.argsDefinition = argsDefinition;
+	}
+
+	public async parseMessage(message: Message): Promise<IPrefixChatInputCommand | null> {
+		this.message = message;
+		this.argsMap.clear();
+		this._reply = undefined;
+		this._isReplied = false;
+		this._isDeferred = false;
+
+		const content = message.content.trim();
+		if (!content.startsWith(PREFIX)) return null;
+
+		const withoutPrefix = content.slice(PREFIX.length).trim();
+		const split = withoutPrefix.split(/\s+/);
+		const parsedCommandName = split.shift() ?? "";
+
+		if (parsedCommandName.toLowerCase() !== this.commandName.toLowerCase()) return null;
+
+		const parsedSubCommand = split.shift() ?? null;
+		if (parsedSubCommand) {
+			this.argsMap.set("subcommand", parsedSubCommand);
+		}
+
+		// Parseo de argumentos
+		for (let i = 0; i < this.argsDefinition.length; i++) {
+			const def = this.argsDefinition[i];
+			const value = split[i];
+
+			if (def.required && (value === undefined || value === "")) {
+				throw new Error(`El argumento requerido "${def.name}" no fue proporcionado.`);
+			}
+
+			if (value !== undefined) {
+				this.argsMap.set(def.name, value);
+			}
+		}
+
+		return {
+			client: this.client,
+			commandName: this.commandName,
+			options: this.options,
+			guild: message.guild,
+			guildId: message.guildId,
+			member: message.member ?? undefined,
+			user: message.author,
+			channel: message.channel,
+			channelId: message.channel.id,
+			reply: this.reply.bind(this),
+			editReply: this.editReply.bind(this),
+			deleteReply: this.deleteReply.bind(this),
+			deferReply: this.deferReply.bind(this),
+			followUp: this.followUp.bind(this),
+			get replied() {
+				return this._isReplied;
+			},
+			get deferred() {
+				return this._isDeferred;
+			},
+		} as IPrefixChatInputCommand & { _isReplied: boolean; _isDeferred: boolean };
+	}
+
+	// Métodos para obtener argumentos
+	private readonly getString = (name: string, required?: boolean): string | null => {
+		const val = this.argsMap.get(name);
+		if (required && (val === undefined || val === null)) {
+			throw new Error(`El argumento requerido "${name}" no fue proporcionado.`);
+		}
+		return val ?? null;
+	};
+
+	private readonly getNumber = (name: string, required?: boolean): number | null => {
+		const val = this.argsMap.get(name);
+		if (val === undefined) {
+			if (required) throw new Error(`El argumento requerido "${name}" no fue proporcionado.`);
+			return null;
+		}
+		const num = Number(val);
+		if (isNaN(num)) {
+			if (required) throw new Error(`El argumento "${name}" no es un número válido.`);
+			return null;
+		}
+		return num;
+	};
+
+	private readonly getBoolean = (name: string, required?: boolean): boolean | null => {
+		const val = this.argsMap.get(name);
+		if (val === undefined) {
+			if (required) throw new Error(`El argumento requerido "${name}" no fue proporcionado.`);
+			return null;
+		}
+		return val.toLowerCase() === "true" || val === "1";
+	};
+
+	private async getUser(name: string, required?: boolean): Promise<User | null> {
+		const val = this.argsMap.get(name);
+		if (!val) {
+			if (required) throw new Error(`El argumento requerido "${name}" no fue proporcionado.`);
+			return null;
+		}
+
+		const mentionMatch = RegExp(/^<@!?(\d+)>$/).exec(val);
+		let userId = val;
+		if (mentionMatch) {
+			userId = mentionMatch[1];
+		}
+
+		try {
+			const fetchedUser = await this.client.users.fetch(userId);
+			if (!fetchedUser && required) {
+				throw new Error(`No se pudo encontrar el usuario para el argumento "${name}".`);
+			}
+			return fetchedUser ?? null;
+		} catch {
+			if (required) throw new Error(`No se pudo encontrar el usuario para el argumento "${name}".`);
+			return null;
+		}
+	}
+
+	private readonly getInteger = (name: string, required?: boolean): number | null => {
+		const val = this.argsMap.get(name);
+		if (val === undefined) {
+			if (required) throw new Error(`El argumento requerido "${name}" no fue proporcionado.`);
+			return null;
+		}
+		const int = parseInt(val, 10);
+		if (isNaN(int)) {
+			if (required) throw new Error(`El argumento "${name}" no es un número entero válido.`);
+			return null;
+		}
+		return int;
+	};
+
+	private async getRole(name: string, required?: boolean): Promise<Role | null> {
+		const val = this.argsMap.get(name);
+		if (!val) {
+			if (required) throw new Error(`El argumento requerido "${name}" no fue proporcionado.`);
+			return null;
+		}
+
+		const mentionMatch = /^<@&(\d+)>$/.exec(val);
+		let roleId = val;
+		if (mentionMatch) {
+			roleId = mentionMatch[1];
+		}
+
+		try {
+			const guild = this.message?.guild;
+			if (!guild) {
+				if (required)
+					throw new Error(`No se pudo encontrar el rol para el argumento "${name}" porque el mensaje no está en un servidor.`);
+				return null;
+			}
+			const role = guild.roles.cache.get(roleId);
+			if (!role && required) {
+				throw new Error(`No se pudo encontrar el rol para el argumento "${name}".`);
+			}
+			return role ?? null;
+		} catch {
+			if (required) throw new Error(`No se pudo encontrar el rol para el argumento "${name}".`);
+			return null;
+		}
+	}
+
+	private async getChannel(name: string, required?: boolean): Promise<Channel | null> {
+		const val = this.argsMap.get(name);
+		if (!val) {
+			if (required) throw new Error(`El argumento requerido "${name}" no fue proporcionado.`);
+			return null;
+		}
+
+		const mentionMatch = /^<#(\d+)>$/.exec(val);
+		let channelId = val;
+		if (mentionMatch) {
+			channelId = mentionMatch[1];
+		}
+
+		try {
+			const guild = this.message?.guild;
+			if (!guild) {
+				if (required)
+					throw new Error(`No se pudo encontrar el canal para el argumento "${name}" porque el mensaje no está en un servidor.`);
+				return null;
+			}
+			const channel = guild.channels.cache.get(channelId);
+			if (!channel && required) {
+				throw new Error(`No se pudo encontrar el canal para el argumento "${name}".`);
+			}
+			return channel ?? null;
+		} catch {
+			if (required) throw new Error(`No se pudo encontrar el canal para el argumento "${name}".`);
+			return null;
+		}
+	}
+
+	private readonly getSubcommand = (required?: boolean): string | null => {
+		// Asumiendo que el subcomando es el primer argumento después del comando principal
+		const subCommand = this.argsMap.get("subcommand") ?? null;
+
+		if (required && (!subCommand || subCommand.trim() === "")) {
+			throw new Error(`El subcomando es requerido pero no fue proporcionado.`);
+		}
+
+		return subCommand;
+	};
+
+	private async reply(content: string): Promise<Message> {
+		if (!this.message) throw new Error("No se ha parseado un mensaje aún.");
+		const sentMessage = await this.message.reply(content);
+		this._reply = sentMessage;
+		this._isReplied = true;
+		return sentMessage;
+	}
+
+	private async editReply(content: string): Promise<Message> {
+		if (!this._reply) throw new Error("No hay una respuesta previa para editar.");
+		return this._reply.edit(content);
+	}
+
+	private async deleteReply(): Promise<void> {
+		if (!this._reply) throw new Error("No hay una respuesta previa para borrar.");
+		await this._reply.delete();
+		this._reply = undefined;
+		this._isReplied = false;
+	}
+
+	private deferReply(opts: any): void {
+		this._isDeferred = true;
+	}
+
+	private async followUp(content: string): Promise<Message> {
+		if (!this.message?.channel) throw new Error("No se ha parseado un mensaje aún.");
+
+		return (this.message.channel as TextChannel).send(content);
+	}
+
+	private get options(): IOptions {
+		return {
+			getString: this.getString as IOptions["getString"],
+			getNumber: this.getNumber as IOptions["getNumber"],
+			getBoolean: this.getBoolean as IOptions["getBoolean"],
+			getUser: this.getUser.bind(this) as IOptions["getUser"],
+			getInteger: this.getInteger as IOptions["getInteger"],
+			getRole: this.getRole.bind(this) as IOptions["getRole"],
+			getSubcommand: this.getSubcommand as IOptions["getSubcommand"],
+			getChannel: this.getChannel.bind(this) as IOptions["getChannel"],
+		};
+	}
+}

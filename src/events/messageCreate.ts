@@ -22,6 +22,7 @@ import {
 	getHelpForumsIdsFromEnv,
 	getRoleFromEnv,
 	messagesProcessingLimiter,
+	PREFIX,
 } from "../utils/constants.js";
 import { Users } from "../Models/User.js";
 import { getCooldown, setCooldown } from "../utils/cooldowns.js";
@@ -31,8 +32,6 @@ import { bumpHandler } from "../utils/bumpHandler.js";
 import natural from "natural";
 import { checkMentionSpam, IDeletableContent, spamFilter } from "../security/spamFilters.js";
 import { hashMessage } from "../security/messageHashing.js";
-
-const PREFIX = "!"; // Define tu prefijo
 
 export default {
 	name: Events.MessageCreate,
@@ -122,7 +121,6 @@ async function processCommonMessage(message: Message, client: ExtendedClient) {
 async function processPrefixCommand(message: Message, client: ExtendedClient) {
 	const commandBody = message.content.slice(PREFIX.length).trim();
 	const commandName = commandBody.split(/ +/, 1).shift()?.toLowerCase() ?? "";
-	const commandArgs = commandBody.slice(commandName.length).trim();
 
 	// Verifica si el comando existe en la colección de comandos
 	const command = client.commands.get(commandName);
@@ -133,8 +131,8 @@ async function processPrefixCommand(message: Message, client: ExtendedClient) {
 	}
 
 	try {
-		if (command.executePrefix) {
-			await command.executePrefix(message, commandArgs);
+		if (command.prefixResolver) {
+			await command.prefixResolver.parseMessage(message);
 		} else {
 			message.reply("Este comando se actualizó a Slash Command :point_right: /.");
 		}

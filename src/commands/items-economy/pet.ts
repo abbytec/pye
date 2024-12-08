@@ -13,6 +13,7 @@ import { IPetDocument, Pets } from "../../Models/Pets.js";
 import { Home, IHomeDocument } from "../../Models/Home.js";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -38,10 +39,10 @@ export default {
 			verifyChannel(getChannelFromEnv("casinoPye")), // Define el canal apropiado o elimina esta línea si no es necesaria
 			deferInteraction(),
 		],
-		async (interaction: ChatInputCommandInteraction): Promise<void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<void> => {
 			const subcommand = interaction.options.getSubcommand();
 
-			const userId = interaction.options.getUser("usuario")?.id ?? interaction.user.id;
+			const userId = (await interaction.options.getUser("usuario"))?.id ?? interaction.user.id;
 
 			// Obtener el miembro
 			let member: GuildMember | null | undefined;
@@ -91,9 +92,9 @@ export default {
 			}
 		}
 	),
-};
+} as Command;
 
-async function showPet(interaction: ChatInputCommandInteraction, member: GuildMember, homeData: IHomeDocument, petInfo: IPetDocument) {
+async function showPet(interaction: IPrefixChatInputCommand, member: GuildMember, homeData: IHomeDocument, petInfo: IPetDocument) {
 	const mood = getMood(petInfo);
 	const rutaImagen = path.join(__dirname, `../../assets/Pictures/Profiles/Pets/${homeData.pet}${mood}.png`);
 
@@ -144,7 +145,7 @@ function getBars(value: number): string {
 	return "□□□□□";
 }
 
-export async function setPetName(interaction: ChatInputCommandInteraction, member: GuildMember, petInfo: IPetDocument) {
+export async function setPetName(interaction: IPrefixChatInputCommand, member: GuildMember, petInfo: IPetDocument) {
 	await interaction.reply({ content: "🦴- Escribe el nuevo nombre de tu mascota.", ephemeral: true });
 
 	try {
@@ -179,7 +180,7 @@ export async function setPetName(interaction: ChatInputCommandInteraction, membe
 	}
 }
 
-export async function playPet(interaction: ChatInputCommandInteraction, petInfo: IPetDocument) {
+export async function playPet(interaction: IPrefixChatInputCommand, petInfo: IPetDocument) {
 	// Lógica para jugar con la mascota
 	petInfo.mood = Math.min(petInfo.mood + 10, 100); // Aumentar el cariño
 	petInfo.food = Math.max(petInfo.food - 5, 0); // Disminuir el hambre
@@ -189,7 +190,7 @@ export async function playPet(interaction: ChatInputCommandInteraction, petInfo:
 	return await replyOk(interaction, "🐾 - Has jugado con tu mascota. ¡Está más feliz!");
 }
 
-export async function feedPet(interaction: ChatInputCommandInteraction, petInfo: IPetDocument) {
+export async function feedPet(interaction: IPrefixChatInputCommand, petInfo: IPetDocument) {
 	// Lógica para alimentar a la mascota
 	petInfo.food = Math.min(petInfo.food + 10, 100); // Aumentar el hambre
 	await petInfo.save();
@@ -197,7 +198,7 @@ export async function feedPet(interaction: ChatInputCommandInteraction, petInfo:
 	return await replyOk(interaction, "🍽️ - Has alimentado a tu mascota. ¡Está más llena!");
 }
 
-export async function cleanPet(interaction: ChatInputCommandInteraction, petInfo: IPetDocument) {
+export async function cleanPet(interaction: IPrefixChatInputCommand, petInfo: IPetDocument) {
 	// Lógica para limpiar a la mascota
 	petInfo.shower = Math.min(petInfo.shower + 10, 100); // Aumentar la higiene
 	await petInfo.save();

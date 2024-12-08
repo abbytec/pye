@@ -5,6 +5,7 @@ import { getCooldown } from "../../utils/cooldowns.js";
 import { ChatInputCommandInteraction } from "discord.js";
 import { formatTime } from "../generic.js";
 import { ExtendedClient } from "../../client.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 /**
  * Middleware para verificar si un usuario tiene un cooldown activo para un comando específico.
@@ -17,7 +18,7 @@ import { ExtendedClient } from "../../client.js";
 export const verifyCooldown = (
 	commandName: string,
 	cooldownDuration: number,
-	adjustCooldownDuration?: (interaction: ChatInputCommandInteraction) => Promise<number> | number
+	adjustCooldownDuration?: (interaction: IPrefixChatInputCommand) => Promise<number> | number
 ): Middleware => {
 	return async (interaction, next) => {
 		const userId = interaction.user.id;
@@ -29,7 +30,7 @@ export const verifyCooldown = (
 		}
 
 		// Obtener el tiempo restante de cooldown
-		const remainingCooldown = await getCooldown(interaction.client as ExtendedClient, userId, commandName, finalCooldownDuration);
+		const remainingCooldown = await getCooldown(interaction.client, userId, commandName, finalCooldownDuration);
 
 		if (remainingCooldown > 0) {
 			const timeLeft = formatTime(remainingCooldown);

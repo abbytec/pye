@@ -27,6 +27,7 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
 import { replyError } from "../../utils/messages/replyError.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 // Enumeraciones para género, tono de piel y profesiones
 enum Gender {
@@ -59,7 +60,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye"))],
-		async (interaction: ChatInputCommandInteraction): Promise<void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<void> => {
 			const userId = interaction.user.id;
 
 			// Verificar si el usuario ya tiene un perfil
@@ -95,10 +96,10 @@ export default {
 		},
 		[]
 	),
-};
+} as Command;
 
 // Función principal para manejar el proceso de creación del perfil
-async function startProfile(message: InteractionResponse, interaction: ChatInputCommandInteraction) {
+async function startProfile(message: InteractionResponse | Message, interaction: IPrefixChatInputCommand) {
 	const userId = interaction.user.id;
 
 	try {
@@ -183,8 +184,8 @@ async function startProfile(message: InteractionResponse, interaction: ChatInput
 
 // Función para manejar la selección de opciones (género, tono de piel, profesión)
 async function selectOption(
-	message: InteractionResponse,
-	interaction: ChatInputCommandInteraction,
+	message: InteractionResponse | Message,
+	interaction: IPrefixChatInputCommand,
 	description: string,
 	placeholder: string,
 	options: { label: string; value: string; emoji: string }[],
@@ -264,7 +265,7 @@ function getJobOptions(gender: string) {
 // Función para manejar la selección de estilo
 export async function selectStyle(
 	message: any,
-	interaction: ChatInputCommandInteraction,
+	interaction: IPrefixChatInputCommand,
 	gender: string,
 	skin: string,
 	job: string

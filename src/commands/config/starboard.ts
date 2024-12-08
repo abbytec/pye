@@ -1,11 +1,11 @@
-import { ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder, TextChannel } from "discord.js";
+import { PermissionFlagsBits, SlashCommandBuilder, TextChannel } from "discord.js";
 import { StarBoard } from "../../Models/StarBoard.js";
-import { Command } from "../../types/command.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 // Export command
 export default {
@@ -22,13 +22,16 @@ export default {
 		),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
-			const channel = interaction.options.getChannel("canal", true);
+		async (interaction: IPrefixChatInputCommand) => {
+			const channel = await interaction.options.getChannel("canal", true);
 			const stars = interaction.options.getInteger("estrellas", true);
 
 			await StarBoard.updateOne({ id: process.env.GUILD_ID }, { channel: channel.id, stars: stars }, { upsert: true });
 
-			await replyOk(interaction, `Se ha establecido el canal ${channel.name}\nTotal de reacciones requeridas: \`${stars}\` .`);
+			await replyOk(
+				interaction,
+				`Se ha establecido el canal ${(channel as TextChannel).name}\nTotal de reacciones requeridas: \`${stars}\` .`
+			);
 		},
 		[]
 	),

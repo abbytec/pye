@@ -21,6 +21,7 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "💍 - Matrimonios (Casino)",
@@ -31,11 +32,11 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction(false)],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 			const guild = interaction.guild as Guild;
 
-			const targetUser: User = interaction.options.getUser("usuario", true);
+			const targetUser: User = await interaction.options.getUser("usuario", true);
 			const targetMember: GuildMember | undefined = guild.members.cache.get(targetUser.id);
 
 			if (!targetMember) {
@@ -71,15 +72,13 @@ export default {
 			const filter = (i: any) => i.user.id === targetUser.id && ["divorce_accept", "divorce_decline"].includes(i.customId);
 
 			try {
-				const componentInteraction = await (
-					await interaction.fetchReply()
-				).awaitMessageComponent({
+				const componentInteraction = await interaction._reply?.awaitMessageComponent({
 					filter,
 					componentType: ComponentType.Button,
 					time: 120000, // 120 segundos
 				});
 
-				if (componentInteraction.customId === "divorce_accept") {
+				if (componentInteraction?.customId === "divorce_accept") {
 					await componentInteraction.deferUpdate();
 					await processDivorce(user.id, targetUser.id);
 					const divorceEmbed = new EmbedBuilder()
@@ -91,13 +90,11 @@ export default {
 						.setColor(COLORS.errRed)
 						.setTimestamp();
 
-					await (
-						await interaction.fetchReply()
-					).edit({
+					await interaction._reply?.edit({
 						embeds: [divorceEmbed],
 						components: [],
 					});
-				} else if (componentInteraction.customId === "divorce_decline") {
+				} else if (componentInteraction?.customId === "divorce_decline") {
 					await componentInteraction.update({
 						embeds: [
 							new EmbedBuilder()
@@ -113,7 +110,7 @@ export default {
 			}
 		}
 	),
-};
+} as Command;
 
 async function processDivorce(userId: string, targetUserId: string) {
 	const [userData, targetData] = await Promise.all([Users.findOne({ id: userId }), Users.findOne({ id: targetUserId })]);

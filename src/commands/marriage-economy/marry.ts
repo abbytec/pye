@@ -11,6 +11,7 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "💍 - Matrimonios (Casino)",
@@ -21,7 +22,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 			const guild = interaction.guild;
 
@@ -31,7 +32,7 @@ export default {
 			if (!member) return await replyError(interaction, "No se pudo obtener la información de tu usuario en este servidor.");
 
 			// Obtener el usuario objetivo
-			const targetUser: User = interaction.options.getUser("usuario", true);
+			const targetUser: User = await interaction.options.getUser("usuario", true);
 			const targetMember: GuildMember | undefined = guild.members.cache.get(targetUser.id);
 
 			// Validaciones iniciales
@@ -113,4 +114,4 @@ export default {
 			await replyOk(interaction, [embed], undefined, undefined, undefined, `<@${targetUser.id}>`, false);
 		}
 	),
-};
+} as Command;

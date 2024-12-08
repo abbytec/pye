@@ -2,6 +2,7 @@ import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, DMChann
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
 import loadEnvVariables from "../../utils/environment.js";
 import { COLORS } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 loadEnvVariables();
 
@@ -32,7 +33,7 @@ export default {
 		.setName("pyechan")
 		.setDescription("Preguntale algo a PyE Chan")
 		.addStringOption((option) => option.setName("mensaje").setDescription("Qué quieres decirme").setRequired(true).setMaxLength(200)),
-	execute: async (interaction: ChatInputCommandInteraction) => {
+	execute: async (interaction: IPrefixChatInputCommand) => {
 		if (interaction.channel instanceof TextChannel || interaction.channel instanceof DMChannel) {
 			await interaction.channel?.sendTyping(); // Aquí se asegura de que sendTyping esté disponible
 		}
@@ -62,4 +63,4 @@ export default {
 
 		interaction.reply({ embeds: [exampleEmbed] });
 	},
-};
+} as Command;

@@ -11,6 +11,7 @@ import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "📚 - Inventario (Casino)",
@@ -22,7 +23,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction(false)],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
 			// Obtener opciones del comando
@@ -93,11 +94,11 @@ export default {
 			}
 		}
 	),
-};
+} as Command;
 
 // Función para manejar roles temporales
 async function handleTempRole(
-	interaction: ChatInputCommandInteraction,
+	interaction: IPrefixChatInputCommand,
 	userData: any, // Reemplaza con la interfaz adecuada si está definida
 	itemData: any, // Reemplaza con la interfaz adecuada si está definida
 	amount: number

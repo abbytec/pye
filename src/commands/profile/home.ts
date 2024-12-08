@@ -18,6 +18,7 @@ import { PostHandleable } from "../../types/middleware.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const jobs: Record<string, string> = {
 	Policia:
@@ -46,8 +47,8 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
-			const option = interaction.options.getUser("usuario");
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
+			const option = await interaction.options.getUser("usuario");
 			const nameOption = interaction.options.getString("nombre");
 
 			const member: GuildMember = option
@@ -91,7 +92,7 @@ export default {
 		},
 		[]
 	),
-};
+} as Command;
 async function getHouseImage(data: IHomeDocument): Promise<AttachmentBuilder> {
 	let imagePath = path.join(process.cwd(), "src", "assets", "Pictures", "Profiles", "Casa", data.house.color, `${data.house.level}.png`);
 

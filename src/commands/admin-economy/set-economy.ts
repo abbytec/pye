@@ -1,17 +1,18 @@
 // src/commands/admin/set-economy.ts
 
-import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits, SlashCommandSubcommandBuilder } from "discord.js";
+import { SlashCommandBuilder, PermissionFlagsBits, SlashCommandSubcommandBuilder } from "discord.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
 import { logMessages } from "../../utils/finalwares/logMessages.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
-import { CommandLimits, ICommandLimits, ICommandLimitsDocument } from "../../Models/Command.js";
+import { CommandLimits, ICommandLimits } from "../../Models/Command.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import ms from "ms"; // Importación de la librería ms
 import { ExtendedClient } from "../../client.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const payoutCommands = [
 	{ name: "Work", value: "work" },
@@ -72,7 +73,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
+		async (interaction: IPrefixChatInputCommand) => {
 			const subcommand = interaction.options.getSubcommand(true);
 			const commandName = interaction.options.getString("comando", true).toLowerCase();
 			const user = interaction.user;
@@ -123,11 +124,11 @@ export default {
 		},
 		[logMessages]
 	),
-};
+} as Command;
 
 // Handler for the 'payout' subcommand
 async function handlePayout(
-	interaction: ChatInputCommandInteraction,
+	interaction: IPrefixChatInputCommand,
 	commandName: string,
 	user: any,
 	logMessage: {
@@ -155,7 +156,7 @@ async function handlePayout(
 			},
 		},
 		{ new: true, upsert: true }
-	).then((res: ICommandLimits) => (interaction.client as ExtendedClient).setCommandLimit(res));
+	).then((res: ICommandLimits) => interaction.client.setCommandLimit(res));
 
 	await replyOk(
 		interaction,
@@ -171,7 +172,7 @@ async function handlePayout(
 
 // Handler for the 'failrate' subcommand
 async function handleFailrate(
-	interaction: ChatInputCommandInteraction,
+	interaction: IPrefixChatInputCommand,
 	commandName: string,
 	user: any,
 	logMessage: {
@@ -188,7 +189,7 @@ async function handleFailrate(
 
 	// Actualizar la base de datos
 	await CommandLimits.findOneAndUpdate({ name: commandName }, { $set: { failRate } }, { new: true, upsert: true }).then(
-		(res: ICommandLimits) => (interaction.client as ExtendedClient).setCommandLimit(res)
+		(res: ICommandLimits) => interaction.client.setCommandLimit(res)
 	);
 
 	await replyOk(interaction, `Se ha establecido el porcentaje de fallo del comando \`${commandName}\` a **${failRate}%**.`);
@@ -205,7 +206,7 @@ async function handleFailrate(
 
 // Handler for the 'cooldown' subcommand
 async function handleCooldown(
-	interaction: ChatInputCommandInteraction,
+	interaction: IPrefixChatInputCommand,
 	commandName: string,
 	user: any,
 	logMessage: {

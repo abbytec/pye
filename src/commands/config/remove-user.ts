@@ -1,7 +1,6 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { getRoleFromEnv } from "../../utils/constants.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { HelperPoint } from "../../Models/HelperPoint.js";
@@ -9,6 +8,7 @@ import { Users } from "../../Models/User.js";
 import redis from "../../redis.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "⚙️ - Administración - General",
@@ -26,9 +26,9 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
+		async (interaction: IPrefixChatInputCommand) => {
 			const tipo = interaction.options.getString("tipo", true);
-			const usuario = interaction.options.getUser("usuario", true);
+			const usuario = await interaction.options.getUser("usuario", true);
 			const userId = usuario.id;
 
 			try {
@@ -57,4 +57,4 @@ export default {
 			}
 		}
 	),
-};
+} as Command;

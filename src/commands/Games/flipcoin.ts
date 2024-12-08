@@ -12,6 +12,7 @@ import { increaseHomeMonthlyIncome } from "../../Models/Home.js";
 import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { calculateJobMultiplier } from "../../utils/generic.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "🎮 • Juegos",
@@ -39,7 +40,7 @@ export default {
 			verifyCooldown("flipcoin", 3000),
 			deferInteraction(),
 		],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			let side: string = interaction.options.getString("lado", true);
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
@@ -47,7 +48,8 @@ export default {
 			if (amount < 1 || amount > 4000 || amount > userData.cash)
 				return await replyError(
 					interaction,
-					`Se ingresó una cantidad inválida, debe ser ${amount < 100 ? "mayor que 100" : "menor que 500"
+					`Se ingresó una cantidad inválida, debe ser ${
+						amount < 100 ? "mayor que 100" : "menor que 500"
 					} o no tienes suficiente dinero`
 				);
 
@@ -85,4 +87,4 @@ export default {
 			}
 		}
 	),
-};
+} as Command;

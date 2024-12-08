@@ -8,9 +8,15 @@ import {
 	TextChannel,
 } from "discord.js";
 import { COLORS } from "../constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export async function replyInfo(
-	interaction: RepliableInteraction,
+	interaction:
+		| IPrefixChatInputCommand
+		| Pick<
+				RepliableInteraction,
+				"reply" | "editReply" | "deleteReply" | "followUp" | "replied" | "deferred" | "channelId" | "guild" | "user"
+		  >,
 	message: string | EmbedBuilder[],
 	author?: string,
 	components?: (ActionRowBuilder<ButtonBuilder> | ActionRowBuilder<StringSelectMenuBuilder>)[],

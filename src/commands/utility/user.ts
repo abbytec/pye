@@ -8,6 +8,7 @@ import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { COLORS } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 // Mapeo de estados de presencia
 const statusMap: Record<string, string> = {
@@ -43,8 +44,8 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
-			let targetUser: User = interaction.options.getUser("usuario") ?? interaction.user;
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
+			let targetUser: User = (await interaction.options.getUser("usuario")) ?? interaction.user;
 			let userWithData: Promise<User> | User = targetUser.fetch(true);
 			const member = await interaction.guild?.members.fetch(targetUser.id).catch(() => null);
 
@@ -130,4 +131,4 @@ export default {
 			}
 		}
 	),
-};
+} as Command;

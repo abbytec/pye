@@ -15,6 +15,7 @@ import redisClient from "../../redis.js"; // Asegúrate de exportar correctament
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const jobs: Record<string, string> = {
 	Policia:
@@ -43,9 +44,9 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const author = interaction.user;
-			const option = interaction.options.getUser("usuario");
+			const option = await interaction.options.getUser("usuario");
 			const descriptionOption = interaction.options.getString("descripcion");
 
 			const member = option
@@ -126,10 +127,10 @@ export default {
 		},
 		[]
 	),
-};
+} as Command;
 
 // Función para obtener la lista de parejas formateada
-async function getCouplesList(interaction: ChatInputCommandInteraction, couples: Array<{ user: string }>): Promise<string> {
+async function getCouplesList(interaction: IPrefixChatInputCommand, couples: Array<{ user: string }>): Promise<string> {
 	const formattedCouples = await Promise.all(
 		couples.map(async (u) => {
 			const member = await interaction.guild?.members.fetch(u.user).catch(() => null);

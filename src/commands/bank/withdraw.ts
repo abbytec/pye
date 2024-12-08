@@ -8,6 +8,7 @@ import { COLORS, pyecoin } from "../../utils/constants.js";
 import { IUser } from "../../interfaces/IUser.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "🏦 - Finanzas del server (Casino)",
@@ -18,7 +19,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
 			let userData: IUserModel = await getOrCreateUser(user.id);
@@ -52,4 +53,4 @@ export default {
 		},
 		[]
 	),
-};
+} as Command;

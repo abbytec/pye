@@ -9,6 +9,7 @@ import {
 } from "discord.js";
 import { HelperPoint } from "../../Models/HelperPoint.js";
 import client from "../../redis.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "🥳 - Puntos de reputación",
@@ -22,7 +23,7 @@ export default {
 				.addChoices({ name: "Global", value: "global" }, { name: "Mensual", value: "monthly" })
 				.setRequired(false)
 		),
-	execute: async (interaction: ChatInputCommandInteraction, args: string[]) => {
+	execute: async (interaction: IPrefixChatInputCommand, args: string[]) => {
 		// Obtener el valor del argumento 'scope'
 		const scope = interaction.options.getString("scope") ?? "global";
 
@@ -163,15 +164,15 @@ export default {
 		await interaction.reply({ ...initialContent, ephemeral: false }).catch((e) => console.error(e));
 
 		// Obtener el mensaje enviado
-		const sentMessage = await interaction.fetchReply();
+		const sentMessage = await interaction._reply;
 
 		// Crear el collector para los botones
-		const collector = sentMessage.createMessageComponentCollector({
+		const collector = sentMessage?.createMessageComponentCollector({
 			filter: (i) => i.user.id === interaction.user.id && ["hp-topBack", "hp-topNext"].includes(i.customId),
 			time: 60 * 1000, // 60 segundos
 		});
 
-		collector.on("collect", async (i) => {
+		collector?.on("collect", async (i) => {
 			if (i.customId === "hp-topBack" && page > 0) {
 				page--;
 			} else if (i.customId === "hp-topNext" && page + 1 < totalPages) {
@@ -185,9 +186,9 @@ export default {
 			await i.update(newContent).catch((e) => console.error(e));
 		});
 
-		collector.on("end", async () => {
+		collector?.on("end", async () => {
 			const disabledContent = await generateContent(true);
-			await sentMessage.edit(disabledContent).catch((e) => console.error(e));
+			await sentMessage?.edit(disabledContent).catch((e) => console.error(e));
 		});
 	},
-};
+} as Command;

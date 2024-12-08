@@ -12,6 +12,7 @@ import { replyError } from "../../utils/messages/replyError.js";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { COLORS } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -176,7 +177,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false)],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const textoInput = interaction.options.getString("texto", true)?.trim();
 			const guild = interaction.guild as Guild;
 
@@ -257,7 +258,7 @@ export default {
 			interaction.editReply({ files: [attachment] });
 		}
 	),
-};
+} as Command;
 
 // Función para obtener una imagen aleatoria de un lenguaje específico
 async function getRandomImageFromRepo(language: string): Promise<string | null> {

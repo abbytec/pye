@@ -22,6 +22,7 @@ import { replyError } from "../../utils/messages/replyError.js";
 import ms from "ms";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 function getId(items: any[]): number {
 	if (!items || items.length === 0) return 1;
@@ -81,7 +82,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
+		async (interaction: IPrefixChatInputCommand) => {
 			const subcommand = interaction.options.getSubcommand();
 
 			switch (subcommand) {
@@ -99,15 +100,14 @@ export default {
 		},
 		[logMessages]
 	),
-};
+} as Command;
 
-async function visualizarItems(interaction: ChatInputCommandInteraction) {
+async function visualizarItems(interaction: IPrefixChatInputCommand) {
 	const items = await Shop.find().lean();
 
 	if (items.length === 0) {
 		await interaction.reply({
 			embeds: [new EmbedBuilder().setDescription("No hay ítems actualmente.").setColor(COLORS.errRed)],
-			ephemeral: true,
 		});
 		return;
 	}
@@ -157,14 +157,14 @@ async function visualizarItems(interaction: ChatInputCommandInteraction) {
 	let pageContent = getPageContent(page);
 	await replyOk(interaction, pageContent.embeds, undefined, pageContent.components);
 
-	const message = await interaction.fetchReply();
+	const message = await interaction._reply;
 
-	const collector = message.createMessageComponentCollector<ComponentType.Button>({
+	const collector = message?.createMessageComponentCollector<ComponentType.Button>({
 		componentType: ComponentType.Button,
 		time: 60000,
 	});
 
-	collector.on("collect", async (i) => {
+	collector?.on("collect", async (i) => {
 		if (i.user.id !== interaction.user.id) return await replyError(i, "No puedes interactuar con este menú.");
 
 		if (i.customId === "prev" && page > 0) {
@@ -176,12 +176,12 @@ async function visualizarItems(interaction: ChatInputCommandInteraction) {
 		await i.update(getPageContent(page));
 	});
 
-	const selectCollector = message.createMessageComponentCollector<ComponentType.StringSelect>({
+	const selectCollector = message?.createMessageComponentCollector<ComponentType.StringSelect>({
 		componentType: ComponentType.StringSelect,
 		time: 60000,
 	});
 
-	selectCollector.on("collect", async (i) => {
+	selectCollector?.on("collect", async (i) => {
 		if (i.user.id !== interaction.user.id) return await replyError(interaction, "No puedes interactuar con este menú.");
 
 		const itemId = i.values[0];
@@ -208,7 +208,7 @@ async function visualizarItems(interaction: ChatInputCommandInteraction) {
 		await i.reply({ embeds: [embed], ephemeral: true });
 	});
 
-	collector.on("end", async () => {
+	collector?.on("end", async () => {
 		// Mapea cada fila de componentes para deshabilitarlos
 		const disabledComponents = getPageContent(page).components.map((row) =>
 			new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
@@ -225,14 +225,14 @@ async function visualizarItems(interaction: ChatInputCommandInteraction) {
 	});
 }
 
-async function añadirItem(interaction: ChatInputCommandInteraction) {
+async function añadirItem(interaction: IPrefixChatInputCommand) {
 	const name = interaction.options.getString("nombre", true);
 	const icon = interaction.options.getString("icono", false);
 	const price = interaction.options.getInteger("precio", true);
 	const description = interaction.options.getString("descripcion", true);
 	const storable = interaction.options.getBoolean("almacenable", true);
 	const messageContent = interaction.options.getString("mensaje", false);
-	const role = interaction.options.getRole("rol", false);
+	const role = await interaction.options.getRole("rol", false);
 	const group = interaction.options.getString("grupo", false);
 	const timeoutStr = interaction.options.getString("timeout", false);
 
@@ -304,7 +304,7 @@ async function añadirItem(interaction: ChatInputCommandInteraction) {
 	}
 }
 
-function getUpdatedFields(interaction: ChatInputCommandInteraction, item: IShop) {
+async function getUpdatedFields(interaction: IPrefixChatInputCommand, item: IShop) {
 	let modified = false;
 	const nuevoNombre = interaction.options.getString("nuevo_nombre", false);
 	if (nuevoNombre) {
@@ -348,7 +348,7 @@ function getUpdatedFields(interaction: ChatInputCommandInteraction, item: IShop)
 		modified = true;
 	}
 
-	const role = interaction.options.getRole("rol", false);
+	const role = await interaction.options.getRole("rol", false);
 	if (role !== null) {
 		item.role = role.id;
 		modified = true;
@@ -363,7 +363,7 @@ function getUpdatedFields(interaction: ChatInputCommandInteraction, item: IShop)
 	return modified;
 }
 
-async function editarItem(interaction: ChatInputCommandInteraction) {
+async function editarItem(interaction: IPrefixChatInputCommand) {
 	const id = interaction.options.getString("id", true);
 
 	let item = await Shop.findOne<IShopDocument>({ itemId: id });
@@ -372,7 +372,7 @@ async function editarItem(interaction: ChatInputCommandInteraction) {
 	}
 	let modified = false;
 	try {
-		modified = getUpdatedFields(interaction, item);
+		modified = await getUpdatedFields(interaction, item);
 	} catch (error) {
 		return await replyError(interaction, "El formato del tiempo es inválido. Ejemplo: 1h, 30m");
 	}
@@ -422,7 +422,7 @@ async function editarItem(interaction: ChatInputCommandInteraction) {
 	}
 }
 
-async function eliminarItem(interaction: ChatInputCommandInteraction) {
+async function eliminarItem(interaction: IPrefixChatInputCommand) {
 	const id = interaction.options.getString("id", true);
 
 	const item = await Shop.findOne({ itemId: id });

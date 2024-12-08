@@ -11,6 +11,7 @@ import ms from "ms";
 import { logMessages } from "../../utils/finalwares/logMessages.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { PostHandleable } from "../../types/middleware.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "⚙️ - Administración y Moderación",
@@ -22,8 +23,8 @@ export default {
 		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo del timeout").setRequired(true)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "moderadorChats"), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
-			const user = interaction.options.getUser("usuario", true);
+		async (interaction: IPrefixChatInputCommand) => {
+			const user = await interaction.options.getUser("usuario", true);
 			const durationString = interaction.options.getString("duracion", true);
 			const reason = interaction.options.getString("razon") ?? "No hubo razón.";
 
@@ -50,7 +51,7 @@ export default {
 		},
 		[logMessages]
 	),
-};
+} as Command;
 
 export async function applyTimeout(
 	duration: number,

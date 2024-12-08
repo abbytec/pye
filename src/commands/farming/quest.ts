@@ -10,6 +10,7 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { Home, IHomeDocument } from "../../Models/Home.js";
 import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 // Definición de las tareas según el nivel
 const tasks: Array<{
@@ -112,11 +113,11 @@ export default {
 			verifyChannel(getChannelFromEnv("casinoPye")), // Asegúrate de que "casinoPye" sea el canal correcto para los quests
 			deferInteraction(false),
 		],
-		async (interaction: ChatInputCommandInteraction): Promise<void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<void> => {
 			const subcommand = interaction.options.getSubcommand();
 
 			if (subcommand === "check") {
-				const userOption = interaction.options.getUser("usuario");
+				const userOption = await interaction.options.getUser("usuario");
 				const user: User = userOption ?? interaction.user;
 				const member: GuildMember | null = userOption
 					? await (interaction.guild as Guild).members.fetch(user.id).catch(() => null)
@@ -179,4 +180,4 @@ export default {
 			return replyError(interaction, "Comando no reconocido.");
 		}
 	),
-};
+} as Command;

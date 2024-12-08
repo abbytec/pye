@@ -6,6 +6,7 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { ICustomCommand } from "../../interfaces/ICustomCommand.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const faqData: ICustomCommand[] = [
 	{
@@ -245,7 +246,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? "")],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const tema = interaction.options.getString("tema", true);
 			const faqEntry = faqData.find((faq) => faq.name === tema);
 
@@ -267,4 +268,4 @@ export default {
 			}
 		}
 	),
-};
+} as Command;

@@ -19,10 +19,11 @@ import {
 } from "discord.js";
 import { COLORS } from "./constants.js";
 import { fileURLToPath } from "node:url";
+import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 const Choose = new Set();
 
 export interface IQuest {
-	msg: ChatInputCommandInteraction | Message | InteractionResponse;
+	msg: IPrefixChatInputCommand | Message | InteractionResponse;
 	money: number;
 	bump?: number;
 	text?: number;

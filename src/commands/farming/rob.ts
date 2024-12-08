@@ -14,6 +14,7 @@ import { getChannelFromEnv } from "../../utils/constants.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { ExtendedClient } from "../../client.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const cooldownDuration = 30 * 60 * 1000;
 
@@ -36,7 +37,7 @@ const failureTexts: Array<(profit: string, user: string) => string> = [
 		`Estabas ebrio y no lo recordabas, sacaste una pistola y apuntaste a ${user} pero el atracador resultó atracado. Perdiste ${profit} monedas.`,
 ];
 
-async function cooldownFunction(interaction: ChatInputCommandInteraction) {
+async function cooldownFunction(interaction: IPrefixChatInputCommand) {
 	const user = interaction.user;
 	let userData: Partial<IUser> = await getOrCreateUser(user.id);
 
@@ -61,7 +62,7 @@ export default {
 			verifyCooldown("rob", cooldownDuration, cooldownFunction),
 			deferInteraction(),
 		],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
 			// Obtener datos del usuario
@@ -72,7 +73,7 @@ export default {
 				return await replyError(interaction, "No puedes robar, ¡es contra la ley!");
 
 			// Obtener el usuario objetivo
-			const targetUser = interaction.options.getUser("user", true);
+			const targetUser = await interaction.options.getUser("user", true);
 
 			if (targetUser.id === user.id) return await replyError(interaction, "No puedes robarte dinero a ti mismo.");
 
@@ -85,7 +86,7 @@ export default {
 			if ((targetUserData.cash ?? 0) < 1) return await replyError(interaction, "No puedes robarle a alguien que no tiene dinero.");
 
 			// Establecer el nuevo cooldown
-			await setCooldown(interaction.client as ExtendedClient, user.id, "rob", cooldownDuration);
+			await setCooldown(interaction.client, user.id, "rob", cooldownDuration);
 
 			// Calcular probabilidad de éxito
 			let probability = targetUserData.cash / (targetUserData.cash + (userData.total ?? 0));
@@ -122,7 +123,7 @@ export default {
 				}
 				userData.cash = (userData.cash ?? 0) + profit;
 
-				(interaction.client as ExtendedClient).lastRobs.push({
+				interaction.client.lastRobs.push({
 					userId: user.id,
 					lastTime: Date.now(),
 					amount: profit,
@@ -167,4 +168,4 @@ export default {
 		},
 		[]
 	),
-};
+} as Command;

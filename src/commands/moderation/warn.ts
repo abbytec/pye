@@ -15,6 +15,7 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { ModLogs } from "../../Models/ModLogs.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "⚙️ - Administración y Moderación",
@@ -25,8 +26,8 @@ export default {
 		.addStringOption((option) => option.setName("motivo").setDescription("escribe el motivo del warn").setRequired(true)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "moderadorChats"), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
-			const user = interaction.options.getUser("usuario", true);
+		async (interaction: IPrefixChatInputCommand) => {
+			const user = await interaction.options.getUser("usuario", true);
 			const member = await interaction.guild?.members.fetch(user.id);
 
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
@@ -92,7 +93,7 @@ export default {
 									deny: [PermissionFlagsBits.SendMessages],
 								},
 								{
-									id: interaction.client.user.id,
+									id: interaction.client.user?.id ?? process.env.CLIENT_ID ?? "",
 									allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
 								},
 							],
@@ -152,4 +153,4 @@ export default {
 		},
 		[logMessages]
 	),
-};
+} as Command;

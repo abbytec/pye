@@ -14,6 +14,7 @@ import { COLORS, pyecoin } from "../../utils/constants.js";
 import { fileURLToPath } from "url";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,8 +28,8 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
-			const userOption = interaction.options.getUser("usuario");
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
+			const userOption = await interaction.options.getUser("usuario");
 			let member: GuildMember | undefined = undefined;
 
 			if (userOption) {
@@ -81,4 +82,4 @@ export default {
 		},
 		[]
 	),
-};
+} as Command;

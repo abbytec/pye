@@ -18,6 +18,7 @@ import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -38,7 +39,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction(false)],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
 			// Obtener la página solicitada, por defecto 1
@@ -96,7 +97,7 @@ export default {
 			await replyOk(interaction, [embed], undefined, [actionRow], undefined, undefined, false);
 
 			// Obtener el mensaje enviado
-			const message = await interaction.fetchReply();
+			const message = await interaction._reply;
 
 			// Asegurarse de que el mensaje es de tipo Message
 			if (!(message instanceof Message)) {
@@ -176,4 +177,4 @@ export default {
 		},
 		[]
 	),
-};
+} as Command;

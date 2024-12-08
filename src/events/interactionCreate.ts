@@ -18,6 +18,9 @@ import { HelperPoint } from "../Models/HelperPoint.js";
 import { updateMemberReputationRoles } from "../utils/finalwares/updateRepRoles.js";
 import Bottleneck from "bottleneck";
 import { checkRole } from "../utils/generic.js";
+import { Command } from "../types/command.js";
+import { chatInputCommandParser } from "../utils/messages/chatInputCommandParser.js";
+import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 
 const limiter = new Bottleneck({
 	maxConcurrent: 15, // Máximo de comandos en paralelo
@@ -69,10 +72,11 @@ export default {
 	},
 };
 
-async function executeCommand(interaction: ChatInputCommandInteraction, command: any) {
+async function executeCommand(interaction: ChatInputCommandInteraction, command: Command) {
 	try {
-		await command.execute(interaction);
-		await handleGameCommands(interaction);
+		const parsedInteraction = chatInputCommandParser(interaction);
+		await command.execute(parsedInteraction);
+		await handleGameCommands(parsedInteraction);
 	} catch (error) {
 		console.error(error);
 		if (interaction.replied || interaction.deferred) {
@@ -112,7 +116,7 @@ async function cancelPoint(interaction: ButtonInteraction): Promise<void> {
 async function helpPoint(interaction: ButtonInteraction, customId: string): Promise<void> {
 	try {
 		// Obtener el miembro que recibirá el punto
-		const member = interaction.guild?.members.cache.get(interaction.customId)?? interaction.guild?.members.resolve(customId);
+		const member = interaction.guild?.members.cache.get(interaction.customId) ?? interaction.guild?.members.resolve(customId);
 		if (!member) {
 			if (interaction.replied) await interaction.followUp({ content: "Usuario no encontrado.", ephemeral: true });
 			else await interaction.reply({ content: "Usuario no encontrado.", ephemeral: true });
@@ -189,9 +193,9 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 }
 
 // Función para otorgar rol granApostador
-async function handleGameCommands(interaction: ChatInputCommandInteraction) {
+async function handleGameCommands(interaction: IPrefixChatInputCommand) {
 	const channelId = interaction.channel?.id;
-	const client = interaction.client as ExtendedClient;
+	const client = interaction.client;
 	if (channelId !== getChannelFromEnv("casinoPye")) return;
 
 	// Verificar si el comando ejecutado tiene el grupo "juegos"

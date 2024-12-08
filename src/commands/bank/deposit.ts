@@ -1,13 +1,13 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { getOrCreateUser, IUserModel, Users } from "../../Models/User.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { COLORS, pyecoin } from "../../utils/constants.js";
-import { IUser } from "../../interfaces/IUser.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "🏦 - Finanzas del server (Casino)",
@@ -18,7 +18,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
 			let userData: IUserModel = await getOrCreateUser(user.id);
@@ -53,4 +53,4 @@ export default {
 		},
 		[]
 	),
-};
+} as Command;

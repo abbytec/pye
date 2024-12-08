@@ -11,6 +11,7 @@ import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { setCooldown } from "../../utils/cooldowns.js";
 import { ExtendedClient } from "../../client.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const cooldown = 60 * 1000; // 1 minuto en milisegundos
 
@@ -24,9 +25,9 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("give-money", 60 * 1000), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const author = interaction.user;
-			const targetUser = interaction.options.getUser("usuario", true);
+			const targetUser = await interaction.options.getUser("usuario", true);
 			let cantidadInput = interaction.options.getString("cantidad", true);
 
 			// Prevenir que el usuario se transfiera dinero a sí mismo
@@ -61,7 +62,7 @@ export default {
 
 			await getOrCreateUser(targetUser.id); // asegura que el usuario destino exista
 
-			await setCooldown(interaction.client as ExtendedClient, author.id, "give-money", Date.now() + cooldown);
+			await setCooldown(interaction.client, author.id, "give-money", Date.now() + cooldown);
 
 			await Users.updateOne({ id: author.id }, { $inc: { cash: -cantidad } });
 			await Users.updateOne({ id: targetUser.id }, { $inc: { cash: cantidad } });
@@ -76,4 +77,4 @@ export default {
 		},
 		[]
 	),
-};
+} as Command;

@@ -21,6 +21,7 @@ import { replyError } from "../../utils/messages/replyError.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { IShopDocument, Shop } from "../../Models/Shop.js";
 import { Types } from "mongoose";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -38,9 +39,9 @@ export default {
 			verifyChannel(getChannelFromEnv("casinoPye")), // Asegúrate de definir esta función o eliminar si no es necesaria
 			deferInteraction(false),
 		],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
-			const memberOption = interaction.options.getUser("usuario");
+			const memberOption = await interaction.options.getUser("usuario");
 			const pageOption = interaction.options.getInteger("pagina");
 
 			// Determinar el miembro cuyo inventario mostrar
@@ -113,21 +114,21 @@ export default {
 			await replyOk(interaction, [embed], undefined, [actionRow], undefined, undefined, false);
 
 			// Obtener el mensaje enviado
-			const message = await interaction.fetchReply();
+			const message = await interaction._reply;
 
 			// Asegurarse de que el mensaje es de tipo Message
-			if (!("edit" in message)) {
+			if (message && !("edit" in message)) {
 				console.error("El mensaje obtenido no es una instancia de Message.");
 				return;
 			}
 
 			// Crear un collector para manejar las interacciones de los botones
-			const collector = message.createMessageComponentCollector({
+			const collector = message?.createMessageComponentCollector({
 				filter: (i: Interaction) => i.isButton() && i.user.id === user.id && ["inventoryNext", "inventoryBack"].includes(i.customId),
 				time: 60000, // 60 segundos
 			});
 
-			collector.on("collect", async (i: ButtonInteraction) => {
+			collector?.on("collect", async (i: ButtonInteraction) => {
 				if (i.customId === "inventoryBack" && page > 1) page--;
 				else if (i.customId === "inventoryNext" && page < totalPages) page++;
 				else {
@@ -177,21 +178,21 @@ export default {
 				});
 			});
 
-			collector.on("end", async () => {
+			collector?.on("end", async () => {
 				// Deshabilitar los botones al finalizar el collector
 				const disabledBackButton = ButtonBuilder.from(backButton).setDisabled(true);
 				const disabledNextButton = ButtonBuilder.from(nextButton).setDisabled(true);
 				const disabledActionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(disabledBackButton, disabledNextButton);
 
 				await message
-					.edit({
+					?.edit({
 						components: [disabledActionRow],
 					})
 					.catch(() => null);
 			});
 		}
 	),
-};
+} as Command;
 
 // Función para procesar y agrupar los ítems del inventario
 async function getItems(data: IUserModel): Promise<[IShopDocument, number][]> {

@@ -12,6 +12,7 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { replyInfo } from "../../utils/messages/replyInfo.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 let data: {
 	fin: number;
@@ -40,7 +41,7 @@ export default {
 			verifyCooldown("russian-roulette", 3000),
 			deferInteraction(),
 		],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			// Validar datos
@@ -87,9 +88,9 @@ export default {
 			);
 		}
 	),
-};
+} as Command;
 
-async function russianRoulette(interaction: ChatInputCommandInteraction) {
+async function russianRoulette(interaction: IPrefixChatInputCommand) {
 	data.fin = -1;
 	if (data.apuestas.length == 1) {
 		data.apuestas.push({ jugador: process.env.CLIENT_ID ?? "", cantidad: data.apuestas[0].cantidad });

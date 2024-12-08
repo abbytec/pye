@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, TextChannel, Message } from "discord.js";
-import { Command } from "../../types/command.js";
 import { COLORS, getChannel } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const data = new SlashCommandBuilder()
 	.setName("sugerir")
@@ -9,7 +9,7 @@ const data = new SlashCommandBuilder()
 		option.setName("sugerencia").setDescription("qué tienes en mente para el servidor").setMinLength(40).setRequired(true)
 	);
 
-async function sugerir(sugerencia: string | null, interaction: ChatInputCommandInteraction | Message) {
+async function sugerir(sugerencia: string | null, interaction: IPrefixChatInputCommand) {
 	const canal = (await getChannel(interaction, "sugerencias", true)) as TextChannel | null;
 
 	let suggest = new EmbedBuilder()
@@ -18,9 +18,7 @@ async function sugerir(sugerencia: string | null, interaction: ChatInputCommandI
 		.setDescription(sugerencia)
 		.setTimestamp()
 		.setFooter({ text: "Puedes votar a favor o en contra de esta sugerencia" });
-	if (interaction instanceof ChatInputCommandInteraction)
-		suggest.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() });
-	else suggest.setAuthor({ name: interaction.member?.user.username ?? "Anonimo", iconURL: interaction.member?.user.displayAvatarURL() });
+	suggest.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() });
 
 	interaction.reply("<:cross:1282933529566511155> - Se ha enviado tu sugerencia correctamente.");
 
@@ -39,7 +37,7 @@ async function sugerir(sugerencia: string | null, interaction: ChatInputCommandI
 		.catch((e) => console.error(e));
 }
 
-async function execute(interaction: ChatInputCommandInteraction) {
+async function execute(interaction: IPrefixChatInputCommand) {
 	const args = interaction.options.getString("sugerencia");
 	await sugerir(args, interaction);
 }

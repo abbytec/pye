@@ -16,6 +16,7 @@ import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { ExtendedClient } from "../../client.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 // Definición de los textos de respuesta
 const texts: Array<(profit: string) => string> = [
@@ -39,14 +40,14 @@ export default {
 			verifyCooldown("work", 36e5),
 			deferInteraction(),
 		],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
 			// Obtener datos del usuario
 			let userData: Partial<IUser> = await getOrCreateUser(user.id);
 
 			// Definir rangos de ganancia
-			let command = (interaction.client as ExtendedClient).getCommandLimit("work") ?? {
+			let command = interaction.client.getCommandLimit("work") ?? {
 				lowestMoney: 500,
 				highestMoney: 1000,
 				failRate: 55,
@@ -91,4 +92,4 @@ export default {
 		},
 		[]
 	),
-};
+} as Command;

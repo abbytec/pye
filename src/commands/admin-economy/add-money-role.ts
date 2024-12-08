@@ -10,6 +10,7 @@ import { Users } from "../../Models/User.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "⚙️ - Administración de Economía",
@@ -32,8 +33,8 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
-			const role = interaction.options.getRole("rol", true) as Role;
+		async (interaction: IPrefixChatInputCommand) => {
+			const role = await interaction.options.getRole("rol", true);
 			const place = interaction.options.getString("lugar", true).toLowerCase();
 			const amount = interaction.options.getInteger("cantidad", true);
 
@@ -99,4 +100,4 @@ export default {
 		},
 		[logMessages]
 	),
-};
+} as Command;

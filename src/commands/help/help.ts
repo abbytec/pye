@@ -11,6 +11,7 @@ import { COLORS, getRoles } from "../../utils/constants.js";
 import { ExtendedClient } from "../../client.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "📜 - Ayuda",
@@ -20,8 +21,8 @@ export default {
 		.addStringOption((option) => option.setName("grupo").setDescription("Nombre del grupo para filtrar").setRequired(false)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("help", 6e4), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
-			const client = interaction.client as ExtendedClient;
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
+			const client = interaction.client;
 			const member = interaction.member as GuildMember;
 
 			const staffStatus = member.roles.cache.some((role) => getRoles("staff", "moderadorChats").includes(role.id));
@@ -80,4 +81,4 @@ export default {
 			return await replyOk(interaction, [embed], undefined, undefined, undefined, undefined, true);
 		}
 	),
-};
+} as Command;

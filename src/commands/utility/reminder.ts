@@ -8,6 +8,7 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
 import { ExtendedClient } from "../../client.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -21,7 +22,7 @@ export default {
 		),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
+		async (interaction: IPrefixChatInputCommand) => {
 			const message = interaction.options.getString("mensaje", true);
 			const time = interaction.options.getString("tiempo", true);
 			const timems = ms(time);
@@ -43,4 +44,4 @@ export default {
 			}
 		}
 	),
-};
+} as Command;

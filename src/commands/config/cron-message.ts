@@ -10,6 +10,7 @@ import { ExtendedClient } from "../../client.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { DateTime } from "luxon";
 import { COLORS } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "⚙️ - Administración - General",
@@ -48,7 +49,7 @@ export default {
 		),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
+		async (interaction: IPrefixChatInputCommand) => {
 			const subcommand = interaction.options.getSubcommand();
 
 			if (subcommand === "view") {
@@ -74,7 +75,7 @@ export default {
 			} else if (subcommand === "add") {
 				const content = interaction.options.getString("content") ?? null;
 				const embedJson = interaction.options.getString("embed") ?? null;
-				const channel = interaction.options.getChannel("canal", true);
+				const channel = await interaction.options.getChannel("canal", true);
 				const startDateInput = interaction.options.getString("startdate") ?? null;
 				let minutes = interaction.options.getInteger("minutes") ?? "*";
 				let hours = interaction.options.getInteger("hours") ?? "*";
@@ -204,4 +205,4 @@ export default {
 			}
 		}
 	),
-};
+} as Command;

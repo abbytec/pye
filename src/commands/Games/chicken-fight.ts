@@ -13,6 +13,7 @@ import { increaseHomeMonthlyIncome } from "../../Models/Home.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 const level = new Map();
 
 export default {
@@ -31,7 +32,7 @@ export default {
 			verifyCooldown("chicken-fight", 3000),
 			deferInteraction(),
 		],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 
@@ -91,4 +92,4 @@ export default {
 			}
 		}
 	),
-};
+} as Command;

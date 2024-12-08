@@ -9,6 +9,7 @@ import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "💍 - Matrimonios (Casino)",
@@ -21,8 +22,8 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
-			const targetUser: User | null = interaction.options.getUser("usuario") || interaction.user;
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
+			const targetUser: User | null = (await interaction.options.getUser("usuario")) || interaction.user;
 			const guild = interaction.guild as Guild;
 
 			const member: GuildMember | undefined = guild.members.cache.get(targetUser.id);
@@ -72,4 +73,4 @@ export default {
 			return await replyOk(interaction, [proposalsEmbed]);
 		}
 	),
-};
+} as Command;

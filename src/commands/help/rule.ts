@@ -5,6 +5,7 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { ICustomCommand } from "../../interfaces/ICustomCommand.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const ruleData: ICustomCommand[] = [
 	{
@@ -223,7 +224,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? "")],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const tema = interaction.options.getInteger("numero", true);
 			const ruleEntry = ruleData.find((rule) => Number(rule.name.slice(1)) === tema);
 
@@ -239,4 +240,4 @@ export default {
 			}
 		}
 	),
-};
+} as Command;

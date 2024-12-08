@@ -2,6 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteracti
 import { COLORS } from "./constants.js";
 import { TextMessages } from "../Models/TextMessages.js";
 import { ICouple } from "../interfaces/IUser.js";
+import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 
 export const getRandomNumber = (min = 0, max = 1) => (Math.random() * (max - min) + min) | 0;
 
@@ -97,7 +98,7 @@ export async function generateLeaderboard(
 	return { embed, actionRow };
 }
 
-export async function checkRole(msg: Message<boolean> | ChatInputCommandInteraction, roleId: string, limit: number, roleName?: string) {
+export async function checkRole(msg: Message<boolean> | IPrefixChatInputCommand, roleId: string, limit: number, roleName?: string) {
 	if ((msg.member as GuildMember).roles.cache.has(roleId)) return;
 	let autor = msg instanceof Message ? msg.author.id : msg.user.id;
 	let data = await TextMessages.findOneAndUpdate(

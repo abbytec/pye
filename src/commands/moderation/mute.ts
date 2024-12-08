@@ -11,6 +11,7 @@ import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../../utils/constants
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { ModLogs } from "../../Models/ModLogs.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -36,9 +37,9 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "moderadorVoz"), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const subcommand = interaction.options.getSubcommand();
-			const memberUser = interaction.options.getUser("miembro");
+			const memberUser = await interaction.options.getUser("miembro");
 
 			if (!memberUser) {
 				return await replyError(interaction, "No se pudo encontrar al miembro especificado.");
@@ -61,12 +62,12 @@ export default {
 		},
 		[logMessages]
 	),
-};
+} as Command;
 
 /**
  * Maneja el subcomando 'view' para verificar el estado de muteo.
  */
-async function handleView(interaction: ChatInputCommandInteraction, member: GuildMember): Promise<void> {
+async function handleView(interaction: IPrefixChatInputCommand, member: GuildMember): Promise<void> {
 	try {
 		const mutedRoleId = getRoleFromEnv("silenced");
 		const hasMutedRole = mutedRoleId ? member.roles.cache.has(mutedRoleId) : false;
@@ -102,7 +103,7 @@ async function handleView(interaction: ChatInputCommandInteraction, member: Guil
 /**
  * Maneja el subcomando 'toggle' para muteo/desmuteo por rol.
  */
-async function handleToggle(interaction: ChatInputCommandInteraction, member: GuildMember): Promise<PostHandleable | void> {
+async function handleToggle(interaction: IPrefixChatInputCommand, member: GuildMember): Promise<PostHandleable | void> {
 	try {
 		const mutedRoleId = getRoleFromEnv("silenced");
 

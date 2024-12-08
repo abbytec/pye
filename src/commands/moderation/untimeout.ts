@@ -9,6 +9,7 @@ import { replyError } from "../../utils/messages/replyError.js";
 import { ModLogs } from "../../Models/ModLogs.js";
 import { logMessages } from "../../utils/finalwares/logMessages.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "⚙️ - Administración y Moderación",
@@ -19,8 +20,8 @@ export default {
 		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo para remover el timeout").setRequired(true)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "moderadorChats"), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
-			const user = interaction.options.getUser("usuario", true);
+		async (interaction: IPrefixChatInputCommand) => {
+			const user = await interaction.options.getUser("usuario", true);
 			const reason = interaction.options.getString("razon", true);
 
 			const member = await interaction.guild?.members.fetch(user.id);
@@ -86,4 +87,4 @@ export default {
 		},
 		[logMessages]
 	),
-};
+} as Command;

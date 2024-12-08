@@ -10,6 +10,7 @@ import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 // Lista de GIFs para la confirmación de matrimonio
 const gifs: string[] = [
@@ -43,9 +44,9 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const subcommand = interaction.options.getSubcommand();
-			const targetUser: User = interaction.options.getUser("usuario", true);
+			const targetUser: User = await interaction.options.getUser("usuario", true);
 			const guild = interaction.guild as Guild;
 
 			const member: GuildMember | undefined = guild.members.cache.get(targetUser.id);
@@ -67,13 +68,13 @@ export default {
 			}
 		}
 	),
-};
+} as Command;
 
 /**
  * Maneja la aceptación de una propuesta de matrimonio.
  */
 async function handleAcceptMarriage(
-	interaction: ChatInputCommandInteraction,
+	interaction: IPrefixChatInputCommand,
 	userData: IUserModel,
 	targetData: IUserModel,
 	targetUser: User,
@@ -141,7 +142,7 @@ async function handleAcceptMarriage(
  * Maneja el rechazo de una propuesta de matrimonio.
  */
 async function handleRefuseMarriage(
-	interaction: ChatInputCommandInteraction,
+	interaction: IPrefixChatInputCommand,
 	userData: IUserModel,
 	targetData: IUserModel,
 	targetUser: User,

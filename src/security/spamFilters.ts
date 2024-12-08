@@ -71,10 +71,10 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 			?.send({
 				embeds: [
 					{
-						title: "spamFilter",
+						title: "Spam Filter",
 						description: "Se eliminó un mensaje que contenía texto no permitido.",
 						fields: [
-							{ name: "Usuario", value: `<@${author.id}> (${author.user})`, inline: false },
+							{ name: "Usuario", value: `<@${author.id}> (${author.user.id})`, inline: false },
 							{ name: "Spam Triggered", value: `\`${detectedFilter.filter}\`\nEn canal: ${deletable.channel}`, inline: false },
 						],
 						color: COLORS.warnOrange,

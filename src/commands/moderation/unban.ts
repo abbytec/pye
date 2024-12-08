@@ -11,6 +11,7 @@ import { logMessages } from "../../utils/finalwares/logMessages.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "⚙️ - Administración y Moderación",
@@ -22,7 +23,7 @@ export default {
 		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo del desban").setRequired(true)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
+		async (interaction: IPrefixChatInputCommand) => {
 			const userId = interaction.options.getString("id", true);
 			const reason = interaction.options.getString("razon", true);
 
@@ -91,4 +92,4 @@ export default {
 		},
 		[logMessages]
 	),
-};
+} as Command;

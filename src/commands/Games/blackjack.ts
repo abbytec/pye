@@ -29,6 +29,7 @@ import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 const game = new Set();
 const Aces = [
 	"<:A_clubs:917537119772213289>",
@@ -125,7 +126,7 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), verifyCooldown("blackjack", 3000)],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const amount = interaction.options.getInteger("cantidad", true);
 			let data = await getOrCreateUser(interaction.user.id);
 			if (amount < 0) return replyError(interaction, "Debe ser mayor a 0 claro.");
@@ -197,7 +198,7 @@ export default {
 			if (!check) return startGame(m, gameCards, gameDealerCards, cardsGame, CARDS, amount, interaction.user.id, interaction, hands);
 		}
 	),
-};
+} as Command;
 
 function cardsValue(cards: string[], cardsGame: Collection<string, number | "relatable">) {
 	let newOrder: string[] = [];
@@ -214,7 +215,7 @@ function startGame(
 	cards: Collection<string, number | "relatable">,
 	amount: number,
 	userId: string,
-	interaction: ChatInputCommandInteraction,
+	interaction: IPrefixChatInputCommand,
 	hands: string[][]
 ) {
 	let newCard, res, otherGame, newCardsDealer, otherCard, games;
@@ -469,7 +470,7 @@ async function isBlackJack(
 	data: IUserModel,
 	game: Set<unknown>,
 	amount: number,
-	interaction: ChatInputCommandInteraction,
+	interaction: IPrefixChatInputCommand,
 	firstCards: any[],
 	dealerCards: any[]
 ) {
@@ -518,7 +519,7 @@ async function splitGame(
 	cardsGame: Collection<string, number | "relatable">,
 	cards: Collection<string, number | "relatable">,
 	amount: number,
-	interaction: ChatInputCommandInteraction,
+	interaction: IPrefixChatInputCommand,
 	hands: string[][],
 	otherHand: string[],
 	otherCard: string[]

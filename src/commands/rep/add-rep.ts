@@ -10,6 +10,7 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "🥳 - Puntos de reputación",
@@ -19,8 +20,8 @@ export default {
 		.addUserOption((option) => option.setName("usuario").setDescription("selecciona el usuario").setRequired(true)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "repatidorDeRep"), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction) => {
-			const user = interaction.options.getUser("usuario", true);
+		async (interaction: IPrefixChatInputCommand) => {
+			const user = await interaction.options.getUser("usuario", true);
 			const channel = interaction.channel;
 
 			try {
@@ -43,7 +44,7 @@ export default {
 		},
 		[updateRepRoles, logMessages]
 	),
-};
+} as Command;
 
 export async function addRep(user: User | null, guild: Guild | null, points: number = 1) {
 	if (user?.bot) throw new Error("No puedo darle puntos a los bots.\nUso: `add-rep [@Usuario]`");

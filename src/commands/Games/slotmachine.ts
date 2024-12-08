@@ -12,6 +12,7 @@ import { calculateJobMultiplier } from "../../utils/generic.js";
 import { IUserModel, Users, getOrCreateUser } from "../../Models/User.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 const emojis = ["🍒", "🍉", "🍑", "🥥", "🍍", "🍇", "🥝", "🍄", "🍓", "🍀"];
 
 export default {
@@ -30,13 +31,14 @@ export default {
 			verifyCooldown("slotmachine", 3000),
 			deferInteraction(),
 		],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 			if (amount < 1 || amount > 900 || amount > userData.cash)
 				return replyError(
 					interaction,
-					`Se ingresó una cantidad inválida, debe ser ${amount < 100 ? "mayor que 100" : "menor que 900"
+					`Se ingresó una cantidad inválida, debe ser ${
+						amount < 100 ? "mayor que 100" : "menor que 900"
 					} o no tienes suficiente dinero`
 				);
 
@@ -45,7 +47,8 @@ export default {
 
 			// Crear embed de respuesta
 			const embed = new EmbedBuilder().setAuthor({
-				name: interaction.user.username, iconURL: interaction.user.displayAvatarURL()
+				name: interaction.user.username,
+				iconURL: interaction.user.displayAvatarURL(),
 			});
 
 			if (loseWinRate || (game[1][1] == game[1][2] && game[1][1] == game[1][0])) {
@@ -83,4 +86,4 @@ export default {
 			}
 		}
 	),
-};
+} as Command;

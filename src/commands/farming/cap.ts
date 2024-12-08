@@ -14,6 +14,7 @@ import { setCooldown } from "../../utils/cooldowns.js";
 import { ExtendedClient } from "../../client.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { Rob } from "./rob.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const cooldownDuration = 2 * 60 * 60 * 1000;
 
@@ -25,7 +26,7 @@ export default {
 	data: new SlashCommandBuilder().setName("cap").setDescription("Es como el rob, pero le quitas a los rateros."),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("cap", 2 * 60 * 60 * 1000), deferInteraction()],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
 			// Obtener datos del usuario
@@ -35,7 +36,7 @@ export default {
 			if (!userData.profile || !["Militar", "Policia"].includes(userData.profile.job))
 				return await replyError(interaction, "No estás autorizado para usar este comando.");
 
-			const client = interaction.client as ExtendedClient;
+			const client = interaction.client;
 			const guild = interaction.guild as Guild;
 			let reactionTime = 0;
 			if (userData.profile.job === "Policia") reactionTime = policeReactionTime;
@@ -98,4 +99,4 @@ export default {
 		},
 		[]
 	),
-};
+} as Command;

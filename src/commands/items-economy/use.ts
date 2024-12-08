@@ -13,6 +13,7 @@ import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "📚 - Inventario (Casino)",
@@ -27,7 +28,7 @@ export default {
 			verifyChannel(getChannelFromEnv("casinoPye")), // Asegúrate de definir esta función o eliminar si no es necesaria
 			deferInteraction(),
 		],
-		async (interaction: ChatInputCommandInteraction): Promise<PostHandleable | void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 			const member = interaction.member as GuildMember;
 
@@ -149,10 +150,10 @@ export default {
 			return await replyOk(interaction, `¡Has utilizado el ítem ${itemData.name}!`);
 		}
 	),
-};
+} as Command;
 
 // Función para manejar roles temporales
-async function handleTempRole(interaction: ChatInputCommandInteraction, userData: IUserModel, itemData: IShopDocument) {
+async function handleTempRole(interaction: IPrefixChatInputCommand, userData: IUserModel, itemData: IShopDocument) {
 	const member = interaction.member as GuildMember;
 
 	// Verificar si el usuario ya tiene el rol
@@ -198,7 +199,7 @@ async function handleTempRole(interaction: ChatInputCommandInteraction, userData
 }
 
 // Función para manejar el reseteo del perfil
-async function handleReset(interaction: ChatInputCommandInteraction, userData: IUserModel, itemData: IShopDocument) {
+async function handleReset(interaction: IPrefixChatInputCommand, userData: IUserModel, itemData: IShopDocument) {
 	// Eliminar el ítem del inventario
 	const itemIndex = userData.inventory.indexOf(itemData._id);
 	if (itemIndex > -1) userData.inventory.splice(itemIndex, 1);

@@ -1,7 +1,8 @@
 // helpers/composeMiddlewares.ts
 import { Finalware, Middleware, PostHandleable } from "../types/middleware.js";
-import { ChatInputCommandInteraction, MessageFlags, TextChannel } from "discord.js";
+import { ChatInputCommandInteraction, CommandInteractionOptionResolver, Message, MessageFlags, TextChannel } from "discord.js";
 import { getChannelFromEnv } from "../utils/constants.js";
+import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 
 /**
  * Componer múltiples middlewares en una única función.
@@ -12,10 +13,10 @@ import { getChannelFromEnv } from "../utils/constants.js";
  */
 export const composeMiddlewares = (
 	middlewares: Middleware[],
-	finalHandler: (interaction: ChatInputCommandInteraction) => Promise<PostHandleable | void>,
+	finalHandler: (interaction: IPrefixChatInputCommand) => Promise<PostHandleable | void>,
 	postHandlers?: Finalware[]
 ) => {
-	return async (interaction: ChatInputCommandInteraction & PostHandleable) => {
+	return async (interaction: IPrefixChatInputCommand & PostHandleable) => {
 		// Índice para rastrear el middleware actual
 		let index = -1;
 

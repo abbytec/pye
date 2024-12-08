@@ -1,9 +1,9 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { ExtendedClient } from "../../client.js";
 import { sendWelcomeMessageProcessor } from "../../utils/welcome.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	group: "📜 - Ayuda",
@@ -12,9 +12,9 @@ export default {
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("bienvenido", 6e5)],
-		async (interaction: ChatInputCommandInteraction): Promise<void> => {
+		async (interaction: IPrefixChatInputCommand): Promise<void> => {
 			interaction.reply("Dando una calurosa bienvenida");
-			await sendWelcomeMessageProcessor(interaction.client as ExtendedClient, false);
+			await sendWelcomeMessageProcessor(interaction.client, false);
 		}
 	),
-};
+} as Command;

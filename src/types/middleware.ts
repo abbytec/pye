@@ -1,6 +1,7 @@
 // types/middleware.ts
 import { APIEmbedField, AttachmentBuilder, ChatInputCommandInteraction, EmbedBuilder, GuildMember, RestOrArray, User } from "discord.js";
 import { IHelperPointDocument } from "../Models/HelperPoint.js";
+import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 
 export interface CommonMessage {
 	channel: string;
@@ -23,5 +24,5 @@ export interface PostHandleable {
 	reactWarningMessage?: string | null;
 }
 
-export type Middleware = (interaction: ChatInputCommandInteraction, next: () => Promise<void>) => Promise<void>;
-export type Finalware = (interaction: ChatInputCommandInteraction, result: Partial<PostHandleable>) => Promise<void>;
+export type Middleware = (interaction: IPrefixChatInputCommand, next: () => Promise<void>) => Promise<void>;
+export type Finalware = (interaction: IPrefixChatInputCommand, result: Partial<PostHandleable>) => Promise<void>;
