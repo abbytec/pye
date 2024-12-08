@@ -31,11 +31,11 @@ export const spamFilterList: IFilter[] = [
 	{ filter: /(https?:\/\/)?steamcommunity\.com\/gift\/.+/i, mute: false },
 	{ filter: /https?:\/\/(www\.)?\w*solara\w*\.\w+\/?/i, mute: true },
 	{
-		filter: /(?=.*\bsolara\b)(?=.*\broblox\b)(?=.*\bexecutor\b).*/is,
+		filter: /(?:solara|wix)(?=.*\broblox\b)(?=.*(?:executor|free)).*/is,
 		mute: true,
 	},
 	{
-		filter: /(?=.*\bsolara\b)(?=.*\broblox\b)(?=.*(?:executor|free)).*/is,
+		filter: /(?=.*(?:eth|ethereum|btc|bitcoin|capital|crypto|memecoins|nitro|\$|nsfw))(?=.*\b(?:gana\w*|gratis|multiplica\w*|inver\w*|giveaway|server|free)\b).*/is,
 		mute: false,
 		staffWarn: "Posible estafa detectada",
 	},
