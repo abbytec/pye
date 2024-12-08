@@ -17,6 +17,7 @@ import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { ExtendedClient } from "../../client.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 
 // Definición de los textos de éxito
 const texts: Array<(profit: string) => string> = [
@@ -120,4 +121,5 @@ export default {
 		},
 		[]
 	),
+	prefixResolver: (client: ExtendedClient) => new PrefixChatInputCommand(client, "crime", []),
 } as Command;

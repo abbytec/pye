@@ -72,13 +72,15 @@ export default {
 			const filter = (i: any) => i.user.id === targetUser.id && ["divorce_accept", "divorce_decline"].includes(i.customId);
 
 			try {
-				const componentInteraction = await interaction._reply?.awaitMessageComponent({
+				const componentInteraction = await (
+					await interaction.fetchReply()
+				)?.awaitMessageComponent({
 					filter,
 					componentType: ComponentType.Button,
 					time: 120000, // 120 segundos
 				});
 
-				if (componentInteraction?.customId === "divorce_accept") {
+				if (componentInteraction.customId === "divorce_accept") {
 					await componentInteraction.deferUpdate();
 					await processDivorce(user.id, targetUser.id);
 					const divorceEmbed = new EmbedBuilder()
@@ -90,11 +92,13 @@ export default {
 						.setColor(COLORS.errRed)
 						.setTimestamp();
 
-					await interaction._reply?.edit({
+					await (
+						await interaction.fetchReply()
+					).edit({
 						embeds: [divorceEmbed],
 						components: [],
 					});
-				} else if (componentInteraction?.customId === "divorce_decline") {
+				} else if (componentInteraction.customId === "divorce_decline") {
 					await componentInteraction.update({
 						embeds: [
 							new EmbedBuilder()

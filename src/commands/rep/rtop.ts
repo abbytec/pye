@@ -164,7 +164,7 @@ export default {
 		await interaction.reply({ ...initialContent, ephemeral: false }).catch((e) => console.error(e));
 
 		// Obtener el mensaje enviado
-		const sentMessage = await interaction._reply;
+		const sentMessage = await interaction.fetchReply();
 
 		// Crear el collector para los botones
 		const collector = sentMessage?.createMessageComponentCollector({

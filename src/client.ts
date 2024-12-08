@@ -12,6 +12,7 @@ import { ICompartePost, UltimosCompartePosts } from "./Models/CompartePostModel.
 import { AnyBulkWriteOperation } from "mongoose";
 import { inspect } from "util";
 import {} from "../globals.js";
+import { PrefixChatInputCommand } from "./utils/messages/chatInputCommandConverter.js";
 
 interface VoiceFarming {
 	date: Date;
@@ -21,6 +22,7 @@ interface VoiceFarming {
 const sieteDiasEnMs = 7 * 24 * 60 * 60 * 1000; // 7 días en milisegundos
 export class ExtendedClient extends Client {
 	public commands: Map<string, Command>;
+	public prefixCommands: Map<string, PrefixChatInputCommand>;
 	private readonly _commandLimits: Map<string, ICommandLimits>;
 	private readonly moneyConfigs: Map<string, IMoney>;
 	public cooldowns: Map<string, ICooldown>;
@@ -54,6 +56,7 @@ export class ExtendedClient extends Client {
 		});
 
 		this.commands = new Map();
+		this.prefixCommands = new Map();
 		this.cooldowns = new Map();
 		this.lastRobs = [];
 		this._commandLimits = new Map();
@@ -110,26 +113,33 @@ export class ExtendedClient extends Client {
 		this.limpiarCompartePosts();
 
 		if (firstTime) {
-			process.on("unhandledRejection", (reason, promise) => {
-				console.error("Unhandled Rejection at:", promise, "reason:", reason);
-				(this.guilds.cache.get(process.env.GUILD_ID ?? "")?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({
-					content: `${
-						process.env.NODE_ENV === "development" ? `@here` : "<@220683580467052544> <@1088883078405038151> <@602240617862660096>"
-					}Error en promesa no capturado, razon: ${reason}. Promesa: \`\`\`js\n${inspect(promise)}\`\`\``,
-					flags: MessageFlags.SuppressNotifications,
+			if (process.env.NODE_ENV !== "development") {
+				process.on("unhandledRejection", (reason, promise) => {
+					console.error("Unhandled Rejection at:", promise, "reason:", reason);
+					(this.guilds.cache.get(process.env.GUILD_ID ?? "")?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({
+						content: `${
+							process.env.NODE_ENV === "development"
+								? `@here`
+								: "<@220683580467052544> <@1088883078405038151> <@602240617862660096>"
+						}Error en promesa no capturado, razon: ${reason}. Promesa: \`\`\`js\n${inspect(promise)}\`\`\``,
+						flags: MessageFlags.SuppressNotifications,
+					});
 				});
-			});
 
-			// Manejar excepciones no capturadas
-			process.on("uncaughtException", (error) => {
-				console.error("Uncaught Exception:", error);
-				(this.guilds.cache.get(process.env.GUILD_ID ?? "")?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({
-					content: `${
-						process.env.NODE_ENV === "development" ? `@here` : "<@220683580467052544> <@1088883078405038151> <@602240617862660096>"
-					}Error no capturado (${error.message}):\n \`\`\`js\n${error.stack}\`\`\``,
-					flags: MessageFlags.SuppressNotifications,
+				// Manejar excepciones no capturadas
+				process.on("uncaughtException", (error) => {
+					console.error("Uncaught Exception:", error);
+					(this.guilds.cache.get(process.env.GUILD_ID ?? "")?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({
+						content: `${
+							process.env.NODE_ENV === "development"
+								? `@here`
+								: "<@220683580467052544> <@1088883078405038151> <@602240617862660096>"
+						}Error no capturado (${error.message}):\n \`\`\`js\n${error.stack}\`\`\``,
+						flags: MessageFlags.SuppressNotifications,
+					});
 				});
-			});
+			}
+
 			console.log("loading latest CompartePosts");
 			await this.loadCompartePosts();
 			console.log("loading commands");

@@ -1,28 +1,29 @@
 import { Message, User, TextChannel, Role, Channel } from "discord.js";
 import { PREFIX } from "../constants.js";
 import { ExtendedClient } from "../../client.js";
-import { IOptions, IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { IOptions, IPrefixChatInputCommand, MessageToSend } from "../../interfaces/IPrefixChatInputCommand.js";
 
 interface IPrefixChatInputCommandOption {
 	name: string;
-	type: string;
 	required: boolean;
 }
 
 export class PrefixChatInputCommand {
 	private readonly client: ExtendedClient;
-	private readonly commandName: string;
+	public commandName: string;
 	private readonly argsDefinition: IPrefixChatInputCommandOption[];
 	private readonly argsMap: Map<string, string> = new Map();
 	private message?: Message;
-	private _reply?: Message;
+	private _reply?: Promise<Message>;
 	private _isReplied = false;
 	private _isDeferred = false;
+	public aliases: string[];
 
-	constructor(client: ExtendedClient, commandName: string, argsDefinition: IPrefixChatInputCommandOption[]) {
+	constructor(client: ExtendedClient, commandName: string, argsDefinition: IPrefixChatInputCommandOption[], aliases: string[] = []) {
 		this.client = client;
 		this.commandName = commandName;
 		this.argsDefinition = argsDefinition;
+		this.aliases = aliases;
 	}
 
 	public async parseMessage(message: Message): Promise<IPrefixChatInputCommand | null> {
@@ -37,9 +38,6 @@ export class PrefixChatInputCommand {
 
 		const withoutPrefix = content.slice(PREFIX.length).trim();
 		const split = withoutPrefix.split(/\s+/);
-		const parsedCommandName = split.shift() ?? "";
-
-		if (parsedCommandName.toLowerCase() !== this.commandName.toLowerCase()) return null;
 
 		const parsedSubCommand = split.shift() ?? null;
 		if (parsedSubCommand) {
@@ -81,6 +79,7 @@ export class PrefixChatInputCommand {
 			get deferred() {
 				return this._isDeferred;
 			},
+			fetchReply: async () => await this._reply,
 		} as IPrefixChatInputCommand & { _isReplied: boolean; _isDeferred: boolean };
 	}
 
@@ -228,22 +227,31 @@ export class PrefixChatInputCommand {
 		return subCommand;
 	};
 
-	private async reply(content: string): Promise<Message> {
+	private async reply(content: MessageToSend): Promise<Message> {
 		if (!this.message) throw new Error("No se ha parseado un mensaje aún.");
-		const sentMessage = await this.message.reply(content);
+		let sentMessage: Promise<Message>;
+		if (content instanceof Object && "ephemeral" in content) {
+			sentMessage = this.message.reply({ ...content, options: { ephemeral: content.ephemeral } } as any);
+		} else {
+			sentMessage = this.message.reply(content as any);
+		}
 		this._reply = sentMessage;
 		this._isReplied = true;
-		return sentMessage;
+		return await sentMessage;
 	}
 
-	private async editReply(content: string): Promise<Message> {
+	private async editReply(content: MessageToSend): Promise<Message> {
 		if (!this._reply) throw new Error("No hay una respuesta previa para editar.");
-		return this._reply.edit(content);
+		if (content instanceof Object && "ephemeral" in content) {
+			return (await this._reply).edit({ ...content, options: { ephemeral: content.ephemeral } } as any);
+		} else {
+			return (await this._reply).edit(content as any);
+		}
 	}
 
 	private async deleteReply(): Promise<void> {
 		if (!this._reply) throw new Error("No hay una respuesta previa para borrar.");
-		await this._reply.delete();
+		await (await this._reply).delete();
 		this._reply = undefined;
 		this._isReplied = false;
 	}
@@ -252,21 +260,24 @@ export class PrefixChatInputCommand {
 		this._isDeferred = true;
 	}
 
-	private async followUp(content: string): Promise<Message> {
+	private async followUp(content: MessageToSend): Promise<Message> {
 		if (!this.message?.channel) throw new Error("No se ha parseado un mensaje aún.");
-
-		return (this.message.channel as TextChannel).send(content);
+		if (content instanceof Object && "ephemeral" in content) {
+			return (this.message.channel as TextChannel).send({ ...content, options: { ephemeral: content.ephemeral } } as any);
+		} else {
+			return (this.message.channel as TextChannel).send(content as any);
+		}
 	}
 
 	private get options(): IOptions {
 		return {
-			getString: this.getString as IOptions["getString"],
-			getNumber: this.getNumber as IOptions["getNumber"],
-			getBoolean: this.getBoolean as IOptions["getBoolean"],
+			getString: this.getString.bind(this) as IOptions["getString"],
+			getNumber: this.getNumber.bind(this) as IOptions["getNumber"],
+			getBoolean: this.getBoolean.bind(this) as IOptions["getBoolean"],
 			getUser: this.getUser.bind(this) as IOptions["getUser"],
-			getInteger: this.getInteger as IOptions["getInteger"],
+			getInteger: this.getInteger.bind(this) as IOptions["getInteger"],
 			getRole: this.getRole.bind(this) as IOptions["getRole"],
-			getSubcommand: this.getSubcommand as IOptions["getSubcommand"],
+			getSubcommand: this.getSubcommand.bind(this) as IOptions["getSubcommand"],
 			getChannel: this.getChannel.bind(this) as IOptions["getChannel"],
 		};
 	}

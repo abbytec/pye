@@ -114,7 +114,7 @@ export default {
 			await replyOk(interaction, [embed], undefined, [actionRow], undefined, undefined, false);
 
 			// Obtener el mensaje enviado
-			const message = await interaction._reply;
+			const message = await interaction.fetchReply();
 
 			// Asegurarse de que el mensaje es de tipo Message
 			if (message && !("edit" in message)) {

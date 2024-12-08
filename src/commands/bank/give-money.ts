@@ -12,6 +12,7 @@ import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { setCooldown } from "../../utils/cooldowns.js";
 import { ExtendedClient } from "../../client.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 
 const cooldown = 60 * 1000; // 1 minuto en milisegundos
 
@@ -77,4 +78,20 @@ export default {
 		},
 		[]
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(
+			client,
+			"give-money",
+			[
+				{
+					name: "usuario",
+					required: true,
+				},
+				{
+					name: "cantidad",
+					required: true,
+				},
+			],
+			["pay", "gm", "transfer"]
+		),
 } as Command;

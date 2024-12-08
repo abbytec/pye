@@ -123,22 +123,23 @@ async function processPrefixCommand(message: Message, client: ExtendedClient) {
 	const commandName = commandBody.split(/ +/, 1).shift()?.toLowerCase() ?? "";
 
 	// Verifica si el comando existe en la colección de comandos
-	const command = client.commands.get(commandName);
+	const command = client.prefixCommands.get(commandName);
 
 	if (!command) {
-		message.reply("Ese comando no existe. Prueba escribiendo /help.");
+		message.reply("Ese comando no existe, quizá se actualizó a Slash Command :point_right: /.\n Prueba escribiendo /help.");
 		return;
 	}
 
 	try {
-		if (command.prefixResolver) {
-			await command.prefixResolver.parseMessage(message);
+		const parsedMessage = await command.parseMessage(message);
+		if (parsedMessage) {
+			client.commands.get(command.commandName)?.execute(parsedMessage);
 		} else {
-			message.reply("Este comando se actualizó a Slash Command :point_right: /.");
+			message.reply({ content: "Hubo un error ejecutando ese comando.", ephemeral: true } as any);
 		}
-	} catch (error) {
+	} catch (error: any) {
 		console.error(`Error ejecutando el comando ${commandName}:`, error);
-		message.reply("Hubo un error ejecutando ese comando.");
+		message.reply({ content: "Hubo un error ejecutando ese comando.\n" + error.message, ephemeral: true } as any);
 	}
 }
 

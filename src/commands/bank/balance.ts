@@ -14,6 +14,8 @@ import { COLORS, pyecoin } from "../../utils/constants.js";
 import { fileURLToPath } from "url";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
+import { ExtendedClient } from "../../client.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -82,4 +84,16 @@ export default {
 		},
 		[]
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(
+			client,
+			"balance",
+			[
+				{
+					name: "usuario",
+					required: false,
+				},
+			],
+			["bal"]
+		),
 } as Command;

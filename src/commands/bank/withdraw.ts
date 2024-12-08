@@ -9,6 +9,8 @@ import { IUser } from "../../interfaces/IUser.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { ExtendedClient } from "../../client.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 
 export default {
 	group: "🏦 - Finanzas del server (Casino)",
@@ -53,4 +55,16 @@ export default {
 		},
 		[]
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(
+			client,
+			"withdraw",
+			[
+				{
+					name: "cantidad",
+					required: true,
+				},
+			],
+			["wd"]
+		),
 } as Command;

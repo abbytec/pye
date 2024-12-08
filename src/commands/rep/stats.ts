@@ -14,6 +14,7 @@ import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { replyWarning } from "../../utils/messages/replyWarning.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,7 +46,7 @@ export default {
 			const avatar = await loadImage(member.displayAvatarURL({ extension: "png", forceStatic: true }));
 			const name = member.username.length > 9 ? member.username.substring(0, 8).trim() + "..." : member.username;
 			const role = getRole(guildMember);
-			if (!role) return;
+			if (!role) return replyWarning(msg, "El usuario seleccionado no tiene ningun rol de reputación.");
 			const background = await loadImage(path.join(__dirname, `../../assets/Images/reputation/${getRoleName(role.id)}.jpg`));
 
 			const canvas = getRender({

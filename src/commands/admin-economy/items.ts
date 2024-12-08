@@ -157,7 +157,7 @@ async function visualizarItems(interaction: IPrefixChatInputCommand) {
 	let pageContent = getPageContent(page);
 	await replyOk(interaction, pageContent.embeds, undefined, pageContent.components);
 
-	const message = await interaction._reply;
+	const message = await interaction.fetchReply();
 
 	const collector = message?.createMessageComponentCollector<ComponentType.Button>({
 		componentType: ComponentType.Button,

@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, SlashCommandOptionsOnlyBuilder } from "discord.js";
 import { PrefixChatInputCommand } from "../utils/messages/chatInputCommandConverter.js";
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
+import { ExtendedClient } from "../client.js";
 
 /**
  * Interfaz que define la estructura de un comando.
@@ -17,7 +18,9 @@ export interface Command {
 	 */
 	execute(interaction: IPrefixChatInputCommand): Promise<void>;
 
-	prefixResolver?: PrefixChatInputCommand;
+	prefixResolver?: (client: ExtendedClient) => PrefixChatInputCommand;
+
+	prefixResolverInstance?: PrefixChatInputCommand;
 
 	group?: string;
 

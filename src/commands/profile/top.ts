@@ -97,7 +97,7 @@ export default {
 				const content = await generateContent(type, page, user, interaction, position, totalPages);
 				await replyOk(interaction, content.embeds, undefined, content.components);
 
-				const message = await interaction._reply;
+				const message = await interaction.fetchReply();
 
 				if (!(message instanceof Message)) return console.error("El mensaje obtenido no es una instancia de Message.");
 

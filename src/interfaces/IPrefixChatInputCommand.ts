@@ -25,7 +25,7 @@ export interface IOptions {
 	getChannel: ((name: string, required?: boolean) => Promise<Channel | null>) & ((name: string, required: true) => Promise<Channel>);
 }
 
-type messageToSend = string | MessagePayload | MessageReplyOptions | InteractionReplyOptions;
+export type MessageToSend = string | MessagePayload | MessageReplyOptions | InteractionReplyOptions;
 export interface IPrefixChatInputCommand {
 	client: ExtendedClient;
 	commandName: string;
@@ -36,12 +36,13 @@ export interface IPrefixChatInputCommand {
 	user: User;
 	channel: Channel;
 	channelId: string;
-	reply: (options: messageToSend) => Promise<Message>;
-	editReply: (options: messageToSend) => Promise<Message>;
+	reply: (options: MessageToSend) => Promise<Message>;
+	editReply: (options: MessageToSend) => Promise<Message>;
 	deleteReply: () => Promise<void>;
-	deferReply: (options: any) => void;
-	followUp: (content: messageToSend) => Promise<Message<BooleanCache<CacheType>>>;
+	deferReply: (options: any) => Promise<void>;
+	fetchReply: () => Promise<Message>;
+	followUp: (content: MessageToSend) => Promise<Message<BooleanCache<CacheType>>>;
 	replied: boolean;
 	deferred: boolean;
-	_reply?: Message;
+	_reply?: Promise<Message>;
 }

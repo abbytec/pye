@@ -15,6 +15,7 @@ import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { ExtendedClient } from "../../client.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 
 const cooldownDuration = 30 * 60 * 1000;
 
@@ -168,4 +169,11 @@ export default {
 		},
 		[]
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(client, "rob", [
+			{
+				name: "user",
+				required: true,
+			},
+		]),
 } as Command;

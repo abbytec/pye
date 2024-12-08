@@ -40,6 +40,12 @@ const loadCommands = async () => {
 					if (command.data) {
 						console.log(`Cargando comando: ${command.data.name}`);
 						client.commands.set(command.data.name, command);
+						if (command.prefixResolver) {
+							let instance = command.prefixResolver(client);
+							command.prefixResolverInstance = instance;
+							client.prefixCommands.set(instance.commandName, instance);
+							command.prefixResolverInstance.aliases.forEach((alias) => client.prefixCommands.set(alias, instance));
+						}
 					} else {
 						console.log(`[ADVERTENCIA] El comando en ${filePath} carece de la propiedad "data".`);
 					}

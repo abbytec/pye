@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, TextBasedChannel, Role, User, Channel } from "discord.js";
+import { ChatInputCommandInteraction, TextBasedChannel, Role, User, Channel, Message } from "discord.js";
 import { IOptions, IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { ExtendedClient } from "../../client.js";
 
@@ -7,9 +7,9 @@ export function chatInputCommandParser(interaction: ChatInputCommandInteraction)
 		client: interaction.client as ExtendedClient,
 		commandName: interaction.commandName,
 		options: {
-			getString: interaction.options.getString,
-			getNumber: interaction.options.getNumber,
-			getBoolean: interaction.options.getBoolean,
+			getString: interaction.options.getString.bind(interaction.options),
+			getNumber: interaction.options.getNumber.bind(interaction.options),
+			getBoolean: interaction.options.getBoolean.bind(interaction.options),
 			getUser: async (name: string, required?: boolean): Promise<any> => {
 				const user = interaction.options.getUser(name, required);
 				if (required && !user) {
@@ -17,7 +17,7 @@ export function chatInputCommandParser(interaction: ChatInputCommandInteraction)
 				}
 				return user;
 			},
-			getInteger: interaction.options.getInteger,
+			getInteger: interaction.options.getInteger.bind(interaction.options),
 			getRole: async (name: string, required?: boolean): Promise<any> => {
 				const role = interaction.options.getRole(name, required) as Role | null;
 				if (required && !role) {
@@ -25,11 +25,11 @@ export function chatInputCommandParser(interaction: ChatInputCommandInteraction)
 				}
 				return role;
 			},
-			getSubcommand: interaction.options.getSubcommand,
+			getSubcommand: interaction.options.getSubcommand.bind(interaction.options),
 			getChannel: async (name: string, required?: boolean): Promise<any> => {
 				const channel = interaction.options.getChannel(name, required) as Channel | null;
 				if (required && !channel) {
-					throw new Error(`El rol requerido "${name}" no fue proporcionado.`);
+					throw new Error(`El canal requerido "${name}" no fue proporcionado.`);
 				}
 				return channel;
 			},
@@ -40,16 +40,23 @@ export function chatInputCommandParser(interaction: ChatInputCommandInteraction)
 		user: interaction.user,
 		channel: interaction.channel as TextBasedChannel,
 		channelId: interaction.channelId,
-		reply: interaction.reply.bind(interaction) as any,
+		reply: (...args: any): Promise<any> => {
+			return interaction.reply(...[args as any]);
+		},
 		editReply: interaction.editReply.bind(interaction),
 		deleteReply: interaction.deleteReply.bind(interaction),
-		deferReply: interaction.deferReply.bind(interaction),
+		deferReply: (...args): Promise<any> => {
+			return interaction.deferReply(...args);
+		},
 		followUp: interaction.followUp.bind(interaction) as any,
 		get replied() {
 			return interaction.replied;
 		},
 		get deferred() {
 			return interaction.deferred;
+		},
+		fetchReply: (): Promise<Message> => {
+			return interaction.fetchReply("@original");
 		},
 	};
 }

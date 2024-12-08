@@ -43,11 +43,12 @@ export async function replyInfo(
 	if ((interaction.deferred || interaction.replied) && !components) {
 		if (!ephemeral) {
 			await interaction.deleteReply().catch((e) => null);
-			await (interaction.guild?.channels.resolve(interaction?.channelId ?? "") as TextChannel)?.send(messageToSend);
-		} else await interaction.followUp(messageToSend);
+			interaction.guild?.channels.cache.get(interaction?.channelId ?? "") ??
+				((await interaction.guild?.channels.fetch(interaction?.channelId ?? "")) as TextChannel)?.send(messageToSend).catch((e) => null);
+		} else await interaction.followUp(messageToSend).catch((e) => null);
 	} else if (components) {
 		await interaction.editReply(messageToSend).catch((e) => null);
 	} else {
-		await interaction.reply(messageToSend);
+		await interaction.reply(messageToSend).catch((e) => null);
 	}
 }
