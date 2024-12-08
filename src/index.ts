@@ -7,6 +7,7 @@ import { connect } from "mongoose";
 import { Command } from "./types/command.js";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { Evento, EventoConClienteForzado } from "./types/event.js";
+import {} from "../globals.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

@@ -1,5 +1,5 @@
 // src/Client.ts
-import { ChannelType, Client, GatewayIntentBits, MessageFlags, Partials, StickerType, TextChannel, VoiceChannel } from "discord.js";
+import { ChannelType, Client, GatewayIntentBits, MessageFlags, Partials, StickerType, TextChannel, VoiceChannel, Sticker } from "discord.js";
 import { Command } from "./types/command.js"; // Asegúrate de definir la interfaz Command
 import { ICooldown } from "./Models/Cooldown.js";
 import { Rob } from "./commands/farming/rob.js";
@@ -11,7 +11,7 @@ import Trending from "./Models/Trending.js";
 import { ICompartePost, UltimosCompartePosts } from "./Models/CompartePostModel.js";
 import { AnyBulkWriteOperation } from "mongoose";
 import { inspect } from "util";
-import { Sticker } from "discord.js";
+import {} from "../globals.js";
 
 interface VoiceFarming {
 	date: Date;
