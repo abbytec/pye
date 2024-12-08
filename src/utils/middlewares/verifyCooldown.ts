@@ -1,7 +1,7 @@
 // src/utils/middlewares/verifyCooldown.ts
 
 import { Middleware } from "../../types/middleware.js";
-import { getCooldown } from "../../utils/cooldowns.js";
+import { getCooldown, setCooldown } from "../../utils/cooldowns.js";
 import { ChatInputCommandInteraction } from "discord.js";
 import { formatTime } from "../generic.js";
 import { ExtendedClient } from "../../client.js";
@@ -40,6 +40,7 @@ export const verifyCooldown = (
 			});
 			return; // Detiene la cadena de middlewares
 		}
+		await setCooldown(interaction.client, userId, commandName, finalCooldownDuration);
 
 		// Continúa al siguiente middleware o al manejador de comandos
 		await next();
