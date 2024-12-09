@@ -13,6 +13,8 @@ import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { replyInfo } from "../../utils/messages/replyInfo.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { ExtendedClient } from "../../client.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 let data: {
 	fin: number;
 	apuestas: { jugador: string; cantidad: number; apuesta: string }[];
@@ -90,6 +92,22 @@ export default {
 			);
 		}
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(
+			client,
+			"roulette",
+			[
+				{
+					name: "cantidad",
+					required: true,
+				},
+				{
+					name: "eleccion",
+					required: true,
+				},
+			],
+			["bj"]
+		),
 } as Command;
 
 async function roulette(interaction: IPrefixChatInputCommand) {

@@ -78,8 +78,8 @@ async function handleView(interaction: IPrefixChatInputCommand, member: GuildMem
 
 		const embed = new EmbedBuilder()
 			.setAuthor({
-				name: interaction.client.user?.tag || "Bot",
-				iconURL: interaction.client.user?.displayAvatarURL() || "",
+				name: interaction.client.user?.tag ?? "Bot",
+				iconURL: interaction.client.user?.displayAvatarURL() ?? "",
 			})
 			.setTitle(`Estado de Restricción de ${member.user.tag}`)
 			.setDescription(description)

@@ -43,9 +43,17 @@ export async function replyWarning(
 
 	if ((interaction.deferred || interaction.replied) && !components) {
 		if (!ephemeral) {
-			await interaction.deleteReply().catch((e) => null);
-			interaction.guild?.channels.cache.get(interaction?.channelId ?? "") ??
-				((await interaction.guild?.channels.fetch(interaction?.channelId ?? "")) as TextChannel)?.send(messageToSend).catch((e) => null);
+			if ("_reply" in interaction) {
+				await (await interaction.fetchReply()).delete().catch((e) => null);
+			} else {
+				await interaction.deleteReply().catch((e) => null);
+			}
+			(
+				(interaction.guild?.channels.cache.get(interaction?.channelId ?? "") ??
+					(await interaction.guild?.channels.fetch(interaction?.channelId ?? ""))) as TextChannel
+			)
+				?.send(messageToSend)
+				.catch((e) => null);
 		} else await interaction.followUp(messageToSend).catch((e) => null);
 	} else if (components) {
 		await interaction.editReply(messageToSend).catch((e) => null);

@@ -13,6 +13,8 @@ import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { calculateJobMultiplier } from "../../utils/generic.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { ExtendedClient } from "../../client.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 
 export default {
 	group: "🎮 • Juegos",
@@ -30,7 +32,7 @@ export default {
 					{ name: "Cara", value: "cara" },
 					{ name: "Cruz", value: "cruz" },
 				])
-				.setRequired(true)
+				.setRequired(false)
 		),
 
 	execute: composeMiddlewares(
@@ -42,7 +44,7 @@ export default {
 		],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
-			let side: string = interaction.options.getString("lado", true);
+			let side: string = interaction.options.getString("lado") ?? ["cara", "cruz"][Math.floor(Math.random() * 2)];
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 
 			if (amount < 1 || amount > 4000 || amount > userData.cash)
@@ -87,4 +89,20 @@ export default {
 			}
 		}
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(
+			client,
+			"flipcoin",
+			[
+				{
+					name: "cantidad",
+					required: true,
+				},
+				{
+					name: "lado",
+					required: false,
+				},
+			],
+			["fp"]
+		),
 } as Command;

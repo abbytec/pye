@@ -30,6 +30,8 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
+import { ExtendedClient } from "../../client.js";
 const game = new Set();
 const Aces = [
 	"<:A_clubs:917537119772213289>",
@@ -198,6 +200,18 @@ export default {
 			if (!check) return startGame(m, gameCards, gameDealerCards, cardsGame, CARDS, amount, interaction.user.id, interaction, hands);
 		}
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(
+			client,
+			"blackjack",
+			[
+				{
+					name: "cantidad",
+					required: true,
+				},
+			],
+			["bj"]
+		),
 } as Command;
 
 function cardsValue(cards: string[], cardsGame: Collection<string, number | "relatable">) {

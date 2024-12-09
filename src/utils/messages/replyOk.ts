@@ -47,7 +47,6 @@ export async function replyOk(
 			} else {
 				await interaction.deleteReply().catch((e) => null);
 			}
-			console.log("iwi");
 			(
 				(interaction.guild?.channels.cache.get(interaction?.channelId ?? "") ??
 					(await interaction.guild?.channels.fetch(interaction?.channelId ?? ""))) as TextChannel

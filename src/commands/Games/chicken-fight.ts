@@ -14,6 +14,8 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { ExtendedClient } from "../../client.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 const level = new Map();
 
 export default {
@@ -92,4 +94,16 @@ export default {
 			}
 		}
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(
+			client,
+			"chicken-fight",
+			[
+				{
+					name: "cantidad",
+					required: true,
+				},
+			],
+			["cf"]
+		),
 } as Command;
