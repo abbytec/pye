@@ -106,7 +106,7 @@ export default {
 					required: true,
 				},
 			],
-			["bj"]
+			["roulete"]
 		),
 } as Command;
 

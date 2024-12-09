@@ -1,4 +1,13 @@
-import { ChatInputCommandInteraction, TextBasedChannel, Role, User, Channel, Message } from "discord.js";
+import {
+	ChatInputCommandInteraction,
+	TextBasedChannel,
+	Role,
+	User,
+	Channel,
+	Message,
+	InteractionReplyOptions,
+	MessagePayload,
+} from "discord.js";
 import { IOptions, IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { ExtendedClient } from "../../client.js";
 
@@ -40,8 +49,8 @@ export function chatInputCommandParser(interaction: ChatInputCommandInteraction)
 		user: interaction.user,
 		channel: interaction.channel as TextBasedChannel,
 		channelId: interaction.channelId,
-		reply: (...args: any): Promise<any> => {
-			return interaction.reply(...[args as any]);
+		reply: (args): Promise<any> => {
+			return interaction.reply(args as InteractionReplyOptions | string | MessagePayload);
 		},
 		editReply: interaction.editReply.bind(interaction),
 		deleteReply: interaction.deleteReply.bind(interaction),

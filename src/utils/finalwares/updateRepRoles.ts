@@ -28,7 +28,7 @@ export const updateRepRoles: Finalware = async (postHandleableInteraction, resul
 
 	const points = helperPoint.points;
 
-	await updateMemberReputationRoles(guildMember, points, postHandleableInteraction.client as ExtendedClient);
+	await updateMemberReputationRoles(guildMember, points, postHandleableInteraction.client);
 };
 
 export async function updateMemberReputationRoles(member: GuildMember, points: number, client: ExtendedClient): Promise<void> {
@@ -59,7 +59,7 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 			if (member.roles.cache.has(role.id) && role.minPoints > maxOldRoleMinPoints) {
 				maxOldRoleId = role.id;
 				maxOldRoleMinPoints = role.minPoints;
-				return true;
+				return role.id !== newRoleId;
 			}
 			return false;
 		})
@@ -71,7 +71,7 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 	// Añadimos el nuevo rol si es necesario
 	if (newRoleId && !member.roles.cache.has(newRoleId)) {
 		await member.roles.add(newRoleId).catch((error) => console.error(`Error al añadir el rol ${newRoleId} a ${member.user.tag}:`, error));
-		if (maxOldRoleId && maxOldRoleId !== newRoleId) {
+		if (maxOldRoleId && maxOldRoleId !== newRoleId && maxOldRoleMinPoints < newRoleMinPoints) {
 			await sendAnnoucement(member, newRoleId, client, newRoleMinPoints >= ROLES_REP_RANGE.veterano);
 		}
 	}
