@@ -94,11 +94,11 @@ function buildFields({ gratitudeMessage, messages, repliedMessage, helpers }: Bu
 		value: `${msg.author} (\`${msg.author.id}\`)\n${msg.content.slice(0, 250)} [Ir allá](${msg.url})`,
 	}));
 
-	const divider = [{ name: "\u200b", value: " ════════════════════" }];
+	const divider = [{ name: " ════════════════════", value: "\u200b" }];
 
 	const channelField = { name: "# Canal", value: `<#${gratitudeMessage.channel.id}>` };
 	const userHelpedField = {
-		name: "\n# Miembro Ayudado",
+		name: "# Miembro Ayudado",
 		value: `${gratitudeMessage.author} (\`${gratitudeMessage.author.id}\`)`,
 	};
 
@@ -117,12 +117,12 @@ ${repliedMessage ? "  :arrow_right_hook:" : ""} ${repliedMessage ? "**Miembro ay
 `;
 
 	const helpedMessageTrigger = {
-		name: "\n# Mensaje de agradecimiento",
+		name: "# Mensaje de agradecimiento",
 		value: helpedMessage,
 	};
 
 	const posibleHelpers = {
-		name: "\n# Posibles ayudantes",
+		name: "POSIBLES AYUDANTES",
 		value: helpers
 			.map(
 				(id, i) =>
@@ -136,6 +136,7 @@ ${repliedMessage ? "  :arrow_right_hook:" : ""} ${repliedMessage ? "**Miembro ay
 	const fields = [...listOfComments, ...divider, channelField, userHelpedField, helpedMessageTrigger];
 
 	if (helpers.length > 0) {
+		fields.push(divider[0]);
 		fields.push(posibleHelpers);
 	}
 
