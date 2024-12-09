@@ -44,7 +44,35 @@ export default {
 
 			// Aplicar el timeout
 			try {
-				return await applyTimeout(duration, reason, member, interaction.guild?.iconURL({ extension: "gif" }) ?? null, interaction.user);
+				let result = await applyTimeout(
+					duration,
+					reason,
+					member,
+					interaction.guild?.iconURL({ extension: "gif" }) ?? null,
+					interaction.user
+				);
+				if ("logMessages" in result) {
+					await replyWarning(
+						interaction,
+						`**${user.username}** ha recibido una advertencia.`,
+						undefined,
+						undefined,
+						undefined,
+						undefined,
+						false
+					);
+					return await replyWarning(
+						interaction,
+						`**${user.username}** ha recibido un timeout.`,
+						undefined,
+						undefined,
+						undefined,
+						undefined,
+						false
+					);
+				} else {
+					return await replyError(interaction, "No se pudo aplicar el timeout al usuario, por favor revisa los logs.");
+				}
 			} catch {
 				return await replyError(interaction, "No se pudo aplicar el timeout al usuario.");
 			}
@@ -59,9 +87,7 @@ export async function applyTimeout(
 	member: GuildMember,
 	interactionGuildIconURL: string | null,
 	moderator?: User
-): Promise<PostHandleable | void> {
-	// Aplicar el timeout
-	console.log("Aplicando timeout", duration, reason);
+): Promise<PostHandleable> {
 	return await member.timeout(duration, reason).then(async () => {
 		// Registrar en ModLogs
 		await ModLogs.create({
@@ -98,8 +124,7 @@ export async function applyTimeout(
 						.setTimestamp(),
 				],
 			})
-			.catch(() => console.error("Error al aplicar el timeout:", member.user.username)); // Ignorar errores si el usuario no acepta DMs
-
+			.catch(() => console.error("No se pudo enviar el mensaje directo al usuario para avisarle de su timeout: ", member.user.username)); // Ignorar errores si el usuario no acepta DMs
 		return {
 			logMessages: [
 				{
