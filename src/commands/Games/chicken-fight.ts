@@ -87,7 +87,7 @@ export default {
 			if (win) {
 				try {
 					await increaseHomeMonthlyIncome(interaction.user.id, amount);
-					await checkQuestLevel({ msg: interaction, money: amount, userId: interaction.user.id } as IQuest);
+					await checkQuestLevel({ msg: interaction, money: amount, userId: interaction.user.id } as IQuest, true);
 				} catch (error) {
 					console.error("Error actualizando la quest:", error);
 				}

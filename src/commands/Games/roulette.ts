@@ -169,7 +169,7 @@ async function roulette(interaction: IPrefixChatInputCommand) {
 			msg += `<@${resultado.jugador}> ha ganado ${pyecoin} **${resultado.cantidad.toLocaleString()}**.\n`;
 			try {
 				await increaseHomeMonthlyIncome(resultado.jugador, resultado.cantidad);
-				await checkQuestLevel({ msg: interaction, money: resultado.cantidad, userId: resultado.jugador } as IQuest);
+				await checkQuestLevel({ msg: interaction, money: resultado.cantidad, userId: resultado.jugador } as IQuest, true);
 			} catch (error) {
 				console.error("Error actualizando la quest:", error);
 			}

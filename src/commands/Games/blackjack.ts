@@ -361,7 +361,7 @@ async function checkEmbed(amount: number, userId: string, msg: InteractionRespon
 		} else {
 			amount = calculateJobMultiplier(data.profile?.job, amount, data.couples);
 			increaseHomeMonthlyIncome(userId, amount);
-			checkQuestLevel({ msg, money: amount, userId });
+			checkQuestLevel({ msg, money: amount, userId }, true);
 			data.bet += x;
 			data.earnings += amount;
 			data.cash += amount;
@@ -421,7 +421,7 @@ async function checkGame(
 		} else {
 			amount = calculateJobMultiplier(data.profile?.job, amount, data.couples);
 			increaseHomeMonthlyIncome(userId, amount);
-			checkQuestLevel({ msg: msg, money: amount, userId } as IQuest);
+			checkQuestLevel({ msg: msg, money: amount, userId } as IQuest, true);
 			data.bet += x;
 			data.earnings += amount;
 			data.cash += amount;
@@ -453,7 +453,7 @@ async function checkGame(
 		} else {
 			amount = calculateJobMultiplier(data.profile?.job, amount, data.couples);
 			increaseHomeMonthlyIncome(userId, amount);
-			checkQuestLevel({ msg: msg, money: amount, userId } as IQuest);
+			checkQuestLevel({ msg: msg, money: amount, userId } as IQuest, true);
 			data.bet += x;
 			data.earnings += amount;
 			data.cash += amount;
@@ -499,7 +499,7 @@ async function isBlackJack(
 		} else if (firstValue == 21) {
 			amount = calculateJobMultiplier(data.profile?.job, amount, data.couples);
 			increaseHomeMonthlyIncome(interaction.user.id, amount);
-			checkQuestLevel({ msg: interaction, money: amount, userId: interaction.user.id } as IQuest);
+			checkQuestLevel({ msg: interaction, money: amount, userId: interaction.user.id } as IQuest, true);
 			data.bet += x;
 			data.earnings += amount;
 			data.cash += amount;

@@ -81,7 +81,7 @@ export default {
 			if (loseWinRate || (game[1][1] == game[1][2] && game[1][1] == game[1][0])) {
 				try {
 					await increaseHomeMonthlyIncome(interaction.user.id, amount);
-					await checkQuestLevel({ msg: interaction, money: amount, userId: interaction.user.id } as IQuest);
+					await checkQuestLevel({ msg: interaction, money: amount, userId: interaction.user.id } as IQuest, true);
 				} catch (error) {
 					console.error("Error actualizando la quest:", error);
 				}

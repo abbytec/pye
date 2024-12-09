@@ -161,7 +161,7 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 		}
 		try {
 			await increaseHomeMonthlyIncome(data.apuestas[i].jugador, data.apuestas[i].cantidad);
-			await checkQuestLevel({ msg: interaction, money: data.apuestas[i].cantidad, userId: data.apuestas[i].jugador } as IQuest);
+			await checkQuestLevel({ msg: interaction, money: data.apuestas[i].cantidad, userId: data.apuestas[i].jugador } as IQuest, true);
 		} catch (error) {
 			console.error("Error actualizando la quest:", error);
 		}
