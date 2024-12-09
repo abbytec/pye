@@ -329,7 +329,7 @@ export const ROLES_REP_RANGE = {
 };
 
 export const COLORS = {
-	lightSeaGreen: 0x24b7b7,
+	lightSeaGreen: 0x24b7b7, // disboard
 	pyeWelcome: 0x00ae86,
 	pyeLightBlue: 0x0099ff,
 	okGreen: 0x43b581,

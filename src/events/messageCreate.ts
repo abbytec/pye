@@ -43,7 +43,7 @@ export default {
 			message.embeds[0].data.color == COLORS.lightSeaGreen &&
 			message.embeds[0].data.description?.includes(EMOJIS.thumbsUp)
 		) {
-			return bumpHandler(message.client as ExtendedClient, message);
+			return bumpHandler(message);
 		}
 
 		const client = message.client as ExtendedClient;

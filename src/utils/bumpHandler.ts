@@ -15,16 +15,16 @@ import { increaseHomeMonthlyIncome } from "../Models/Home.js";
  * @param client - El cliente de Discord.
  * @param message - El mensaje de interacción que desencadenó el bump.
  */
-export async function bumpHandler(client: ExtendedClient, message: Message): Promise<void> {
+export async function bumpHandler(message: Message): Promise<void> {
 	try {
 		if (!message.interactionMetadata) return;
 
 		const ganadorId = message.interactionMetadata.user.id;
 
 		// Obtener los documentos de Money y Users
-		const money = await Money.findById(client.user?.id).exec();
+		const money = await Money.findById(process.env.CLIENT_ID).exec();
 		if (!money) {
-			console.error(`No se encontró el documento de Money para el bot con ID: ${client.user?.id}`);
+			console.error(`No se encontró el documento de Money para el bot con ID: ${process.env.CLIENT_ID}`);
 			return;
 		}
 
