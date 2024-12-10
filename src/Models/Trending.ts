@@ -111,7 +111,18 @@ class Trending {
 			data.month = this.month;
 
 			await data.save().catch((error) => {
-				ExtendedClient.logError("Error al guardar los datos diarios de Trending: " + error.message, error.stack, process.env.CLIENT_ID);
+				ExtendedClient.logError(
+					"Error al guardar los datos diarios de Trending: " +
+						error.message +
+						"\nthis.emojis:" +
+						JSON.stringify(this.emojis) +
+						"\nthis.forumChannels:" +
+						JSON.stringify(this.forumChannels) +
+						"\nthis.stickers:" +
+						JSON.stringify(this.stickers),
+					error.stack,
+					process.env.CLIENT_ID
+				);
 			});
 		}
 
