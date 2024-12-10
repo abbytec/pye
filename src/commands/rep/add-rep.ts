@@ -25,9 +25,12 @@ export default {
 			const channel = interaction.channel;
 
 			try {
-				const { member, data } = await addRep(user, interaction.guild);
+				const { member, data } = await addRep(user, interaction.guild).catch(async (error: any) => {
+					await replyError(interaction, error.message);
+					return { member: null, data: null };
+				});
+				if (!member || !data) return;
 				await replyOk(interaction, `se le ha dado un rep al usuario: \`${user.tag}\``);
-
 				return {
 					guildMember: member,
 					helperPoint: data,

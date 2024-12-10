@@ -30,7 +30,7 @@ export default {
 		async (msg: IPrefixChatInputCommand) => {
 			// get user
 			const member = (await msg.options.getUser("usuario", false)) ?? msg.user;
-			const guildMember = await msg.guild?.members.fetch(member.id); // 'user' es de tipo 'User'
+			const guildMember = await msg.guild?.members.fetch(member.id).catch(() => null);
 
 			// validate bot
 			if (member.bot) return await replyError(msg, "Los bots no pueden tener puntos de ayuda.");
@@ -45,9 +45,11 @@ export default {
 			const rank = (people.findIndex((memberFromDB) => memberFromDB._id === member.id) + 1).toLocaleString() || "-";
 			const avatar = await loadImage(member.displayAvatarURL({ extension: "png", forceStatic: true }));
 			const name = member.username.length > 9 ? member.username.substring(0, 8).trim() + "..." : member.username;
-			const role = getRole(guildMember);
+			const role = guildMember ? getRole(guildMember) : null;
 			if (!role) return replyWarning(msg, "El usuario seleccionado no tiene ningun rol de reputación.");
-			const background = await loadImage(path.join(__dirname, `../../assets/Images/reputation/${getRoleName(role.id)}.jpg`));
+			const background = await loadImage(
+				path.join(__dirname, `../../assets/Images/reputation/${role ? getRoleName(role.id) : "novato"}.jpg`)
+			);
 
 			const canvas = getRender({
 				name,

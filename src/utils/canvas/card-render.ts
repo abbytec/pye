@@ -36,7 +36,7 @@ function formatNumber(numStr: string) {
 
 interface RenderParams {
 	name: string;
-	role: Role;
+	role: Role | null;
 	points: string;
 	rank: string;
 	pyeCoins: string;
@@ -46,7 +46,7 @@ interface RenderParams {
 export function getRender({ name, role, points, rank, pyeCoins, background, avatar }: RenderParams) {
 	const data = {
 		nickName: name[0].toUpperCase() + name.slice(1),
-		role: getRoleName(role.id),
+		role: role ? getRoleName(role.id) : "-",
 		avatar: avatar,
 		pyeCoins: pyeCoins,
 		reputation: {
