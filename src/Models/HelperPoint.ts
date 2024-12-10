@@ -1,5 +1,6 @@
 import { Schema, Document, model } from "mongoose";
 import client from "../redis.js";
+import { ExtendedClient } from "../client.js";
 
 interface IHelperPoint {
 	_id: string;
@@ -44,8 +45,12 @@ helperpointSchema.post(
 		const { conditions, update } = context;
 		try {
 			if (update.$inc) await client.zIncrBy("top:rep", update.$inc.points, conditions._id);
-		} catch (error) {
-			console.error(`Error actualizando 'top:rep' para el usuario ${doc._id}:`, error);
+		} catch (error: any) {
+			ExtendedClient.logError(
+				"Error actualizando 'top:rep' para el usuario " + doc._id + ": " + error.message,
+				error.stack,
+				process.env.CLIENT_ID
+			);
 		}
 		next();
 	}

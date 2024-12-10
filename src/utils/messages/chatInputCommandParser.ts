@@ -50,7 +50,9 @@ export function chatInputCommandParser(interaction: ChatInputCommandInteraction)
 		channel: interaction.channel as TextBasedChannel,
 		channelId: interaction.channelId,
 		reply: (args): Promise<any> => {
-			return interaction.reply(args as InteractionReplyOptions | string | MessagePayload);
+			return interaction.reply(args as InteractionReplyOptions | string | MessagePayload).catch((err) => {
+				ExtendedClient.logError("Error al responder a la interacción slash " + err.message, err.stack, interaction.user.id);
+			});
 		},
 		editReply: interaction.editReply.bind(interaction),
 		deleteReply: interaction.deleteReply.bind(interaction),

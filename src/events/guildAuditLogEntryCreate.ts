@@ -7,6 +7,7 @@ import { Users } from "../Models/User.js";
 import redis from "../redis.js";
 import { COLORS, getChannelFromEnv } from "../utils/constants.js";
 import { Evento } from "../types/event.js";
+import { ExtendedClient } from "../client.js";
 
 export default {
 	name: Events.GuildAuditLogEntryCreate,
@@ -80,8 +81,9 @@ export default {
 					return;
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			console.error(`Error en el handler de GuildAuditLogEntryCreate:`, error);
+			ExtendedClient.logError("Error en el handler de GuildAuditLogEntryCreate: " + error.message, error.stack, process.env.CLIENT_ID);
 		}
 	},
 } as Evento;

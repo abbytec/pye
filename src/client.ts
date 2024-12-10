@@ -1,5 +1,16 @@
 // src/Client.ts
-import { ChannelType, Client, GatewayIntentBits, MessageFlags, Partials, StickerType, TextChannel, VoiceChannel, Sticker } from "discord.js";
+import {
+	ChannelType,
+	Client,
+	GatewayIntentBits,
+	MessageFlags,
+	Partials,
+	StickerType,
+	TextChannel,
+	VoiceChannel,
+	Sticker,
+	GuildManager,
+} from "discord.js";
 import { Command } from "./types/command.js"; // Asegúrate de definir la interfaz Command
 import { ICooldown } from "./Models/Cooldown.js";
 import { Rob } from "./commands/farming/rob.js";
@@ -36,6 +47,7 @@ export class ExtendedClient extends Client {
 	public static readonly ultimosCompartePosts: Map<string, ICompartePost[]> = new Map();
 	public static readonly trending: Trending = new Trending();
 	private static readonly stickerTypeCache: Map<string, StickerType> = new Map();
+	public static guildManager: GuildManager;
 
 	constructor() {
 		super({
@@ -97,6 +109,25 @@ export class ExtendedClient extends Client {
 		);
 	}
 
+	public static logError(errorMessage: string, stackTrace?: string, userId?: string) {
+		let textChannel = ExtendedClient.guildManager.cache
+			.get(process.env.GUILD_ID ?? "")
+			?.channels.resolve(getChannelFromEnv("logs")) as TextChannel;
+		let content = "Log de error. Usuario: <@" + (userId ?? "desconocido") + ">\n" + errorMessage;
+		if (stackTrace) {
+			content += `\n\n\`\`\`js\n${stackTrace}\`\`\``;
+		}
+		textChannel
+			?.send({
+				content,
+				flags: MessageFlags.SuppressNotifications,
+			})
+			.catch((e) => console.error(e))
+			.finally(() => {
+				console.error(errorMessage);
+			});
+	}
+
 	// Funcion llamada diariamente, firstTime es para que se ejecute cuando se corre el bot por primera vez
 	public async updateClientData(firstTime: boolean = false) {
 		const guild = this.guilds.cache.get(process.env.GUILD_ID ?? "") ?? (await this.guilds.fetch(process.env.GUILD_ID ?? ""));
@@ -149,7 +180,7 @@ export class ExtendedClient extends Client {
 						this.setCommandLimit(command);
 					});
 				})
-				.catch((error) => console.error(error));
+				.catch((error) => ExtendedClient.logError("Error al cargar limites de comandos", error.stack, process.env.CLIENT_ID));
 
 			console.log("loading money configs");
 			await Money.find()
@@ -158,7 +189,7 @@ export class ExtendedClient extends Client {
 						this.moneyConfigs.set(money._id, money);
 					});
 				})
-				.catch((error) => console.error(error));
+				.catch((error) => ExtendedClient.logError("Error al cargar configuraciones de dinero", error.stack, process.env.CLIENT_ID));
 			const voiceChannels = guild.channels.cache.filter((channel) => channel.isVoiceBased());
 			voiceChannels.forEach((channel) => {
 				const voiceChannel = channel as VoiceChannel;
@@ -232,8 +263,8 @@ export class ExtendedClient extends Client {
 			} else {
 				console.log("No se encontraron CompartePosts previos en la base de datos.");
 			}
-		} catch (error) {
-			console.error("Error al cargar CompartePosts:", error);
+		} catch (error: any) {
+			ExtendedClient.logError("Error al cargar CompartePosts:" + (error.message ?? ""), error.stack, process.env.CLIENT_ID);
 		}
 	}
 
@@ -268,8 +299,8 @@ export class ExtendedClient extends Client {
 			// Ejecutar todas las operaciones en bulk
 			await UltimosCompartePosts.bulkWrite<ICompartePost>(bulkOps);
 			console.log("CompartePosts guardados exitosamente en la base de datos.");
-		} catch (error) {
-			console.error("Error al guardar CompartePosts:", error);
+		} catch (error: any) {
+			ExtendedClient.logError("Error al guardar CompartePosts:" + (error.message ?? ""), error.stack, process.env.CLIENT_ID);
 		}
 	}
 

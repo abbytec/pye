@@ -164,6 +164,7 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 			await checkQuestLevel({ msg: interaction, money: data.apuestas[i].cantidad, userId: data.apuestas[i].jugador } as IQuest, true);
 		} catch (error) {
 			console.error("Error actualizando la quest:", error);
+			await replyError(interaction, "Hubo un error al intentar actualizar los datos de quest.");
 		}
 		// Enviar mensajes de ganadores y perdedores
 		if (ganador === data.apuestas[i].jugador) {

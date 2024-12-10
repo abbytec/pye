@@ -138,6 +138,7 @@ export default {
 					} as IQuest);
 				} catch (error) {
 					console.error("Error actualizando la quest:", error);
+					await replyError(interaction, "Hubo un error al intentar actualizar los datos de quest.");
 				}
 
 				// Actualizar estadísticas de robo

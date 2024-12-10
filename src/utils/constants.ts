@@ -179,8 +179,6 @@ export async function getChannel(
 	textBased?: boolean,
 	channelId?: string
 ): Promise<Channel | undefined> {
-	getChannelFromEnv(channel);
-
 	const canal = interaction.client.channels.resolve(channelId ?? getChannelFromEnv(channel));
 	if (textBased && !canal?.isTextBased() && !(interaction instanceof Guild)) {
 		await interaction.reply({

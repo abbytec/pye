@@ -172,6 +172,7 @@ async function roulette(interaction: IPrefixChatInputCommand) {
 				await checkQuestLevel({ msg: interaction, money: resultado.cantidad, userId: resultado.jugador } as IQuest, true);
 			} catch (error) {
 				console.error("Error actualizando la quest:", error);
+				await replyError(interaction, "Hubo un error al intentar actualizar los datos de quest.");
 			}
 		} else {
 			msg += `<@${resultado.jugador}> no ha perdido ${pyecoin}, sus pérdidas se cancelaron con sus ganancias.\n`;

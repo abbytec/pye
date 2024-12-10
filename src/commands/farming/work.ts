@@ -88,7 +88,7 @@ export default {
 				await checkQuestLevel({ msg: interaction, money: profit, userId: user.id } as IQuest);
 			} catch (error) {
 				console.error("Error actualizando la quest:", error);
-				// Puedes optar por enviar una advertencia o simplemente registrar el error
+				await replyError(interaction, "Hubo un error al intentar actualizar los datos de quest.");
 			}
 		},
 		[]

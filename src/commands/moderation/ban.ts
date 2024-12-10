@@ -10,6 +10,7 @@ import { ModLogs } from "../../Models/ModLogs.js";
 import { logMessages } from "../../utils/finalwares/logMessages.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { ExtendedClient } from "../../client.js";
 
 export default {
 	group: "⚙️ - Administración y Moderación",
@@ -68,9 +69,10 @@ export default {
 					.catch(() => null)
 					.finally(
 						async () =>
-							await interaction.guild?.members
-								.ban(user.id, { reason })
-								.catch((error) => console.error(`Error al banear al usuario: ${error}`))
+							await interaction.guild?.members.ban(user.id, { reason }).catch((error) => {
+								console.error(`Error al banear al usuario: ${error}`);
+								ExtendedClient.logError("Error al banear al usuario: " + error.message, error.stack, interaction.user.id);
+							})
 					);
 
 				// Registrar en ModLogs
@@ -99,9 +101,9 @@ export default {
 						},
 					],
 				};
-			} catch (error) {
+			} catch (error: any) {
 				console.error(`Error al banear al usuario: ${error}`);
-				return await replyError(interaction, "No se pudo banear al usuario.");
+				ExtendedClient.logError("Error al banear al usuario: " + error.message, error.stack, interaction.user.id);
 			}
 		},
 		[logMessages]
