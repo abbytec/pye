@@ -212,7 +212,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 								.setTitle("Protege tu dinero y asegurate de que tu trabajo sea finalizado")
 								.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
 								.setDescription(
-									"Prueba con nuestra opción <#1099082604252241920>.\nEl servidor se asegurará de que consigas alguien para realizarlo y de resguardar tu dinero hasta que el trabajo finalice."
+									"Por favor te __recordamos__ tomar todas las precauciones posibles al interactuar en estos canales ya que el staff no puede **intervenir** con estafas. **SOLAMENTE TÚ PUEDES EVITAR SER VÍCTIMA DE UNA ESTAFA.**"
 								),
 						],
 					});
