@@ -126,12 +126,24 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 
 		// Responder al usuario que ha otorgado el punto
 		if (interaction.replied)
-			await interaction.followUp({ content: `Le has dado un punto al usuario: \`${member.user.username}\``, ephemeral: true });
+			await interaction
+				.followUp({ content: `Le has dado un punto al usuario: \`${member.user.username}\``, ephemeral: true })
+				.then((msg) => {
+					setTimeout(() => {
+						msg.delete();
+					}, 8000);
+				});
 		else
-			await interaction.reply({
-				content: `Le has dado un punto al usuario: \`${member.user.username}\``,
-				ephemeral: true,
-			});
+			await interaction
+				.reply({
+					content: `Le has dado un punto al usuario: \`${member.user.username}\``,
+					ephemeral: true,
+				})
+				.then((msg) => {
+					setTimeout(() => {
+						msg.delete();
+					}, 8000);
+				});
 
 		const embed = EmbedBuilder.from(interaction.message.embeds[0]);
 
