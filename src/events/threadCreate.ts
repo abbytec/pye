@@ -11,6 +11,7 @@ import { addRep } from "../commands/rep/add-rep.js";
 import { ExtendedClient } from "../client.js";
 import { spamFilter } from "../security/spamFilters.js";
 import { geminiModel } from "../utils/ai/gemini.js";
+import { splitMessage } from "../utils/generic.js";
 
 export default {
 	name: Events.ThreadCreate,
@@ -55,17 +56,27 @@ async function sendTagReminder(thread: ThreadChannel) {
 	}
 }
 
+const MAX_MESSAGE_LENGTH = 2000;
 const threadsHelp = async function (tittle: string, pregunta: string, m: ThreadChannel) {
 	try {
 		const prompt = `el contexto es: "${tittle}" (tema: ${getForumTopic(
 			m.parentId ?? ""
 		)}) si no lo entiendes no le des importancia. el prompt es: \n "${pregunta}" intenta resolver y ayudar con el prompt de manera clara y simple`.toString();
-		const result = await geminiModel.generateContent(prompt);
 
+		const result = await geminiModel.generateContent(prompt);
 		const response = result.response.text();
-		m.send(
-			`hola <@${m.ownerId}> \n\n ${response} \n\n **Fue útil mi respuesta? 🦾👀 |  Recuerda que de todos modos puedes esperar que otros usuarios te ayuden!** 😉`
-		);
+
+		const fullMessage = `hola <@${m.ownerId}> \n\n ${response} \n\n **Fue útil mi respuesta? 🦾👀 | Recuerda que de todos modos puedes esperar que otros usuarios te ayuden!** 😉`;
+
+		// Divide el mensaje si es necesario
+		if (fullMessage.length <= MAX_MESSAGE_LENGTH) {
+			await m.send(fullMessage);
+		} else {
+			const chunks = splitMessage(fullMessage, MAX_MESSAGE_LENGTH);
+			for (const chunk of chunks) {
+				await m.send(chunk);
+			}
+		}
 	} catch (error) {
 		console.log(error);
 	}

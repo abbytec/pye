@@ -131,3 +131,76 @@ export function convertMsToUnixTimestamp(millisecondsUntilEvent: number): number
 	const unixTimestamp = Math.floor(targetDate.getTime() / 1000);
 	return unixTimestamp;
 }
+
+export function splitMessage(text: string, maxLength: number): string[] {
+	const paragraphs = text.split("\n").filter((p) => p.trim().length > 0);
+	const chunks: string[] = [];
+	let currentChunk = "";
+
+	for (const paragraph of paragraphs) {
+		// Añade un salto de línea si no es el primer párrafo en el chunk
+		const separator = currentChunk.length > 0 ? "\n" : "";
+		const prospectiveLength = currentChunk.length + separator.length + paragraph.length;
+
+		if (prospectiveLength <= maxLength) {
+			currentChunk += `${separator}${paragraph}`;
+		} else if (paragraph.length > maxLength) {
+			// Si el párrafo es demasiado largo, dividir por palabras
+			const splitParagraphs = splitLongParagraph(paragraph, maxLength);
+			for (const splitPart of splitParagraphs) {
+				if (currentChunk.length + splitPart.length + (currentChunk.length > 0 ? "\n" : "").length > maxLength) {
+					if (currentChunk.length > 0) {
+						chunks.push(currentChunk);
+						currentChunk = "";
+					}
+				}
+				currentChunk += (currentChunk.length > 0 ? "\n" : "") + splitPart;
+			}
+		} else {
+			if (currentChunk.length > 0) {
+				chunks.push(currentChunk);
+			}
+			currentChunk = paragraph;
+		}
+	}
+
+	if (currentChunk.length > 0) {
+		chunks.push(currentChunk);
+	}
+
+	return chunks;
+}
+
+/**
+ * Divide un párrafo muy largo en partes que no excedan el límite de caracteres.
+ * @param paragraph Párrafo a dividir.
+ * @param maxLength Longitud máxima por parte.
+ * @returns Arreglo de partes divididas.
+ */
+function splitLongParagraph(paragraph: string, maxLength: number): string[] {
+	const words = paragraph.split(" ");
+	const splitParts: string[] = [];
+	let currentPart = "";
+
+	for (const word of words) {
+		const prospectiveLength = currentPart.length + (currentPart.length > 0 ? " ".length : 0) + word.length;
+		if (prospectiveLength > maxLength) {
+			if (currentPart.length > 0) {
+				splitParts.push(currentPart);
+				currentPart = word;
+			} else {
+				// La palabra por sí sola excede el límite, se fuerza el corte
+				splitParts.push(word.slice(0, maxLength));
+				currentPart = word.slice(maxLength);
+			}
+		} else {
+			currentPart += (currentPart.length > 0 ? " " : "") + word;
+		}
+	}
+
+	if (currentPart.length > 0) {
+		splitParts.push(currentPart);
+	}
+
+	return splitParts;
+}
