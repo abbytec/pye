@@ -1,7 +1,6 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, TextChannel, Guild } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, TextChannel, Guild } from "discord.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { increaseHomeMonthlyIncome } from "../../Models/Home.js";
-import { IUserModel, getOrCreateUser, Users } from "../../Models/User.js";
+import { IUserModel, getOrCreateUser, betDone } from "../../Models/User.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { calculateJobMultiplier } from "../../utils/generic.js";
@@ -9,7 +8,6 @@ import { replyError } from "../../utils/messages/replyError.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { replyInfo } from "../../utils/messages/replyInfo.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
@@ -114,6 +112,7 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 	if (!canal) return;
 
 	let userData: IUserModel = await getOrCreateUser(ganador);
+	let pozo = data.apuestas.reduce((a, b) => a + b.cantidad, 0);
 	for (let i = 0; i < data.apuestas.length; i++) {
 		// Calcular resultado de cada jugador
 		if (data.apuestas[i].jugador == process.env.CLIENT_ID) {
@@ -142,30 +141,13 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 			}
 			continue;
 		}
-		if (ganador === data.apuestas[i].jugador) {
-			data.apuestas[i].cantidad += calculateJobMultiplier(userData.profile?.job, data.apuestas[i].cantidad, userData.couples || []);
-		} else {
-			data.apuestas[i].cantidad = 0 - data.apuestas[i].cantidad;
-		}
-		// Actualizar su dinero del banco, quest e income
-		try {
-			await Users.updateOne({ id: data.apuestas[i].jugador }, { $inc: { cash: data.apuestas[i].cantidad } });
-		} catch (error) {
-			console.error("Error actualizando el usuario:", error);
-			const embed = new EmbedBuilder()
-				.setAuthor({ name: "Ruleta" })
-				.setDescription(`Hubo un error actualizando el monto de <@${data.apuestas[i].jugador}>.`)
-				.setThumbnail("https://media.discordapp.net/attachments/687397125793120288/917501566527868968/spin.gif")
-				.setTimestamp();
-			await canal.send({ embeds: [embed] });
-		}
-		try {
-			await increaseHomeMonthlyIncome(data.apuestas[i].jugador, data.apuestas[i].cantidad);
-			await checkQuestLevel({ msg: interaction, money: data.apuestas[i].cantidad, userId: data.apuestas[i].jugador } as IQuest, true);
-		} catch (error) {
-			console.error("Error actualizando la quest:", error);
-			await replyError(interaction, "Hubo un error al intentar actualizar los datos de quest.");
-		}
+		await betDone(
+			interaction,
+			data.apuestas[i].jugador,
+			data.apuestas[i].cantidad,
+			ganador === data.apuestas[i].jugador ? calculateJobMultiplier(userData.profile?.job, pozo, userData.couples || []) : -pozo
+		);
+
 		// Enviar mensajes de ganadores y perdedores
 		if (ganador === data.apuestas[i].jugador) {
 			await canal.send({

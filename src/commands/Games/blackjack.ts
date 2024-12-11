@@ -1,33 +1,22 @@
 import {
 	SlashCommandBuilder,
-	ChatInputCommandInteraction,
 	Collection,
 	EmbedBuilder,
-	GuildMember,
-	User,
-	StringSelectMenuBuilder,
-	ButtonStyle,
 	ButtonBuilder,
 	ActionRowBuilder,
-	Interaction,
-	CacheType,
 	TextChannel,
-	AnyComponentBuilder,
 	ButtonInteraction,
 	InteractionResponse,
 	Message,
 } from "discord.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { increaseHomeMonthlyIncome } from "../../Models/Home.js";
-import { IUserModel, Users, getOrCreateUser } from "../../Models/User.js";
+import { IUserModel, betDone, getOrCreateUser } from "../../Models/User.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { calculateJobMultiplier, getRandomNumber } from "../../utils/generic.js";
 import { replyError } from "../../utils/messages/replyError.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
@@ -343,7 +332,6 @@ function startGame(
 
 async function checkEmbed(amount: number, userId: string, msg: InteractionResponse | Message, cards: { cards: string[][]; values: number[] }) {
 	const data = await getOrCreateUser(userId);
-	let x = amount;
 	const {
 		cards: [playerCards, dealerCards],
 		values: [playerValue, dealerValue],
@@ -354,18 +342,10 @@ async function checkEmbed(amount: number, userId: string, msg: InteractionRespon
 		if (playerValue > 21 && dealerValue > 21) {
 			unEmbed.setColor(0xff8d01).setDescription("Resultado: Empate. Devolviendo dinero.");
 		} else if (playerValue > 21) {
-			data.bet += amount;
-			data.cash -= amount;
-			await data.save();
+			await betDone(msg, userId, amount, -amount);
 			unEmbed.setColor(0xef5350).setDescription(`Resultado: Te excediste por lo que perdiste... ${pyecoin} **${amount}**.`);
 		} else {
-			amount = calculateJobMultiplier(data.profile?.job, amount, data.couples);
-			increaseHomeMonthlyIncome(userId, amount);
-			checkQuestLevel({ msg, money: amount, userId }, true);
-			data.bet += x;
-			data.earnings += amount;
-			data.cash += amount;
-			await data.save();
+			await betDone(msg, userId, amount, calculateJobMultiplier(data.profile?.job, amount, data.couples));
 			unEmbed.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste! ${pyecoin} **${amount}**.`);
 		}
 
@@ -400,32 +380,22 @@ async function checkGame(
 		values: [playerValue, dealerValue],
 	} = cards;
 	const user = msg.client.users.resolve(userId);
-	let x = amount;
 	const endGame = new EmbedBuilder().setAuthor({ name: user?.displayName ?? "Desconocido", iconURL: user?.displayAvatarURL() });
 	if (playerValue >= 21 || dealerValue >= 21) {
 		if (playerValue > 21 && dealerValue > 21) {
 			endGame.setColor(0xff8d01).setDescription("Resultado: Empate. Devolviendo dinero.");
 		} else if (playerValue > 21) {
-			data.bet += amount;
-			data.cash -= amount;
-			await data.save();
+			await betDone(msg, userId, amount, -amount);
 			endGame.setColor(0xef5350).setDescription(`Resultado: Te excediste por lo que perdiste... ${pyecoin} **${amount}**.`);
 		} else if (dealerValue === 21) {
-			data.bet += amount;
-			data.cash -= amount;
+			await betDone(msg, userId, amount, -amount);
 			await data.save();
 			endGame
 				.setColor(0xef5350)
 
 				.setDescription(`Resultado: Dealer se acerco más. ${pyecoin} **${amount}**.`);
 		} else {
-			amount = calculateJobMultiplier(data.profile?.job, amount, data.couples);
-			increaseHomeMonthlyIncome(userId, amount);
-			checkQuestLevel({ msg: msg, money: amount, userId } as IQuest, true);
-			data.bet += x;
-			data.earnings += amount;
-			data.cash += amount;
-			await data.save();
+			await betDone(msg, userId, amount, calculateJobMultiplier(data.profile?.job, amount, data.couples));
 			endGame.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste! ${pyecoin} **${amount}**.`);
 		}
 
@@ -446,18 +416,10 @@ async function checkGame(
 		if (playerValue == dealerValue) {
 			endGame.setColor(0xff8d01).setDescription("Resultado: Empate. Devolviendo dinero.");
 		} else if (dealerValue > playerValue) {
-			data.bet += amount;
-			data.cash -= amount;
-			await data.save();
+			await betDone(msg, userId, amount, -amount);
 			endGame.setColor(0xef5350).setDescription(`Resultado: Dealer se acerco más. ${pyecoin} **${amount}**.`);
 		} else {
-			amount = calculateJobMultiplier(data.profile?.job, amount, data.couples);
-			increaseHomeMonthlyIncome(userId, amount);
-			checkQuestLevel({ msg: msg, money: amount, userId } as IQuest, true);
-			data.bet += x;
-			data.earnings += amount;
-			data.cash += amount;
-			await data.save();
+			await betDone(msg, userId, amount, calculateJobMultiplier(data.profile?.job, amount, data.couples));
 			endGame.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste!  ${pyecoin} **${amount}**.`);
 		}
 
@@ -488,22 +450,15 @@ async function isBlackJack(
 	firstCards: any[],
 	dealerCards: any[]
 ) {
-	let x = amount;
 	if (firstValue >= 21 || dealerValue >= 21) {
 		if (firstValue === dealerValue) {
 			embed.setColor(0xff8d01).setDescription("Resultado: Empate. Devolviendo dinero.");
 		} else if (dealerValue == 21) {
-			data.cash -= amount;
+			await betDone(interaction, interaction.user.id, amount, -amount);
 			await data.save();
 			embed.setColor(0xef5350).setDescription(`Resultado: Perdiste... ${pyecoin} **${amount}**.`);
 		} else if (firstValue == 21) {
-			amount = calculateJobMultiplier(data.profile?.job, amount, data.couples);
-			increaseHomeMonthlyIncome(interaction.user.id, amount);
-			checkQuestLevel({ msg: interaction, money: amount, userId: interaction.user.id } as IQuest, true);
-			data.bet += x;
-			data.earnings += amount;
-			data.cash += amount;
-			await data.save();
+			await betDone(interaction, interaction.user.id, amount, calculateJobMultiplier(data.profile?.job, amount, data.couples));
 			embed.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste! ${pyecoin} **${amount}**.`);
 		}
 		game.delete(interaction.user.id);

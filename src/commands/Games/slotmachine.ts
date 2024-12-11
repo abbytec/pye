@@ -1,15 +1,13 @@
-import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { increaseHomeMonthlyIncome } from "../../Models/Home.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { calculateJobMultiplier } from "../../utils/generic.js";
-import { IUserModel, Users, getOrCreateUser } from "../../Models/User.js";
+import { IUserModel, betDone, getOrCreateUser } from "../../Models/User.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
@@ -35,6 +33,7 @@ export default {
 		],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
+			let initialAmount = amount;
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 			if (amount < 1 || amount > 900 || amount > userData.cash)
 				return replyError(
@@ -69,24 +68,9 @@ export default {
 			}
 			embed.setTitle("🎰 Tragamonedas 🎰");
 
-			try {
-				await Users.updateOne({ id: interaction.user.id }, { $inc: { cash: amount } });
-			} catch (error) {
-				console.error("Error actualizando el usuario:", error);
-				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
-			}
+			await betDone(interaction, interaction.user.id, initialAmount, amount);
 
-			await replyOk(interaction, [embed]);
-
-			if (loseWinRate || (game[1][1] == game[1][2] && game[1][1] == game[1][0])) {
-				try {
-					await increaseHomeMonthlyIncome(interaction.user.id, amount);
-					await checkQuestLevel({ msg: interaction, money: amount, userId: interaction.user.id } as IQuest, true);
-				} catch (error) {
-					console.error("Error actualizando la quest:", error);
-					await replyError(interaction, "Hubo un error al intentar actualizar los datos de quest.");
-				}
-			}
+			return await replyOk(interaction, [embed]);
 		}
 	),
 	prefixResolver: (client: ExtendedClient) =>

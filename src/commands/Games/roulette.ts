@@ -1,7 +1,6 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, TextChannel, Guild } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, TextChannel, Guild } from "discord.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { increaseHomeMonthlyIncome } from "../../Models/Home.js";
-import { IUserModel, getOrCreateUser, Users } from "../../Models/User.js";
+import { IUserModel, getOrCreateUser, betDone } from "../../Models/User.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { calculateJobMultiplier } from "../../utils/generic.js";
@@ -9,7 +8,6 @@ import { replyError } from "../../utils/messages/replyError.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { replyInfo } from "../../utils/messages/replyInfo.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
@@ -122,7 +120,7 @@ async function roulette(interaction: IPrefixChatInputCommand) {
 		vcolor = colores.black;
 	}
 	data.bola = { valor: valor, color: vcolor }; //En la ruleta saldrá un número del 1 al 24
-	const resultados: { jugador: string; cantidad: number }[] = [];
+	const resultados: { jugador: string; cantidad: number; apuesta: any }[] = [];
 	const bola = data.bola ?? {};
 
 	for (const apuesta of data.apuestas) {
@@ -143,37 +141,19 @@ async function roulette(interaction: IPrefixChatInputCommand) {
 		const resultado = resultados.find((res) => res.jugador === apuesta.jugador);
 		if (resultado) {
 			resultado.cantidad += apuesta.cantidad;
+			resultado.apuesta += initValue;
 		} else {
-			resultados.push({ jugador: apuesta.jugador, cantidad: apuesta.cantidad });
+			resultados.push({ jugador: apuesta.jugador, cantidad: apuesta.cantidad, apuesta: initValue });
 		}
 	}
 
 	for (const resultado of resultados) {
-		try {
-			await Users.updateOne({ id: resultado.jugador }, { $inc: { cash: resultado.cantidad } });
-		} catch (error) {
-			console.error("Error actualizando el usuario:", error);
-			const embed = new EmbedBuilder()
-				.setAuthor({ name: "Ruleta" })
-				.setDescription(`Hubo un error actualizando el monto de <@${resultado.jugador}>.`)
-				.setThumbnail("https://media.discordapp.net/attachments/687397125793120288/917501566527868968/spin.gif")
-				.setTimestamp();
-			const canal = interaction.client.channels.cache.get(getChannelFromEnv("casinoPye")) as TextChannel | undefined;
-			if (!canal) return;
-			await canal.send({ embeds: [embed] });
-		}
+		await betDone(interaction, resultado.jugador, resultado.apuesta, resultado.cantidad);
 
 		if (resultado.cantidad < 0) {
 			msg += `<@${resultado.jugador}> ha perdido ${pyecoin} **${Math.abs(resultado.cantidad).toLocaleString()}**.\n`;
 		} else if (resultado.cantidad > 0) {
 			msg += `<@${resultado.jugador}> ha ganado ${pyecoin} **${resultado.cantidad.toLocaleString()}**.\n`;
-			try {
-				await increaseHomeMonthlyIncome(resultado.jugador, resultado.cantidad);
-				await checkQuestLevel({ msg: interaction, money: resultado.cantidad, userId: resultado.jugador } as IQuest, true);
-			} catch (error) {
-				console.error("Error actualizando la quest:", error);
-				await replyError(interaction, "Hubo un error al intentar actualizar los datos de quest.");
-			}
 		} else {
 			msg += `<@${resultado.jugador}> no ha perdido ${pyecoin}, sus pérdidas se cancelaron con sus ganancias.\n`;
 		}

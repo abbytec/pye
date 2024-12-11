@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
@@ -6,12 +6,10 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { replyError } from "../../utils/messages/replyError.js";
-import { getOrCreateUser, IUserModel, Users } from "../../Models/User.js";
+import { betDone, getOrCreateUser, IUserModel } from "../../Models/User.js";
 import { Shop } from "../../Models/Shop.js";
-import { calculateJobMultiplier, checkRole } from "../../utils/generic.js";
-import { increaseHomeMonthlyIncome } from "../../Models/Home.js";
+import { calculateJobMultiplier } from "../../utils/generic.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
-import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { ExtendedClient } from "../../client.js";
@@ -58,20 +56,13 @@ export default {
 			if (!level.has(interaction.user.id)) level.set(interaction.user.id, 49);
 			const win = Math.random() < level.get(interaction.user.id) / 100 && level.get(interaction.user.id) < 80;
 
-			if (win) {
-				amount += calculateJobMultiplier(userData.profile?.job, amount, userData.couples || []);
-				// Subir 1 nivel al pollo
-				level.set(interaction.user.id, level.get(interaction.user.id) + 1);
-			} else {
-				amount = 0 - amount;
-			}
-
-			try {
-				await Users.updateOne({ id: interaction.user.id }, { $inc: { cash: amount } });
-			} catch (error) {
-				console.error("Error actualizando el usuario:", error);
-				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
-			}
+			await betDone(
+				interaction,
+				interaction.user.id,
+				amount,
+				win ? -amount : calculateJobMultiplier(userData.profile?.job, amount, userData.couples || [])
+			);
+			if (win) level.set(interaction.user.id, level.get(interaction.user.id) + 1);
 
 			// Crear embed de respuesta
 			const embed = new EmbedBuilder()
@@ -83,16 +74,6 @@ export default {
 				.setTimestamp();
 
 			await replyOk(interaction, [embed]);
-
-			if (win) {
-				try {
-					await increaseHomeMonthlyIncome(interaction.user.id, amount);
-					await checkQuestLevel({ msg: interaction, money: amount, userId: interaction.user.id } as IQuest, true);
-				} catch (error) {
-					console.error("Error actualizando la quest:", error);
-					await replyError(interaction, "Hubo un error al intentar actualizar los datos de quest.");
-				}
-			}
 		}
 	),
 	prefixResolver: (client: ExtendedClient) =>

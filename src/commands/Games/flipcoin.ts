@@ -1,15 +1,13 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { PostHandleable } from "../../types/middleware.js";
-import { getOrCreateUser, IUserModel, Users } from "../../Models/User.js";
+import { betDone, getOrCreateUser, IUserModel } from "../../Models/User.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
-import { increaseHomeMonthlyIncome } from "../../Models/Home.js";
-import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { calculateJobMultiplier } from "../../utils/generic.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
@@ -57,18 +55,12 @@ export default {
 
 			const flipcoin = ["cara", "cruz"][Math.floor(Math.random() * 2)];
 
-			if (flipcoin == side) {
-				amount += calculateJobMultiplier(userData.profile?.job, amount, userData.couples || []);
-			} else {
-				amount = 0 - amount;
-			}
-
-			try {
-				await Users.updateOne({ id: interaction.user.id }, { $inc: { cash: amount } });
-			} catch (error) {
-				console.error("Error actualizando el usuario:", error);
-				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
-			}
+			await betDone(
+				interaction,
+				interaction.user.id,
+				amount,
+				flipcoin == side ? -amount : calculateJobMultiplier(userData.profile?.job, amount, userData.couples || [])
+			);
 
 			// Crear embed de respuesta
 			const embed = new EmbedBuilder()
@@ -77,16 +69,6 @@ export default {
 				.setColor(flipcoin != side ? COLORS.errRed : COLORS.okGreen);
 
 			await replyOk(interaction, [embed]);
-
-			if (flipcoin == side) {
-				try {
-					await increaseHomeMonthlyIncome(interaction.user.id, amount);
-					await checkQuestLevel({ msg: interaction, money: amount, userId: interaction.user.id } as IQuest, true);
-				} catch (error) {
-					console.error("Error actualizando la quest:", error);
-					await replyError(interaction, "Hubo un error al intentar actualizar los datos de quest.");
-				}
-			}
 		}
 	),
 	prefixResolver: (client: ExtendedClient) =>

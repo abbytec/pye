@@ -2,6 +2,11 @@
 import { Schema, model, Document } from "mongoose";
 import client from "../redis.js";
 import { IUser } from "../interfaces/IUser.js";
+import { increaseHomeMonthlyIncome } from "./Home.js";
+import { checkQuestLevel, IQuest } from "../utils/quest.js";
+import { Message, InteractionResponse } from "discord.js";
+import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
+import { ExtendedClient } from "../client.js";
 
 export interface IUserModel extends IUser, Document {
 	id: string;
@@ -132,4 +137,22 @@ export async function getOrCreateUser(id: string): Promise<IUserModel> {
 	const user = await Users.findOne({ id });
 	if (user) return user;
 	return await Users.create({ id });
+}
+
+export async function betDone(msg: IPrefixChatInputCommand | Message | InteractionResponse, userId: string, amount: number, profit: number) {
+	if (profit > 0) {
+		await increaseHomeMonthlyIncome(userId, profit).catch((error) => {
+			console.error("Error al aumentar el ingreso mensual de la casa:", error);
+			ExtendedClient.logError("Error al aumentar el ingreso mensual de la casa: " + error.message, error.stack, userId);
+		});
+		await checkQuestLevel({ msg, money: profit, userId } as IQuest, true).catch((error) => {
+			console.error("Error al actualizar la quest:", error);
+			ExtendedClient.logError("Error al actualizar la quest: " + error.message, error.stack, userId);
+		});
+	}
+
+	await Users.findOneAndUpdate({ id: userId }, { $inc: { bet: amount, earnings: profit, cash: profit } }).catch((error) => {
+		console.error("Error actualizando el usuario:", error);
+		ExtendedClient.logError("Error actualizando el usuario: " + error.message, error.stack, userId);
+	});
 }
