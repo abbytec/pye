@@ -80,6 +80,11 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 						fields: [
 							{ name: "Usuario", value: `<@${author.id}> (${author.user.id})`, inline: false },
 							{ name: "Spam Triggered", value: `\`${detectedFilter.filter}\`\nEn canal: ${deletable.channel}`, inline: false },
+							{
+								name: "Contenido (recortado a 150 caracteres)",
+								value: `\`\`\`\n${messageContent.slice(0, 150)}\`\`\``,
+								inline: false,
+							},
 						],
 						color: COLORS.warnOrange,
 						timestamp: "2024-04-27T12:00:00.000Z",
