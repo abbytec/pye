@@ -141,11 +141,11 @@ export async function getOrCreateUser(id: string): Promise<IUserModel> {
 
 export async function betDone(msg: IPrefixChatInputCommand | Message | InteractionResponse, userId: string, amount: number, profit: number) {
 	if (profit > 0) {
-		await increaseHomeMonthlyIncome(userId, profit).catch((error) => {
+		increaseHomeMonthlyIncome(userId, profit).catch((error) => {
 			console.error("Error al aumentar el ingreso mensual de la casa:", error);
 			ExtendedClient.logError("Error al aumentar el ingreso mensual de la casa: " + error.message, error.stack, userId);
 		});
-		await checkQuestLevel({ msg, money: profit, userId } as IQuest, true).catch((error) => {
+		checkQuestLevel({ msg, money: profit, userId } as IQuest, true).catch((error) => {
 			console.error("Error al actualizar la quest:", error);
 			ExtendedClient.logError("Error al actualizar la quest: " + error.message, error.stack, userId);
 		});
