@@ -86,7 +86,7 @@ userSchema.post(["save", "findOneAndUpdate"], async function (doc: IUserModel | 
 	await client.sendCommand(["ZADD", "top:all", (doc.total ?? 0).toString(), doc.id]);
 	await client.sendCommand(["ZADD", "top:cash", (doc.cash ?? 0).toString(), doc.id]);
 	await client.sendCommand(["ZADD", "top:rob", (doc.rob ?? 0).toString(), doc.id]);
-	await client.sendCommand(["ZADD", "top:apostador", ((doc.earnings ?? 0) - (doc.bet ?? 0)).toString(), doc.id]);
+	await client.sendCommand(["ZADD", "top:apuestas", (doc.earnings ?? 0).toString(), doc.id]);
 	await client.sendCommand(["ZADD", "top:caps", (doc.caps ?? 0).toString(), doc.id]);
 });
 
@@ -110,7 +110,7 @@ userSchema.post(["updateOne", "updateMany"], async function (result) {
 			pipeline.zAdd("top:all", { score: doc.total || 0, value: doc.id });
 			pipeline.zAdd("top:cash", { score: doc.cash || 0, value: doc.id });
 			pipeline.zAdd("top:rob", { score: doc.rob || 0, value: doc.id });
-			pipeline.zAdd("top:apostador", { score: doc.earnings - doc.bet || 0, value: doc.id });
+			pipeline.zAdd("top:apostador", { score: doc.earnings || 0, value: doc.id });
 			pipeline.zAdd("top:caps", { score: doc.caps || 0, value: doc.id });
 		});
 

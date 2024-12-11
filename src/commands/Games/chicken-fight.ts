@@ -55,20 +55,17 @@ export default {
 			// Calcular resultado según el nivel del pollo
 			if (!level.has(interaction.user.id)) level.set(interaction.user.id, 49);
 			const win = Math.random() < level.get(interaction.user.id) / 100 && level.get(interaction.user.id) < 80;
-
-			await betDone(
-				interaction,
-				interaction.user.id,
-				amount,
-				win ? -amount : calculateJobMultiplier(userData.profile?.job, amount, userData.couples || [])
-			);
+			const earn = win ? -amount : calculateJobMultiplier(userData.profile?.job, amount, userData.couples || []);
+			await betDone(interaction, interaction.user.id, amount, earn);
 			if (win) level.set(interaction.user.id, level.get(interaction.user.id) + 1);
 
 			// Crear embed de respuesta
 			const embed = new EmbedBuilder()
 				.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
 				.setDescription(
-					`Tu pollo 🐔 ha ${win ? "ganado" : "perdido"} la pelea y se te ${win ? "incrementaron" : "quitaron"} ${amount} PyE Coins.`
+					`Tu pollo 🐔 ha ${win ? "ganado" : "perdido"} la pelea y se te ${win ? "incrementaron" : "quitaron"} ${Math.abs(
+						earn
+					)} PyE Coins.`
 				)
 				.setColor(win ? COLORS.errRed : COLORS.okGreen)
 				.setTimestamp();

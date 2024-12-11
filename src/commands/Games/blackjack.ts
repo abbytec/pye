@@ -345,8 +345,9 @@ async function checkEmbed(amount: number, userId: string, msg: InteractionRespon
 			await betDone(msg, userId, amount, -amount);
 			unEmbed.setColor(0xef5350).setDescription(`Resultado: Te excediste por lo que perdiste... ${pyecoin} **${amount}**.`);
 		} else {
-			await betDone(msg, userId, amount, calculateJobMultiplier(data.profile?.job, amount, data.couples));
-			unEmbed.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste! ${pyecoin} **${amount}**.`);
+			const earn = calculateJobMultiplier(data.profile?.job, amount, data.couples);
+			await betDone(msg, userId, amount, earn);
+			unEmbed.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste! ${pyecoin} **${earn}**.`);
 		}
 
 		unEmbed.addFields([
@@ -395,8 +396,9 @@ async function checkGame(
 
 				.setDescription(`Resultado: Dealer se acerco más. ${pyecoin} **${amount}**.`);
 		} else {
-			await betDone(msg, userId, amount, calculateJobMultiplier(data.profile?.job, amount, data.couples));
-			endGame.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste! ${pyecoin} **${amount}**.`);
+			const earn = calculateJobMultiplier(data.profile?.job, amount, data.couples);
+			await betDone(msg, userId, amount, earn);
+			endGame.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste! ${pyecoin} **${earn}**.`);
 		}
 
 		endGame.addFields([
@@ -419,8 +421,9 @@ async function checkGame(
 			await betDone(msg, userId, amount, -amount);
 			endGame.setColor(0xef5350).setDescription(`Resultado: Dealer se acerco más. ${pyecoin} **${amount}**.`);
 		} else {
-			await betDone(msg, userId, amount, calculateJobMultiplier(data.profile?.job, amount, data.couples));
-			endGame.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste!  ${pyecoin} **${amount}**.`);
+			const earn = calculateJobMultiplier(data.profile?.job, amount, data.couples);
+			await betDone(msg, userId, amount, earn);
+			endGame.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste!  ${pyecoin} **${earn}**.`);
 		}
 
 		endGame.addFields([
@@ -458,8 +461,9 @@ async function isBlackJack(
 			await data.save();
 			embed.setColor(0xef5350).setDescription(`Resultado: Perdiste... ${pyecoin} **${amount}**.`);
 		} else if (firstValue == 21) {
-			await betDone(interaction, interaction.user.id, amount, calculateJobMultiplier(data.profile?.job, amount, data.couples));
-			embed.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste! ${pyecoin} **${amount}**.`);
+			const earn = calculateJobMultiplier(data.profile?.job, amount, data.couples);
+			await betDone(interaction, interaction.user.id, amount, earn);
+			embed.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste! ${pyecoin} **${earn}**.`);
 		}
 		game.delete(interaction.user.id);
 		embed.addFields([

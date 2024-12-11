@@ -54,18 +54,13 @@ export default {
 				);
 
 			const flipcoin = ["cara", "cruz"][Math.floor(Math.random() * 2)];
-
-			await betDone(
-				interaction,
-				interaction.user.id,
-				amount,
-				flipcoin == side ? -amount : calculateJobMultiplier(userData.profile?.job, amount, userData.couples || [])
-			);
+			const earn = flipcoin == side ? -amount : calculateJobMultiplier(userData.profile?.job, amount, userData.couples || []);
+			await betDone(interaction, interaction.user.id, amount, earn);
 
 			// Crear embed de respuesta
 			const embed = new EmbedBuilder()
 				.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
-				.setDescription(`Ha salido \`${flipcoin}\` y ${flipcoin == side ? "ganaste" : "perdiste"} ${Math.abs(amount)}.`)
+				.setDescription(`Ha salido \`${flipcoin}\` y ${flipcoin == side ? "ganaste" : "perdiste"} ${Math.abs(earn)}.`)
 				.setColor(flipcoin != side ? COLORS.errRed : COLORS.okGreen);
 
 			await replyOk(interaction, [embed]);
