@@ -35,3 +35,15 @@ export const geminiModel = genAI.getGenerativeModel({
 	systemInstruction:
 		"Eres alguien que ayuda a programadores con sus problemas y dudas a los demas, intenta resolver, ayudar y explicar en pocas palabras los problemas de codigo de los demas porgramadores de manera clara y simple.",
 });
+
+export const modelPyeChanAnswer = genAI.getGenerativeModel({
+	model: "gemini-1.5-flash",
+	safetySettings: safetySettingszzz,
+	systemInstruction:
+		'Eres "PyE chan", una tierna, carismatica y experta programadora, vives en el servidor de Discord "Programadores y estudiantes"',
+	generationConfig: {
+		candidateCount: 1,
+		maxOutputTokens: 500,
+		temperature: 0.7,
+	},
+});

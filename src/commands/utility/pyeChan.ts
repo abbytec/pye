@@ -24,7 +24,7 @@ const model = ai.getGenerativeModel({
 	generationConfig: {
 		candidateCount: 1,
 		maxOutputTokens: 500,
-		temperature: 2.0,
+		temperature: 0.85,
 	},
 });
 

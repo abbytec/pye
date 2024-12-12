@@ -26,12 +26,14 @@ import {
 } from "../utils/constants.js";
 import { Users } from "../Models/User.js";
 import { getCooldown, setCooldown } from "../utils/cooldowns.js";
-import { checkRole, convertMsToUnixTimestamp } from "../utils/generic.js";
+import { checkRole, convertMsToUnixTimestamp, splitMessage } from "../utils/generic.js";
 import { checkHelp } from "../utils/checkhelp.js";
 import { bumpHandler } from "../utils/bumpHandler.js";
 import natural from "natural";
 import { checkMentionSpam, IDeletableContent, spamFilter } from "../security/spamFilters.js";
 import { hashMessage } from "../security/messageHashing.js";
+import { getRecursiveRepliedContext } from "../utils/ai/getRecursiveRepliedContext.js";
+import { geminiModel, modelPyeChanAnswer } from "../utils/ai/gemini.js";
 
 export default {
 	name: Events.MessageCreate,
@@ -90,14 +92,15 @@ export default {
 };
 
 async function processCommonMessage(message: Message, client: ExtendedClient) {
+	let isForumResponse = false;
 	if (![getChannelFromEnv("mudae"), getChannelFromEnv("casinoPye")].includes(message.channel.id)) {
-		const moneyConfig = (message.client as ExtendedClient).getMoneyConfig(process.env.CLIENT_ID ?? "");
-		getCooldown(message.client as ExtendedClient, message.author.id, "farm-text", moneyConfig.text.time).then(async (time) => {
+		const moneyConfig = client.getMoneyConfig(process.env.CLIENT_ID ?? "");
+		getCooldown(client, message.author.id, "farm-text", moneyConfig.text.time).then(async (time) => {
 			if (time > 0) {
 				Users.findOneAndUpdate({ id: message.author.id }, { $inc: { cash: moneyConfig.text.coins } }, { upsert: true })
 					.exec()
 					.then(() => {
-						setCooldown(message.client as ExtendedClient, message.author.id, "farm-text", moneyConfig.text.time);
+						setCooldown(client, message.author.id, "farm-text", moneyConfig.text.time);
 					});
 			}
 		});
@@ -105,6 +108,7 @@ async function processCommonMessage(message: Message, client: ExtendedClient) {
 		await specificChannels(message, client);
 		await checkChannel(message).then((isThankable) => {
 			if (isThankable) {
+				isForumResponse = true;
 				checkHelp(message);
 			}
 		});
@@ -116,6 +120,7 @@ async function processCommonMessage(message: Message, client: ExtendedClient) {
 			ExtendedClient.trending.add("emoji", emojiId);
 		});
 	}
+	await manageAIResponse(message, client, isForumResponse);
 }
 
 async function processPrefixCommand(message: Message, client: ExtendedClient) {
@@ -254,6 +259,7 @@ async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClie
 		?.filter((post) => post.date.getTime() + 1000 * 60 * 60 * 24 * 7 >= Date.now());
 
 	if (!lastPosts) return;
+	msg.reference?.messageId;
 	let cooldownPost: number | undefined = undefined;
 	for (const post of lastPosts) {
 		const channel = (client.channels.cache.get(post.channelId) ?? client.channels.resolve(post.channelId)) as TextChannel;
@@ -283,4 +289,72 @@ async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClie
 			});
 	}
 	return cooldownPost;
+}
+
+const MAX_MESSAGE_LENGTH = 2000;
+async function manageAIResponse(message: Message<boolean>, client: ExtendedClient, isForumPost: boolean) {
+	let botShouldAnswer = message.mentions.has(process.env.CLIENT_ID ?? "");
+	let contexto;
+	if (message.reference?.messageId) {
+		botShouldAnswer =
+			botShouldAnswer ||
+			(await message.channel.messages
+				.fetch(message.reference.messageId)
+				.then((msg: Message) => msg.author.id)
+				.catch(() => null)) === process.env.CLIENT_ID;
+	}
+	if (botShouldAnswer) {
+		contexto = await getRecursiveRepliedContext(message, !isForumPost);
+		if (isForumPost) {
+			let fullMessage = (
+				await geminiModel.generateContent(contexto).catch(() => {
+					return { response: { text: () => "Error al generar la respuesta" } };
+				})
+			).response.text();
+			if (fullMessage.length <= MAX_MESSAGE_LENGTH) {
+				await message.reply(fullMessage).catch(() => null);
+			} else {
+				const chunks = splitMessage(fullMessage, MAX_MESSAGE_LENGTH);
+				let lastChunkId;
+				for (const chunk of chunks) {
+					if (lastChunkId) {
+						await message
+							.reply(chunk)
+							.then((msg) => (lastChunkId = msg.id))
+							.catch(() => null);
+					} else if (message.channel.isSendable()) {
+						await message.channel
+							.send(chunk)
+							.then((msg) => (lastChunkId = msg.id))
+							.catch(() => null);
+					}
+				}
+			}
+		} else {
+			const exampleEmbed = new EmbedBuilder()
+				.setColor(COLORS.pyeCutePink)
+				.setAuthor({
+					name: "PyE Chan",
+					iconURL:
+						"https://cdn.discordapp.com/attachments/1115058778736431104/1282790824744321167/vecteezy_heart_1187438.png?ex=66e0a38d&is=66df520d&hm=d59a5c3cfdaf988f7a496004f905854677c6f2b18788b288b59c4c0b60d937e6&",
+					url: "https://cdn.discordapp.com/attachments/1115058778736431104/1282780704979292190/image_2.png?ex=66e09a20&is=66df48a0&hm=0df37331fecc81a080a8c7bee4bcfab858992b55d9ca675bafedcf4c4c7879a1&",
+				})
+				.setDescription(
+					(
+						await modelPyeChanAnswer.generateContent(contexto).catch(() => {
+							return {
+								response: { text: () => "Estoy comiendo mucho sushi como para procesar esa respuesta, porfa intentá mas tarde" },
+							};
+						})
+					).response.text()
+				)
+				.setThumbnail(
+					"https://cdn.discordapp.com/attachments/1115058778736431104/1282780704979292190/image_2.png?ex=66e09a20&is=66df48a0&hm=0df37331fecc81a080a8c7bee4bcfab858992b55d9ca675bafedcf4c4c7879a1&"
+				)
+				.setTimestamp()
+				.setFooter({ text: "♥" });
+
+			await message.reply({ embeds: [exampleEmbed] }).catch(() => null);
+		}
+	}
 }
