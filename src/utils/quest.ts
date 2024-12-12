@@ -24,7 +24,7 @@ const Choose = new Set();
 
 export interface IQuest {
 	msg: IPrefixChatInputCommand | Message | InteractionResponse;
-	money: number;
+	money?: number;
 	bump?: number;
 	text?: number;
 	rep?: number;
@@ -196,7 +196,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 			break;
 		case 3:
 			if (!game) return;
-			if (user.money + money >= 10e3) {
+			if (user.money + (money ?? 0) >= 10e3) {
 				(guild?.channels.resolve(channelId) as TextChannel)?.send({
 					embeds: [
 						new EmbedBuilder()
@@ -207,7 +207,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 				});
 				return await levelUpHome(user, 1);
 			}
-			user.money += money;
+			user.money += money ?? 0;
 			await user.save();
 			break;
 		case 4:
@@ -265,7 +265,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 			break;
 		case 7:
 			if (!game) return;
-			if (user.money + money >= 30e3) {
+			if (user.money + (money ?? 0) >= 30e3) {
 				(guild?.channels.resolve(channelId) as TextChannel)?.send({
 					embeds: [
 						new EmbedBuilder()
@@ -276,7 +276,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 				});
 				return await levelUpHome(user, 1);
 			}
-			user.money += money;
+			user.money += money ?? 0;
 			await user.save();
 			break;
 		case 8:
@@ -317,7 +317,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 			break;
 		case 10:
 			if (!game) return;
-			if (user.money + money >= 50e3) {
+			if (user.money + (money ?? 0) >= 50e3) {
 				(guild?.channels.resolve(channelId) as TextChannel)?.send({
 					embeds: [
 						new EmbedBuilder()
@@ -328,7 +328,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 				});
 				return await levelUpHome(user, 1);
 			}
-			user.money += money;
+			user.money += money ?? 0;
 			await user.save();
 			break;
 		case 11:

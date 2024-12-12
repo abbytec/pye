@@ -8,7 +8,6 @@ import {
 	EmbedBuilder,
 	Events,
 	Interaction,
-	TextBasedChannel,
 	TextChannel,
 } from "discord.js";
 import { ExtendedClient } from "../client.js";
@@ -186,16 +185,30 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 		await interaction.message.edit({ embeds: [embed], components });
 		updateMemberReputationRoles(member, user.points, interaction.client as ExtendedClient);
 
+		const postFieldIndex = embed.data.fields?.findIndex((field) => field.name === "# Canal");
+		let postId = "";
+		if (postFieldIndex !== undefined && postFieldIndex !== -1 && embed.data.fields) {
+			postId = embed.data.fields[postFieldIndex].value.replace("<#", "").replace(">", "");
+		}
+
 		// Enviar notificación en un canal específico
 		const notificationChannel = interaction.client.channels.resolve(getChannelFromEnv("logPuntos")) as TextChannel | null;
 		if (notificationChannel) {
-			let message = `**${interaction.user.username}** le ha dado un rep al usuario: \`${member.user.username}\`, en el canal: <#${interaction.channelId}>`;
+			let message = `Se le ha dado +1 rep al usuario: \`${member.user.username}\``;
+			await interaction.client.channels
+				.fetch(postId)
+				.then((channel) => {
+					(channel as TextChannel | null)?.send(message + "\n 🎉 Felicitaciones!");
+				})
+				.catch(() => null);
+			message = `**${interaction.user.username}** ` + message.slice(2);
+			message += ` (Canal: <#${getChannelFromEnv("puntos")}>) - (Razón: <#${postId}>)`;
 			interaction.message.embeds.at(0)?.description && (message += `\n${interaction.message.embeds.at(0)?.description}`);
 			await notificationChannel.send(message);
 		}
 
 		// Verificar quests
-		checkQuestLevel({ userId: customId, rep: 1 } as IQuest);
+		checkQuestLevel({ msg: interaction.message, userId: customId, rep: 1 } as IQuest);
 	} catch (error) {
 		console.error("Error al otorgar punto de ayuda:", error);
 		if (interaction.replied) await interaction.followUp({ content: "Hubo un error al otorgar el punto.", ephemeral: true });
