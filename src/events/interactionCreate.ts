@@ -166,7 +166,7 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 		const components = interaction.message.components.map((row) => {
 			const newComponents = (row.components as APIButtonComponent[])
 				.map((component) => {
-					if (component.type === ComponentType.Button && "customId" in component && component.customId === customId) {
+					if (component.type === ComponentType.Button && "customId" in component && component.customId === "point-" + customId) {
 						const button = ButtonBuilder.from(component);
 						button.setDisabled(true); // Deshabilitar el botón
 						return button;
