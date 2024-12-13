@@ -19,6 +19,7 @@ import {
 	DISBOARD_UID,
 	EMOJIS,
 	getChannelFromEnv,
+	getForumTopic,
 	getHelpForumsIdsFromEnv,
 	getRoleFromEnv,
 	messagesProcessingLimiter,
@@ -92,7 +93,7 @@ export default {
 };
 
 async function processCommonMessage(message: Message, client: ExtendedClient) {
-	let isForumResponse = false;
+	let checkingChanel;
 	if (![getChannelFromEnv("mudae"), getChannelFromEnv("casinoPye")].includes(message.channel.id)) {
 		const moneyConfig = client.getMoneyConfig(process.env.CLIENT_ID ?? "");
 		getCooldown(client, message.author.id, "farm-text", moneyConfig.text.time).then(async (time) => {
@@ -106,15 +107,13 @@ async function processCommonMessage(message: Message, client: ExtendedClient) {
 		});
 
 		await specificChannels(message, client);
-		checkChannel(message).then((isThankable) => {
-			if (isThankable) {
-				isForumResponse = true;
-				checkHelp(message);
-			}
-		});
+		checkingChanel = checkThanksChannel(message);
+		if (checkingChanel && (await checkUserThanking(message))) {
+			checkHelp(message);
+		}
 		registerNewTrends(message, client);
 	}
-	manageAIResponse(message, client, isForumResponse);
+	manageAIResponse(message, checkingChanel);
 }
 
 async function processPrefixCommand(message: Message, client: ExtendedClient) {
@@ -235,18 +234,21 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 	}
 }
 
-/** Check channels to trigger Point Helper system */
-async function checkChannel(msg: Message<boolean>) {
-	let channel: GuildBasedChannel | TextChannel | null;
+/** Check user to trigger Point Helper system */
+async function checkUserThanking(msg: Message<boolean>) {
 	if (msg.channel.type === ChannelType.PublicThread) {
-		const channels = (msg.guild as Guild).channels;
-		channel =
-			channels.cache.get((msg.channel as PublicThreadChannel).parentId ?? "") ??
-			channels.resolve((msg.channel as PublicThreadChannel).parentId ?? "");
 		const threadAuthor = await (msg.channel as PublicThreadChannel).fetchOwner().catch(() => null);
-		if (threadAuthor?.id !== msg.author.id) return false;
-	} else channel = msg.channel as TextChannel;
-	return getHelpForumsIdsFromEnv().includes(channel?.id ?? "");
+		return threadAuthor?.id === msg.author.id;
+	}
+}
+
+/** Check channels to trigger Point Helper system */
+function checkThanksChannel(msg: Message<boolean>) {
+	let channelId: string | undefined = undefined;
+	if (msg.channel.type === ChannelType.PublicThread) {
+		channelId = (msg.channel as PublicThreadChannel).parentId ?? undefined;
+	}
+	return getHelpForumsIdsFromEnv().includes(channelId ?? "") ? channelId : undefined;
 }
 
 async function registerNewTrends(message: Message<boolean>, client: ExtendedClient) {
@@ -297,7 +299,7 @@ async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClie
 }
 
 const MAX_MESSAGE_LENGTH = 2000;
-async function manageAIResponse(message: Message<boolean>, client: ExtendedClient, isForumPost: boolean) {
+async function manageAIResponse(message: Message<boolean>, isForumPost: string | undefined) {
 	let botShouldAnswer = message.mentions.has(process.env.CLIENT_ID ?? "");
 	let contexto;
 	if (message.reference?.messageId) {
@@ -311,11 +313,18 @@ async function manageAIResponse(message: Message<boolean>, client: ExtendedClien
 	if (botShouldAnswer) {
 		contexto = await getRecursiveRepliedContext(message, !isForumPost);
 		if (isForumPost) {
+			let tittle = (message.channel as PublicThreadChannel).name;
 			let fullMessage = (
-				await geminiModel.generateContent(contexto).catch((err) => {
-					ExtendedClient.logError("Error al generar la respuesta de IA en foro:" + err.message, err.stack, message.author.id);
-					return { response: { text: () => "Error al generar la respuesta" } };
-				})
+				await geminiModel
+					.generateContent(
+						`El tema principal es: "${tittle}" (${getForumTopic(
+							isForumPost ?? ""
+						)}) si no lo entiendes no le des importancia. el contexto es: \n "${contexto}"`
+					)
+					.catch((err) => {
+						ExtendedClient.logError("Error al generar la respuesta de IA en foro:" + err.message, err.stack, message.author.id);
+						return { response: { text: () => "Error al generar la respuesta" } };
+					})
 			).response.text();
 			if (fullMessage.length <= MAX_MESSAGE_LENGTH) {
 				await message.reply(fullMessage).catch(() => null);
