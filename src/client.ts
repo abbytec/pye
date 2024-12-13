@@ -10,6 +10,7 @@ import {
 	VoiceChannel,
 	Sticker,
 	GuildManager,
+	GuildEmoji,
 } from "discord.js";
 import { Command } from "./types/command.js"; // Asegúrate de definir la interfaz Command
 import { ICooldown } from "./Models/Cooldown.js";
@@ -47,7 +48,7 @@ export class ExtendedClient extends Client {
 	public static readonly ultimosCompartePosts: Map<string, ICompartePost[]> = new Map();
 	public static readonly trending: Trending = new Trending();
 	private static readonly stickerTypeCache: Map<string, StickerType> = new Map();
-	public static guildManager: GuildManager;
+	public static guildManager: GuildManager | undefined;
 
 	constructor() {
 		super({
@@ -110,7 +111,7 @@ export class ExtendedClient extends Client {
 	}
 
 	public static logError(errorMessage: string, stackTrace?: string, userId?: string) {
-		let textChannel = ExtendedClient.guildManager.cache
+		let textChannel = ExtendedClient.guildManager?.cache
 			.get(process.env.GUILD_ID ?? "")
 			?.channels.resolve(getChannelFromEnv("logs")) as TextChannel;
 		let content = "Log de error. Usuario: <@" + (userId ?? "desconocido") + ">\n" + errorMessage;
@@ -130,7 +131,8 @@ export class ExtendedClient extends Client {
 
 	// Funcion llamada diariamente, firstTime es para que se ejecute cuando se corre el bot por primera vez
 	public async updateClientData(firstTime: boolean = false) {
-		const guild = this.guilds.cache.get(process.env.GUILD_ID ?? "") ?? (await this.guilds.fetch(process.env.GUILD_ID ?? ""));
+		const guild =
+			this.guilds.cache.get(process.env.GUILD_ID ?? "") ?? (await this.guilds.fetch(process.env.GUILD_ID ?? "").catch(() => undefined));
 		this._staffMembers =
 			(await guild?.members.fetch())
 				?.filter((member) => member.roles.cache.some((role) => [getRoleFromEnv("staff")].includes(role.id)))
@@ -144,10 +146,15 @@ export class ExtendedClient extends Client {
 		this.limpiarCompartePosts();
 
 		if (firstTime) {
+			ExtendedClient.guildManager = this.guilds;
 			if (process.env.NODE_ENV !== "development") {
 				process.on("unhandledRejection", (reason, promise) => {
 					console.error("Unhandled Rejection at:", promise, "reason:", reason);
-					(this.guilds.cache.get(process.env.GUILD_ID ?? "")?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({
+					(
+						ExtendedClient.guildManager?.cache
+							.get(process.env.GUILD_ID ?? "")
+							?.channels.resolve(getChannelFromEnv("logs")) as TextChannel
+					).send({
 						content: `${
 							process.env.NODE_ENV === "development"
 								? `@here`
@@ -160,7 +167,11 @@ export class ExtendedClient extends Client {
 				// Manejar excepciones no capturadas
 				process.on("uncaughtException", (error) => {
 					console.error("Uncaught Exception:", error);
-					(this.guilds.cache.get(process.env.GUILD_ID ?? "")?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({
+					(
+						ExtendedClient.guildManager?.cache
+							.get(process.env.GUILD_ID ?? "")
+							?.channels.resolve(getChannelFromEnv("logs")) as TextChannel
+					).send({
 						content: `${
 							process.env.NODE_ENV === "development"
 								? `@here`
@@ -190,8 +201,8 @@ export class ExtendedClient extends Client {
 					});
 				})
 				.catch((error) => ExtendedClient.logError("Error al cargar configuraciones de dinero", error.stack, process.env.CLIENT_ID));
-			const voiceChannels = guild.channels.cache.filter((channel) => channel.isVoiceBased());
-			voiceChannels.forEach((channel) => {
+			const voiceChannels = guild?.channels.cache.filter((channel) => channel.isVoiceBased());
+			voiceChannels?.forEach((channel) => {
 				const voiceChannel = channel as VoiceChannel;
 				const members = voiceChannel.members.filter((member) => !member.user.bot).map((member) => member);
 				if (members.length > 0) {
@@ -201,16 +212,17 @@ export class ExtendedClient extends Client {
 				}
 			});
 			console.log("loading emojis");
-			let emojis = (await guild.emojis.fetch()).map((emoji) => emoji.name ?? "_" + ":" + emoji.id);
+			let emojis = (await guild?.emojis.fetch())?.map((emoji) => emoji.name ?? "_" + ":" + emoji.id) ?? [];
 			console.log("loading stickers");
-			let stickers = (await guild.stickers.fetch()).map((sticker) => sticker.id);
+			let stickers = (await guild?.stickers.fetch())?.map((sticker) => sticker.id) ?? [];
 			console.log("loading channels");
-			let forumChannels = (await guild.channels.fetch())
-				.filter((channel) => {
-					return channel?.type === ChannelType.GuildForum && channel?.parent?.id === getChannelFromEnv("categoryForos");
-				})
-				.filter((channel) => channel != null)
-				.map((channel) => channel.id);
+			let forumChannels =
+				(await guild?.channels.fetch())
+					?.filter((channel) => {
+						return channel?.type === ChannelType.GuildForum && channel?.parent?.id === getChannelFromEnv("categoryForos");
+					})
+					.filter((channel) => channel != null)
+					.map((channel) => channel.id) ?? [];
 			ExtendedClient.trending.load(emojis, stickers, forumChannels);
 		} else {
 			ExtendedClient.trending.dailySave();
