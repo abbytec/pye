@@ -68,10 +68,10 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 			console.error("spamFilter: Error al intentar borrar el mensaje:", error);
 		}
 
-		const logChannel = (client.channels.cache.get(getChannelFromEnv("logs")) ??
-			client.channels.resolve(getChannelFromEnv("logs"))) as TextChannel | null;
+		const messagesChannel = (client.channels.cache.get(getChannelFromEnv("logMessages")) ??
+			client.channels.resolve(getChannelFromEnv("logMessages"))) as TextChannel | null;
 
-		await logChannel
+		await messagesChannel
 			?.send({
 				embeds: [
 					{
