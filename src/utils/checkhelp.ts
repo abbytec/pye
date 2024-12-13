@@ -178,7 +178,7 @@ async function sendErrorReport(message: Message<boolean>, error: any, method: st
  * @param buttons - The buttons to include in the embed.
  */
 async function sendHelpNotification(msg: Message, fields: APIEmbedField[], buttons: ButtonBuilder[]): Promise<void> {
-	const pointsChannelId = getChannelFromEnv("puntos");
+	const pointsChannelId = getChannelFromEnv("notificaciones");
 	const pointsChannel = (msg.client.channels.cache.get(pointsChannelId) ?? msg.client.channels.resolve(pointsChannelId)) as TextChannel | null;
 
 	if (!pointsChannel) {

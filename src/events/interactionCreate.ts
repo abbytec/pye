@@ -202,7 +202,7 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 				})
 				.catch(() => null);
 			message = `**${interaction.user.username}** ` + message.slice(2);
-			message += ` (Canal: <#${getChannelFromEnv("puntos")}>) - (Razón: <#${postId}>)`;
+			message += ` (Canal: <#${getChannelFromEnv("notificaciones")}>) - (Razón: <#${postId}>)`;
 			interaction.message.embeds.at(0)?.description && (message += `\n${interaction.message.embeds.at(0)?.description}`);
 			await notificationChannel.send(message);
 		}

@@ -290,11 +290,11 @@ async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClie
 						content: `**Advertencia:** Se eliminó un post duplicado: ${oldMessageLink} en canal <#${post.channelId}>`,
 					});
 				} else if (distance > 0.75) {
-					const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("moderadores")) ??
-						client.channels.resolve(getChannelFromEnv("moderadores"))) as TextChannel;
+					const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("notificaciones")) ??
+						client.channels.resolve(getChannelFromEnv("notificaciones"))) as TextChannel;
 					if (!moderatorChannel)
 						ExtendedClient.logError(
-							"checkCooldownComparte: No se encontró el canal de moderadores.",
+							"checkCooldownComparte: No se encontró el canal de notificaciones.",
 							undefined,
 							process.env.CLIENT_ID
 						);

@@ -50,7 +50,7 @@ const CHANNELS = {
 	tickets: "865047053884457012",
 
 	// staff
-	puntos: "925121655578173440",
+	notificaciones: "925121655578173440",
 	logPuntos: "932871373280395314",
 	logs: "1145160830741135470",
 	logMessages: "844385486469988404",
@@ -86,7 +86,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	memes: "1296190631533608960",
 
 	// staff
-	puntos: "1296190632317943913",
+	notificaciones: "1296190632317943913",
 	logPuntos: "1296190632317943914",
 	logMessages: "1296190632020414603",
 	bansanciones: "1296190632317943909",
@@ -215,7 +215,7 @@ const ROLES = {
 	moderadorChats: "994980515335643267",
 	helper: "1289416128652771358",
 	moderadorVoz: "1290753880191271007",
-	repatidorDeRep: "966791217520209920",
+	creadorDeRetos: "1281308912414363658",
 
 	// especiales
 	granApostador: "884160604275892234",
@@ -256,7 +256,7 @@ const DEV_ROLES: Record<Roles, string> = {
 	moderadorChats: "1296190630724370498",
 	helper: "1296190630724370497",
 	moderadorVoz: "1296190630724370496",
-	repatidorDeRep: "1296190630648610818",
+	creadorDeRetos: "1296190630464065617",
 
 	// especiales
 	granApostador: "1296190630657134617",
