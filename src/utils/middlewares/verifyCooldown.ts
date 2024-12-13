@@ -35,7 +35,9 @@ export const verifyCooldown = (
 		if (remainingCooldown > 0) {
 			const timeLeft = formatTime(remainingCooldown);
 			await interaction.reply({
-				content: `❌ - Debes esperar **${timeLeft}** antes de usar el comando **${commandName}** de nuevo.`,
+				content: `❌ - Debes esperar **${
+					timeLeft ?? (remainingCooldown / 1000).toFixed(2) + "segundos"
+				}** antes de usar el comando **${commandName}** de nuevo.`,
 				ephemeral: true,
 			});
 			return; // Detiene la cadena de middlewares
