@@ -314,6 +314,7 @@ async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClie
 
 const MAX_MESSAGE_LENGTH = 2000;
 async function manageAIResponse(message: Message<boolean>, isForumPost: string | undefined) {
+	if (message.mentions.everyone) return;
 	let botShouldAnswer = message.mentions.has(process.env.CLIENT_ID ?? "");
 	let contexto;
 	if (message.reference?.messageId) {
