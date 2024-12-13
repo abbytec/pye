@@ -2,7 +2,7 @@ import { SlashCommandBuilder, AttachmentBuilder, ChatInputCommandInteraction, Te
 import { Users } from "../../Models/User.js";
 import { loadImage } from "@napi-rs/canvas";
 import { HelperPoint } from "../../Models/HelperPoint.js";
-import { getChannelFromEnv, getRepRolesByOrder, getRoleName } from "../../utils/constants.js";
+import { getChannelFromEnv, getRepRolesByOrder, getRoleName, ROLES_REP_RANGE } from "../../utils/constants.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { getRender } from "../../utils/canvas/card-render.js";
@@ -70,8 +70,17 @@ export default {
 
 function getRole(member: GuildMember | undefined) {
 	if (!member) return;
-	for (const roleId of getRepRolesByOrder()) {
-		const role = member.roles.cache.get(roleId);
-		if (role) return role;
+	let highestRole;
+	let minPointsHigherRole: number = 0;
+	for (const roleId of Object.entries(getRepRolesByOrder())) {
+		const role = member.roles.cache.get(roleId[1]);
+		if (role) {
+			if (minPointsHigherRole < (ROLES_REP_RANGE[roleId[0] as keyof typeof ROLES_REP_RANGE] ?? 0)) {
+				minPointsHigherRole = ROLES_REP_RANGE[roleId[0] as keyof typeof ROLES_REP_RANGE] ?? 0;
+				highestRole = role;
+			}
+		}
 	}
+
+	return highestRole;
 }

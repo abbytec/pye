@@ -292,20 +292,20 @@ export function getInitialRoles(customRole: (keyof typeof ROLES)[]): string[] {
 	return roleList;
 }
 
-export function getRepRolesByOrder(): string[] {
+export function getRepRolesByOrder() {
 	let roles = isDevelopment ? DEV_ROLES : ROLES;
 	/** if you modify the order it will have impact. */
-	return [
-		roles.novato,
-		roles.iniciante,
-		roles.regular,
-		roles.avanzado,
-		roles.veterano,
-		roles.sabio,
-		roles.experto,
-		roles.adalovelace,
-		roles.alanturing,
-	];
+	return {
+		novato: roles.novato,
+		iniciante: roles.iniciante,
+		regular: roles.regular,
+		avanzado: roles.avanzado,
+		veterano: roles.veterano,
+		sabio: roles.sabio,
+		experto: roles.experto,
+		adalovelace: roles.adalovelace,
+		alanturing: roles.alanturing,
+	};
 }
 
 export function getRoleName(roleId: string): string {
