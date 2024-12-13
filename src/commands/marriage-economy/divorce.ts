@@ -1,16 +1,5 @@
 // src/commands/Currency/divorce.ts
-import {
-	ChatInputCommandInteraction,
-	SlashCommandBuilder,
-	EmbedBuilder,
-	GuildMember,
-	User,
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	ComponentType,
-	Guild,
-} from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, Guild } from "discord.js";
 import { Users, IUserModel, getOrCreateUser } from "../../Models/User.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
@@ -36,7 +25,8 @@ export default {
 			const user = interaction.user;
 			const guild = interaction.guild as Guild;
 
-			const targetUser: User = await interaction.options.getUser("usuario", true);
+			const targetUser = await interaction.options.getUser("usuario", true);
+			if (!targetUser) return;
 			const targetMember: GuildMember | undefined = guild.members.cache.get(targetUser.id);
 
 			if (!targetMember) {

@@ -46,7 +46,8 @@ export default {
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const subcommand = interaction.options.getSubcommand();
-			const targetUser: User = await interaction.options.getUser("usuario", true);
+			const targetUser = await interaction.options.getUser("usuario", true);
+			if (!targetUser) return;
 			const guild = interaction.guild as Guild;
 
 			const member: GuildMember | undefined = guild.members.cache.get(targetUser.id);

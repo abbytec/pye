@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { COLORS } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
@@ -9,6 +9,7 @@ export default {
 		.addUserOption((option) => option.setName("usuario").setDescription("menciona a un usuario").setRequired(true)),
 	async execute(interaction: IPrefixChatInputCommand) {
 		const user = await interaction.options.getUser("usuario", true);
+		if (!user) return;
 
 		const embed = new EmbedBuilder()
 			.setColor(COLORS.pyeLightBlue)

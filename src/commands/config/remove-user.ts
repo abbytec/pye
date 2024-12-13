@@ -29,6 +29,7 @@ export default {
 		async (interaction: IPrefixChatInputCommand) => {
 			const tipo = interaction.options.getString("tipo", true);
 			const usuario = await interaction.options.getUser("usuario", true);
+			if (!usuario) return;
 			const userId = usuario.id;
 
 			try {

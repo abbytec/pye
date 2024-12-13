@@ -28,6 +28,7 @@ export default {
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "moderadorChats"), deferInteraction()],
 		async (interaction: IPrefixChatInputCommand) => {
 			const user = await interaction.options.getUser("usuario", true);
+			if (!user) return;
 			const member = await interaction.guild?.members.fetch(user.id);
 
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");

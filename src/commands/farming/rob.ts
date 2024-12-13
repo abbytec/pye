@@ -1,5 +1,5 @@
 // src/commands/Currency/rob.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { getOrCreateUser, IUserModel, Users } from "../../Models/User.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
@@ -75,6 +75,8 @@ export default {
 
 			// Obtener el usuario objetivo
 			const targetUser = await interaction.options.getUser("user", true);
+
+			if (!targetUser) return;
 
 			if (targetUser.id === user.id) return await replyError(interaction, "No puedes robarte dinero a ti mismo.");
 

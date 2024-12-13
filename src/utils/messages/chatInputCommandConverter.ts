@@ -2,6 +2,7 @@ import { Message, User, TextChannel, Role, Channel } from "discord.js";
 import { PREFIX } from "../constants.js";
 import { ExtendedClient } from "../../client.js";
 import { IOptions, IPrefixChatInputCommand, MessageToSend } from "../../interfaces/IPrefixChatInputCommand.js";
+import { replyError } from "./replyError.js";
 
 interface IPrefixChatInputCommandOption {
 	name: string;
@@ -57,11 +58,9 @@ export class PrefixChatInputCommand {
 				this.argsMap.set(def.name, value);
 			}
 		}
-
-		return {
+		let returnObj = {
 			client: this.client,
 			commandName: this.commandName,
-			options: this.options,
 			guild: message.guild,
 			guildId: message.guildId,
 			member: message.member ?? undefined,
@@ -81,6 +80,10 @@ export class PrefixChatInputCommand {
 			},
 			fetchReply: async () => await this._reply,
 		} as IPrefixChatInputCommand & { _isReplied: boolean; _isDeferred: boolean };
+
+		returnObj.options = this.options(returnObj);
+
+		return returnObj;
 	}
 
 	// Métodos para obtener argumentos
@@ -122,7 +125,7 @@ export class PrefixChatInputCommand {
 			return null;
 		}
 
-		const mentionMatch = RegExp(/^<@!?(\d+)>$/).exec(val);
+		const mentionMatch = RegExp(/^(?:<@!?)?(\d+)(?:>)?$/).exec(val);
 		let userId = val;
 		if (mentionMatch) {
 			userId = mentionMatch[1];
@@ -131,11 +134,11 @@ export class PrefixChatInputCommand {
 		try {
 			const fetchedUser = await this.client.users.fetch(userId);
 			if (!fetchedUser && required) {
-				throw new Error(`No se pudo encontrar el usuario para el argumento "${name}".`);
+				throw new Error(`No se pudo encontrar el usuario, asegurate de ingresarlo correctamente. Si tienes dudas, usa \`/help\`.`);
 			}
 			return fetchedUser ?? null;
 		} catch {
-			if (required) throw new Error(`No se pudo encontrar el usuario para el argumento "${name}".`);
+			if (required) throw new Error("Error al obtener el usuario.");
 			return null;
 		}
 	}
@@ -269,16 +272,31 @@ export class PrefixChatInputCommand {
 		}
 	}
 
-	private get options(): IOptions {
+	private options(that: IPrefixChatInputCommand): IOptions {
 		return {
 			getString: this.getString.bind(this) as IOptions["getString"],
 			getNumber: this.getNumber.bind(this) as IOptions["getNumber"],
 			getBoolean: this.getBoolean.bind(this) as IOptions["getBoolean"],
-			getUser: this.getUser.bind(this) as IOptions["getUser"],
+			getUser: async (name: string, required?: boolean): Promise<any> => {
+				return this.getUser(name, required).catch(async (err) => {
+					await replyError(that, err);
+					return null;
+				});
+			},
 			getInteger: this.getInteger.bind(this) as IOptions["getInteger"],
-			getRole: this.getRole.bind(this) as IOptions["getRole"],
+			getRole: async (name: string, required?: boolean): Promise<any> => {
+				return this.getRole(name, required).catch(async (err) => {
+					await replyError(that, err);
+					return null;
+				});
+			},
 			getSubcommand: this.getSubcommand.bind(this) as IOptions["getSubcommand"],
-			getChannel: this.getChannel.bind(this) as IOptions["getChannel"],
+			getChannel: async (name: string, required?: boolean): Promise<any> => {
+				return this.getChannel(name, required).catch(async (err) => {
+					await replyError(that, err);
+					return null;
+				});
+			},
 		};
 	}
 }

@@ -32,7 +32,8 @@ export default {
 			if (!member) return await replyError(interaction, "No se pudo obtener la información de tu usuario en este servidor.");
 
 			// Obtener el usuario objetivo
-			const targetUser: User = await interaction.options.getUser("usuario", true);
+			const targetUser = await interaction.options.getUser("usuario", true);
+			if (!targetUser) return await replyWarning(interaction, "No se pudo encontrar al usuario especificado.");
 			const targetMember: GuildMember | undefined = guild.members.cache.get(targetUser.id);
 
 			// Validaciones iniciales

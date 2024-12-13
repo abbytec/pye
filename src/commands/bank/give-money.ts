@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { getOrCreateUser, Users } from "../../Models/User.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
@@ -30,6 +30,8 @@ export default {
 			const author = interaction.user;
 			const targetUser = await interaction.options.getUser("usuario", true);
 			let cantidadInput = interaction.options.getString("cantidad", true);
+
+			if (!targetUser) return;
 
 			// Prevenir que el usuario se transfiera dinero a sí mismo
 			if (targetUser.id === author.id) return await replyWarning(interaction, "No puedes darte dinero a ti mismo.");

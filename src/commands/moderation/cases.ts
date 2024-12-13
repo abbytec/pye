@@ -120,6 +120,7 @@ export default {
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
 		async (interaction: IPrefixChatInputCommand) => {
 			const user = await interaction.options.getUser("usuario", true);
+			if (!user) return;
 			const member = await interaction.guild?.members.fetch(user.id).catch(() => null);
 			const viewer = await interaction.guild?.members.fetch(interaction.user.id);
 

@@ -8,8 +8,9 @@ import {
 	InteractionReplyOptions,
 	MessagePayload,
 } from "discord.js";
-import { IOptions, IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { ExtendedClient } from "../../client.js";
+import { replyError } from "./replyError.js";
 
 export function chatInputCommandParser(interaction: ChatInputCommandInteraction): IPrefixChatInputCommand {
 	return {
@@ -19,10 +20,11 @@ export function chatInputCommandParser(interaction: ChatInputCommandInteraction)
 			getString: interaction.options.getString.bind(interaction.options),
 			getNumber: interaction.options.getNumber.bind(interaction.options),
 			getBoolean: interaction.options.getBoolean.bind(interaction.options),
-			getUser: async (name: string, required?: boolean): Promise<any> => {
+			getUser: async (name: string, required?: boolean): Promise<User | null> => {
 				const user = interaction.options.getUser(name, required);
 				if (required && !user) {
-					throw new Error(`El usuario requerido "${name}" no fue proporcionado.`);
+					await replyError(interaction, `El usuario requerido "${name}" no fue proporcionado.`);
+					return null;
 				}
 				return user;
 			},

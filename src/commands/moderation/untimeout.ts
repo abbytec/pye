@@ -22,6 +22,7 @@ export default {
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "moderadorChats"), deferInteraction()],
 		async (interaction: IPrefixChatInputCommand) => {
 			const user = await interaction.options.getUser("usuario", true);
+			if (!user) return;
 			const reason = interaction.options.getString("razon", true);
 
 			const member = await interaction.guild?.members.fetch(user.id);
