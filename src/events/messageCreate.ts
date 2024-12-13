@@ -112,8 +112,8 @@ async function processCommonMessage(message: Message, client: ExtendedClient) {
 			checkHelp(message);
 		}
 		registerNewTrends(message, client);
+		manageAIResponse(message, checkingChanel);
 	}
-	manageAIResponse(message, checkingChanel);
 }
 
 async function processPrefixCommand(message: Message, client: ExtendedClient) {
