@@ -12,10 +12,11 @@ export async function getRecursiveRepliedContext(message: Message<boolean>, pyeC
 
 		if (!repliedMessage) break;
 		// Determina el nombre del autor, reemplazando el nombre del bot si es necesario
-		const authorName = repliedMessage.author.id === (process.env.CLIENT_ID ?? "") ? botName : repliedMessage.author.username;
-
-		// Añade la línea al contexto al inicio para mantener el orden cronológico
-		contextLines.unshift(`${authorName}: ${repliedMessage.content}`);
+		if (repliedMessage.author.id === (process.env.CLIENT_ID ?? "")) {
+			contextLines.unshift(`${botName}: ${repliedMessage.content || repliedMessage.embeds[0]?.description}`);
+		} else {
+			contextLines.unshift(`${repliedMessage.author.username}: ${repliedMessage.content}`);
+		}
 
 		// Actualiza el mensaje actual para la siguiente iteración
 		currentMessage = repliedMessage;
@@ -28,5 +29,5 @@ export async function getRecursiveRepliedContext(message: Message<boolean>, pyeC
 	contextLines.push(`${initialAuthorName}: ${message.content}`);
 
 	// Combina todas las líneas en una sola cadena de texto
-	return contextLines.join("\n") + "\n" + botName;
+	return contextLines.join("\n") + "\n" + botName + "(continúa con tu respuesta)";
 }

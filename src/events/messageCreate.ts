@@ -106,21 +106,15 @@ async function processCommonMessage(message: Message, client: ExtendedClient) {
 		});
 
 		await specificChannels(message, client);
-		await checkChannel(message).then((isThankable) => {
+		checkChannel(message).then((isThankable) => {
 			if (isThankable) {
 				isForumResponse = true;
 				checkHelp(message);
 			}
 		});
-		message.stickers.forEach((sticker: Sticker) => {
-			if (client.getStickerTypeCache(sticker) === StickerType.Guild) ExtendedClient.trending.add("sticker", sticker.id);
-		});
-		const emojiIds = [...message.content.matchAll(/<a?:\w+:(\d+)>/g)].map((match) => match[1]) || [];
-		emojiIds.forEach((emojiId: string) => {
-			ExtendedClient.trending.add("emoji", emojiId);
-		});
+		registerNewTrends(message, client);
 	}
-	await manageAIResponse(message, client, isForumResponse);
+	manageAIResponse(message, client, isForumResponse);
 }
 
 async function processPrefixCommand(message: Message, client: ExtendedClient) {
@@ -159,71 +153,73 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 			break;
 		case getChannelFromEnv("ofreceServicios"):
 		case getChannelFromEnv("proyectosNoPagos"): {
-			let cooldown = await checkCooldownComparte(msg, client);
-			if (cooldown) {
-				let warn = await (msg.channel as TextChannel).send({
-					content: `🚫 <@${
-						msg.author.id
-					}>Por favor, espera 1 semana entre publicaciónes similares en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
-						cooldown
-					)}:R>)`,
-				});
-				await msg.delete().catch(() => null);
-				setTimeout(async () => await warn.delete().catch(() => null), 10000);
-			} else {
-				client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
-				msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
-					thread.send({
-						embeds: [
-							new EmbedBuilder()
-								.setTitle("¡Evita que te estafen!")
-								.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
-								.setDescription(
-									"Por favor te __recordamos__ tomar todas las precauciones posibles al interactuar en estos canales ya que el staff no puede **intervenir** con estafas. **SOLAMENTE TÚ PUEDES EVITAR SER VÍCTIMA DE UNA ESTAFA.**"
-								),
-							new EmbedBuilder()
-								.setTitle("Recomendaciones")
-								.setDescription(
-									"• No pagues ni entregues ningún trabajo y/o servicio en su totalidad hasta estar completamente seguro que la otra persona es confiable.\n • Si la publicación no ofrece muchos datos al respecto, debes dudar de la misma o bien puedes reportarla a un moderador.\n• Si tienes pruebas sobre la conducta cuestionable de un usuario, puedes reportarlo para impedirle el acceso a estos canales.\n\nDesde este servidor nos comprometemos a mantener estos canales lo más seguros y ordenados dentro de lo posible, **sin embargo** nuestro rol principal es el de brindar un lugar para que los usuarios puedan visibilizar sus publicaciones. Muchas resoluciones de conflicto *exceden* nuestro alcance y obligaciones, por eso recomendamos encarecidamente tener precaución.\n¡En nombre del Staff agradecemos tu atención!"
-								)
-								.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" })),
-						],
+			checkCooldownComparte(msg, client).then(async (cooldown) => {
+				if (cooldown) {
+					let warn = await (msg.channel as TextChannel).send({
+						content: `🚫 <@${
+							msg.author.id
+						}>Por favor, espera 1 semana entre publicaciónes similares en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
+							cooldown
+						)}:R>)`,
 					});
-				});
-				await setCooldown(client, msg.author.id, "comparte-post", 1000 * 60 * 60 * 24 * 7);
-			}
+					await msg.delete().catch(() => null);
+					setTimeout(async () => await warn.delete().catch(() => null), 10000);
+				} else {
+					client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
+					msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
+						thread.send({
+							embeds: [
+								new EmbedBuilder()
+									.setTitle("¡Evita que te estafen!")
+									.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
+									.setDescription(
+										"Por favor te __recordamos__ tomar todas las precauciones posibles al interactuar en estos canales ya que el staff no puede **intervenir** con estafas. **SOLAMENTE TÚ PUEDES EVITAR SER VÍCTIMA DE UNA ESTAFA.**"
+									),
+								new EmbedBuilder()
+									.setTitle("Recomendaciones")
+									.setDescription(
+										"• No pagues ni entregues ningún trabajo y/o servicio en su totalidad hasta estar completamente seguro que la otra persona es confiable.\n • Si la publicación no ofrece muchos datos al respecto, debes dudar de la misma o bien puedes reportarla a un moderador.\n• Si tienes pruebas sobre la conducta cuestionable de un usuario, puedes reportarlo para impedirle el acceso a estos canales.\n\nDesde este servidor nos comprometemos a mantener estos canales lo más seguros y ordenados dentro de lo posible, **sin embargo** nuestro rol principal es el de brindar un lugar para que los usuarios puedan visibilizar sus publicaciones. Muchas resoluciones de conflicto *exceden* nuestro alcance y obligaciones, por eso recomendamos encarecidamente tener precaución.\n¡En nombre del Staff agradecemos tu atención!"
+									)
+									.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" })),
+							],
+						});
+					});
+					await setCooldown(client, msg.author.id, "comparte-post", 1000 * 60 * 60 * 24 * 7);
+				}
+			});
 			break;
 		}
 		case getChannelFromEnv("ofertasDeEmpleos"): {
-			let cooldown = await checkCooldownComparte(msg, client);
-			if (cooldown) {
-				let warn = await (msg.channel as TextChannel).send({
-					content: `🚫 <@${
-						msg.author.id
-					}>Por favor, espera 1 semana entre publicaciónes similares en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
-						cooldown
-					)}:R>)`,
-				});
-				await msg.delete();
-
-				await setTimeout(() => warn.delete(), 10000);
-			} else {
-				client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
-				msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
-					thread.send({
-						content: `Hey ${msg.author.toString()}!`,
-						embeds: [
-							new EmbedBuilder()
-								.setTitle("Protege tu dinero y asegurate de que tu trabajo sea finalizado")
-								.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
-								.setDescription(
-									"Por favor te __recordamos__ tomar todas las precauciones posibles al interactuar en estos canales ya que el staff no puede **intervenir** con estafas. **SOLAMENTE TÚ PUEDES EVITAR SER VÍCTIMA DE UNA ESTAFA.**"
-								),
-						],
+			checkCooldownComparte(msg, client).then(async (cooldown) => {
+				if (cooldown) {
+					let warn = await (msg.channel as TextChannel).send({
+						content: `🚫 <@${
+							msg.author.id
+						}>Por favor, espera 1 semana entre publicaciónes similares en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
+							cooldown
+						)}:R>)`,
 					});
-				});
-				await setCooldown(client, msg.author.id, "comparte-post", 1000 * 60 * 60 * 24 * 7);
-			}
+					await msg.delete();
+
+					await setTimeout(() => warn.delete(), 10000);
+				} else {
+					client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
+					msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
+						thread.send({
+							content: `Hey ${msg.author.toString()}!`,
+							embeds: [
+								new EmbedBuilder()
+									.setTitle("Protege tu dinero y asegurate de que tu trabajo sea finalizado")
+									.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
+									.setDescription(
+										"Por favor te __recordamos__ tomar todas las precauciones posibles al interactuar en estos canales ya que el staff no puede **intervenir** con estafas. **SOLAMENTE TÚ PUEDES EVITAR SER VÍCTIMA DE UNA ESTAFA.**"
+									),
+							],
+						});
+					});
+					await setCooldown(client, msg.author.id, "comparte-post", 1000 * 60 * 60 * 24 * 7);
+				}
+			});
 			break;
 		}
 		case getChannelFromEnv("memes"):
@@ -253,13 +249,22 @@ async function checkChannel(msg: Message<boolean>) {
 	return getHelpForumsIdsFromEnv().includes(channel?.id ?? "");
 }
 
-async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClient) {
+async function registerNewTrends(message: Message<boolean>, client: ExtendedClient) {
+	message.stickers.forEach((sticker: Sticker) => {
+		if (client.getStickerTypeCache(sticker) === StickerType.Guild) ExtendedClient.trending.add("sticker", sticker.id);
+	});
+	const emojiIds = [...message.content.matchAll(/<a?:\w+:(\d+)>/g)].map((match) => match[1]) || [];
+	emojiIds.forEach((emojiId: string) => {
+		ExtendedClient.trending.add("emoji", emojiId);
+	});
+}
+
+async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClient): Promise<number | undefined> {
 	let lastPosts = ExtendedClient.ultimosCompartePosts
 		.get(msg.author.id)
 		?.filter((post) => post.date.getTime() + 1000 * 60 * 60 * 24 * 7 >= Date.now());
 
 	if (!lastPosts) return;
-	msg.reference?.messageId;
 	let cooldownPost: number | undefined = undefined;
 	for (const post of lastPosts) {
 		const channel = (client.channels.cache.get(post.channelId) ?? client.channels.resolve(post.channelId)) as TextChannel;
@@ -307,7 +312,8 @@ async function manageAIResponse(message: Message<boolean>, client: ExtendedClien
 		contexto = await getRecursiveRepliedContext(message, !isForumPost);
 		if (isForumPost) {
 			let fullMessage = (
-				await geminiModel.generateContent(contexto).catch(() => {
+				await geminiModel.generateContent(contexto).catch((err) => {
+					ExtendedClient.logError("Error al generar la respuesta de IA en foro:" + err.message, err.stack, message.author.id);
 					return { response: { text: () => "Error al generar la respuesta" } };
 				})
 			).response.text();
@@ -341,7 +347,8 @@ async function manageAIResponse(message: Message<boolean>, client: ExtendedClien
 				})
 				.setDescription(
 					(
-						await modelPyeChanAnswer.generateContent(contexto).catch(() => {
+						await modelPyeChanAnswer.generateContent(contexto).catch((err) => {
+							ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + err.message, err.stack, message.author.id);
 							return {
 								response: { text: () => "Estoy comiendo mucho sushi como para procesar esa respuesta, porfa intentá mas tarde" },
 							};
