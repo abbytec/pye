@@ -64,7 +64,7 @@ async function handleRoleChanges(oldMember: GuildMember | PartialGuildMember, ne
 				{ name: `😎 ${newMember.user.username} ha mejorado el servidor 🚀`, value: "\u200B" },
 				{
 					name: "Algunas de las ventajas para ti:",
-					value: "🔹 Prioridad de voz en los canales.\n🔹 Capacidad de crear hilos.\n🔹 Rol permanente que demuestra tu apoyo.\n🔹 Acceso a las postulaciones de empleo.\n🔹 Atención priorizada en el servidor.\n🔹 ¡Muchas más ventajas que iremos agregando!",
+					value: "🔹 Prioridad de voz en los canales.\n🔹 Capacidad de crear hilos.\n🔹 Rol permanente que demuestra tu apoyo.\n🔹 Atención priorizada en el servidor.\n🔹 ¡Muchas más ventajas que iremos agregando!",
 				},
 				{ name: "💡 ¿Tienes sugerencias para boosters?", value: `¡Déjalas en <#${getChannelFromEnv("sugerencias")}>!` }
 			)
