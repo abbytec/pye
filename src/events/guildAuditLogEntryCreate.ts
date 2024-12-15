@@ -27,7 +27,7 @@ export default {
 				// Verificar si el baneo fue realizado por un bot
 				if (!executor.bot) {
 					await channel?.send({
-						content: `El miembro **${targetUser.username} (${memberId})** fue baneado manualmente por **${executor.tag}**.\nPor lo que sus datos permanecerán en la db.`,
+						content: `El miembro **${targetUser.username} (${memberId})** fue baneado __manualmente__ por **${executor.tag}**.\nPor lo que sus datos __permanecerán__ en la db.`,
 					});
 					return;
 				}
