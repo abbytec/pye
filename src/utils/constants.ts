@@ -216,6 +216,7 @@ const ROLES = {
 	helper: "1289416128652771358",
 	moderadorVoz: "1290753880191271007",
 	creadorDeRetos: "1281308912414363658",
+	instructorDeTaller: "797224613867421701",
 
 	// especiales
 	granApostador: "884160604275892234",
@@ -257,6 +258,7 @@ const DEV_ROLES: Record<Roles, string> = {
 	helper: "1296190630724370497",
 	moderadorVoz: "1296190630724370496",
 	creadorDeRetos: "1296190630464065617",
+	instructorDeTaller: "1296190630648610819",
 
 	// especiales
 	granApostador: "1296190630657134617",

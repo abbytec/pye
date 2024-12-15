@@ -73,7 +73,8 @@ export default {
 			!(
 				message.channel.parentId === getChannelFromEnv("categoryStaff") ||
 				message.member?.permissions.has("Administrator") ||
-				client.staffMembers.includes(message.author.id)
+				client.staffMembers.includes(message.author.id) ||
+				message.member?.roles.cache.has(getRoleFromEnv("instructorDeTaller"))
 			)
 		) {
 			if (
