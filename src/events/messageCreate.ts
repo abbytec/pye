@@ -34,7 +34,7 @@ import natural from "natural";
 import { checkMentionSpam, IDeletableContent, spamFilter } from "../security/spamFilters.js";
 import { hashMessage } from "../security/messageHashing.js";
 import { getRecursiveRepliedContext } from "../utils/ai/getRecursiveRepliedContext.js";
-import { geminiModel, modelPyeChanAnswer, pyeChanPrompt } from "../utils/ai/gemini.js";
+import { ANTI_DUMBS_RESPONSES, geminiModel, modelPyeChanAnswer, pyeChanPrompt, pyeChanSecurityConstraint } from "../utils/ai/gemini.js";
 
 export default {
 	name: Events.MessageCreate,
@@ -313,6 +313,7 @@ async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClie
 }
 
 const MAX_MESSAGE_LENGTH = 2000;
+
 async function manageAIResponse(message: Message<boolean>, isForumPost: string | undefined) {
 	if (message.mentions.everyone) return;
 	let botShouldAnswer = message.mentions.has(process.env.CLIENT_ID ?? "");
@@ -362,15 +363,15 @@ async function manageAIResponse(message: Message<boolean>, isForumPost: string |
 			}
 		} else {
 			let text = (
-				await modelPyeChanAnswer.generateContent(contexto).catch((err) => {
+				await modelPyeChanAnswer.generateContent(contexto + pyeChanSecurityConstraint).catch((err) => {
 					ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + err.message, err.stack, message.author.id);
 					return {
 						response: { text: () => "Estoy comiendo mucho sushi como para procesar esa respuesta, porfa intentá mas tarde" },
 					};
 				})
 			).response.text();
-			if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.77)
-				text = "Estoy comiendo mucho sushi como para procesar esa respuesta, porfa intentá mas tarde";
+			if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8)
+				text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
 
 			const exampleEmbed = new EmbedBuilder()
 				.setColor(COLORS.pyeCutePink)
