@@ -35,7 +35,7 @@ export const spamFilterList: IFilter[] = [
 		mute: true,
 	},
 	{
-		filter: /(?=.*(?:eth|ethereum|btc|bitcoin|capital|crypto|memecoins|nitro|\$|nsfw))(?=.*\b(?:gana\w*|gratis|multiplica\w*|inver\w*|giveaway|server|free)\b).*/is,
+		filter: /(?=.*\b(eth|ethereum|btc|bitcoin|capital|crypto|memecoins|nitro|\$|nsfw)\b)(?=.*\b(gana\w*|gratis|multiplica\w*|inver\w*|giveaway|server|free)\b)/is,
 		mute: false,
 		staffWarn: "Posible estafa detectada",
 	},
