@@ -75,19 +75,19 @@ class Trending {
 
 		// Asegura que todos los IDs estén presentes en los mapas con valor inicial 0
 		for (const id of emojiIds) {
-			if (!this.emojis.has(id)) {
+			if (id && !this.emojis.has(id)) {
 				this.emojis.set(id, 0);
 			}
 		}
 
 		for (const id of stickerIds) {
-			if (!this.stickers.has(id)) {
+			if (id && !this.stickers.has(id)) {
 				this.stickers.set(id, 0);
 			}
 		}
 
 		for (const id of channelIds) {
-			if (!this.forumChannels.has(id)) {
+			if (id && !this.forumChannels.has(id)) {
 				this.forumChannels.set(id, 0);
 			}
 		}
