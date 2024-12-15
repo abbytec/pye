@@ -5,24 +5,24 @@ import { COLORS, getChannelFromEnv } from "../utils/constants.js";
 
 export interface IFilter {
 	filter: RegExp;
-	mute: boolean;
+	mute: boolean | "checkinvite";
 	staffWarn?: string;
 }
 
 const linkPeligroso = "Posible link peligroso detectado";
 export const spamFilterList: IFilter[] = [
-	{ filter: /\w+\.xyz$/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.click$/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.info$/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.ru$/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.biz$/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.online$/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.club$/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /\w+\.xyz/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /\w+\.click/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /\w+\.info/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /\w+\.ru/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /\w+\.biz/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /\w+\.online/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /\w+\.club/i, mute: false, staffWarn: linkPeligroso },
 	{ filter: /(https?:\/\/)?(t\.me|telegram\.me|wa\.me|whatsapp\.me)\/.+/i, mute: true },
 	{ filter: /(https?:\/\/)?(pornhub\.\w+|xvideos\.com|xhamster\.com|xnxx\.com|hentaila.\w+)\/.+/i, mute: true },
 	{
-		filter: /(?!(https?:\/\/)?discord\.gg\/programacion$)(https?:\/\/)?discord\.gg\/.+/i,
-		mute: true,
+		filter: /(?!(https?:\/\/)?discord\.gg\/programacion$)(https?:\/\/)?discord\.gg\/\w+/i,
+		mute: "checkinvite",
 	},
 	{
 		filter: /(?!(https?:\/\/)?discord\.com\/invite\/programacion$)(https?:\/\/)?discord\.com\/invite\/.+/i,
@@ -51,60 +51,81 @@ export interface IDeletableContent {
 export async function spamFilter(author: GuildMember | null, client: ExtendedClient, deletable: IDeletableContent, messageContent = "") {
 	if (!author || messageContent.length < 8) return false;
 
-	const detectedFilter = spamFilterList.find((item) => item.filter.test(messageContent));
+	const detectedFilters = spamFilterList.filter((item) => item.filter.test(messageContent));
 
-	if (detectedFilter && !detectedFilter.staffWarn) {
-		try {
-			await deletable.delete("Spam Filter");
-			if (detectedFilter.mute)
-				applyTimeout(
-					10000,
-					"Spam Filter",
-					author,
-					client.guilds.cache.get(process.env.GUILD_ID ?? "")?.iconURL({ extension: "gif" }) ?? null
-				);
-			console.log("Mensaje borrado que contenía texto en la black list");
-		} catch (error) {
-			console.error("spamFilter: Error al intentar borrar el mensaje:", error);
+	let shouldStopAlgorithm = false;
+
+	for (const detectedFilter of detectedFilters) {
+		if (detectedFilter && !detectedFilter.staffWarn) {
+			try {
+				if (detectedFilter.mute === "checkinvite") {
+					const invite = detectedFilter.filter.exec(messageContent)?.[0];
+					if (!invite) continue;
+					if ((await client.fetchInvite(invite)).guild?.id !== process.env.GUILD_ID) {
+						await deletable.delete("Spam Filter");
+						shouldStopAlgorithm = true;
+						applyTimeout(
+							10000,
+							"Spam Filter",
+							author,
+							client.guilds.cache.get(process.env.GUILD_ID ?? "")?.iconURL({ extension: "gif" }) ?? null
+						);
+						console.log("Mensaje borrado que contenía texto en la black list");
+					}
+				} else if (detectedFilter.mute === true) {
+					await deletable.delete("Spam Filter");
+					shouldStopAlgorithm = true;
+					applyTimeout(
+						10000,
+						"Spam Filter",
+						author,
+						client.guilds.cache.get(process.env.GUILD_ID ?? "")?.iconURL({ extension: "gif" }) ?? null
+					);
+				}
+
+				console.log("Mensaje borrado que contenía texto en la black list");
+			} catch (error) {
+				console.error("spamFilter: Error al intentar borrar el mensaje:", error);
+			}
+
+			const messagesChannel = (client.channels.cache.get(getChannelFromEnv("logMessages")) ??
+				client.channels.resolve(getChannelFromEnv("logMessages"))) as TextChannel | null;
+
+			await messagesChannel
+				?.send({
+					embeds: [
+						{
+							title: "Spam Filter",
+							description: "Se eliminó un mensaje que contenía texto no permitido.",
+							fields: [
+								{ name: "Usuario", value: `<@${author.id}> (${author.user.id})`, inline: false },
+								{ name: "Spam Triggered", value: `\`${detectedFilter.filter}\`\nEn canal: ${deletable.channel}`, inline: false },
+								{
+									name: "Contenido (recortado a 150 caracteres)",
+									value: `\`\`\`\n${messageContent.slice(0, 150)}\`\`\``,
+									inline: false,
+								},
+							],
+							color: COLORS.warnOrange,
+							timestamp: "2024-04-27T12:00:00.000Z",
+						},
+					],
+				})
+				.catch((err) => console.warn("spamFilter: Error al intentar enviar el log.", err));
+		} else if (detectedFilter?.staffWarn) {
+			const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("moderadores")) ??
+				client.channels.resolve(getChannelFromEnv("moderadores"))) as TextChannel | null;
+			const messageLink = deletable.channel
+				? `https://discord.com/channels/${process.env.GUILD_ID}/${deletable.channel.id}/${deletable.id}`
+				: "";
+			await moderatorChannel
+				?.send({
+					content: `**Advertencia:** ${detectedFilter.staffWarn}. ${messageLink}`,
+				})
+				.catch((err) => console.error("spamFilter: Error al enviar el mensaje de advertencia:", err));
 		}
-
-		const messagesChannel = (client.channels.cache.get(getChannelFromEnv("logMessages")) ??
-			client.channels.resolve(getChannelFromEnv("logMessages"))) as TextChannel | null;
-
-		await messagesChannel
-			?.send({
-				embeds: [
-					{
-						title: "Spam Filter",
-						description: "Se eliminó un mensaje que contenía texto no permitido.",
-						fields: [
-							{ name: "Usuario", value: `<@${author.id}> (${author.user.id})`, inline: false },
-							{ name: "Spam Triggered", value: `\`${detectedFilter.filter}\`\nEn canal: ${deletable.channel}`, inline: false },
-							{
-								name: "Contenido (recortado a 150 caracteres)",
-								value: `\`\`\`\n${messageContent.slice(0, 150)}\`\`\``,
-								inline: false,
-							},
-						],
-						color: COLORS.warnOrange,
-						timestamp: "2024-04-27T12:00:00.000Z",
-					},
-				],
-			})
-			.catch((err) => console.warn("spamFilter: Error al intentar enviar el log.", err));
-	} else if (detectedFilter?.staffWarn) {
-		const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("moderadores")) ??
-			client.channels.resolve(getChannelFromEnv("moderadores"))) as TextChannel | null;
-		const messageLink = deletable.channel
-			? `https://discord.com/channels/${process.env.GUILD_ID}/${deletable.channel.id}/${deletable.id}`
-			: "";
-		await moderatorChannel
-			?.send({
-				content: `**Advertencia:** ${detectedFilter.staffWarn}. ${messageLink}`,
-			})
-			.catch((err) => console.error("spamFilter: Error al enviar el mensaje de advertencia:", err));
 	}
-	return detectedFilter;
+	return shouldStopAlgorithm;
 }
 
 const mentionTracker = new Map();

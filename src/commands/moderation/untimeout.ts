@@ -35,11 +35,11 @@ export default {
 			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes removerte el timeout a ti mismo.");
 
 			// Verificar si el miembro está en timeout
-			if (!member.isCommunicationDisabled()) return await replyError(interaction, "El usuario no está en timeout.");
+			if (!member.isCommunicationDisabled()) await replyError(interaction, "El usuario no está en timeout.");
 
 			// Remover el timeout
 			try {
-				await member.timeout(null, reason);
+				await member.timeout(null, reason).catch(() => null);
 
 				// Buscar el timeout más reciente que no esté oculto
 				const latestTimeout = await ModLogs.findOneAndUpdate(
@@ -49,7 +49,7 @@ export default {
 				);
 
 				if (!latestTimeout) {
-					return await replyError(interaction, "Este usuario no tiene timeouts activos.");
+					return await replyError(interaction, "Este usuario no tiene timeouts recientes.");
 				}
 
 				// Enviar mensaje directo al usuario
