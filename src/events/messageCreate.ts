@@ -34,7 +34,7 @@ import natural from "natural";
 import { checkMentionSpam, IDeletableContent, spamFilter } from "../security/spamFilters.js";
 import { hashMessage } from "../security/messageHashing.js";
 import { getRecursiveRepliedContext } from "../utils/ai/getRecursiveRepliedContext.js";
-import { geminiModel, modelPyeChanAnswer } from "../utils/ai/gemini.js";
+import { geminiModel, modelPyeChanAnswer, pyeChanPrompt } from "../utils/ai/gemini.js";
 
 export default {
 	name: Events.MessageCreate,
@@ -361,6 +361,17 @@ async function manageAIResponse(message: Message<boolean>, isForumPost: string |
 				}
 			}
 		} else {
+			let text = (
+				await modelPyeChanAnswer.generateContent(contexto).catch((err) => {
+					ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + err.message, err.stack, message.author.id);
+					return {
+						response: { text: () => "Estoy comiendo mucho sushi como para procesar esa respuesta, porfa intentá mas tarde" },
+					};
+				})
+			).response.text();
+			if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.77)
+				text = "Estoy comiendo mucho sushi como para procesar esa respuesta, porfa intentá mas tarde";
+
 			const exampleEmbed = new EmbedBuilder()
 				.setColor(COLORS.pyeCutePink)
 				.setAuthor({
@@ -369,16 +380,7 @@ async function manageAIResponse(message: Message<boolean>, isForumPost: string |
 						"https://cdn.discordapp.com/attachments/1115058778736431104/1282790824744321167/vecteezy_heart_1187438.png?ex=66e0a38d&is=66df520d&hm=d59a5c3cfdaf988f7a496004f905854677c6f2b18788b288b59c4c0b60d937e6&",
 					url: "https://cdn.discordapp.com/attachments/1115058778736431104/1282780704979292190/image_2.png?ex=66e09a20&is=66df48a0&hm=0df37331fecc81a080a8c7bee4bcfab858992b55d9ca675bafedcf4c4c7879a1&",
 				})
-				.setDescription(
-					(
-						await modelPyeChanAnswer.generateContent(contexto).catch((err) => {
-							ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + err.message, err.stack, message.author.id);
-							return {
-								response: { text: () => "Estoy comiendo mucho sushi como para procesar esa respuesta, porfa intentá mas tarde" },
-							};
-						})
-					).response.text()
-				)
+				.setDescription(text)
 				.setThumbnail(
 					"https://cdn.discordapp.com/attachments/1115058778736431104/1282780704979292190/image_2.png?ex=66e09a20&is=66df48a0&hm=0df37331fecc81a080a8c7bee4bcfab858992b55d9ca675bafedcf4c4c7879a1&"
 				)
