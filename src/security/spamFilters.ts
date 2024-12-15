@@ -107,7 +107,7 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 								},
 							],
 							color: COLORS.warnOrange,
-							timestamp: "2024-04-27T12:00:00.000Z",
+							timestamp: new Date().toISOString(),
 						},
 					],
 				})
