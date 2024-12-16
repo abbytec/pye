@@ -212,9 +212,9 @@ export class ExtendedClient extends Client {
 				}
 			});
 			console.log("loading emojis");
-			let emojis = (await guild?.emojis.fetch())?.map((emoji) => emoji.name ?? "_" + ":" + emoji.id) ?? [];
+			let emojis = (await guild?.emojis.fetch())?.map((emoji) => emoji.name ?? "_" + ":" + emoji.id).filter((emoji) => emoji) ?? [];
 			console.log("loading stickers");
-			let stickers = (await guild?.stickers.fetch())?.map((sticker) => sticker.id) ?? [];
+			let stickers = (await guild?.stickers.fetch())?.map((sticker) => sticker.id).filter((sticker) => sticker) ?? [];
 			console.log("loading channels");
 			let forumChannels =
 				(await guild?.channels.fetch())
