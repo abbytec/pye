@@ -11,13 +11,13 @@ export interface IFilter {
 
 const linkPeligroso = "Posible link peligroso detectado";
 export const spamFilterList: IFilter[] = [
-	{ filter: /\w+\.xyz/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.click/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.info/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.ru/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.biz/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.online/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /\w+\.club/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /https?:\/\/[\w.-]+\.xyz[^\s]*/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /https?:\/\/[\w.-]+\.click[^\s]*/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /https?:\/\/[\w.-]+\.info[^\s]*/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /https?:\/\/[\w.-]+\.ru[^\s]*/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /https?:\/\/[\w.-]+\.biz[^\s]*/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /https?:\/\/[\w.-]+\.online[^\s]*/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /https?:\/\/[\w.-]+\.club[^\s]*/i, mute: false, staffWarn: linkPeligroso },
 	{ filter: /(https?:\/\/)?(t\.me|telegram\.me|wa\.me|whatsapp\.me)\/.+/i, mute: true },
 	{ filter: /(https?:\/\/)?(pornhub\.\w+|xvideos\.com|xhamster\.com|xnxx\.com|hentaila.\w+)\/.+/i, mute: true },
 	{
