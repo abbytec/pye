@@ -35,6 +35,7 @@ import { checkMentionSpam, IDeletableContent, spamFilter } from "../security/spa
 import { hashMessage } from "../security/messageHashing.js";
 import { getRecursiveRepliedContext } from "../utils/ai/getRecursiveRepliedContext.js";
 import { ANTI_DUMBS_RESPONSES, geminiModel, modelPyeChanAnswer, pyeChanPrompt, pyeChanSecurityConstraint } from "../utils/ai/gemini.js";
+import { checkQuestLevel, IQuest } from "../utils/quest.js";
 
 export default {
 	name: Events.MessageCreate,
@@ -106,6 +107,8 @@ async function processCommonMessage(message: Message, client: ExtendedClient) {
 					});
 			}
 		});
+
+		checkQuestLevel({ msg: message, text: 1, userId: message.author.id } as IQuest);
 
 		await specificChannels(message, client);
 		checkingChanel = checkThanksChannel(message);

@@ -11,6 +11,7 @@ import { replyError } from "../../utils/messages/replyError.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 
 export default {
 	group: "🥳 - Puntos de reputación",
@@ -32,6 +33,8 @@ export default {
 				});
 				if (!member || !data) return;
 				await replyOk(interaction, `se le ha dado un rep al usuario: \`${user.tag}\``);
+
+				checkQuestLevel({ msg: interaction, userId: user.id, rep: 1 } as IQuest);
 				return {
 					guildMember: member,
 					helperPoint: data,

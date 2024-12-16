@@ -32,10 +32,10 @@ export interface IQuest {
 }
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: IQuest, game = false) {
-	const user = await Home.findOne({ id: userId });
-	const dateZ = await Users.findOne({ id: userId });
+	const user = await Home.findOne({ id: userId, active: true }).catch(() => null);
+	if (!user) return;
+	const dateZ = await Users.findOne({ id: userId }).catch(() => null);
 	let next;
-	if (!user || !user.active) return;
 	const person = msg.client.users.resolve(userId);
 	if (!person) return;
 	let guild: Guild | null = null;
