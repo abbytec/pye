@@ -57,7 +57,7 @@ async function fetchMessagesAndHelpers(gratitudeMessage: Message): Promise<Fetch
 	let helpers: string[] = [];
 	let msges: Message[] = [];
 	for (const msg of messages) {
-		if (!helpers.includes(msg.author.id) && msg.author.id !== gratitudeMessage.author.id) {
+		if (!helpers.includes(msg.author.id) && msg.author.id !== gratitudeMessage.author.id && !msg.author.bot) {
 			helpers.push(msg.author.id);
 			msges.push(msg);
 		}
