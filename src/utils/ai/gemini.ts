@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SafetySetting } from "@google/generative-ai";
 import loadEnvVariables from "../environment.js";
 
 loadEnvVariables();
@@ -9,7 +9,7 @@ const generationConfigzzz = {
 	topP: 1,
 };
 
-const safetySettingszzz = [
+const safetySettingszzz: SafetySetting[] = [
 	{
 		category: HarmCategory.HARM_CATEGORY_HARASSMENT,
 		threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,

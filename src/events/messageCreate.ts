@@ -363,14 +363,20 @@ async function manageAIResponse(message: Message<boolean>, isForumPost: string |
 				}
 			}
 		} else {
-			let text = (
-				await modelPyeChanAnswer.generateContent(contexto + pyeChanSecurityConstraint).catch((err) => {
-					ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + err.message, err.stack, message.author.id);
-					return {
-						response: { text: () => "Estoy comiendo mucho sushi como para procesar esa respuesta, porfa intentá mas tarde" },
-					};
-				})
-			).response.text();
+			let text;
+			try {
+				text = (
+					await modelPyeChanAnswer.generateContent(contexto + pyeChanSecurityConstraint).catch((err) => {
+						ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + err.message, err.stack, message.author.id);
+						return {
+							response: { text: () => "Estoy comiendo mucho sushi como para procesar esa respuesta, porfa intentá mas tarde" },
+						};
+					})
+				).response.text();
+			} catch (error) {
+				text = "Mejor comamos un poco de sushi! 🍣";
+			}
+
 			if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8)
 				text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
 
