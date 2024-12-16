@@ -17,20 +17,22 @@ import { increaseHomeMonthlyIncome } from "../Models/Home.js";
  */
 export async function bumpHandler(message: Message): Promise<void> {
 	try {
+		ExtendedClient.logError("Bump iniciado", JSON.stringify(message));
 		if (!message.interaction) return;
+		ExtendedClient.logError("Bump aprobado");
 
 		const ganadorId = message.interaction.user.id;
 
 		// Obtener los documentos de Money y Users
-		const money = await Money.findById(process.env.CLIENT_ID).exec();
+		const money = await Money.findById(process.env.CLIENT_ID).catch(() => null);
 		if (!money) {
-			console.error(`No se encontró el documento de Money para el bot con ID: ${process.env.CLIENT_ID}`);
+			ExtendedClient.logError("No se encontró el documento de Money para el bot con ID: " + process.env.CLIENT_ID);
 			return;
 		}
 
-		const user = await Users.findOne({ id: ganadorId }).exec();
+		const user = await Users.findOne({ id: ganadorId }).catch(() => null);
 		if (!user) {
-			console.error(`No se encontró el usuario con ID: ${ganadorId}`);
+			ExtendedClient.logError("No se encontró el usuario con ID: " + ganadorId);
 			return;
 		}
 
