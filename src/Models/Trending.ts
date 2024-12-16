@@ -67,6 +67,9 @@ class Trending {
 	async load(emojiIds: string[], stickerIds: string[], channelIds: string[]): Promise<void> {
 		let data = await TrendingModel.findOne();
 		if (data) {
+			data.emojis.delete("");
+			data.channels.delete("");
+			data.stickers.delete("");
 			this.emojis = new Map(data.emojis);
 			this.forumChannels = new Map(data.channels);
 			this.stickers = new Map(data.stickers);
