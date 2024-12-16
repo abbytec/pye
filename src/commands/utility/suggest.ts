@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, TextChannel, Message } from "discord.js";
 import { COLORS, getChannel } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { replyOk } from "../../utils/messages/replyOk.js";
 
 const data = new SlashCommandBuilder()
 	.setName("sugerir")
@@ -20,7 +21,7 @@ async function sugerir(sugerencia: string | null, interaction: IPrefixChatInputC
 		.setFooter({ text: "Puedes votar a favor o en contra de esta sugerencia" });
 	suggest.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() });
 
-	interaction.reply("<:cross:1282933529566511155> - Se ha enviado tu sugerencia correctamente.");
+	await replyOk(interaction, "Se ha enviado tu sugerencia correctamente.");
 
 	canal
 		?.send({
