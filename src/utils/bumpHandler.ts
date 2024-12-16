@@ -17,11 +17,9 @@ import { increaseHomeMonthlyIncome } from "../Models/Home.js";
  */
 export async function bumpHandler(message: Message): Promise<void> {
 	try {
-		ExtendedClient.logError("Bump iniciado", JSON.stringify(message));
-		if (!message.interaction) return;
-		ExtendedClient.logError("Bump aprobado");
+		if (!message.interactionMetadata) return;
 
-		const ganadorId = message.interaction.user.id;
+		const ganadorId = message.interactionMetadata.user.id;
 
 		// Obtener los documentos de Money y Users
 		const money = await Money.findById(process.env.CLIENT_ID).catch(() => null);
