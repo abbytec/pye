@@ -23,7 +23,7 @@ export default {
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
 		async (interaction: IPrefixChatInputCommand) => {
-			const user = await interaction.options.getUser("usuario", true);
+			const user = await interaction.options.getUser("usuario", true).catch(() => null);
 			if (!user) return;
 			const reason = interaction.options.getString("razon") ?? "No se proporcionó una razón.";
 

@@ -40,13 +40,13 @@ export default {
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const subcommand = interaction.options.getSubcommand();
-			const memberUser = await interaction.options.getUser("miembro");
+			const memberUser = await interaction.options.getUser("miembro").catch(() => null);
 
 			if (!memberUser) {
 				return await replyError(interaction, "No se pudo encontrar al miembro especificado.");
 			}
 
-			const guildMember = interaction.guild?.members.cache.get(memberUser.id);
+			const guildMember = await interaction.guild?.members.fetch(memberUser.id).catch(() => null);
 
 			if (!guildMember) {
 				return await replyError(interaction, "El miembro especificado no está en este servidor.");
