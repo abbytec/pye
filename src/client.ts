@@ -97,7 +97,7 @@ export class ExtendedClient extends Client {
 		return (
 			this.moneyConfigs.get(guildId) ?? {
 				_id: process.env.CLIENT_ID ?? "",
-				bump: 0,
+				bump: 2000,
 				voice: {
 					time: 60000,
 					coins: 100,
