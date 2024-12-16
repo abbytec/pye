@@ -55,15 +55,6 @@ export default {
 				if ("logMessages" in result) {
 					await replyWarning(
 						interaction,
-						`**${user.username}** ha recibido una advertencia.`,
-						undefined,
-						undefined,
-						undefined,
-						undefined,
-						false
-					);
-					return await replyWarning(
-						interaction,
 						`**${user.username}** ha recibido un timeout.`,
 						undefined,
 						undefined,
@@ -71,6 +62,7 @@ export default {
 						undefined,
 						false
 					);
+					return result;
 				} else {
 					return await replyError(interaction, "No se pudo aplicar el timeout al usuario, por favor revisa los logs.");
 				}
