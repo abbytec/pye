@@ -114,16 +114,8 @@ export default {
 
 			if (lose) {
 				userData.cash = (userData.cash ?? 0) - profit;
-				if (userData.cash < 0) {
-					profit += userData.cash;
-					userData.cash = 0;
-				}
 			} else {
 				targetUserData.cash = targetUserData.cash - profit;
-				if (targetUserData.cash < 0) {
-					profit += targetUserData.cash;
-					targetUserData.cash = 0;
-				}
 				userData.cash = (userData.cash ?? 0) + profit;
 
 				interaction.client.lastRobs.push({

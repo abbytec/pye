@@ -69,7 +69,6 @@ export default {
 
 			if (lose) {
 				userData.cash = (userData.cash ?? 0) - profit;
-				userData.total = (userData.total ?? 0) - profit;
 				profitFormatted = profit.toLocaleString();
 			} else {
 				// Ajustar ganancia según el trabajo del usuario y su pareja
@@ -80,7 +79,6 @@ export default {
 
 				// Actualizar el dinero del usuario
 				userData.cash = (userData.cash ?? 0) + profit;
-				userData.total = (userData.total ?? 0) + profit;
 			}
 
 			try {

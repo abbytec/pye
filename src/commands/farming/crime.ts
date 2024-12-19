@@ -72,11 +72,6 @@ export default {
 			if (lose) {
 				// El usuario pierde, deducir profit de su cash
 				userData.cash = (userData.cash ?? 0) - profit;
-				// Asegurarse de que el cash no sea negativo
-				if (userData.cash < 0) {
-					profit += userData.cash;
-					userData.cash -= 0;
-				}
 			} else {
 				// El usuario gana, ajustar profit por bonificaciones de trabajo
 				profit = calculateJobMultiplier(userData.profile?.job, profit, userData.couples || []);
