@@ -75,7 +75,7 @@ export default {
 				// Asegurarse de que el cash no sea negativo
 				if (userData.cash < 0) {
 					profit += userData.cash;
-					userData.cash = 0;
+					userData.cash -= 0;
 				}
 			} else {
 				// El usuario gana, ajustar profit por bonificaciones de trabajo
