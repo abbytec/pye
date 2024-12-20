@@ -157,7 +157,7 @@ export default {
 				},
 				{
 					name: "**Mano del dealer**",
-					value: `${gameDealerCards.join(" ")} <:back_card:917518009575276635>\n\n**Valor:** \`${dealerCardsValue()}\``,
+					value: `${gameDealerCards.join(" ")} <:back_card:1313512667775893608>\n\n**Valor:** \`${dealerCardsValue()}\``,
 					inline: true,
 				},
 				{
@@ -253,7 +253,7 @@ function startGame(
 								},
 								{
 									name: "**Mano del dealer**",
-									value: `${gameDealerCards.join(" ")} <:back_card:917518009575276635>\n\n**Valor:** \`${cardsValue(
+									value: `${gameDealerCards.join(" ")} <:back_card:1313512667775893608>\n\n**Valor:** \`${cardsValue(
 										gameDealerCards,
 										cardsGame
 									)}\``,
@@ -358,7 +358,7 @@ async function checkEmbed(amount: number, userId: string, msg: InteractionRespon
 			},
 			{
 				name: "**Mano del dealer**",
-				value: `${dealerCards.join(" ")} <:back_card:917518009575276635>\n\n**Valor:** \`${dealerValue}\``,
+				value: `${dealerCards.join(" ")} <:back_card:1313512667775893608>\n\n**Valor:** \`${dealerValue}\``,
 				inline: true,
 			},
 		]);
@@ -474,7 +474,7 @@ async function isBlackJack(
 			},
 			{
 				name: "**Mano del dealer**",
-				value: `${dealerCards.join(" ")} <:back_card:917518009575276635>\n\n**Valor:** ${
+				value: `${dealerCards.join(" ")} <:back_card:1313512667775893608>\n\n**Valor:** ${
 					dealerValue == 21 ? "`Blackjack`" : `\`${dealerValue}\``
 				}`,
 				inline: true,
@@ -510,7 +510,7 @@ async function splitGame(
 						},
 						{
 							name: "**Mano del dealer**",
-							value: `${gameDealerCards.join(" ")} <:back_card:917518009575276635>\n\nValor: ${cardsValue(
+							value: `${gameDealerCards.join(" ")} <:back_card:1313512667775893608>\n\nValor: ${cardsValue(
 								gameDealerCards,
 								cardsGame
 							)}`,
@@ -534,7 +534,7 @@ async function splitGame(
 					},
 					{
 						name: "**Mano del dealer**",
-						value: `${otherCard.join(" ")} <:back_card:917518009575276635>\n\nValor: ${cardsValue(otherCard, cardsGame)}`,
+						value: `${otherCard.join(" ")} <:back_card:1313512667775893608>\n\nValor: ${cardsValue(otherCard, cardsGame)}`,
 						inline: true,
 					},
 				])
