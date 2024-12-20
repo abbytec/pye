@@ -4,7 +4,7 @@ import { GuildMember, EmbedBuilder, Message, Guild, TextChannel } from "discord.
 import { Money } from "../Models/Money.js";
 import { Users } from "../Models/User.js";
 import { Bumps } from "../Models/Bump.js";
-import { COLORS, pyecoin } from "./constants.js";
+import { COLORS, getChannelFromEnv, pyecoin } from "./constants.js";
 import { ExtendedClient } from "../client.js";
 import { checkQuestLevel, IQuest } from "./quest.js";
 import { increaseHomeMonthlyIncome } from "../Models/Home.js";
@@ -84,7 +84,11 @@ export async function bumpHandler(message: Message): Promise<void> {
 		setTimeout(async () => {
 			try {
 				await member.send({
-					embeds: [new EmbedBuilder().setDescription("¡ Ya puedes hacer bump de nuevo !").setColor(COLORS.okGreen)],
+					embeds: [
+						new EmbedBuilder()
+							.setDescription(`¡ Ya puedes hacer bump de nuevo ! 🎉\n<#${getChannelFromEnv("casinoPye")}>`)
+							.setColor(COLORS.okGreen),
+					],
 				});
 			} catch (error) {
 				console.error(`No se pudo enviar el DM al usuario con ID: ${ganadorId}`, error);
