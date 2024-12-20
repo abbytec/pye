@@ -12,7 +12,7 @@ export const verifyChannel = (channelID: string): Middleware => {
 		// Verifica si la interacción tiene un canal y si el ID coincide
 		if (!channel || channel.id !== channelID) {
 			await interaction.reply({
-				content: "❌ - Este comando solo puede usarse en el canal designado.",
+				content: `❌ - Este comando solo puede usarse en el canal designado ( <#${channelID}> ).`,
 				ephemeral: true,
 			});
 			return; // Detiene la cadena de middlewares
