@@ -122,6 +122,15 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 
 			return;
 		}
+		if (member.id === interaction.user.id) {
+			if (interaction.replied) await interaction.followUp({ content: "No puedes dar puntos a ti mismo.", ephemeral: true });
+			else await interaction.reply({ content: "No puedes darte puntos a ti mismo.", ephemeral: true });
+
+			return;
+		}
+
+		// Buscar o crear el documento de HelperPoint
+		let user = await HelperPoint.findOneAndUpdate({ _id: customId }, { $inc: { points: 1 } }, { new: true, upsert: true }).exec();
 
 		// Responder al usuario que ha otorgado el punto
 		if (interaction.replied)
@@ -178,9 +187,6 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 				.filter((component): component is ButtonBuilder => component instanceof ButtonBuilder);
 			return new ActionRowBuilder<ButtonBuilder>().addComponents(newComponents);
 		});
-
-		// Buscar o crear el documento de HelperPoint
-		let user = await HelperPoint.findOneAndUpdate({ _id: customId }, { $inc: { points: 1 } }, { new: true, upsert: true }).exec();
 
 		await interaction.message.edit({ embeds: [embed], components });
 		updateMemberReputationRoles(member, user.points, interaction.client as ExtendedClient);

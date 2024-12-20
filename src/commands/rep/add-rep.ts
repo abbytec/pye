@@ -24,6 +24,8 @@ export default {
 		async (interaction: IPrefixChatInputCommand) => {
 			const user = await interaction.options.getUser("usuario", true);
 			if (!user) return;
+			if (user.bot) return await replyError(interaction, "No puedo darle puntos a los bots.\nUso: `add-rep [@Usuario]`");
+			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes darte puntos a ti mismo.");
 			const channel = interaction.channel;
 
 			try {
