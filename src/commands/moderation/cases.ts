@@ -67,46 +67,56 @@ const generateActionRows = (page: number, data: IModLogsDocument[], itemsPerPage
 	return rows;
 };
 
-// Función para generar el embed de la página actual
-const generateEmbed = (
-	page: number,
+const calculateItemsPerPage = (data: IModLogsDocument[]): number => {
+	const avgCaseLength = 50;
+	const maxFieldLength = 1024;
+	const maxCasesPerField = Math.floor(maxFieldLength / avgCaseLength);
+
+	let largestFieldValueLength = 0;
+	for (const caseData of data) {
+		const caseValueLength = caseData.reason?.length ?? 0;
+		if (caseValueLength > largestFieldValueLength) {
+			largestFieldValueLength = caseValueLength;
+		}
+	}
+	const adjustedItemsPerPage = Math.min(maxCasesPerField, Math.max(1, Math.floor(maxFieldLength / (largestFieldValueLength || 50)))); // Evitar division por 0 y asegurar minimo 1
+	return Math.max(adjustedItemsPerPage, 1);
+};
+
+const generatePageEmbed = (
 	data: IModLogsDocument[],
+	currentPage: number,
 	itemsPerPage: number,
-	totalPages: number,
 	user: User,
 	interaction: IPrefixChatInputCommand,
 	member?: GuildMember | null
-) => {
-	const start = page * itemsPerPage;
-	const end = start + itemsPerPage;
-	const items = data.slice(start, end);
+): EmbedBuilder => {
+	const startIndex = currentPage * itemsPerPage;
+	const endIndex = Math.min(startIndex + itemsPerPage, data.length);
+	const pageData = data.slice(startIndex, endIndex);
 
 	const embed = new EmbedBuilder()
-		.setAuthor({
-			name: user.tag,
-			iconURL: user.displayAvatarURL(),
-		})
-		.setTitle(`📝 Casos de ${user.tag} ${member ? "" : "(Usuario baneado)"}`)
-		.addFields([
-			{
-				name: "Casos Registrados",
-				value: items.length
-					? items
-							.map(
-								(c, index) =>
-									`**#${start + index + 1}** | Moderador: \`${c.moderator}\` | ${
-										c.hiddenCase ? "Sancion removida" : `Razón: ${c.reason}`
-									}`
-							)
-							.join("\n")
-					: "❌ No hay casos registrados.",
-			},
-		])
-		.setFooter({ text: `Página ${page + 1} de ${totalPages}` })
+		.setAuthor({ name: user.tag, iconURL: user.displayAvatarURL() })
+		.setTitle(` Casos de ${user.tag} ${member ? "" : "(Usuario baneado)"}`)
 		.setColor(COLORS.pyeLightBlue)
 		.setTimestamp()
 		.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null);
 
+	if (pageData.length) {
+		const casesValue = pageData
+			.map(
+				(c, index) =>
+					`**#${startIndex + index + 1}** | Moderador: \`${c.moderator}\` | ${
+						c.hiddenCase ? "Sancion removida" : `Razón: ${c.reason}`
+					}`
+			)
+			.join("\n");
+		embed.addFields([{ name: "Casos Registrados", value: casesValue }]);
+	} else {
+		embed.addFields([{ name: "Casos Registrados", value: "❌ No hay casos registrados." }]);
+	}
+
+	embed.setFooter({ text: `Página ${currentPage + 1} de ${Math.ceil(data.length / itemsPerPage)}` });
 	return embed;
 };
 
@@ -133,13 +143,13 @@ export default {
 
 			if (!data.length) return await replyOk(interaction, "Este usuario no tiene casos registrados.");
 
-			const itemsPerPage = 10;
+			const itemsPerPage = calculateItemsPerPage(data);
 			const totalPages = Math.ceil(data.length / itemsPerPage);
 			let currentPage = 0;
 
 			// Enviar el embed inicial
 			const message = await interaction.editReply({
-				embeds: [generateEmbed(currentPage, data, itemsPerPage, totalPages, user, interaction, member)],
+				embeds: [generatePageEmbed(data, currentPage, itemsPerPage, user, interaction, member)],
 				components: generateActionRows(currentPage, data, itemsPerPage, totalPages),
 			});
 
@@ -160,7 +170,7 @@ export default {
 					}
 
 					await i.update({
-						embeds: [generateEmbed(currentPage, data, itemsPerPage, totalPages, user, interaction, member)],
+						embeds: [generatePageEmbed(data, currentPage, itemsPerPage, user, interaction, member)],
 						components: generateActionRows(currentPage, data, itemsPerPage, totalPages),
 					});
 				} else if (i.isStringSelectMenu()) {
