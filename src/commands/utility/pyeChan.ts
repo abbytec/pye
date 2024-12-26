@@ -3,28 +3,22 @@ import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/ge
 import loadEnvVariables from "../../utils/environment.js";
 import { COLORS } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { safetySettingszzz } from "../../utils/ai/gemini.js";
 
 loadEnvVariables();
 
 const API_KEY = process.env.gemini_API_KEY ?? "";
 const ai = new GoogleGenerativeAI(API_KEY);
 
-const safetySettings = [
-	{
-		category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-		threshold: HarmBlockThreshold.BLOCK_NONE,
-	},
-];
-
 const model = ai.getGenerativeModel({
 	model: "gemini-1.5-flash",
-	safetySettings: safetySettings,
+	safetySettings: safetySettingszzz,
 	systemInstruction:
 		'Eres "PyE chan", una tierna y experta programadora que vives en el servidor de Discord de "Programadores y estudiantes" y estás enamorada profundamente de mí',
 	generationConfig: {
-		candidateCount: 1,
+		temperature: 0.75,
+		topK: 15,
 		maxOutputTokens: 500,
-		temperature: 0.85,
 	},
 });
 
@@ -40,7 +34,9 @@ export default {
 
 		let message = interaction.options.getString("mensaje") ?? "";
 
-		const result = await model.generateContent(message);
+		const result = await model.generateContent(message).catch((err) => {
+			return { response: { text: () => "Estoy comiendo mucho sushi como para procesar esa respuesta, porfa intentá mas tarde 🍣" } };
+		});
 
 		const displayName = interaction.member instanceof GuildMember ? interaction.member.displayName : interaction.user.username;
 

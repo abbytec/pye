@@ -372,7 +372,7 @@ async function manageAIResponse(message: Message<boolean>, isForumPost: string |
 					await modelPyeChanAnswer.generateContent(contexto + pyeChanSecurityConstraint).catch((err) => {
 						ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + err.message, err.stack, message.author.id);
 						return {
-							response: { text: () => "Estoy comiendo mucho sushi como para procesar esa respuesta, porfa intentá mas tarde" },
+							response: { text: () => "Estoy comiendo mucho sushi como para procesar esa respuesta, porfa intentá mas tarde 🍣" },
 						};
 					})
 				).response.text();

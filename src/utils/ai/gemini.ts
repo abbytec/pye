@@ -9,7 +9,7 @@ const generationConfigzzz = {
 	topP: 1,
 };
 
-const safetySettingszzz: SafetySetting[] = [
+export const safetySettingszzz: SafetySetting[] = [
 	{
 		category: HarmCategory.HARM_CATEGORY_HARASSMENT,
 		threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
