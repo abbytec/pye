@@ -5,11 +5,13 @@ import {
 	Events,
 	Guild,
 	GuildBasedChannel,
+	GuildMember,
 	Message,
 	PublicThreadChannel,
 	Sticker,
 	StickerType,
 	TextChannel,
+	User,
 } from "discord.js";
 import { ExtendedClient } from "../client.js";
 import {
@@ -78,10 +80,11 @@ export default {
 				message.member?.roles.cache.has(getRoleFromEnv("instructorDeTaller"))
 			)
 		) {
-			if (
-				(await spamFilter(message.member, client, message as IDeletableContent, message.content)) ||
-				(await checkMentionSpam(message, client))
-			)
+			let member: GuildMember | User | null = message.interactionMetadata?.user ?? null;
+			if (member) {
+				member = await message.guild?.members.fetch(member.id);
+			}
+			if ((await spamFilter(member, client, message as IDeletableContent, message.content)) || (await checkMentionSpam(message, client)))
 				return;
 		}
 		if (message.author.bot || message.author.system) return;

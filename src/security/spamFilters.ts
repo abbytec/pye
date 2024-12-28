@@ -10,6 +10,7 @@ export interface IFilter {
 }
 
 const linkPeligroso = "Posible link peligroso detectado";
+const spamBot = "Spam bot detectado";
 export const spamFilterList: IFilter[] = [
 	{ filter: /https?:\/\/[\w.-]+\.xyz[^\s]*/i, mute: false, staffWarn: linkPeligroso },
 	{ filter: /https?:\/\/[\w.-]+\.click[^\s]*/i, mute: false, staffWarn: linkPeligroso },
@@ -29,10 +30,11 @@ export const spamFilterList: IFilter[] = [
 		mute: true,
 	},
 	{ filter: /(https?:\/\/)?steamcommunity\.com\/gift\/.+/i, mute: true },
-	{ filter: /https?:\/\/(www\.)?\w*solara\w*\.\w+\/?/i, mute: true },
+	{ filter: /https?:\/\/(www\.)?\w*solara\w*\.\w+\/?/i, mute: true, staffWarn: spamBot },
 	{
 		filter: /(?:solara|wix)(?=.*\broblox\b)(?=.*(?:executor|free)).*/is,
 		mute: true,
+		staffWarn: spamBot,
 	},
 	{
 		filter: /(?=.*\b(eth|ethereum|btc|bitcoin|capital|crypto|memecoins|nitro|\$|nsfw)\b)(?=.*\b(gana\w*|gratis|multiplica\w*|inver\w*|giveaway|server|free)\b)/is,
@@ -56,7 +58,8 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 	let shouldStopAlgorithm = false;
 
 	for (const detectedFilter of detectedFilters) {
-		if (detectedFilter && !detectedFilter.staffWarn) {
+		let deletedMessage;
+		if (detectedFilter) {
 			try {
 				if (detectedFilter.mute === "checkinvite") {
 					const invite = detectedFilter.filter.exec(messageContent)?.[0];
@@ -91,33 +94,41 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 			const messagesChannel = (client.channels.cache.get(getChannelFromEnv("logMessages")) ??
 				client.channels.resolve(getChannelFromEnv("logMessages"))) as TextChannel | null;
 
-			await messagesChannel
-				?.send({
-					embeds: [
-						{
-							title: "Spam Filter",
-							description: "Se eliminó un mensaje que contenía texto no permitido.",
-							fields: [
-								{ name: "Usuario", value: `<@${author.id}> (${author.user.id})`, inline: false },
-								{ name: "Spam Triggered", value: `\`${detectedFilter.filter}\`\nEn canal: ${deletable.channel}`, inline: false },
+			deletedMessage =
+				(
+					await messagesChannel
+						?.send({
+							embeds: [
 								{
-									name: "Contenido (recortado a 150 caracteres)",
-									value: `\`\`\`\n${messageContent.slice(0, 150)}\`\`\``,
-									inline: false,
+									title: "Spam Filter",
+									description: "Se eliminó un mensaje que contenía texto no permitido.",
+									fields: [
+										{ name: "Usuario", value: `<@${author.id}> (${author.user.id})`, inline: false },
+										{
+											name: "Spam Triggered",
+											value: `\`${detectedFilter.filter}\`\nEn canal: ${deletable.channel}`,
+											inline: false,
+										},
+										{
+											name: "Contenido (recortado a 150 caracteres)",
+											value: `\`\`\`\n${messageContent.slice(0, 150)}\`\`\``,
+											inline: false,
+										},
+									],
+									color: COLORS.warnOrange,
+									timestamp: new Date().toISOString(),
 								},
 							],
-							color: COLORS.warnOrange,
-							timestamp: new Date().toISOString(),
-						},
-					],
-				})
-				.catch((err) => console.warn("spamFilter: Error al intentar enviar el log.", err));
-		} else if (detectedFilter?.staffWarn) {
+						})
+						.catch((err) => console.warn("spamFilter: Error al intentar enviar el log.", err))
+				)?.url ?? "";
+		}
+		if (detectedFilter?.staffWarn) {
 			const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("moderadores")) ??
 				client.channels.resolve(getChannelFromEnv("moderadores"))) as TextChannel | null;
-			const messageLink = deletable.channel
-				? `https://discord.com/channels/${process.env.GUILD_ID}/${deletable.channel.id}/${deletable.id}`
-				: "";
+			const messageLink =
+				deletedMessage ??
+				(deletable.channel ? `https://discord.com/channels/${process.env.GUILD_ID}/${deletable.channel.id}/${deletable.id}` : "");
 			await moderatorChannel
 				?.send({
 					content: `**Advertencia:** ${detectedFilter.staffWarn}. ${messageLink}`,
