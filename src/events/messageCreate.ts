@@ -81,7 +81,6 @@ export default {
 			)
 		) {
 			let member: GuildMember | User | null = message.interactionMetadata?.user ?? null;
-			console.log(member);
 			if (member) {
 				member = await message.guild?.members.fetch(member.id);
 			} else {
