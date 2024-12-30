@@ -2,9 +2,7 @@
 
 import { Middleware } from "../../types/middleware.js";
 import { getCooldown, setCooldown } from "../../utils/cooldowns.js";
-import { ChatInputCommandInteraction } from "discord.js";
 import { formatTime } from "../generic.js";
-import { ExtendedClient } from "../../client.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 /**
@@ -34,12 +32,16 @@ export const verifyCooldown = (
 
 		if (remainingCooldown > 0) {
 			const timeLeft = formatTime(remainingCooldown);
-			await interaction.reply({
+			let message = await interaction.reply({
 				content: `❌ - Debes esperar **${
 					timeLeft ?? (remainingCooldown / 1000).toFixed(2) + "segundos"
 				}** antes de usar el comando **${commandName}** de nuevo.`,
 				ephemeral: true,
 			});
+
+			setTimeout(() => {
+				message.delete();
+			}, 8000);
 			return; // Detiene la cadena de middlewares
 		}
 		await setCooldown(interaction.client, userId, commandName, finalCooldownDuration);
