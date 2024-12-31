@@ -141,7 +141,7 @@ export default {
 					: { hiddenCase: { $ne: true } }),
 			});
 
-			if (!data.length) return await replyOk(interaction, "Este usuario no tiene casos registrados.");
+			if (!data.length) return await replyOk(interaction, `El usuario ${user.tag} no tiene casos registrados.`);
 
 			const itemsPerPage = calculateItemsPerPage(data);
 			const totalPages = Math.ceil(data.length / itemsPerPage);
