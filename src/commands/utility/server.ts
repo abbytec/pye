@@ -59,7 +59,7 @@ export default {
 	data: new SlashCommandBuilder().setName("server").setDescription("Muestra información detallada del servidor."),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false)],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const guild = interaction.guild as Guild;
 

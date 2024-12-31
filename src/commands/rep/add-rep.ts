@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, Guild, SlashCommandBuilder, User } from "discord.js";
+import { Guild, SlashCommandBuilder, User } from "discord.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
@@ -8,7 +8,6 @@ import { HelperPoint } from "../../Models/HelperPoint.js";
 import { logMessages } from "../../utils/finalwares/logMessages.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { replyError } from "../../utils/messages/replyError.js";
-import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { checkQuestLevel, IQuest } from "../../utils/quest.js";

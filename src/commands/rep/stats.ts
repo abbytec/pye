@@ -26,7 +26,7 @@ export default {
 		.addUserOption((option) => option.setName("usuario").setDescription("menciona a un usuario").setRequired(false))
 		.setDescription("Muestra todas las estadisticas de tu perfil dentro del servidor"),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false)],
 		async (msg: IPrefixChatInputCommand) => {
 			// get user
 			const member = (await msg.options.getUser("usuario", false)) ?? msg.user;

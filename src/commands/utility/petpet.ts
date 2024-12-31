@@ -25,7 +25,7 @@ export default {
 		.addIntegerOption((option) => option.setName("fps").setDescription("Frames por segundo para la animación (2-60).").setRequired(false)),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false)],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			// Obtener opciones
 			const targetOption = interaction.options.getString("objetivo", true);

@@ -1,7 +1,6 @@
 // start.ts
 
 import {
-	ChatInputCommandInteraction,
 	SlashCommandBuilder,
 	EmbedBuilder,
 	ActionRowBuilder,
@@ -12,13 +11,11 @@ import {
 	InteractionResponse,
 	StringSelectMenuInteraction,
 	Message,
-	OmitPartialGroupDMChannel,
 } from "discord.js";
 import { Users } from "../../Models/User.js";
 import { Home } from "../../Models/Home.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { PostHandleable } from "../../types/middleware.js";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import path from "path";
 import fs from "fs";

@@ -42,6 +42,10 @@ export async function replyOk(
 
 	if ((interaction.deferred || interaction.replied) && !components) {
 		if (!ephemeral) {
+			if (interaction.deferred) {
+				await interaction.editReply(messageToSend).catch((e) => null);
+				return;
+			}
 			if ("_reply" in interaction) {
 				await (await interaction.fetchReply()).delete().catch((e) => null);
 			} else {

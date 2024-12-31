@@ -1,12 +1,4 @@
-import {
-	SlashCommandBuilder,
-	ActionRowBuilder,
-	EmbedBuilder,
-	ButtonBuilder,
-	ChatInputCommandInteraction,
-	TextChannel,
-	ButtonStyle,
-} from "discord.js";
+import { SlashCommandBuilder, ActionRowBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { HelperPoint } from "../../Models/HelperPoint.js";
 import client from "../../redis.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";

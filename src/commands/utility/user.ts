@@ -43,7 +43,7 @@ export default {
 		),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false)],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			let targetUser: User = (await interaction.options.getUser("usuario")) ?? interaction.user;
 			let userWithData: Promise<User> | User = targetUser.fetch(true);
