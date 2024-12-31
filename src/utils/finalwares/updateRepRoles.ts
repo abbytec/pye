@@ -40,40 +40,30 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 	}));
 
 	// Determinamos el rol más alto que el miembro debe tener
-	let newRoleId: string | null = null;
-	let newRoleMinPoints = 0;
+	let maxRoleId: string | null = null;
+	let maxRoleMinPoints = 0;
 
 	for (const role of rolesWithPoints) {
-		if (points >= role.minPoints && role.minPoints > newRoleMinPoints) {
-			newRoleId = role.id;
-			newRoleMinPoints = role.minPoints;
+		if ((points >= role.minPoints || member.roles.cache.has(role.id)) && maxRoleMinPoints < role.minPoints) {
+			maxRoleId = role.id;
+			maxRoleMinPoints = role.minPoints;
 		}
 	}
-
-	let maxOldRoleId: string | null = null;
-	let maxOldRoleMinPoints = 0;
 
 	// Eliminamos todos los roles de reputación actuales
 	const rolesToRemove = rolesWithPoints
 		.filter((role) => {
-			if (member.roles.cache.has(role.id) && role.minPoints > maxOldRoleMinPoints) {
-				maxOldRoleId = role.id;
-				maxOldRoleMinPoints = role.minPoints;
-				return role.id !== newRoleId;
-			}
-			return false;
+			return member.roles.cache.has(role.id) && maxRoleId !== role.id;
 		})
 		.map((role) => role.id);
 
-	if (rolesToRemove.length > 1)
+	if (rolesToRemove.length > 0)
 		await member.roles.remove(rolesToRemove).catch((error) => console.error(`Error al eliminar roles de ${member.user.tag}:`, error));
 
 	// Añadimos el nuevo rol si es necesario
-	if (newRoleId && !member.roles.cache.has(newRoleId)) {
-		await member.roles.add(newRoleId).catch((error) => console.error(`Error al añadir el rol ${newRoleId} a ${member.user.tag}:`, error));
-		if (maxOldRoleId && maxOldRoleId !== newRoleId && maxOldRoleMinPoints < newRoleMinPoints) {
-			await sendAnnoucement(member, newRoleId, client, newRoleMinPoints >= ROLES_REP_RANGE.veterano);
-		}
+	if (maxRoleId && !member.roles.cache.has(maxRoleId)) {
+		await member.roles.add(maxRoleId).catch((error) => console.error(`Error al añadir el rol ${maxRoleId} a ${member.user.tag}:`, error));
+		await sendAnnoucement(member, maxRoleId, client, maxRoleMinPoints >= ROLES_REP_RANGE.veterano);
 	}
 }
 async function sendAnnoucement(member: GuildMember, roleId: string, client: ExtendedClient, veterano: boolean) {
