@@ -1,4 +1,4 @@
-import { Events, ChannelType, EmbedBuilder, ThreadChannel, TextChannel } from "discord.js";
+import { Events, ChannelType, EmbedBuilder, ThreadChannel, TextChannel, Message } from "discord.js";
 import {
 	COLORS,
 	getChannel,
@@ -73,8 +73,13 @@ const threadsHelp = async function (tittle: string, pregunta: string, m: ThreadC
 			await m.send(fullMessage);
 		} else {
 			const chunks = splitMessage(fullMessage, MAX_MESSAGE_LENGTH);
+			let lastChunk: Message | undefined;
 			for (const chunk of chunks) {
-				await m.send(chunk);
+				if (lastChunk) {
+					await lastChunk.reply(chunk);
+				} else {
+					await m.send(chunk).then((msg) => (lastChunk = msg));
+				}
 			}
 		}
 	} catch (error) {

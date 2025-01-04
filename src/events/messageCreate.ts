@@ -355,17 +355,17 @@ async function manageAIResponse(message: Message<boolean>, isForumPost: string |
 				await message.reply(fullMessage).catch(() => null);
 			} else {
 				const chunks = splitMessage(fullMessage, MAX_MESSAGE_LENGTH);
-				let lastChunkId;
+				let lastMsg: Message | undefined;
 				for (const chunk of chunks) {
-					if (lastChunkId) {
-						await message
+					if (lastMsg) {
+						await lastMsg
 							.reply(chunk)
-							.then((msg) => (lastChunkId = msg.id))
+							.then((msg) => (lastMsg = msg))
 							.catch(() => null);
 					} else if (message.channel.isSendable()) {
-						await message.channel
-							.send(chunk)
-							.then((msg) => (lastChunkId = msg.id))
+						await message
+							.reply(chunk)
+							.then((msg) => (lastMsg = msg))
 							.catch(() => null);
 					}
 				}
