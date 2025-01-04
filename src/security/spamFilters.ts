@@ -29,7 +29,7 @@ export const spamFilterList: IFilter[] = [
 		filter: /(?!(https?:\/\/)?discord\.com\/invite\/programacion$)(https?:\/\/)?discord\.com\/invite\/.+/i,
 		mute: true,
 	},
-	{ filter: /(https?:\/\/)?steamcommunity\.com\/gift\/.+/i, mute: true },
+	{ filter: /(https?:\/\/)?steamcommunity\.com\/gift(-card)?\/.+/i, mute: true },
 	{ filter: /https?:\/\/(www\.)?\w*solara\w*\.\w+\/?/i, mute: true, staffWarn: spamBot },
 	{
 		filter: /(?:solara|wix)(?=.*\broblox\b)(?=.*(?:executor|free)).*/is,
@@ -53,7 +53,8 @@ export interface IDeletableContent {
 export async function spamFilter(author: GuildMember | null, client: ExtendedClient, deletable: IDeletableContent, messageContent = "") {
 	if (!author || messageContent.length < 8) return false;
 
-	const detectedFilters = spamFilterList.filter((item) => item.filter.test(messageContent));
+	const sanitizedContent = messageContent.replace(/[\u2000-\u200B\u2028\u205F\u3000\u00A0]/g, "");
+	const detectedFilters = spamFilterList.filter((item) => item.filter.test(sanitizedContent));
 
 	let shouldStopAlgorithm = false;
 
