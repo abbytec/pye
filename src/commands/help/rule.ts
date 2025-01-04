@@ -202,7 +202,7 @@ const ruleData: ICustomCommand[] = [
 				color: COLORS.pyeLightBlue,
 				description: "rule 34",
 				image: {
-					url: "https://cdn.discordapp.com/attachments/809180235810734110/974852573699911750/107755554_2112583655552478_7850237487263192075_n.jpg",
+					url: "https://cdn.discordapp.com/attachments/768329192131526686/1325228149428060251/images_2.jpg?ex=677b0664&is=6779b4e4&hm=5c884b1613dc9e4a1d185016a9ac4020bc4d302f1fcb379a963cce729d19e473&",
 				},
 			},
 		],
