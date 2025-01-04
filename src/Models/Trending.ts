@@ -207,7 +207,7 @@ class Trending {
 					inline: true,
 				},
 				{
-					name: "🚫 Emojis No Utilizados",
+					name: "🚫 3 Emojis No Utilizados",
 					value:
 						this.getUnused("emoji")
 							.map((id) => `<:${id}>`)
@@ -230,7 +230,7 @@ class Trending {
 					inline: true,
 				},
 				{
-					name: "🚫 Foros No Utilizados",
+					name: "🚫 3 Foros No Utilizados",
 					value:
 						this.getUnused("threadPost")
 							.map((id) => `<#${id}>`)
@@ -253,7 +253,7 @@ class Trending {
 					inline: true,
 				},
 				{
-					name: "🚫 Stickers No Utilizados",
+					name: "🚫 3 Stickers No Utilizados",
 					value:
 						this.getUnused("sticker")
 							.map((id) => `<:${id}>`)
@@ -262,7 +262,6 @@ class Trending {
 			],
 			timestamp: new Date(),
 		};
-
 		return embed;
 	}
 
@@ -295,7 +294,7 @@ class Trending {
 	}
 
 	// Método para obtener elementos no utilizados
-	private getUnused(type: TrendingType): string[] {
+	private getUnused(type: TrendingType, count: number = 3): string[] {
 		const map = this.getMapByType(type);
 		const unused = [];
 		for (const [id, score] of map.entries()) {
@@ -303,7 +302,7 @@ class Trending {
 				unused.push(id);
 			}
 		}
-		return unused;
+		return unused.slice(0, count);
 	}
 
 	// Método privado para obtener el mapa según el tipo

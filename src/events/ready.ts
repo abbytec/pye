@@ -74,11 +74,21 @@ async function cronEventsProcessor(client: ExtendedClient) {
 			// Actualiza el mes en los datos del trabajo
 
 			let stats = ExtendedClient.trending.getStats();
-			(client.channels.resolve(getChannelFromEnv("moderadores")) as TextChannel | null)?.send({
-				embeds: [stats],
-			});
+			(client.channels.resolve(getChannelFromEnv("moderadores")) as TextChannel | null)
+				?.send({
+					embeds: [stats],
+				})
+				.catch((error) => {
+					ExtendedClient.logError("Error al enviar el embed de tendencias: " + error.message, error.stack, process.env.CLIENT_ID);
+				});
 			job.attrs.data.userReps.month = currentMonthNumber;
-			await job.save();
+			await job.save().catch((error) => {
+				ExtendedClient.logError(
+					"Error al actualizar el mes en los datos del cron worker 'daily update client data': " + error.message,
+					error.stack,
+					process.env.CLIENT_ID
+				);
+			});
 
 			try {
 				// Obtener todos los usuarios y sus puntos de 'top:rep'
