@@ -1,10 +1,15 @@
-import { Guild, EmbedBuilder, TextChannel, User } from "discord.js";
+import { Guild, EmbedBuilder, TextChannel, RepliableInteraction } from "discord.js";
 import { ExtendedClient } from "../client.js";
-import { getRoleFromEnv, COLORS, getChannel, getChannelFromEnv } from "./constants.js";
+import { COLORS, getChannel, getChannelFromEnv } from "./constants.js";
 
 const MAX_MENTIONS_PER_MESSAGE = 3; // Define el límite de menciones por mensaje
 
-export async function sendWelcomeMessageProcessor(client: ExtendedClient, omitList: boolean = true, channelId?: string) {
+export async function sendWelcomeMessageProcessor(
+	client: ExtendedClient,
+	omitList: boolean = true,
+	channelId?: string,
+	reply?: RepliableInteraction
+) {
 	const guild = client.guilds.cache.get(process.env.GUILD_ID ?? "") as Guild;
 	if (omitList && ExtendedClient.newUsers.size === 0) return;
 	const newUserIds = Array.from(ExtendedClient.newUsers);
@@ -21,7 +26,7 @@ export async function sendWelcomeMessageProcessor(client: ExtendedClient, omitLi
 	const randomStaff = staffMembers[Math.floor(Math.random() * staffMembers.length)];
 
 	if (batches.length === 0) {
-		await sendMessage("", guild, randomStaff, channelId);
+		await sendMessage("", guild, randomStaff, channelId, reply);
 	}
 
 	for (const batch of batches) {
@@ -49,7 +54,7 @@ export async function sendWelcomeMessageProcessor(client: ExtendedClient, omitLi
 	}
 }
 
-async function sendMessage(content: string, guild: Guild, randomStaff: string, channelId?: string) {
+async function sendMessage(content: string, guild: Guild, randomStaff: string, channelId?: string, reply?: RepliableInteraction) {
 	const embed = new EmbedBuilder()
 		.setColor(COLORS.pyeWelcome)
 		.setTitle("¡Bienvenid@s a la comunidad  👋🏻!")
@@ -75,6 +80,11 @@ async function sendMessage(content: string, guild: Guild, randomStaff: string, c
 		])
 		.setTimestamp()
 		.setFooter({ text: "¡Disfruten tu estancia!" });
+	if (reply)
+		return await reply
+			.reply({ content: content, embeds: [embed] })
+			.then((msg) => msg.id)
+			.catch((error) => console.error("Error al enviar mensaje de bienvenida:", error));
 	return await ((await getChannel(guild, "general", undefined, channelId)) as TextChannel)
 		?.send({
 			content: content,
@@ -84,5 +94,5 @@ async function sendMessage(content: string, guild: Guild, randomStaff: string, c
 			console.log(`Mensaje de bienvenida enviado a: ${MAX_MENTIONS_PER_MESSAGE} usuarios.`);
 			return msg.id;
 		})
-		.catch((error) => console.error("Error al enviar mensaje de bienvenida en el canal general:", error));
+		.catch((error) => console.error("Error al enviar mensaje de bienvenida:", error));
 }

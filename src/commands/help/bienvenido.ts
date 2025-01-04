@@ -14,7 +14,7 @@ export default {
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("bienvenido", 6e5)],
 		async (interaction: IPrefixChatInputCommand): Promise<void> => {
 			interaction.reply("Dando una calurosa bienvenida");
-			await sendWelcomeMessageProcessor(interaction.client, false);
+			await sendWelcomeMessageProcessor(interaction.client, false, interaction.channelId);
 		}
 	),
 } as Command;
