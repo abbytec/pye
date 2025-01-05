@@ -10,6 +10,7 @@ import {
 } from "discord.js";
 import { COLORS } from "../constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import fetch from "node-fetch";
 
 export async function replyWarning(
 	interaction:
@@ -43,10 +44,6 @@ export async function replyWarning(
 
 	if ((interaction.deferred || interaction.replied) && !components) {
 		if (!ephemeral) {
-			if (interaction.deferred) {
-				await interaction.editReply(messageToSend).catch((e) => null);
-				return;
-			}
 			if ("_reply" in interaction) {
 				await (await interaction.fetchReply()).delete().catch((e) => null);
 			} else {

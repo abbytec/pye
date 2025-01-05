@@ -52,7 +52,12 @@ export default {
 			if (!latestTimeout) {
 				return await replyWarning(
 					interaction,
-					"Este usuario no tiene bans registrados en la base de datos.\nSi ha sido baneado manualmete, a partir de ahora está desbaneado!"
+					"Este usuario no tiene bans registrados en la base de datos.\nSi ha sido baneado manualmete, a partir de ahora está desbaneado!",
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					false
 				);
 			}
 

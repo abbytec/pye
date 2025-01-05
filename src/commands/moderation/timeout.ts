@@ -66,7 +66,8 @@ export default {
 				} else {
 					return await replyError(interaction, "No se pudo aplicar el timeout al usuario, por favor revisa los logs.");
 				}
-			} catch {
+			} catch (error) {
+				console.error("No se pudo aplicar el timeout al usuario." + error);
 				return await replyError(interaction, "No se pudo aplicar el timeout al usuario.");
 			}
 		},
