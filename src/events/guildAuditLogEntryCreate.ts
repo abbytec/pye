@@ -8,6 +8,7 @@ import redis from "../redis.js";
 import { COLORS, getChannelFromEnv } from "../utils/constants.js";
 import { Evento } from "../types/event.js";
 import { ExtendedClient } from "../client.js";
+import { ModLogs } from "../Models/ModLogs.js";
 
 export default {
 	name: Events.GuildAuditLogEntryCreate,
@@ -26,10 +27,24 @@ export default {
 
 				// Verificar si el baneo fue realizado por un bot
 				if (!executor.bot) {
-					await channel?.send({
-						content: `El miembro **${targetUser.username} (${memberId})** fue baneado __manualmente__ por **${executor.tag}**.\nPor lo que sus datos __permanecerán__ en la db.`,
+					await channel
+						?.send({
+							content: `El miembro **${targetUser.username} (${memberId})** fue baneado __manualmente__ por **${
+								executor.tag
+							}**. Razon: ${entry.reason ?? "No se proporciono una razon."}`,
+						})
+						.catch((error) => {
+							console.error(`Error al enviar el mensaje: ${error}`);
+						});
+					await ModLogs.create({
+						id: memberId,
+						moderator: executor.tag,
+						reason: entry.reason ?? "No se proporciono una razon.",
+						date: Date.now(),
+						type: "Ban",
+					}).catch((error) => {
+						console.error(`Error al crear el log: ${error}`);
 					});
-					return;
 				}
 
 				// Buscar y eliminar documentos en paralelo
@@ -78,6 +93,11 @@ export default {
 					await channel?.send({
 						content: `El miembro **${targetUser.username} (${memberId})** fue desbaneado manualmente por **${executor.tag}**.`,
 					});
+					await ModLogs.findOneAndUpdate(
+						{ id: memberId, type: "Ban", hiddenCase: { $ne: true } }, // Filtro
+						{ $set: { hiddenCase: true, reasonUnpenalized: entry.reason ?? "No se proporciono una razon." } }, // Actualización
+						{ sort: { date: -1 }, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
+					);
 					return;
 				}
 			}
