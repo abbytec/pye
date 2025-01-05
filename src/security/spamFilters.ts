@@ -50,6 +50,11 @@ export interface IDeletableContent {
 	delete: (reason: string) => Promise<any>;
 }
 
+const validInvites: string[] = [
+	"1292897627431763999", // Server de apelaciónes
+	process.env.GUILD_ID ?? "",
+];
+
 export async function spamFilter(author: GuildMember | null, client: ExtendedClient, deletable: IDeletableContent, messageContent = "") {
 	if (!author || messageContent.length < 8) return false;
 
@@ -65,17 +70,18 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 				if (detectedFilter.mute === "checkinvite") {
 					const invite = detectedFilter.filter.exec(messageContent)?.[0];
 					if (!invite) continue;
-					if ((await client.fetchInvite(invite)).guild?.id !== process.env.GUILD_ID) {
-						await deletable.delete("Spam Filter");
-						shouldStopAlgorithm = true;
-						applyTimeout(
-							10000,
-							"Spam Filter",
-							author,
-							client.guilds.cache.get(process.env.GUILD_ID ?? "")?.iconURL({ extension: "gif" }) ?? null
-						);
-						console.log("Mensaje borrado que contenía texto en la black list");
-					}
+					await client.fetchInvite(invite).then(async (inv) => {
+						if (!validInvites.includes(inv.guild?.id ?? "")) {
+							await deletable.delete("Spam Filter");
+							shouldStopAlgorithm = true;
+							applyTimeout(
+								10000,
+								"Spam Filter",
+								author,
+								client.guilds.cache.get(process.env.GUILD_ID ?? "")?.iconURL({ extension: "gif" }) ?? null
+							);
+						}
+					});
 				} else if (detectedFilter.mute === true) {
 					await deletable.delete("Spam Filter");
 					shouldStopAlgorithm = true;
