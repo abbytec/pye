@@ -53,6 +53,8 @@ const features: Record<GuildFeature, string> = {
 	TICKETED_EVENTS_ENABLED: "Eventos con entradas habilitados.",
 	VERIFIED: "Servidor verificado.",
 	WELCOME_SCREEN_ENABLED: "Pantalla de bienvenida activada.",
+	SOUNDBOARD: "Sonidos de la pantalla de bienvenida.",
+	MORE_SOUNDBOARD: "Más sonidos de la pantalla de bienvenida.",
 };
 
 export default {

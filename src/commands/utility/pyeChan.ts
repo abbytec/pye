@@ -1,9 +1,12 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, DMChannel, TextChannel, GuildMember } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, GuildMember } from "discord.js";
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
 import loadEnvVariables from "../../utils/environment.js";
 import { COLORS } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { safetySettingszzz } from "../../utils/ai/gemini.js";
+import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { PostHandleable } from "../../types/middleware.js";
 
 loadEnvVariables();
 
@@ -11,7 +14,7 @@ const API_KEY = process.env.gemini_API_KEY ?? "";
 const ai = new GoogleGenerativeAI(API_KEY);
 
 const model = ai.getGenerativeModel({
-	model: "gemini-1.5-flash",
+	model: "gemini-2.0-flash-exp",
 	safetySettings: safetySettingszzz,
 	systemInstruction:
 		'Eres "PyE chan", una tierna y experta programadora que vives en el servidor de Discord de "Programadores y estudiantes" y estás enamorada profundamente de mí',
@@ -27,11 +30,7 @@ export default {
 		.setName("pyechan")
 		.setDescription("Preguntale algo a PyE Chan")
 		.addStringOption((option) => option.setName("mensaje").setDescription("Qué quieres decirme").setRequired(true).setMaxLength(200)),
-	execute: async (interaction: IPrefixChatInputCommand) => {
-		if (interaction.channel instanceof TextChannel || interaction.channel instanceof DMChannel) {
-			await interaction.channel?.sendTyping(); // Aquí se asegura de que sendTyping esté disponible
-		}
-
+	execute: composeMiddlewares([deferInteraction(false)], async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 		let message = interaction.options.getString("mensaje") ?? "";
 
 		const result = await model.generateContent(message).catch((err) => {
@@ -58,5 +57,5 @@ export default {
 			.setFooter({ text: "♥" });
 
 		interaction.reply({ embeds: [exampleEmbed] });
-	},
+	}),
 } as Command;
