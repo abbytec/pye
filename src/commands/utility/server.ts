@@ -172,7 +172,7 @@ export default {
 						},
 						{
 							name: "• Boost",
-							value: `<:thonkeyes:1313340713634893854> Nivel de boost: ${premiumTier}\n<:boostwithsparkles:1313340706873540608> Boost: ${boostCount}\n<:PARTNER:933594339047768094> Características: ${mappedFeatures}`,
+							value: `<:thonkeyes:1313340713634893854> Nivel de boost: ${premiumTier}\n<:boostwithsparkles:1313340706873540608> Boost: ${boostCount}\n<:PARTNER:1313340712024018985> Características: ${mappedFeatures}`,
 						}
 					);
 
