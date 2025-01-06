@@ -196,9 +196,10 @@ export default {
 								inline: false,
 							},
 						];
-						if (selectedCase.hiddenCase) {
+						if (selectedCase.duration)
+							fields.push({ name: "Duración", value: `${selectedCase.duration / 60000} min`, inline: true });
+						if (selectedCase.hiddenCase)
 							fields.push({ name: "Motivo actual", value: selectedCase.reasonUnpenalized ?? "Razon desconocida", inline: false });
-						}
 
 						const caseEmbed = new EmbedBuilder()
 							.setAuthor({

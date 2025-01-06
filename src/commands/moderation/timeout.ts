@@ -90,6 +90,7 @@ export async function applyTimeout(
 			reason: reason,
 			date: new Date(),
 			type: "Timeout",
+			duration: duration,
 		});
 
 		// Obtener todos los casos actuales del usuario
