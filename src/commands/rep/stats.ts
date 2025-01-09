@@ -30,8 +30,10 @@ export default {
 		async (msg: IPrefixChatInputCommand) => {
 			// get user
 			const member = (await msg.options.getUser("usuario", false)) ?? msg.user;
+			console.log(member);
 			const guildMember = await msg.guild?.members.fetch(member.id).catch(() => null);
 
+			console.log(guildMember);
 			// validate bot
 			if (member.bot) return await replyError(msg, "Los bots no pueden tener puntos de ayuda.");
 
@@ -71,7 +73,7 @@ export default {
 function getRole(member: GuildMember | undefined) {
 	if (!member) return;
 	let highestRole;
-	let minPointsHigherRole: number = 0;
+	let minPointsHigherRole: number = -1;
 	for (const roleId of Object.entries(getRepRolesByOrder())) {
 		const role = member.roles.cache.get(roleId[1]);
 		if (role) {
