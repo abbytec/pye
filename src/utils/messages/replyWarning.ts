@@ -7,6 +7,7 @@ import {
 	RepliableInteraction,
 	StringSelectMenuBuilder,
 	TextChannel,
+	User,
 } from "discord.js";
 import { COLORS } from "../constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
@@ -20,7 +21,7 @@ export async function replyWarning(
 				"reply" | "editReply" | "deleteReply" | "followUp" | "replied" | "deferred" | "channelId" | "guild" | "user"
 		  >,
 	message: string | EmbedBuilder[],
-	author?: string,
+	author?: User,
 	components?: (ActionRowBuilder<ButtonBuilder> | ActionRowBuilder<StringSelectMenuBuilder>)[],
 	files?: AttachmentBuilder[],
 	content?: string,
@@ -32,7 +33,10 @@ export async function replyWarning(
 	} else {
 		messageToSend.embeds = [
 			new EmbedBuilder()
-				.setAuthor({ name: author ?? interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
+				.setAuthor({
+					name: author?.tag ?? interaction.user.tag,
+					iconURL: author?.displayAvatarURL() ?? interaction.user.displayAvatarURL(),
+				})
 				.setDescription("⚠️ • " + message)
 				.setColor(COLORS.warnOrange)
 				.setTimestamp(),
