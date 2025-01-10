@@ -23,12 +23,12 @@ export default {
 		async (interaction: IPrefixChatInputCommand) => {
 			const user = await interaction.options.getUser("usuario", true);
 			if (!user) return;
-			if (user.bot) return await replyError(interaction, "No puedo darle puntos a los bots.\nUso: `add-rep [@Usuario]`");
 			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes darte puntos a ti mismo.");
 			const channel = interaction.channel;
+			const points = 1;
 
 			try {
-				const { member, data } = await addRep(user, interaction.guild).catch(async (error: any) => {
+				const { member, data } = await addRep(user, interaction.guild, points).catch(async (error: any) => {
 					await replyError(interaction, error.message);
 					return { member: null, data: null };
 				});
@@ -42,7 +42,9 @@ export default {
 					logMessages: [
 						{
 							channel: getChannelFromEnv("logPuntos"),
-							content: `**${interaction.user.tag}** le ha dado un rep al usuario: \`${user.tag}\` en el canal: <#${channel?.id}>`,
+							content: `**${interaction.user.tag}** le ha dado un rep al usuario: \`${user.tag}\` en el canal: <#${
+								channel?.id
+							}>.\nPuntos anteriores: ${data.points - points}. Puntos actuales: ${data.points}`,
 						},
 					],
 				};
@@ -55,7 +57,7 @@ export default {
 } as Command;
 
 export async function addRep(user: User | null, guild: Guild | null, points: number = 1) {
-	if (user?.bot) throw new Error("No puedo darle puntos a los bots.\nUso: `add-rep [@Usuario]`");
+	if (user?.bot) throw new Error("No puedo darle puntos a los bots.");
 	const member = await guild?.members.fetch(user?.id ?? "").catch(() => null);
 	if (!member) throw new Error("No se pudo encontrar al usuario en el servidor.");
 
