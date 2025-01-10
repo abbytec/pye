@@ -18,6 +18,7 @@ import { ExtendedClient } from "../../client.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
+import { logMessages } from "../../utils/finalwares/logMessages.js";
 
 // Definición de los textos de respuesta para éxito
 const successTexts: Array<(profit: string) => string> = [
@@ -52,6 +53,8 @@ export default {
 
 			// Obtener datos del usuario
 			let userData: Partial<IUser> = await getOrCreateUser(user.id);
+
+			const negativeCash = (userData.cash ?? 0) < 0;
 
 			let command = interaction.client.getCommandLimit("slut") ?? {
 				lowestMoney: 500,
@@ -111,9 +114,17 @@ export default {
 				}
 			}
 
-			// No es necesario retornar nada adicional
+			if (negativeCash)
+				return {
+					logMessages: [
+						{
+							channel: getChannelFromEnv("casinoPye"),
+							content: `Por favor <@${user.id}>, recuerde que su saldo anterior era negativo. Puede compensarlo extrayendo dinero del banco mediante el comando /withdraw.`,
+						},
+					],
+				};
 		},
-		[]
+		[logMessages]
 	),
 	prefixResolver: (client: ExtendedClient) => new PrefixChatInputCommand(client, "slut", []),
 } as Command;

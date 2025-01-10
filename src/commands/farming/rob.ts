@@ -16,6 +16,7 @@ import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { ExtendedClient } from "../../client.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
+import { logMessages } from "../../utils/finalwares/logMessages.js";
 
 const cooldownDuration = 30 * 60 * 1000;
 
@@ -68,6 +69,8 @@ export default {
 
 			// Obtener datos del usuario
 			let userData: Partial<IUser> = await getOrCreateUser(user.id);
+
+			const negativeCash = (userData.cash ?? 0) < 0;
 
 			// Verificar si el usuario tiene un trabajo que le impide robar
 			if (["Militar", "Policia"].includes(userData.profile?.job ?? ""))
@@ -161,8 +164,17 @@ export default {
 				.setTimestamp();
 
 			await replyOk(interaction, [embed], undefined, undefined, undefined, undefined, false);
+			if (negativeCash)
+				return {
+					logMessages: [
+						{
+							channel: getChannelFromEnv("casinoPye"),
+							content: `Por favor <@${user.id}>, recuerde que su saldo anterior era negativo. Puede compensarlo extrayendo dinero del banco mediante el comando /withdraw.`,
+						},
+					],
+				};
 		},
-		[]
+		[logMessages]
 	),
 	prefixResolver: (client: ExtendedClient) =>
 		new PrefixChatInputCommand(client, "rob", [

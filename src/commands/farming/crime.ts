@@ -18,6 +18,7 @@ import { ExtendedClient } from "../../client.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
+import { logMessages } from "../../utils/finalwares/logMessages.js";
 
 // Definición de los textos de éxito
 const texts: Array<(profit: string) => string> = [
@@ -68,6 +69,7 @@ export default {
 
 			// Determinar si el usuario pierde
 			const lose = Math.random() <= command.failRate / 100;
+			const negativeCash = (userData.cash ?? 0) < 0;
 
 			if (lose) {
 				// El usuario pierde, deducir profit de su cash
@@ -114,8 +116,17 @@ export default {
 
 			// Enviar la respuesta
 			await replyOk(interaction, [embed]);
+			if (negativeCash)
+				return {
+					logMessages: [
+						{
+							channel: getChannelFromEnv("casinoPye"),
+							content: `Por favor <@${user.id}>, recuerde que su saldo anterior era negativo. Puede compensarlo extrayendo dinero del banco mediante el comando /withdraw.`,
+						},
+					],
+				};
 		},
-		[]
+		[logMessages]
 	),
 	prefixResolver: (client: ExtendedClient) => new PrefixChatInputCommand(client, "crime", []),
 } as Command;

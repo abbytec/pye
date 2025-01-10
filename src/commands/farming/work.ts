@@ -18,6 +18,7 @@ import { ExtendedClient } from "../../client.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
+import { logMessages } from "../../utils/finalwares/logMessages.js";
 
 // Definición de los textos de respuesta
 const texts: Array<(profit: string) => string> = [
@@ -46,6 +47,8 @@ export default {
 
 			// Obtener datos del usuario
 			let userData: Partial<IUser> = await getOrCreateUser(user.id);
+
+			const negativeCash = (userData.cash ?? 0) < 0;
 
 			// Definir rangos de ganancia
 			let command = interaction.client.getCommandLimit("work") ?? {
@@ -90,8 +93,17 @@ export default {
 				console.error("Error actualizando la quest:", error);
 				await replyError(interaction, "Hubo un error al intentar actualizar los datos de quest.");
 			}
+			if (negativeCash)
+				return {
+					logMessages: [
+						{
+							channel: getChannelFromEnv("casinoPye"),
+							content: `Por favor <@${user.id}>, recuerde que su saldo anterior era negativo. Puede compensarlo extrayendo dinero del banco mediante el comando /withdraw.`,
+						},
+					],
+				};
 		},
-		[]
+		[logMessages]
 	),
 	prefixResolver: (client: ExtendedClient) => new PrefixChatInputCommand(client, "work", [], ["wk"]),
 } as Command;
