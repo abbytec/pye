@@ -45,6 +45,7 @@ export const spamFilterList: IFilter[] = [
 
 export interface IDeletableContent {
 	id: string;
+	url: string;
 	guild: Guild; // esto es para que funcione el delete, porque si no el this no me lo permite
 	channel: NewsChannel | TextChannel | ForumChannel | MediaChannel | null;
 	delete: (reason: string) => Promise<any>;
@@ -101,34 +102,37 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 			const messagesChannel = (client.channels.cache.get(getChannelFromEnv("logMessages")) ??
 				client.channels.resolve(getChannelFromEnv("logMessages"))) as TextChannel | null;
 
-			deletedMessage =
-				(
-					await messagesChannel
-						?.send({
-							embeds: [
-								{
-									title: "Spam Filter",
-									description: "Se eliminó un mensaje que contenía texto no permitido.",
-									fields: [
-										{ name: "Usuario", value: `<@${author.id}> (${author.user.id})`, inline: false },
-										{
-											name: "Spam Triggered",
-											value: `\`${detectedFilter.filter}\`\nEn canal: ${deletable.channel}`,
-											inline: false,
-										},
-										{
-											name: "Contenido (recortado a 150 caracteres)",
-											value: `\`\`\`\n${messageContent.slice(0, 150)}\`\`\``,
-											inline: false,
-										},
-									],
-									color: COLORS.warnOrange,
-									timestamp: new Date().toISOString(),
-								},
-							],
-						})
-						.catch((err) => console.warn("spamFilter: Error al intentar enviar el log.", err))
-				)?.url ?? "";
+			if (shouldStopAlgorithm)
+				deletedMessage =
+					(
+						await messagesChannel
+							?.send({
+								embeds: [
+									{
+										title: "Spam Filter",
+										description: "Se eliminó un mensaje que contenía texto no permitido.",
+										fields: [
+											{ name: "Usuario", value: `<@${author.id}> (${author.user.id})`, inline: false },
+											{
+												name: "Spam Triggered",
+												value: `\`${detectedFilter.filter}\`\nEn: ${
+													detectedFilter.mute ? "<#" + deletable.channel?.id + ">" : deletable.url
+												}`,
+												inline: false,
+											},
+											{
+												name: "Contenido (recortado a 150 caracteres)",
+												value: `\`\`\`\n${messageContent.slice(0, 150)}\`\`\``,
+												inline: false,
+											},
+										],
+										color: COLORS.warnOrange,
+										timestamp: new Date().toISOString(),
+									},
+								],
+							})
+							.catch((err) => console.warn("spamFilter: Error al intentar enviar el log.", err))
+					)?.url ?? "";
 		}
 		if (detectedFilter?.staffWarn) {
 			const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("moderadores")) ??

@@ -21,7 +21,7 @@ export default {
 			await spamFilter(
 				member,
 				thread.client as ExtendedClient,
-				{ channel: thread.parent, delete: thread.delete, id: thread.id, guild: thread.guild },
+				{ channel: thread.parent, delete: thread.delete, id: thread.id, guild: thread.guild, url: thread.url },
 				thread.name
 			)
 		)
