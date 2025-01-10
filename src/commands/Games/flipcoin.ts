@@ -54,7 +54,7 @@ export default {
 				);
 
 			const flipcoin = ["cara", "cruz"][Math.floor(Math.random() * 2)];
-			const earn = flipcoin == side ? -amount : calculateJobMultiplier(userData.profile?.job, amount, userData.couples || []);
+			const earn = flipcoin == side ? calculateJobMultiplier(userData.profile?.job, amount, userData.couples || []) : -amount;
 			await betDone(interaction, interaction.user.id, amount, earn);
 
 			// Crear embed de respuesta
