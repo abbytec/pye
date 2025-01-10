@@ -98,7 +98,7 @@ export default {
 					logMessages: [
 						{
 							channel: getChannelFromEnv("casinoPye"),
-							content: `Por favor <@${user.id}>, recuerde que su saldo anterior era negativo. Puede compensarlo extrayendo dinero del banco mediante el comando /withdraw.`,
+							content: `Por favor **${user.username}**, recuerde que su saldo anterior era negativo. Puede compensarlo extrayendo dinero del banco mediante el comando /withdraw.`,
 						},
 					],
 				};
