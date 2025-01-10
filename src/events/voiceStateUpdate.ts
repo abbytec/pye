@@ -1,5 +1,5 @@
 // voiceStateUpdate.ts
-import { EmbedBuilder, Events, TextChannel, VoiceState } from "discord.js";
+import { AuditLogEvent, EmbedBuilder, Events, TextChannel, VoiceState } from "discord.js";
 import { ExtendedClient } from "../client.js";
 import { EventoConClienteForzado } from "../types/event.js";
 import { COLORS, getChannelFromEnv } from "../utils/constants.js";
@@ -11,7 +11,7 @@ export default {
 		const userId = newState.member?.id ?? oldState.member?.id;
 		const isBot = newState.member?.user.bot ?? oldState.member?.user.bot;
 		if (!userId || isBot) return;
-		const logChannel = (client.channels.cache.get(getChannelFromEnv("voiceLogs")) ??
+		let logChannel = (client.channels.cache.get(getChannelFromEnv("voiceLogs")) ??
 			client.channels.resolve(getChannelFromEnv("voiceLogs"))) as TextChannel;
 
 		let embed = new EmbedBuilder().setTimestamp();
@@ -54,6 +54,46 @@ export default {
 				}
 			);
 		}
+		// mute o silence manuales
+		const deafChange = oldState.serverDeaf !== newState.serverDeaf;
+		const silenceChange = oldState.serverMute !== newState.serverMute;
 		if (embed.data.description) await logChannel.send({ embeds: [embed] });
+
+		if (deafChange || silenceChange) {
+			logChannel = (client.channels.cache.get(getChannelFromEnv("bansanciones")) ??
+				client.channels.resolve(getChannelFromEnv("bansanciones"))) as TextChannel;
+			embed = new EmbedBuilder().setTimestamp();
+			let desc = "";
+			if (deafChange) {
+				embed.setColor(newState.serverDeaf ? COLORS.warnOrange : COLORS.okGreen);
+				embed.setAuthor({ name: newState.member?.user.tag ?? "Usuario", iconURL: newState.member?.user.displayAvatarURL() });
+				desc = `<@${newState.member?.user.id}> ${
+					newState.serverDeaf ? "fue ensordecido manualmente" : "fue des-ensordecido manualmente"
+				}.`;
+			} else if (silenceChange) {
+				embed.setColor(newState.serverMute ? COLORS.warnOrange : COLORS.okGreen);
+				embed.setAuthor({ name: newState.member?.user.tag ?? "Usuario", iconURL: newState.member?.user.displayAvatarURL() });
+				desc = `<@${newState.member?.user.id}> ${
+					newState.serverMute ? "fue silenciado manualmente" : "fue des-silenciado manualmente"
+				}.`;
+			}
+			const auditLogs = await newState.guild
+				.fetchAuditLogs({
+					limit: 2,
+					type: AuditLogEvent.MemberUpdate,
+				})
+				.catch(() => undefined);
+			const auditEntry = auditLogs?.entries.find((entry) => {
+				return entry.target?.id === userId;
+			});
+			if (auditEntry) {
+				const executor = auditEntry.executor;
+				desc = desc + (executor ? `\n Por: **${executor.tag}**` : "");
+			}
+
+			embed.setDescription(desc);
+
+			await logChannel.send({ embeds: [embed] });
+		}
 	},
 } as EventoConClienteForzado;
