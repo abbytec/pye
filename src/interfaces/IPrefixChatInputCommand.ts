@@ -18,7 +18,7 @@ export interface IOptions {
 	getString: ((name: string, required?: boolean) => string | null) & ((name: string, required: true) => string);
 	getNumber: ((name: string, required?: boolean) => number | null) & ((name: string, required: true) => number);
 	getBoolean: ((name: string, required?: boolean) => boolean | null) & ((name: string, required: true) => boolean);
-	getUser: ((name: string, required?: boolean) => Promise<User | null>) & ((name: string, required: true) => Promise<User|null>);
+	getUser: ((name: string, required?: boolean) => Promise<User | null>) & ((name: string, required: true) => Promise<User | null>);
 	getInteger: ((name: string, required?: boolean) => number | null) & ((name: string, required: true) => number);
 	getRole: ((name: string, required?: boolean) => Promise<Role | null>) & ((name: string, required: true) => Promise<Role>);
 	getSubcommand: ((required?: any) => string | null) & ((required: true) => string);
@@ -45,4 +45,11 @@ export interface IPrefixChatInputCommand {
 	replied: boolean;
 	deferred: boolean;
 	_reply?: Promise<Message>;
+}
+
+export class ParameterError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = "ParameterError";
+	}
 }

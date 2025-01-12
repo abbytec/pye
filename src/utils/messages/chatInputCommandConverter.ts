@@ -1,7 +1,7 @@
 import { Message, User, TextChannel, Role, Channel } from "discord.js";
 import { PREFIX } from "../constants.js";
 import { ExtendedClient } from "../../client.js";
-import { IOptions, IPrefixChatInputCommand, MessageToSend } from "../../interfaces/IPrefixChatInputCommand.js";
+import { IOptions, IPrefixChatInputCommand, MessageToSend, ParameterError } from "../../interfaces/IPrefixChatInputCommand.js";
 import { replyError } from "./replyError.js";
 
 interface IPrefixChatInputCommandOption {
@@ -51,7 +51,7 @@ export class PrefixChatInputCommand {
 			const value = split[i];
 
 			if (def.required && (value === undefined || value === "")) {
-				throw new Error(`El argumento requerido "${def.name}" no fue proporcionado.`);
+				throw new ParameterError(`El argumento requerido "${def.name}" no fue proporcionado.`);
 			}
 
 			if (value !== undefined) {
@@ -90,7 +90,7 @@ export class PrefixChatInputCommand {
 	private readonly getString = (name: string, required?: boolean): string | null => {
 		const val = this.argsMap.get(name);
 		if (required && (val === undefined || val === null)) {
-			throw new Error(`El argumento requerido "${name}" no fue proporcionado.`);
+			throw new ParameterError(`El argumento requerido "${name}" no fue proporcionado.`);
 		}
 		return val ?? null;
 	};
@@ -98,12 +98,12 @@ export class PrefixChatInputCommand {
 	private readonly getNumber = (name: string, required?: boolean): number | null => {
 		const val = this.argsMap.get(name);
 		if (val === undefined) {
-			if (required) throw new Error(`El argumento requerido "${name}" no fue proporcionado.`);
+			if (required) throw new ParameterError(`El argumento requerido "${name}" no fue proporcionado.`);
 			return null;
 		}
 		const num = Number(val);
 		if (isNaN(num)) {
-			if (required) throw new Error(`El argumento "${name}" no es un número válido.`);
+			if (required) throw new ParameterError(`El argumento "${name}" no es un número válido.`);
 			return null;
 		}
 		return num;
@@ -112,7 +112,7 @@ export class PrefixChatInputCommand {
 	private readonly getBoolean = (name: string, required?: boolean): boolean | null => {
 		const val = this.argsMap.get(name);
 		if (val === undefined) {
-			if (required) throw new Error(`El argumento requerido "${name}" no fue proporcionado.`);
+			if (required) throw new ParameterError(`El argumento requerido "${name}" no fue proporcionado.`);
 			return null;
 		}
 		return val.toLowerCase() === "true" || val === "1";
@@ -121,7 +121,7 @@ export class PrefixChatInputCommand {
 	private async getUser(name: string, required?: boolean): Promise<User | null> {
 		const val = this.argsMap.get(name);
 		if (!val) {
-			if (required) throw new Error(`El argumento requerido "${name}" no fue proporcionado.`);
+			if (required) throw new ParameterError(`El argumento requerido "${name}" no fue proporcionado.`);
 			return null;
 		}
 
@@ -134,11 +134,13 @@ export class PrefixChatInputCommand {
 		try {
 			const fetchedUser = await this.client.users.fetch(userId);
 			if (!fetchedUser && required) {
-				throw new Error(`No se pudo encontrar el usuario, asegurate de ingresarlo correctamente. Si tienes dudas, usa \`/help\`.`);
+				throw new ParameterError(
+					`No se pudo encontrar el usuario, asegurate de ingresarlo correctamente. Si tienes dudas, usa \`/help\`.`
+				);
 			}
 			return fetchedUser ?? null;
 		} catch {
-			if (required) throw new Error("Error al obtener el usuario.");
+			if (required) throw new ParameterError("Error al obtener el usuario.");
 			return null;
 		}
 	}
@@ -146,12 +148,12 @@ export class PrefixChatInputCommand {
 	private readonly getInteger = (name: string, required?: boolean): number | null => {
 		const val = this.argsMap.get(name);
 		if (val === undefined) {
-			if (required) throw new Error(`El argumento requerido "${name}" no fue proporcionado.`);
+			if (required) throw new ParameterError(`El argumento requerido "${name}" no fue proporcionado.`);
 			return null;
 		}
 		const int = parseInt(val, 10);
 		if (isNaN(int)) {
-			if (required) throw new Error(`El argumento "${name}" no es un número entero válido.`);
+			if (required) throw new ParameterError(`El argumento "${name}" no es un número entero válido.`);
 			return null;
 		}
 		return int;
@@ -160,7 +162,7 @@ export class PrefixChatInputCommand {
 	private async getRole(name: string, required?: boolean): Promise<Role | null> {
 		const val = this.argsMap.get(name);
 		if (!val) {
-			if (required) throw new Error(`El argumento requerido "${name}" no fue proporcionado.`);
+			if (required) throw new ParameterError(`El argumento requerido "${name}" no fue proporcionado.`);
 			return null;
 		}
 
@@ -174,16 +176,18 @@ export class PrefixChatInputCommand {
 			const guild = this.message?.guild;
 			if (!guild) {
 				if (required)
-					throw new Error(`No se pudo encontrar el rol para el argumento "${name}" porque el mensaje no está en un servidor.`);
+					throw new ParameterError(
+						`No se pudo encontrar el rol para el argumento "${name}" porque el mensaje no está en un servidor.`
+					);
 				return null;
 			}
 			const role = guild.roles.cache.get(roleId);
 			if (!role && required) {
-				throw new Error(`No se pudo encontrar el rol para el argumento "${name}".`);
+				throw new ParameterError(`No se pudo encontrar el rol para el argumento "${name}".`);
 			}
 			return role ?? null;
 		} catch {
-			if (required) throw new Error(`No se pudo encontrar el rol para el argumento "${name}".`);
+			if (required) throw new ParameterError(`No se pudo encontrar el rol para el argumento "${name}".`);
 			return null;
 		}
 	}
@@ -191,7 +195,7 @@ export class PrefixChatInputCommand {
 	private async getChannel(name: string, required?: boolean): Promise<Channel | null> {
 		const val = this.argsMap.get(name);
 		if (!val) {
-			if (required) throw new Error(`El argumento requerido "${name}" no fue proporcionado.`);
+			if (required) throw new ParameterError(`El argumento requerido "${name}" no fue proporcionado.`);
 			return null;
 		}
 
@@ -205,16 +209,18 @@ export class PrefixChatInputCommand {
 			const guild = this.message?.guild;
 			if (!guild) {
 				if (required)
-					throw new Error(`No se pudo encontrar el canal para el argumento "${name}" porque el mensaje no está en un servidor.`);
+					throw new ParameterError(
+						`No se pudo encontrar el canal para el argumento "${name}" porque el mensaje no está en un servidor.`
+					);
 				return null;
 			}
 			const channel = guild.channels.cache.get(channelId);
 			if (!channel && required) {
-				throw new Error(`No se pudo encontrar el canal para el argumento "${name}".`);
+				throw new ParameterError(`No se pudo encontrar el canal para el argumento "${name}".`);
 			}
 			return channel ?? null;
 		} catch {
-			if (required) throw new Error(`No se pudo encontrar el canal para el argumento "${name}".`);
+			if (required) throw new ParameterError(`No se pudo encontrar el canal para el argumento "${name}".`);
 			return null;
 		}
 	}
@@ -224,14 +230,14 @@ export class PrefixChatInputCommand {
 		const subCommand = this.argsMap.get("subcommand") ?? null;
 
 		if (required && (!subCommand || subCommand.trim() === "")) {
-			throw new Error(`El subcomando es requerido pero no fue proporcionado.`);
+			throw new ParameterError(`El subcomando es requerido pero no fue proporcionado.`);
 		}
 
 		return subCommand;
 	};
 
 	private async reply(content: MessageToSend): Promise<Message> {
-		if (!this.message) throw new Error("No se ha parseado un mensaje aún.");
+		if (!this.message) throw new ParameterError("No se ha parseado un mensaje aún.");
 		let sentMessage: Promise<Message>;
 		if (content instanceof Object && "ephemeral" in content) {
 			sentMessage = this.message.reply({ ...content, options: { ephemeral: content.ephemeral } } as any);
@@ -244,7 +250,7 @@ export class PrefixChatInputCommand {
 	}
 
 	private async editReply(content: MessageToSend): Promise<Message> {
-		if (!this._reply) throw new Error("No hay una respuesta previa para editar.");
+		if (!this._reply) throw new ParameterError("No hay una respuesta previa para editar.");
 		if (content instanceof Object && "ephemeral" in content) {
 			return (await this._reply).edit({ ...content, options: { ephemeral: content.ephemeral } } as any);
 		} else {
@@ -253,7 +259,7 @@ export class PrefixChatInputCommand {
 	}
 
 	private async deleteReply(): Promise<void> {
-		if (!this._reply) throw new Error("No hay una respuesta previa para borrar.");
+		if (!this._reply) throw new ParameterError("No hay una respuesta previa para borrar.");
 		await (await this._reply).delete();
 		this._reply = undefined;
 		this._isReplied = false;
@@ -264,7 +270,7 @@ export class PrefixChatInputCommand {
 	}
 
 	private async followUp(content: MessageToSend): Promise<Message> {
-		if (!this.message?.channel) throw new Error("No se ha parseado un mensaje aún.");
+		if (!this.message?.channel) throw new ParameterError("No se ha parseado un mensaje aún.");
 		if (content instanceof Object && "ephemeral" in content) {
 			return (this.message.channel as TextChannel).send({ ...content, options: { ephemeral: content.ephemeral } } as any);
 		} else {

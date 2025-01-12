@@ -1,8 +1,9 @@
 // helpers/composeMiddlewares.ts
 import { Finalware, Middleware, PostHandleable } from "../types/middleware.js";
-import { ChatInputCommandInteraction, CommandInteractionOptionResolver, Message, MessageFlags, TextChannel } from "discord.js";
+import { MessageFlags, TextChannel } from "discord.js";
 import { getChannelFromEnv } from "../utils/constants.js";
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
+import { replyError } from "../utils/messages/replyError.js";
 
 /**
  * Componer múltiples middlewares en una única función.
@@ -32,15 +33,19 @@ export const composeMiddlewares = (
 				// Si no hay más middlewares, llama al handler
 				let result =
 					(await finalHandler(interaction).catch((e) => {
-						console.error(e);
-						(interaction.guild?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({
-							content: `${
-								process.env.NODE_ENV === "development"
-									? `<@${interaction.user.id}>`
-									: "<@220683580467052544> <@1088883078405038151> <@602240617862660096>"
-							}Error en el comando: \`${interaction.commandName}\`\n\`\`\`js\n${e.stack}\`\`\``,
-							flags: MessageFlags.SuppressNotifications,
-						});
+						if (e instanceof Error && e.name === "ParameterError") {
+							replyError(interaction, e.message);
+						} else {
+							console.error(e);
+							(interaction.guild?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({
+								content: `${
+									process.env.NODE_ENV === "development"
+										? `<@${interaction.user.id}>`
+										: "<@220683580467052544> <@1088883078405038151> <@602240617862660096>"
+								}Error en el comando: \`${interaction.commandName}\`\n\`\`\`js\n${e.stack}\`\`\``,
+								flags: MessageFlags.SuppressNotifications,
+							});
+						}
 					})) || {};
 				// Después de ejecutar el handler final, ejecutamos los postHandlers si existen
 				if (postHandlers) {
