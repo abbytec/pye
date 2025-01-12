@@ -68,8 +68,8 @@ export default {
 				return replyWarning(
 					interaction,
 					member.id === author.id
-						? `⚠ Aún no tienes un perfil, crea uno con \`/start\`.`
-						: `⚠ ${member.user.username} aún no tiene un perfil, puede crear uno con \`/start\`.`
+						? `Aún no tienes un perfil, crea uno con \`/start\`.`
+						: `${member.user.username} aún no tiene un perfil, puede crear uno con \`/start\`.`
 				);
 
 			const position = await redisClient.zRevRank("top:all", member.id);
