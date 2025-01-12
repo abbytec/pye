@@ -25,6 +25,7 @@ let data: {
 	apuestas: [],
 	intervalo: undefined,
 };
+
 export default {
 	group: "🎮 • Juegos",
 	data: new SlashCommandBuilder()
@@ -45,11 +46,11 @@ export default {
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			// Validar datos
-			if (amount < 0 || amount > 7300 || amount > userData.cash)
+			if (amount <= 100 || amount > 7300 || amount > userData.cash)
 				return replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "mayor que 100" : "menor que 7300"
+						amount < 100 ? "como minimo 100" : "menor que 7300"
 					} o no tienes suficiente dinero`
 				);
 			// Comenzar el juego

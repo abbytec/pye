@@ -14,14 +14,14 @@ import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputComman
 import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 const emojis = ["🍒", "🍉", "🍑", "🥥", "🍍", "🍇", "🥝", "🍄", "🍓", "🍀"];
-
+const maxBet = 900;
 export default {
 	group: "🎮 • Juegos",
 	data: new SlashCommandBuilder()
 		.setName("slotmachine")
 		.setDescription("Tira del tragaperras y apuesta tu dinero.")
 		.addIntegerOption((option) =>
-			option.setName("cantidad").setDescription("la cantidad que quieres apostar (Máximo 900)").setRequired(true)
+			option.setName("cantidad").setDescription(`la cantidad que quieres apostar (Máximo ${maxBet})`).setRequired(true)
 		),
 
 	execute: composeMiddlewares(
@@ -35,11 +35,11 @@ export default {
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			let initialAmount = amount;
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
-			if (amount < 1 || amount > 900 || amount > userData.cash)
+			if (amount <= 100 || amount > maxBet || amount > userData.cash)
 				return replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "mayor que 100" : "menor que 900"
+						amount < 100 ? "mayor que 100" : `menor que ${maxBet}`
 					} o no tienes suficiente dinero`
 				);
 
