@@ -63,14 +63,32 @@ class Trending {
 		this.month = new Date().getMonth();
 	}
 
+	private filterEmojis(emojis: Map<string, number>, allEmojis: string[]): Map<string, number> {
+		const idMapper = new Map();
+		for (const emoji of allEmojis) {
+			idMapper.set(emoji.replace(/w+|:/g, ""), emoji);
+		}
+		const filtered = new Map<string, number>();
+		for (const [emoji, score] of emojis.entries()) {
+			if (emoji.includes(":") && score > 0) {
+				filtered.set(emoji, score);
+			} else if (emoji.match(/d{3,}/g) && score > 0) {
+				const id = idMapper.get(emoji);
+				if (id) {
+					filtered.set(idMapper.get(emoji), score);
+				}
+			}
+		}
+		return filtered;
+	}
+
 	// Método para cargar datos desde la base de datos y aceptar listas de IDs
 	async load(emojiIds: string[], stickerIds: string[], channelIds: string[]): Promise<void> {
 		let data = await TrendingModel.findOne();
 		if (data) {
-			data.emojis.delete("");
 			data.channels.delete("");
 			data.stickers.delete("");
-			this.emojis = new Map(data.emojis);
+			this.emojis = this.filterEmojis(data.emojis, emojiIds);
 			this.forumChannels = new Map(data.channels);
 			this.stickers = new Map(data.stickers);
 			this.month = data.month;
