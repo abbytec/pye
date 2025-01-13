@@ -34,6 +34,8 @@ export default {
 			// Obtener el usuario objetivo
 			const targetUser = await interaction.options.getUser("usuario", true);
 			if (!targetUser) return await replyWarning(interaction, "No se pudo encontrar al usuario especificado.");
+			if (targetUser.createdAt.getTime() ?? 0 > new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).getTime())
+				return await replyError(interaction, "No puedes casarte con una cuenta recientemente creada.");
 			const targetMember: GuildMember | undefined = guild.members.cache.get(targetUser.id);
 
 			// Validaciones iniciales
