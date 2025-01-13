@@ -240,7 +240,7 @@ class Trending {
 					name: "🥇 Top 3 Stickers en Tendencia",
 					value:
 						this.getTop("sticker", 3)
-							.map((item) => `<:${item.id}>`)
+							.map((item) => `**${item.id}**`)
 							.join("\n") || "No hay datos",
 					inline: true,
 				},
@@ -248,7 +248,7 @@ class Trending {
 					name: "🔻 3 Stickers con Menor Tendencia",
 					value:
 						this.getBottom("sticker", 3)
-							.map((item) => `<:${item.id}>`)
+							.map((item) => `**${item.id}**`)
 							.join("\n") || "No hay datos",
 					inline: true,
 				},
@@ -256,7 +256,7 @@ class Trending {
 					name: "🚫 3 Stickers No Utilizados",
 					value:
 						this.getUnused("sticker")
-							.map((id) => `<:${id}>`)
+							.map((id) => `**${id}**`)
 							.join(", ") || "Ninguno",
 				},
 			],
@@ -289,8 +289,11 @@ class Trending {
 	private getBottom(type: TrendingType, count: number = 3): { id: string; score: number }[] {
 		const map = this.getMapByType(type);
 		const entries = Array.from(map.entries());
-		entries.filter(([, score]) => score > 0).sort((a, b) => a[1] - b[1]); // Orden ascendente
-		return entries.slice(0, count).map(([id, score]) => ({ id, score }));
+		entries.sort((a, b) => a[1] - b[1]); // Orden descendente
+		return entries
+			.filter(([, score]) => score > 0)
+			.slice(0, count)
+			.map(([id, score]) => ({ id, score }));
 	}
 
 	// Método para obtener elementos no utilizados
@@ -302,6 +305,7 @@ class Trending {
 				unused.push(id);
 			}
 		}
+		unused.sort(() => Math.random() - 0.5);
 		return unused.slice(0, count);
 	}
 

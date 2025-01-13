@@ -264,7 +264,8 @@ async function registerNewTrends(message: Message<boolean>, client: ExtendedClie
 	message.stickers.forEach((sticker: Sticker) => {
 		if (client.getStickerTypeCache(sticker) === StickerType.Guild) ExtendedClient.trending.add("sticker", sticker.id);
 	});
-	const emojiIds = [...message.content.matchAll(/<a?:\w+:(\d+)>/g)].map((match) => match[1]) || [];
+	const emojiIds =
+		[...message.content.matchAll(/<(a?:\w+:\d+)>/g)].map((match) => (match[1].startsWith(":") ? match[1].slice(1) : match[1])) || [];
 	emojiIds.forEach((emojiId: string) => {
 		ExtendedClient.trending.add("emoji", emojiId);
 	});
