@@ -11,6 +11,7 @@ import {
 	APIInteractionGuildMember,
 	BooleanCache,
 	CacheType,
+	Attachment
 } from "discord.js";
 import { ExtendedClient } from "../client.js";
 
@@ -23,6 +24,7 @@ export interface IOptions {
 	getRole: ((name: string, required?: boolean) => Promise<Role | null>) & ((name: string, required: true) => Promise<Role>);
 	getSubcommand: ((required?: any) => string | null) & ((required: true) => string);
 	getChannel: ((name: string, required?: boolean) => Promise<Channel | null>) & ((name: string, required: true) => Promise<Channel>);
+	getAttachment: ((name: string, required?: boolean) => Promise<Attachment | null>) & ((name: string, required: true) => Promise<Attachment | null>);
 }
 
 export type MessageToSend = string | MessagePayload | MessageReplyOptions | InteractionReplyOptions;

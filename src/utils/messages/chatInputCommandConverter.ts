@@ -1,4 +1,4 @@
-import { Message, User, TextChannel, Role, Channel } from "discord.js";
+import { Message, User, TextChannel, Role, Channel, Attachment } from "discord.js";
 import { PREFIX } from "../constants.js";
 import { ExtendedClient } from "../../client.js";
 import { IOptions, IPrefixChatInputCommand, MessageToSend, ParameterError } from "../../interfaces/IPrefixChatInputCommand.js";
@@ -145,6 +145,29 @@ export class PrefixChatInputCommand {
 		}
 	}
 
+	private async getAttachment(name: string, required?: boolean): Promise<Attachment | null> {
+
+		const val = this.argsMap.get(name);
+		if (!val) {
+		  if (required) throw new ParameterError(`El archivo adjunto requerido "${name}" no fue proporcionado.`);
+		  return null;
+		}
+	  
+		try
+		{
+		  const attachment = this.message?.attachments.first();
+		  if (!attachment && required) {
+			throw new ParameterError(
+			  `No se pudo encontrar el archivo adjunto en el mensaje proporcionado. Asegúrate de adjuntar un archivo.`
+			);
+		  }
+		  return attachment ?? null;
+		} catch {
+			if(required) throw new ParameterError(`El archivo adjunto requerido "${name}" no fue proporcionado correctamente.`);
+		}
+		return null;
+	  }
+	  
 	private readonly getInteger = (name: string, required?: boolean): number | null => {
 		const val = this.argsMap.get(name);
 		if (val === undefined) {
@@ -295,6 +318,12 @@ export class PrefixChatInputCommand {
 					await replyError(that, err);
 					return null;
 				});
+			},
+			getAttachment: async (name: string, required?: boolean): Promise<any> => {
+				return this.getAttachment(name, required).catch(async (err) => {
+					await replyError(that, err);
+					return null;
+				})
 			},
 			getSubcommand: this.getSubcommand.bind(this) as IOptions["getSubcommand"],
 			getChannel: async (name: string, required?: boolean): Promise<any> => {

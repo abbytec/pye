@@ -7,6 +7,7 @@ import {
 	Message,
 	InteractionReplyOptions,
 	MessagePayload,
+	Attachment
 } from "discord.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { ExtendedClient } from "../../client.js";
@@ -44,6 +45,14 @@ export function chatInputCommandParser(interaction: ChatInputCommandInteraction)
 				}
 				return channel;
 			},
+			getAttachment: async (name: string, required?: boolean): Promise<Attachment | null> => {
+				const attachment = interaction.options.getAttachment(name, required);
+				if (required && !attachment) {
+					await replyError(interaction, `El archivo adjunto requerido "${name}" no fue proporcionado.`);
+					return null;
+				}
+				return attachment;
+			}
 		},
 		guild: interaction.guild,
 		guildId: interaction.guildId,
