@@ -77,23 +77,23 @@ export default {
 					newState.serverMute ? "fue silenciado manualmente" : "fue des-silenciado manualmente"
 				}.`;
 			}
+
 			const auditLogs = await newState.guild
 				.fetchAuditLogs({
 					limit: 2,
 					type: AuditLogEvent.MemberUpdate,
 				})
 				.catch(() => undefined);
+
 			const auditEntry = auditLogs?.entries.find((entry) => {
 				return entry.target?.id === userId;
 			});
 			if (auditEntry) {
 				const executor = auditEntry.executor;
 				desc = desc + (executor ? `\n Por: **${executor.tag}**` : "");
+				embed.setDescription(desc);
+				await logChannel.send({ embeds: [embed] });
 			}
-
-			embed.setDescription(desc);
-
-			await logChannel.send({ embeds: [embed] });
 		}
 	},
 } as EventoConClienteForzado;
