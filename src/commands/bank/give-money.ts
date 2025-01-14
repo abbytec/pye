@@ -25,7 +25,7 @@ export default {
 		.addStringOption((option) => option.setName("cantidad").setDescription('Cantidad a transferir o "all".').setRequired(true)),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("give-money", 60 * 1000), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("give-money", cooldown, undefined, false), deferInteraction()],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const author = interaction.user;
 			const targetUser = await interaction.options.getUser("usuario", true);
@@ -65,7 +65,7 @@ export default {
 
 			await getOrCreateUser(targetUser.id); // asegura que el usuario destino exista
 
-			await setCooldown(interaction.client, author.id, "give-money", Date.now() + cooldown);
+			await setCooldown(interaction.client, author.id, "give-money", cooldown);
 
 			await Users.updateOne({ id: author.id }, { $inc: { cash: -cantidad } });
 			await Users.updateOne({ id: targetUser.id }, { $inc: { cash: cantidad } });

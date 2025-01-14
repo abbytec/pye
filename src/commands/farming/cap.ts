@@ -26,7 +26,7 @@ export default {
 	group: "💰 - Farmeo de PyeCoins (Casino)",
 	data: new SlashCommandBuilder().setName("cap").setDescription("Es como el rob, pero le quitas a los rateros."),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("cap", 2 * 60 * 60 * 1000), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("cap", cooldownDuration, undefined, false), deferInteraction()],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
@@ -61,7 +61,7 @@ export default {
 			if (!robberData) return await replyError(interaction, "No se pudo encontrar la información del usuario que robó.");
 
 			// Aplicar cooldown
-			setCooldown(client, user.id, "cap", cooldownDuration);
+			await setCooldown(client, user.id, "cap", cooldownDuration);
 
 			try {
 				await Users.updateOne({ id: user.id }, { $inc: { cash: amount, caps: amount } });

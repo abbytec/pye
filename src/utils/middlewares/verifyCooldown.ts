@@ -16,7 +16,8 @@ import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputComman
 export const verifyCooldown = (
 	commandName: string,
 	cooldownDuration: number,
-	adjustCooldownDuration?: (interaction: IPrefixChatInputCommand) => Promise<number> | number
+	adjustCooldownDuration?: (interaction: IPrefixChatInputCommand) => Promise<number> | number,
+	autoSetter: boolean = true
 ): Middleware => {
 	return async (interaction, next) => {
 		const userId = interaction.user.id;
@@ -44,7 +45,10 @@ export const verifyCooldown = (
 			}, 8000);
 			return; // Detiene la cadena de middlewares
 		}
-		await setCooldown(interaction.client, userId, commandName, finalCooldownDuration);
+
+		if (autoSetter) {
+			await setCooldown(interaction.client, userId, commandName, finalCooldownDuration);
+		}
 
 		// Continúa al siguiente middleware o al manejador de comandos
 		await next();
