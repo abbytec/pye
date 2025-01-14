@@ -46,7 +46,7 @@ export default {
 
       if (attachment) {
         scanData = await scanFile(attachment);
-      } else if (input && input.startsWith("http://") || input.startsWith("https://")) {
+      } else if (input && (input.startsWith("http://") || input?.startsWith("https://"))) {
         scanData = await scanUrl(input ?? "");
       } else {
         throw new Error("No valid input provided for scanning.");
