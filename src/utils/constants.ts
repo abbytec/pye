@@ -7,7 +7,7 @@ loadEnvVariables();
 
 const CHANNELS = {
 	ayuda: "916353103534632964",
-	casinoPye: "973425187301261393",
+	casinoPye: "875535411924062279",
 	recursos: "924436818718494740",
 	general: "768329192131526686",
 	filosofiaPolitica: "847920994156806194",

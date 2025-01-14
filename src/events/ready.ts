@@ -201,7 +201,7 @@ async function activityProcessor(client: ExtendedClient) {
 		setTimeout(() => client.user?.setActivity("discord.gg/programacion", { type: ActivityType.Watching }), 1000);
 		setTimeout(() => client.user?.setActivity("ella no te ama", { type: ActivityType.Watching }), 10000);
 		setTimeout(() => client.user?.setActivity("+20 Millones de comentarios", { type: ActivityType.Watching }), 20000);
-		setTimeout(() => client.user?.setActivity("PyE coins del #casino", { type: ActivityType.Competing }), 30000);
+		setTimeout(() => client.user?.setActivity("PyE coins en el Casino (#comandos)", { type: ActivityType.Competing }), 30000);
 		setTimeout(
 			() =>
 				client.user?.setActivity(`a ${client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0)}`, {
