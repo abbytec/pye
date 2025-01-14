@@ -30,7 +30,7 @@ const ruleData: ICustomCommand[] = [
 			{
 				title: "Regla 2°",
 				color: COLORS.pyeLightBlue,
-				description: "El contenido NSFW explícito**(+18)** no está permitido.",
+				description: "El contenido NSFW explícito **(+18) o muy sugestivo** no está permitido.",
 				thumbnail: {
 					url: "https://cdn.discordapp.com/attachments/809180235810734110/1004211341134942319/925047.png",
 				},
@@ -50,7 +50,7 @@ const ruleData: ICustomCommand[] = [
 				title: "Regla 3°",
 				color: COLORS.pyeLightBlue,
 				description:
-					"Esta comunidad no promueve la piratería, ni ninguna práctica ilegal como el hacking, sin embargo actividades relacionadas al hacking ético pueden desarrollarse con normalidad.",
+					"Esta comunidad no promueve ni ninguna práctica ilegal, como piratería o hacking, sin embargo actividades educativas relacionadas al hacking ético (pentesting o ciberseguridad) pueden desarrollarse con normalidad.",
 				thumbnail: {
 					url: "https://cdn.discordapp.com/attachments/809180235810734110/1004211341134942319/925047.png",
 				},
@@ -70,7 +70,7 @@ const ruleData: ICustomCommand[] = [
 				title: "Regla 4°",
 				color: COLORS.pyeLightBlue,
 				description:
-					"No acosar a otros usuarios mediante pings para que resuelvan tus dudas.\nTampoco debes mandar mensajes privados a otro usuario sin su consentimiento previo.",
+					"No acosar o incomodar a otros usuarios mediante pings, mensajes privados sin su consentimiento o faltando el respeto (ya sea en canales de texto o de voz).",
 				thumbnail: {
 					url: "https://cdn.discordapp.com/attachments/809180235810734110/1004211341134942319/925047.png",
 				},
@@ -89,9 +89,9 @@ const ruleData: ICustomCommand[] = [
 			{
 				title: "Regla 5°",
 				color: COLORS.pyeLightBlue,
-				description: `Está PROHIBIDO desvirtuar los canales de temas específicos. Entendemos que pueden haber pequeñas desviaciones del tópico principal del canal, pero cuando esto se vuelve una acción habitual o se hacen comentarios con el claro motivo de generar controversía o discusiones que no se relacionan a la tématica del canal se aplicará sanción.\nHay un chat para hablar de cualquier cosa, sin ninguna restricción y es <#${getChannelFromEnv(
-					"general"
-				)}>`,
+				description: `Está PROHIBIDO desvirtuar los canales. Haz tus preguntas en un solo canal y NO preguntes si hay alguien disponible, directamente coloca tu problema a resolver.\nRevisa <id:customize> y si no encuentras un canal adecuado para tu duda, entonces publica en ⁠<#${getChannelFromEnv(
+					"ayuda-general"
+				)}`,
 				thumbnail: {
 					url: "https://cdn.discordapp.com/attachments/809180235810734110/1004211341134942319/925047.png",
 				},
@@ -110,9 +110,9 @@ const ruleData: ICustomCommand[] = [
 			{
 				title: "Regla 6°",
 				color: COLORS.pyeLightBlue,
-				description: `Haz tus preguntas en un solo canal y **NO** preguntes si hay alguien disponible, simplemente coloca tu pregunta o problema a resolver aclarando toda la información necesaria. Si no sabes en cual canal debería ir entonces publica tu duda en ⁠<#${getChannelFromEnv(
-					"ayuda-general"
-				)}>`,
+				description: `Solo se permite flood de videos e imágenes y en el canal de memes ⁠<#${getChannelFromEnv(
+					"memes"
+				)}> \nEl uso muy excesivo de comandos de bots al punto de molestar a otros usuarios debe ir en <#1094819492082745575>`,
 				fields: [
 					{
 						name: "Recuerda leer",
@@ -128,9 +128,9 @@ const ruleData: ICustomCommand[] = [
 			{
 				title: "Regla 7°",
 				color: COLORS.pyeLightBlue,
-				description: `El flood de memes e imágenes sólo está permitido en <#${getChannelFromEnv(
-					"memes"
-				)}>\nEl uso de los bots del servidor está permitido en varios canales, sin embargo el floodeo excesivo de comandos al punto de llegar a molestar a otros usuarios puede ser motivo de sanción, si queres utliarlos con tanta frecuencia, existe el hilo <#1094819492082745575>.`,
+				description: `Solo se permite auto-promoción de contenido relacionado a la programación o tecnologías informáticas y solo está permitido en <#${getChannelFromEnv(
+					"chatProgramadores"
+				)}>.`,
 				thumbnail: {
 					url: "https://cdn.discordapp.com/attachments/809180235810734110/1004211341134942319/925047.png",
 				},
@@ -149,9 +149,11 @@ const ruleData: ICustomCommand[] = [
 			{
 				title: "Regla 8°",
 				color: COLORS.pyeLightBlue,
-				description: `Solo se permite autopromoción de contenido relacionado a la programación o tecnologías informáticas y dicho contenido debe ir en ⁠<#${getChannelFromEnv(
-					"chatProgramadores"
-				)}>`,
+				description: `Los mensajes en los canales de ⁠⁠<#${getChannelFromEnv("ofertasDeEmpleos")}>, ⁠⁠<#${getChannelFromEnv(
+					"ofreceServicios"
+				)}> y ⁠⁠<#${getChannelFromEnv(
+					"proyectosNoPagos"
+				)}> deben enviarse con una semana de diferencia.\nTampoco se permite eliminar el mensaje anterior para publicar uno nuevo.`,
 				fields: [
 					{
 						name: "Recuerda leer",
@@ -168,7 +170,7 @@ const ruleData: ICustomCommand[] = [
 				title: "Regla 9°",
 				color: COLORS.pyeLightBlue,
 				description:
-					"**NO** se resuelven tareas escolares, bajo ninguna circunstancia debes subir un ejercicio y pedir que lo resuelvan. Pero puedes pedir ayuda para llegar a la resolución de un enunciado.",
+					"**NO** se resuelven tareas escolares, bajo ninguna circunstancia debes subir un ejercicio y pedir que lo resuelvan. Pero puedes pedir ayuda para llegar a la resolución de tu problema.",
 				fields: [
 					{
 						name: "Recuerda leer",
