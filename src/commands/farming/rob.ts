@@ -43,7 +43,11 @@ async function cooldownFunction(interaction: IPrefixChatInputCommand) {
 	const user = interaction.user;
 	let userData: Partial<IUser> = await getOrCreateUser(user.id);
 
-	if (["Ladron", "Ladrona"].includes(userData.profile?.job ?? "")) {
+	return cooldownCalculation(["Ladron", "Ladrona"].includes(userData.profile?.job ?? ""));
+}
+
+async function cooldownCalculation(isRobber: boolean) {
+	if (isRobber) {
 		return cooldownDuration / 2; // La mitad del cooldown
 	}
 
@@ -92,7 +96,7 @@ export default {
 			if ((targetUserData.cash ?? 0) < 1) return await replyError(interaction, "No puedes robarle a alguien que no tiene dinero.");
 
 			// Establecer el nuevo cooldown
-			await setCooldown(interaction.client, user.id, "rob", cooldownDuration);
+			await setCooldown(interaction.client, user.id, "rob", await cooldownFunction(interaction));
 
 			// Calcular probabilidad de éxito
 			let probability = targetUserData.cash / (targetUserData.cash + (userData.total ?? 0));
