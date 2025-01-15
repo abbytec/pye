@@ -116,7 +116,7 @@ export default {
 			option.setName("cantidad").setDescription("la cantidad que quieres apostar (Máximo 1100)").setRequired(true)
 		),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), verifyCooldown("blackjack", 3000)],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), verifyCooldown("blackjack", 1000)],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const amount = interaction.options.getInteger("cantidad", true);
 			let data = await getOrCreateUser(interaction.user.id);
