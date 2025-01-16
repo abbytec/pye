@@ -32,7 +32,7 @@ export default {
 				(reaction.message.member as GuildMember).roles.remove(getRoleFromEnv("iqNegativo")).catch(() => null);
 			}, 1000 * 60 * 60);
 		}
-		ExtendedClient.trending.add("emoji", (fullReaction.emoji.name ?? "") + ":" + (fullReaction.emoji.id ?? ""));
+		if (fullReaction.emoji.id) ExtendedClient.trending.add("emoji", (fullReaction.emoji.name ?? "") + ":" + fullReaction.emoji.id);
 	},
 } as Evento;
 
