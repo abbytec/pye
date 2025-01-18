@@ -59,9 +59,22 @@ export default {
 					if (page < 0) page = 0;
 					if (page >= totalPages) page = totalPages - 1;
 
-					const usersWithScores = await client.zRangeWithScores("top:rep", page * pageSize, (page + 1) * pageSize - 1, {
-						REV: true,
-					});
+					const rawData = await client.sendCommand<string[]>([
+						"ZREVRANGE",
+						"top:rep",
+						(page * pageSize).toString(),
+						((page + 1) * pageSize - 1).toString(),
+						"WITHSCORES",
+					]);
+
+					// Luego parseas el resultado:
+					const usersWithScores: Array<{ value: string; score: number }> = [];
+					for (let i = 0; i < rawData.length; i += 2) {
+						usersWithScores.push({
+							value: rawData[i],
+							score: Number(rawData[i + 1]),
+						});
+					}
 
 					// Formatear los datos para consistencia
 					const users = await Promise.all(
