@@ -201,9 +201,9 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 		// Enviar notificación en un canal específico
 		const notificationChannel = interaction.client.channels.resolve(getChannelFromEnv("logPuntos")) as TextChannel | null;
 		if (notificationChannel) {
-			let message = `Se le ha dado +1 rep al usuario: \`${member.user.username}\`\nPuntos anteriores: ${
+			let message = `Se le ha dado +1 rep al usuario: \`${member.user.username}\`\n> *Puntos anteriores: ${
 				user.points - point
-			}. Puntos actuales: ${user.points}`;
+			}. Puntos actuales: ${user.points}*`;
 			await interaction.client.channels
 				.fetch(postId)
 				.then((channel) => {
