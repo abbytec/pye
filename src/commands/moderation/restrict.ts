@@ -13,6 +13,7 @@ import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputComman
 import { logMessages } from "../../utils/finalwares/logMessages.js";
 
 export default {
+	group: "⚙️ - Administración y Moderación",
 	data: new SlashCommandBuilder()
 		.setName("restrict")
 		.setDescription("Ver o editar el estado de restricción de un miembro.")

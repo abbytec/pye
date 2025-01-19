@@ -14,6 +14,7 @@ import { ModLogs } from "../../Models/ModLogs.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
+	group: "⚙️ - Administración y Moderación",
 	data: new SlashCommandBuilder()
 		.setName("voice-mute")
 		.setDescription("Ver o editar el estado de silencio de un miembro.")
