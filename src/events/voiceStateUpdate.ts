@@ -86,7 +86,7 @@ export default {
 				.catch(() => undefined);
 
 			const auditEntry = auditLogs?.entries.find((entry) => {
-				return entry.target?.id === userId;
+				return entry.target?.id === userId && entry.createdAt.getTime() > Date.now() - 60000;
 			});
 			if (auditEntry) {
 				const executor = auditEntry.executor;
