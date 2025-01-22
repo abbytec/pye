@@ -92,7 +92,16 @@ async function cronEventsProcessor(client: ExtendedClient) {
 
 			try {
 				// Obtener todos los usuarios y sus puntos de 'top:rep'
-				const allUsers = await redisClient.zRangeWithScores("top:rep", 0, -1, { REV: true });
+				const rawData = await redisClient.sendCommand<string[]>(["ZREVRANGE", "top:rep", "0", "3", "WITHSCORES"]);
+
+				// Luego parseas el resultado:
+				const allUsers: Array<{ value: string; score: number }> = [];
+				for (let i = 0; i < rawData.length; i += 2) {
+					allUsers.push({
+						value: rawData[i],
+						score: Number(rawData[i + 1]),
+					});
+				}
 
 				// Calcular el total de puntos sumando los scores de todos los usuarios
 				const totalPoints = allUsers.reduce((acc, user) => acc + user.score, 0);
@@ -120,17 +129,17 @@ async function cronEventsProcessor(client: ExtendedClient) {
 					message += `\nPor lo tanto el <@&${usuarioDelMesRoleId}> es <@${topUserId}>`;
 					client.guilds.cache
 						.get(process.env.GUILD_ID ?? "")
-						?.members.fetch(topUserId)
-						.then((member) => {
-							member?.roles.add(usuarioDelMesRoleId).catch(null);
-						});
-					client.guilds.cache
-						.get(process.env.GUILD_ID ?? "")
 						?.roles.fetch(usuarioDelMesRoleId)
 						.then((role) => {
 							role?.members.forEach((member) => {
 								member.roles.remove(usuarioDelMesRoleId).catch(null);
 							});
+						});
+					client.guilds.cache
+						.get(process.env.GUILD_ID ?? "")
+						?.members.fetch(topUserId)
+						.then((member) => {
+							member?.roles.add(usuarioDelMesRoleId).catch(null);
 						});
 				}
 
