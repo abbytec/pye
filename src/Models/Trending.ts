@@ -300,7 +300,10 @@ class Trending {
 		let entries = Array.from(map.entries());
 		if (type === "emoji") {
 			const svEmojis = await client.guilds.cache.get(process.env.GUILD_ID ?? "")?.emojis.fetch();
-			if (svEmojis) entries = entries.filter(([id]) => svEmojis.has(id));
+			if (svEmojis)
+				entries = entries.filter(([id]) => {
+					return svEmojis.has(RegExp(/:(\d+)$/).exec(id)?.[1] ?? "");
+				});
 		} else if (type === "sticker") {
 			const svStickers = await client.guilds.cache.get(process.env.GUILD_ID ?? "")?.stickers.fetch();
 			if (svStickers) entries = entries.filter(([id]) => svStickers.has(id));
