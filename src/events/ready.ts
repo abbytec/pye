@@ -73,7 +73,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 		if (job.attrs.data.userReps.month !== currentMonthNumber) {
 			// Actualiza el mes en los datos del trabajo
 
-			let stats = ExtendedClient.trending.getStats();
+			let stats = await ExtendedClient.trending.getStats(client);
 			(client.channels.resolve(getChannelFromEnv("moderadores")) as TextChannel | null)
 				?.send({
 					embeds: [stats],

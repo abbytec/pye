@@ -70,7 +70,7 @@ class Trending {
 		}
 		const filtered = new Map<string, number>();
 		for (const [emoji, score] of emojis.entries()) {
-			if (emoji.includes(":") && score > 0) {
+			if (emoji.match(/\w+:\d+/g) && score > 0) {
 				filtered.set(emoji, score);
 			} else if (emoji.match(/d{3,}/g) && score > 0) {
 				const id = idMapper.get(emoji);
@@ -196,7 +196,7 @@ class Trending {
 	}
 
 	// Método para obtener estadísticas y reiniciar si el mes ha cambiado
-	public getStats(): any {
+	public async getStats(client: ExtendedClient): Promise<any> {
 		const currentMonth = new Date().getMonth();
 		if (this.month !== currentMonth) {
 			this.resetStatistics();
@@ -218,10 +218,7 @@ class Trending {
 				},
 				{
 					name: "🔻 3 Emojis con Menor Tendencia",
-					value:
-						this.getBottom("emoji", 3)
-							.map((item) => `<:${item.id}>`)
-							.join("\n") || "No hay datos",
+					value: (await this.getBottom("emoji", client, 3)).map((item) => `<:${item.id}>`).join("\n") || "No hay datos",
 					inline: true,
 				},
 				{
@@ -241,10 +238,7 @@ class Trending {
 				},
 				{
 					name: "🔻 3 Foros con Menor Tendencia",
-					value:
-						this.getBottom("threadPost", 3)
-							.map((item) => `<#${item.id}>`)
-							.join("\n") || "No hay datos",
+					value: (await this.getBottom("threadPost", client, 3)).map((item) => `<#${item.id}>`).join("\n") || "No hay datos",
 					inline: true,
 				},
 				{
@@ -264,10 +258,7 @@ class Trending {
 				},
 				{
 					name: "🔻 3 Stickers con Menor Tendencia",
-					value:
-						this.getBottom("sticker", 3)
-							.map((item) => `**${item.id}**`)
-							.join("\n") || "No hay datos",
+					value: (await this.getBottom("sticker", client, 3)).map((item) => `**${item.id}**`).join("\n") || "No hay datos",
 					inline: true,
 				},
 				{
@@ -304,9 +295,16 @@ class Trending {
 		return entries.slice(0, count).map(([id, score]) => ({ id, score }));
 	}
 
-	private getBottom(type: TrendingType, count: number = 3): { id: string; score: number }[] {
+	private async getBottom(type: TrendingType, client: ExtendedClient, count: number = 3): Promise<{ id: string; score: number }[]> {
 		const map = this.getMapByType(type);
-		const entries = Array.from(map.entries());
+		let entries = Array.from(map.entries());
+		if (type === "emoji") {
+			const svEmojis = await client.guilds.cache.get(process.env.GUILD_ID ?? "")?.emojis.fetch();
+			if (svEmojis) entries = entries.filter(([id]) => svEmojis.has(id));
+		} else if (type === "sticker") {
+			const svStickers = await client.guilds.cache.get(process.env.GUILD_ID ?? "")?.stickers.fetch();
+			if (svStickers) entries = entries.filter(([id]) => svStickers.has(id));
+		}
 		entries.sort((a, b) => a[1] - b[1]); // Orden descendente
 		return entries
 			.filter(([, score]) => score > 0)
