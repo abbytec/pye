@@ -3,6 +3,7 @@ import { ExtendedClient } from "../../client.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
+	group: "⚙️ - Administración - General",
 	data: new SlashCommandBuilder()
 		.setName("report")
 		.setDescription("Reporte de top3 (emojis, stickers y foros) en tendencia, en decadencia y no utilizados!"),

@@ -52,6 +52,7 @@ export interface IDeletableContent {
 }
 
 const validInvites: string[] = [
+	"1324546600533626951", // pyecraft
 	"1292897627431763999", // Server de apelaciónes
 	process.env.GUILD_ID ?? "",
 ];
