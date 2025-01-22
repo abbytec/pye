@@ -225,6 +225,7 @@ const ROLES = {
 	especialistaEnMemes: "873596533503848509",
 	iqNegativo: "1302062476266967201",
 	nitroBooster: "790356204001296394",
+	nitroOldBooster: "853401223939751937",
 
 	// sanciones
 	restringido: "984278721055830047",
@@ -267,6 +268,7 @@ const DEV_ROLES: Record<Roles, string> = {
 	especialistaEnMemes: "1296190630657134620",
 	iqNegativo: "1307563510716432455",
 	nitroBooster: "1296190630665392189",
+	nitroOldBooster: "1296190630665392189",
 
 	// sanciones
 	restringido: "1296190630678233109",

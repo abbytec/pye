@@ -55,6 +55,7 @@ async function handleRoleChanges(oldMember: GuildMember | PartialGuildMember, ne
 	});
 
 	if (addedRoles.has(getRoleFromEnv("nitroBooster"))) {
+		newMember.roles.add(getRoleFromEnv("nitroOldBooster"));
 		const channel = (client.channels.cache.get(getChannelFromEnv("starboard")) ??
 			client.channels.resolve(getChannelFromEnv("starboard"))) as TextChannel;
 		const embed = new EmbedBuilder()
