@@ -147,3 +147,25 @@ const EMOJI_TO_FILE: Record<string, string> = {
 export function emojiMapper(emoji: string): string {
 	return EMOJI_TO_FILE[emoji] || "curiosa.png";
 }
+
+export function getCachedImage(emojiFile: string): string {
+	switch (emojiFile) {
+		case "alegre.png":
+			return "https://cdn.discordapp.com/attachments/1282932921203818509/1332219829867905095/alegre.png?ex=679475e6&is=67932466&hm=ed7fd5aaf71da743b940eab0e145db96c19920fa4c6e5c09324580db5d6c1401&";
+		case "enojada.png":
+			return "https://media.discordapp.net/attachments/1282932921203818509/1332219830421422100/enojada.png?ex=679475e7&is=67932467&hm=9440aadbae06c265d6cba26b3fea020cc459f5822118004c5aa9a8c2e2eb690b&=&format=webp&quality=lossless";
+		case "seria.png":
+			return "https://cdn.discordapp.com/attachments/1282932921203818509/1332219830656569344/seria.png?ex=679475e7&is=67932467&hm=5f4f2bd9ac38672b08525674fdfa074d837357059375a06f04e6dda83201e086&";
+		case "sonriente.png":
+			return "https://media.discordapp.net/attachments/1282932921203818509/1332219830891319341/sonriente.png?ex=679475e7&is=67932467&hm=6797d469b2042b71c76cd1a6e10702e512e179ef0b0adff18955da4271cd935f&=&format=webp&quality=lossless";
+		case "sorprendida.png":
+			return "https://media.discordapp.net/attachments/1282932921203818509/1332219831109287989/sorprendida.png?ex=679475e7&is=67932467&hm=1dd56b163fff8e34e4c574a674d9fd3241f1a606262ff8df48adfb777d44d9eb&=&format=webp&quality=lossless";
+		case "triste.png":
+			return "https://media.discordapp.net/attachments/1282932921203818509/1332219831323463690/triste.png?ex=679475e7&is=67932467&hm=060f01aa4c0752e23a4cc86376734b5577eebbea509b4d72f55cfcc96089b481&=&format=webp&quality=lossless";
+		case "verguenza_ajena.png":
+			return "https://media.discordapp.net/attachments/1282932921203818509/1332219831570796554/verguenza_ajena.png?ex=679475e7&is=67932467&hm=397bd7f8436a16d5a5099e2020b9e463685e699f351890854e8017b93c52073b&=&format=webp&quality=lossless";
+		case "curiosa.png":
+		default:
+			return "https://cdn.discordapp.com/attachments/1282932921203818509/1332219830115373087/curiosa.png?ex=679475e6&is=67932466&hm=7b73123331412ce17b8d66cd4604c6e948c927942af2dbfee054d383dcfadd47&";
+	}
+}

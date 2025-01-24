@@ -41,6 +41,7 @@ import {
 	ANTI_DUMBS_RESPONSES,
 	emojiMapper,
 	geminiModel,
+	getCachedImage,
 	modelPyeChanAnswer,
 	pyeChanPrompt,
 	pyeChanSecurityConstraint,
@@ -411,18 +412,13 @@ async function manageAIResponse(message: Message<boolean>, isForumPost: string |
 					url: "https://cdn.discordapp.com/attachments/1115058778736431104/1282780704979292190/image_2.png?ex=66e09a20&is=66df48a0&hm=0df37331fecc81a080a8c7bee4bcfab858992b55d9ca675bafedcf4c4c7879a1&",
 				})
 				.setDescription(text)
-				.setImage("attachment://imagen.png")
+				.setImage(getCachedImage(emojiMapper(findEmojis(text)[0] ?? "")))
 				.setTimestamp()
 				.setFooter({ text: "♥" });
 
 			await message
 				.reply({
 					embeds: [exampleEmbed],
-					files: [
-						new AttachmentBuilder(path.join(__dirname, "../assets/pyechan", emojiMapper(findEmojis(text)[0] ?? "")), {
-							name: "imagen.png",
-						}),
-					],
 				})
 				.catch(() => null);
 		}
