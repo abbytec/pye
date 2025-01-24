@@ -65,3 +65,85 @@ export const modelPyeChanAnswer = genAI.getGenerativeModel({
 		topP: 0.75,
 	},
 });
+
+const EMOJI_TO_FILE: Record<string, string> = {
+	// Alegre
+	"😀": "alegre.png",
+	"😂": "alegre.png",
+	"😍": "alegre.png",
+	"😃": "alegre.png",
+	"😄": "alegre.png",
+	"😆": "alegre.png",
+	"😛": "alegre.png",
+	"😋": "alegre.png",
+	"😜": "alegre.png",
+	"🤪": "alegre.png",
+	"😝": "alegre.png",
+	"🤑": "alegre.png",
+	"😁": "alegre.png",
+	"🥳": "alegre.png",
+
+	// Curiosa
+	"🤐": "curiosa.png",
+	"✨": "curiosa.png",
+	"💡": "curiosa.png",
+	"⭐": "curiosa.png",
+	"🌟": "curiosa.png",
+	"🌠": "curiosa.png",
+	"🌌": "curiosa.png",
+	"🤩": "curiosa.png",
+	"❓": "curiosa.png",
+	"❔": "curiosa.png",
+
+	// Enojada
+	"😠": "enojada.png",
+	"😤": "enojada.png",
+	"😡": "enojada.png",
+	"🤬": "enojada.png",
+	"👿": "enojada.png",
+	"💢": "enojada.png",
+
+	// Seria
+	"😐": "seria.png",
+	"😑": "seria.png",
+
+	// Sonriente
+	"🙂": "sonriente.png",
+	"🙃": "sonriente.png",
+	"☺️": "sonriente.png",
+	"😊": "sonriente.png",
+	"🤗": "sonriente.png",
+
+	// Sorprendida
+	"😮": "sorprendida.png",
+	"😳": "sorprendida.png",
+	"🤯": "sorprendida.png",
+	"😯": "sorprendida.png",
+	"😲": "sorprendida.png",
+	"😱": "sorprendida.png",
+
+	// Triste
+	"😭": "triste.png",
+	"😔": "triste.png",
+	"😢": "triste.png",
+	"😞": "triste.png",
+	"😥": "triste.png",
+	"😖": "triste.png",
+	"😣": "triste.png",
+	"😫": "triste.png",
+
+	// Vergüenza ajena
+	"😨": "verguenza_ajena.png",
+	"😩": "verguenza_ajena.png",
+	"🥴": "verguenza_ajena.png",
+	"🤔": "verguenza_ajena.png",
+	"🙄": "verguenza_ajena.png",
+};
+
+/**
+ * Dado un emoji, devuelve el nombre de archivo correspondiente
+ * o una imagen por defecto si no está en el mapeo.
+ */
+export function emojiMapper(emoji: string): string {
+	return EMOJI_TO_FILE[emoji] || "curiosa.png";
+}

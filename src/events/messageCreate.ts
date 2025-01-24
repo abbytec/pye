@@ -1,4 +1,5 @@
 import {
+	AttachmentBuilder,
 	ChannelType,
 	DMChannel,
 	EmbedBuilder,
@@ -29,15 +30,27 @@ import {
 } from "../utils/constants.js";
 import { Users } from "../Models/User.js";
 import { getCooldown, setCooldown } from "../utils/cooldowns.js";
-import { checkRole, convertMsToUnixTimestamp, splitMessage } from "../utils/generic.js";
+import { checkRole, convertMsToUnixTimestamp, findEmojis, splitMessage } from "../utils/generic.js";
 import { checkHelp } from "../utils/checkhelp.js";
 import { bumpHandler } from "../utils/bumpHandler.js";
 import natural from "natural";
 import { checkMentionSpam, IDeletableContent, spamFilter } from "../security/spamFilters.js";
 import { hashMessage } from "../security/messageHashing.js";
 import { getRecursiveRepliedContext } from "../utils/ai/getRecursiveRepliedContext.js";
-import { ANTI_DUMBS_RESPONSES, geminiModel, modelPyeChanAnswer, pyeChanPrompt, pyeChanSecurityConstraint } from "../utils/ai/gemini.js";
+import {
+	ANTI_DUMBS_RESPONSES,
+	emojiMapper,
+	geminiModel,
+	modelPyeChanAnswer,
+	pyeChanPrompt,
+	pyeChanSecurityConstraint,
+} from "../utils/ai/gemini.js";
 import { checkQuestLevel, IQuest } from "../utils/quest.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default {
 	name: Events.MessageCreate,
@@ -398,13 +411,20 @@ async function manageAIResponse(message: Message<boolean>, isForumPost: string |
 					url: "https://cdn.discordapp.com/attachments/1115058778736431104/1282780704979292190/image_2.png?ex=66e09a20&is=66df48a0&hm=0df37331fecc81a080a8c7bee4bcfab858992b55d9ca675bafedcf4c4c7879a1&",
 				})
 				.setDescription(text)
-				.setThumbnail(
-					"https://cdn.discordapp.com/attachments/1115058778736431104/1282780704979292190/image_2.png?ex=66e09a20&is=66df48a0&hm=0df37331fecc81a080a8c7bee4bcfab858992b55d9ca675bafedcf4c4c7879a1&"
-				)
+				.setImage("attachment://imagen.png")
 				.setTimestamp()
 				.setFooter({ text: "♥" });
 
-			await message.reply({ embeds: [exampleEmbed] }).catch(() => null);
+			await message
+				.reply({
+					embeds: [exampleEmbed],
+					files: [
+						new AttachmentBuilder(path.join(__dirname, "../assets/pyechan", emojiMapper(findEmojis(text)[0] ?? "")), {
+							name: "imagen.png",
+						}),
+					],
+				})
+				.catch(() => null);
 		}
 	}
 }

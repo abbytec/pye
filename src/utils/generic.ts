@@ -204,3 +204,13 @@ function splitLongParagraph(paragraph: string, maxLength: number): string[] {
 
 	return splitParts;
 }
+
+export function findEmojis(text: string) {
+	// Este patrón busca combinaciones de banderas (dos caracteres de 1F1E6–1F1FF) o
+	// rangos típicos de emojis (desde 1F300 hasta 1FAFF, además de algunos símbolos clásicos).
+	const emojiRegex =
+		/([\u{1F1E6}-\u{1F1FF}]{2}|[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F6FF}\u{1F900}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}])/gu;
+
+	const matches = text.match(emojiRegex);
+	return matches || [];
+}
