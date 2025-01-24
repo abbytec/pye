@@ -42,6 +42,7 @@ import {
 	emojiMapper,
 	geminiModel,
 	getCachedImage,
+	getColorFromEmojiFile,
 	modelPyeChanAnswer,
 	pyeChanPrompt,
 	pyeChanSecurityConstraint,
@@ -403,8 +404,10 @@ async function manageAIResponse(message: Message<boolean>, isForumPost: string |
 			if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8)
 				text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
 
+			const emojiFile = emojiMapper(findEmojis(text)[0] ?? "");
+
 			const exampleEmbed = new EmbedBuilder()
-				.setColor(COLORS.pyeCutePink)
+				.setColor(getColorFromEmojiFile(emojiFile))
 				.setAuthor({
 					name: "PyE Chan",
 					iconURL:
@@ -412,7 +415,10 @@ async function manageAIResponse(message: Message<boolean>, isForumPost: string |
 					url: "https://cdn.discordapp.com/attachments/1115058778736431104/1282780704979292190/image_2.png?ex=66e09a20&is=66df48a0&hm=0df37331fecc81a080a8c7bee4bcfab858992b55d9ca675bafedcf4c4c7879a1&",
 				})
 				.setDescription(text)
-				.setImage(getCachedImage(emojiMapper(findEmojis(text)[0] ?? "")))
+				.setThumbnail(
+					"https://cdn.discordapp.com/attachments/1282932921203818509/1332238415676047430/pyechan.png?ex=67948736&is=679335b6&hm=0d15d3794e6478f5469ff4c4a34f805067bd6b476d9928a00a01c1cf78a8a682&"
+				)
+				.setImage(getCachedImage(emojiFile))
 				.setTimestamp()
 				.setFooter({ text: "♥" });
 
