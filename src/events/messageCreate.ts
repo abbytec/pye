@@ -165,6 +165,14 @@ async function processPrefixCommand(message: Message, client: ExtendedClient) {
 	}
 }
 
+const employmentsDescription =
+	"• No pagues ni entregues ningún trabajo y/o servicio en su totalidad hasta estar completamente seguro que la otra persona es confiable.\n" +
+	"• No pagues ni entregues ningúno trabajo y/o servicio en su totalidad hasta estar completamente seguro que la otra persona es confiable.\n" +
+	"• Sugerímos realizar pagos pequeños por hitos, es decir, entregables pequeños que muestren un avance real. Asi como pactar previamente comisiones externas como por ejemplo, si el monto a transferir incluye impuestos o estos se contabilizan aparte.\n" +
+	"• Si la publicación no ofrece muchos datos al respecto, debes dudar de la misma o bien puedes reportarla a un moderador.\n" +
+	"• Si tienes pruebas sobre la conducta cuestionable de un usuario, puedes reportarlo para impedirle el acceso a estos canales.\n" +
+	"\nDesde este servidor nos comprometemos a mantener estos canales lo más seguros y ordenados dentro de lo posible, **sin embargo** nuestro rol principal es el de brindar un lugar para que los usuarios puedan visibilizar sus publicaciones. Muchas resoluciones de conflicto *exceden* nuestro alcance y obligaciones, por eso recomendamos encarecidamente tener precaución.\n¡En nombre del Staff agradecemos tu atención!";
+
 async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 	switch (msg.channel.id) {
 		case getChannelFromEnv("recursos"):
@@ -175,7 +183,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 			checkRole(msg, getRoleFromEnv("granAportador"), 50);
 			break;
 		case getChannelFromEnv("ofreceServicios"):
-		case getChannelFromEnv("proyectosNoPagos"): {
+		case getChannelFromEnv("ofertasDeEmpleos"): {
 			checkCooldownComparte(msg, client).then(async (cooldown) => {
 				if (cooldown) {
 					let warn = await (msg.channel as TextChannel).send({
@@ -189,20 +197,19 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 					setTimeout(async () => await warn.delete().catch(() => null), 10000);
 				} else {
 					client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
+
 					msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
 						thread.send({
 							embeds: [
 								new EmbedBuilder()
-									.setTitle("¡Evita que te estafen!")
+									.setTitle("Protege tu dinero y asegurate de que tu trabajo sea finalizado")
 									.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
 									.setDescription(
 										"Por favor te __recordamos__ tomar todas las precauciones posibles al interactuar en estos canales ya que el staff no puede **intervenir** con estafas. **SOLAMENTE TÚ PUEDES EVITAR SER VÍCTIMA DE UNA ESTAFA.**"
 									),
 								new EmbedBuilder()
 									.setTitle("Recomendaciones")
-									.setDescription(
-										"• No pagues ni entregues ningún trabajo y/o servicio en su totalidad hasta estar completamente seguro que la otra persona es confiable.\n • Si la publicación no ofrece muchos datos al respecto, debes dudar de la misma o bien puedes reportarla a un moderador.\n• Si tienes pruebas sobre la conducta cuestionable de un usuario, puedes reportarlo para impedirle el acceso a estos canales.\n\nDesde este servidor nos comprometemos a mantener estos canales lo más seguros y ordenados dentro de lo posible, **sin embargo** nuestro rol principal es el de brindar un lugar para que los usuarios puedan visibilizar sus publicaciones. Muchas resoluciones de conflicto *exceden* nuestro alcance y obligaciones, por eso recomendamos encarecidamente tener precaución.\n¡En nombre del Staff agradecemos tu atención!"
-									)
+									.setDescription(employmentsDescription)
 									.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" })),
 							],
 						});
@@ -212,7 +219,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 			});
 			break;
 		}
-		case getChannelFromEnv("ofertasDeEmpleos"): {
+		case getChannelFromEnv("proyectosNoPagos"): {
 			checkCooldownComparte(msg, client).then(async (cooldown) => {
 				if (cooldown) {
 					let warn = await (msg.channel as TextChannel).send({
@@ -232,7 +239,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 							content: `Hey ${msg.author.toString()}!`,
 							embeds: [
 								new EmbedBuilder()
-									.setTitle("Protege tu dinero y asegurate de que tu trabajo sea finalizado")
+									.setTitle("¡Evita que te estafen!")
 									.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
 									.setDescription(
 										"Por favor te __recordamos__ tomar todas las precauciones posibles al interactuar en estos canales ya que el staff no puede **intervenir** con estafas. **SOLAMENTE TÚ PUEDES EVITAR SER VÍCTIMA DE UNA ESTAFA.**"
