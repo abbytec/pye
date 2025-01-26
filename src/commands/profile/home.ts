@@ -19,6 +19,8 @@ import { replyError } from "../../utils/messages/replyError.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { ExtendedClient } from "../../client.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 
 const jobs: Record<string, string> = {
 	Policia:
@@ -92,6 +94,22 @@ export default {
 		},
 		[]
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(
+			client,
+			"home",
+			[
+				{
+					name: "usuario",
+					required: false,
+				},
+				{
+					name: "nombre",
+					required: false,
+				},
+			],
+			["casa"]
+		),
 } as Command;
 async function getHouseImage(data: IHomeDocument): Promise<AttachmentBuilder> {
 	let imagePath = path.join(process.cwd(), "src", "assets", "Pictures", "Profiles", "Casa", data.house.color, `${data.house.level}.png`);

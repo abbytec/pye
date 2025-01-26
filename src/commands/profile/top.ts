@@ -22,6 +22,8 @@ import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { Bumps } from "../../Models/Bump.js";
 import { generateLeaderboard } from "../../utils/generic.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { ExtendedClient } from "../../client.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 
 const key = {
 	rob: {
@@ -90,10 +92,7 @@ export default {
 			if (!Object.keys(key).includes(type)) return await replyError(interaction, "El tipo de top seleccionado no es válido.");
 
 			try {
-				let totalPages = 1;
-				let position = -1;
-
-				const content = await generateContent(type, page, user, interaction, position, totalPages);
+				const content = await generateContent(type, page, user, interaction);
 				await replyOk(interaction, content.embeds, undefined, content.components);
 
 				const message = await interaction.fetchReply();
@@ -113,12 +112,12 @@ export default {
 						return;
 					}
 
-					const newContent = await generateContent(type, page, user, interaction, position, totalPages);
+					const newContent = await generateContent(type, page, user, interaction);
 					await i.update(newContent);
 				});
 
 				collector.on("end", async () => {
-					const disabledContent = await generateContent(type, page, user, interaction, position, totalPages, true);
+					const disabledContent = await generateContent(type, page, user, interaction, true);
 					await message.edit(disabledContent).catch(() => null);
 				});
 			} catch (error) {
@@ -127,17 +126,26 @@ export default {
 			}
 		}
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(
+			client,
+			"top",
+			[
+				{
+					name: "tipo",
+					required: true,
+					options: ["cash", "rob", "apuestas", "caps", "house", "all", "bumps"],
+				},
+				{
+					name: "pagina",
+					required: false,
+				},
+			],
+			["leaderboard"]
+		),
 } as Command;
 
-async function generateContent(
-	type: LeaderboardType,
-	page: number,
-	user: any,
-	interaction: IPrefixChatInputCommand,
-	position: number,
-	totalPages: number,
-	disable: boolean = false
-) {
+async function generateContent(type: LeaderboardType, page: number, user: any, interaction: IPrefixChatInputCommand, disable: boolean = false) {
 	let embed: EmbedBuilder;
 	let actionRow: ActionRowBuilder<ButtonBuilder>;
 

@@ -7,6 +7,7 @@ import { replyError } from "./replyError.js";
 interface IPrefixChatInputCommandOption {
 	name: string;
 	required: boolean;
+	options?: string[];
 }
 
 export class PrefixChatInputCommand {
@@ -51,7 +52,9 @@ export class PrefixChatInputCommand {
 			const value = split[i];
 
 			if (def.required && (value === undefined || value === "")) {
-				throw new ParameterError(`El argumento requerido "${def.name}" no fue proporcionado.`);
+				let response = `El argumento requerido "${def.name}" no fue proporcionado.`;
+				if (def.options) response += `\n**Opciones:** ${def.options.join(", ")}`;
+				throw new ParameterError(response);
 			}
 
 			if (value !== undefined) {
@@ -147,46 +150,47 @@ export class PrefixChatInputCommand {
 
 	private async getAttachment(name: string, required?: boolean): Promise<Attachment | null> {
 		const val = this.argsMap.get(name);
-		
+
 		if (!val) {
-			if (required) 
-			{
+			if (required) {
 				throw new ParameterError(`El archivo adjunto requerido "${name}" no fue proporcionado.`);
 			}
 
 			// If the message is a reply, fetch the replied-to message's attachments.
-	
+
 			if (this.message?.reference) {
 				const repliedMessage = await this.message.channel.messages.cache.get(this.message.reference.messageId ?? "");
 
 				return repliedMessage?.attachments.first() ?? null;
 			}
 
-			if (this.message && this.message.attachments.size > 0) { // Fix for prefix commands
+			if (this.message && this.message.attachments.size > 0) {
+				// Fix for prefix commands
 				return this.message.attachments.first() ?? null;
 			}
-			
+
 			return null;
 		}
-		
+
 		try {
 			const attachments = this.message?.attachments;
-			
+
 			if (!attachments?.size && required) {
-				throw new ParameterError(`No se pudo encontrar el archivo adjunto en el mensaje proporcionado. Asegúrate de adjuntar un archivo.`);
+				throw new ParameterError(
+					`No se pudo encontrar el archivo adjunto en el mensaje proporcionado. Asegúrate de adjuntar un archivo.`
+				);
 			}
-			
-			return attachments?.first() ?? null; 
-			
+
+			return attachments?.first() ?? null;
 		} catch (error) {
 			if (required) {
 				throw new ParameterError(`El archivo adjunto requerido "${name}" no fue proporcionado correctamente.`);
 			}
 		}
-		
+
 		return null;
-	}	  
-	  
+	}
+
 	private readonly getInteger = (name: string, required?: boolean): number | null => {
 		const val = this.argsMap.get(name);
 		if (val === undefined) {
@@ -292,6 +296,7 @@ export class PrefixChatInputCommand {
 	}
 
 	private async editReply(content: MessageToSend): Promise<Message> {
+		if (this._isDeferred && !this._reply) return await this.reply(content);
 		if (!this._reply) throw new ParameterError("No hay una respuesta previa para editar.");
 		if (content instanceof Object && "ephemeral" in content) {
 			return (await this._reply).edit({ ...content, options: { ephemeral: content.ephemeral } } as any);
@@ -342,7 +347,7 @@ export class PrefixChatInputCommand {
 				return this.getAttachment(name, required).catch(async (err) => {
 					await replyError(that, err);
 					return null;
-				})
+				});
 			},
 			getSubcommand: this.getSubcommand.bind(this) as IOptions["getSubcommand"],
 			getChannel: async (name: string, required?: boolean): Promise<any> => {

@@ -55,8 +55,8 @@ export async function replyOk(
 				.catch((e) => null);
 		} else await interaction.followUp(messageToSend).catch((e) => null);
 	} else if (components) {
-		await interaction.editReply(messageToSend).catch((e) => null);
+		await interaction.editReply(messageToSend).catch((e) => console.log(e));
 	} else {
-		await interaction.reply(messageToSend).catch((e) => null);
+		await interaction.reply(messageToSend).catch((e) => console.log(e));
 	}
 }

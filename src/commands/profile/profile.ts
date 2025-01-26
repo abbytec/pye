@@ -16,6 +16,8 @@ import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { ExtendedClient } from "../../client.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 
 const jobs: Record<string, string> = {
 	Policia:
@@ -127,6 +129,22 @@ export default {
 		},
 		[]
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(
+			client,
+			"profile",
+			[
+				{
+					name: "usuario",
+					required: false,
+				},
+				{
+					name: "descripcion",
+					required: false,
+				},
+			],
+			["perfil"]
+		),
 } as Command;
 
 // Función para obtener la lista de parejas formateada

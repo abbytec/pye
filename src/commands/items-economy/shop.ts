@@ -19,6 +19,8 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { ExtendedClient } from "../../client.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -98,7 +100,6 @@ export default {
 
 			// Obtener el mensaje enviado
 			const message = await interaction.fetchReply();
-
 			// Asegurarse de que el mensaje es de tipo Message
 			if (!(message instanceof Message)) {
 				console.error("El mensaje obtenido no es una instancia de Message.");
@@ -177,4 +178,16 @@ export default {
 		},
 		[]
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(
+			client,
+			"shop",
+			[
+				{
+					name: "pagina",
+					required: false,
+				},
+			],
+			["tienda"]
+		),
 } as Command;

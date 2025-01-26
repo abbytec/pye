@@ -12,6 +12,8 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
+import { ExtendedClient } from "../../client.js";
 
 export default {
 	group: "📚 - Inventario (Casino)",
@@ -94,6 +96,17 @@ export default {
 			}
 		}
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(client, "buy", [
+			{
+				name: "item",
+				required: true,
+			},
+			{
+				name: "cantidad",
+				required: false,
+			},
+		]),
 } as Command;
 
 // Función para manejar roles temporales

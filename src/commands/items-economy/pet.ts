@@ -1,10 +1,9 @@
 // src/commands/Currency/pet.ts
-import { AttachmentBuilder, ChatInputCommandInteraction, EmbedBuilder, GuildMember, SlashCommandBuilder, TextChannel } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, GuildMember, SlashCommandBuilder, TextChannel } from "discord.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
-import { PostHandleable } from "../../types/middleware.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
@@ -14,6 +13,8 @@ import { Home, IHomeDocument } from "../../Models/Home.js";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { ExtendedClient } from "../../client.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -92,6 +93,17 @@ export default {
 			}
 		}
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(client, "pet", [
+			{
+				name: "subcommand",
+				required: true,
+			},
+			{
+				name: "usuario",
+				required: false,
+			},
+		]),
 } as Command;
 
 async function showPet(interaction: IPrefixChatInputCommand, member: GuildMember, homeData: IHomeDocument, petInfo: IPetDocument) {

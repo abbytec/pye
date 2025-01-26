@@ -22,6 +22,8 @@ import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { IShopDocument, Shop } from "../../Models/Shop.js";
 import { Types } from "mongoose";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { ExtendedClient } from "../../client.js";
+import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -192,6 +194,22 @@ export default {
 			});
 		}
 	),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(
+			client,
+			"inventory",
+			[
+				{
+					name: "usuario",
+					required: false,
+				},
+				{
+					name: "pagina",
+					required: false,
+				},
+			],
+			["inv"]
+		),
 } as Command;
 
 // Función para procesar y agrupar los ítems del inventario
