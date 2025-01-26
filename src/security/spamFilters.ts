@@ -9,16 +9,16 @@ export interface IFilter {
 	staffWarn?: string;
 }
 
-const linkPeligroso = "Posible link peligroso detectado";
+const linkSospechoso = "Link sospechoso detectado";
 const spamBot = "Spam bot detectado";
 export const spamFilterList: IFilter[] = [
-	{ filter: /https?:\/\/[\w.-]+\.xyz[^\s]*/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /https?:\/\/[\w.-]+\.click[^\s]*/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /https?:\/\/[\w.-]+\.info[^\s]*/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /https?:\/\/[\w.-]+\.ru[^\s]*/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /https?:\/\/[\w.-]+\.biz[^\s]*/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /https?:\/\/[\w.-]+\.online[^\s]*/i, mute: false, staffWarn: linkPeligroso },
-	{ filter: /https?:\/\/[\w.-]+\.club[^\s]*/i, mute: false, staffWarn: linkPeligroso },
+	{ filter: /https?:\/\/[\w.-]+\.xyz($|\W)/i, mute: false, staffWarn: linkSospechoso },
+	{ filter: /https?:\/\/[\w.-]+\.click($|\W)/i, mute: false, staffWarn: linkSospechoso },
+	{ filter: /https?:\/\/[\w.-]+\.info($|\W)/i, mute: false, staffWarn: linkSospechoso },
+	{ filter: /https?:\/\/[\w.-]+\.ru($|\W)/i, mute: false, staffWarn: linkSospechoso },
+	{ filter: /https?:\/\/[\w.-]+\.biz($|\W)/i, mute: false, staffWarn: linkSospechoso },
+	{ filter: /https?:\/\/[\w.-]+\.online($|\W)/i, mute: false, staffWarn: linkSospechoso },
+	{ filter: /https?:\/\/[\w.-]+\.club($|\W)/i, mute: false, staffWarn: linkSospechoso },
 	{ filter: /(https?:\/\/)?(t\.me|telegram\.me|wa\.me|whatsapp\.me)\/.+/i, mute: true },
 	{ filter: /(https?:\/\/)?(pornhub|xvideos|xhamster|xnxx|hentaila)(\.\S+)+\//i, mute: true },
 	{
