@@ -41,8 +41,8 @@ export const verifyCooldown = (
 				ephemeral: true,
 			});
 
-			setTimeout(() => {
-				message.delete();
+			setTimeout(async () => {
+				await message.delete().catch(() => null);
 			}, 8000);
 			return; // Detiene la cadena de middlewares
 		}

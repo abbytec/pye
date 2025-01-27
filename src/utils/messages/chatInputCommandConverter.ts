@@ -307,7 +307,7 @@ export class PrefixChatInputCommand {
 
 	private async deleteReply(): Promise<void> {
 		if (!this._reply) throw new ParameterError("No hay una respuesta previa para borrar.");
-		await (await this._reply).delete();
+		await (await this._reply).delete().catch(() => null);
 		this._reply = undefined;
 		this._isReplied = false;
 	}

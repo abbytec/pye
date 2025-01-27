@@ -104,7 +104,7 @@ async function deleteChannel(interaction: ButtonInteraction): Promise<void> {
 async function cancelPoint(interaction: ButtonInteraction): Promise<void> {
 	try {
 		const message = await interaction.message.fetch();
-		await message.delete();
+		await message.delete().catch(() => null);
 		await interaction.deferUpdate();
 	} catch (error) {
 		console.error("Error al eliminar el mensaje:", error);
@@ -139,7 +139,7 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 				.followUp({ content: `Le has dado un punto al usuario: \`${member.user.username}\``, ephemeral: true })
 				.then((msg) => {
 					setTimeout(() => {
-						msg.delete();
+						msg.delete().catch(() => null);
 					}, 8000);
 				});
 		else
@@ -150,7 +150,7 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 				})
 				.then((msg) => {
 					setTimeout(() => {
-						msg.delete();
+						msg.delete().catch(() => null);
 					}, 8000);
 				});
 

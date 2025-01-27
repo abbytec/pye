@@ -229,9 +229,9 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 							cooldown
 						)}:R>)`,
 					});
-					await msg.delete();
+					await msg.delete().catch(() => null);
 
-					await setTimeout(() => warn.delete(), 10000);
+					await setTimeout(async () => await warn.delete().catch(() => null), 10000);
 				} else {
 					client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
 					msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {

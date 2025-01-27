@@ -74,7 +74,7 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 					if (!invite) continue;
 					await client.fetchInvite(invite).then(async (inv) => {
 						if (!validInvites.includes(inv.guild?.id ?? "")) {
-							await deletable.delete("Spam Filter");
+							await deletable.delete("Spam Filter").catch(() => null);
 							shouldStopAlgorithm = true;
 							applyTimeout(
 								10000,
@@ -85,7 +85,7 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 						}
 					});
 				} else if (detectedFilter.mute === true) {
-					await deletable.delete("Spam Filter");
+					await deletable.delete("Spam Filter").catch(() => null);
 					shouldStopAlgorithm = true;
 					applyTimeout(
 						10000,
