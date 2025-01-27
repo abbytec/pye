@@ -61,7 +61,7 @@ export default {
           throw new Error("No se proporcionó una entrada válida para escanear.");
         }
 
-        const scanResult = await pollScanResults(scanData.data.id, 3, 10000);
+        const scanResult = await pollScanResults(scanData.data.id, 5, 10000);
         const analysisStats = scanResult.data.attributes.stats;
         const thumbnailUrl = getThumbnailUrl(analysisStats);
 
@@ -154,7 +154,7 @@ async function pollScanResults(scanId: string, retries: number, delay: number): 
 
       const totalResults = stats.malicious + stats.suspicious + stats.harmless + stats.undetected;
 
-      if (totalResults > 0) {
+      if (totalResults > 0 || attempt === retries - 1) {
         return scanResult;
       }
 
