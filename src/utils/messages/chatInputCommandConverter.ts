@@ -92,9 +92,23 @@ export class PrefixChatInputCommand {
 	// Métodos para obtener argumentos
 	private readonly getString = (name: string, required?: boolean): string | null => {
 		const val = this.argsMap.get(name);
+
+		let messageContent = this.message?.content;
+
+		const hasMarkdown = val?.includes("```") && messageContent?.endsWith("```");
+
+		if (hasMarkdown) {
+			const match = messageContent?.match(/```([\s\S]*?)```/);
+
+			if (match) messageContent = match[1];
+
+			return messageContent ?? null;
+		}
+
 		if (required && (val === undefined || val === null)) {
 			throw new ParameterError(`El argumento requerido "${name}" no fue proporcionado.`);
 		}
+
 		return val ?? null;
 	};
 
