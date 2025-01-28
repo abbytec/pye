@@ -57,6 +57,7 @@ async function sendTagReminder(thread: ThreadChannel) {
 }
 
 const MAX_MESSAGE_LENGTH = 2000;
+
 const threadsHelp = async function (tittle: string, pregunta: string, m: ThreadChannel) {
 	try {
 		const prompt = `el contexto es: "${tittle}" (tema: ${getForumTopic(
@@ -66,19 +67,31 @@ const threadsHelp = async function (tittle: string, pregunta: string, m: ThreadC
 		const result = await geminiModel.generateContent(prompt);
 		const response = result.response.text();
 
-		const fullMessage = `hola <@${m.ownerId}> \n\n ${response} \n\n **Fue útil mi respuesta? 🦾👀 | Recuerda que de todos modos puedes esperar que otros usuarios te ayuden!** 😉`;
+		const fullMessage = `${response} \n\n **Fue útil mi respuesta? 🦾👀 | Recuerda que de todos modos puedes esperar que otros usuarios te ayuden!** 😉`;
 
-		// Divide el mensaje si es necesario
+		const authorName = (await m.guild.members.fetch(m.ownerId)).displayName; 
+
+		const embed = new EmbedBuilder()
+			.setColor(0x0099ff) 
+			.setTitle(`Hola ${authorName}!`)
+			.setDescription(fullMessage)
+			.setFooter({ text: "✨ Generado por IA" });
+
 		if (fullMessage.length <= MAX_MESSAGE_LENGTH) {
-			await m.send(fullMessage);
+			await m.send({ embeds: [embed] });
 		} else {
 			const chunks = splitMessage(fullMessage, MAX_MESSAGE_LENGTH);
 			let lastChunk: Message | undefined;
 			for (const chunk of chunks) {
+				const chunkEmbed = new EmbedBuilder()
+					.setColor(0x0099ff)
+					.setDescription(chunk)
+					.setFooter({ text: "✨ Generado por IA" });
+
 				if (lastChunk) {
-					await lastChunk.reply(chunk);
+					await lastChunk.reply({ embeds: [chunkEmbed] });
 				} else {
-					await m.send(chunk).then((msg) => (lastChunk = msg));
+					await m.send({ embeds: [chunkEmbed] }).then((msg) => (lastChunk = msg));
 				}
 			}
 		}
@@ -86,6 +99,7 @@ const threadsHelp = async function (tittle: string, pregunta: string, m: ThreadC
 		console.log(error);
 	}
 };
+
 
 async function processHelpForumPost(thread: ThreadChannel) {
 	try {
