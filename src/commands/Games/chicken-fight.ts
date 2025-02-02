@@ -38,7 +38,7 @@ export default {
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 
 			// Verificar que el monto sea válido
-			if (amount <= 100 || amount > maxBet || amount > userData.cash)
+			if (amount < 100 || amount > maxBet || amount > userData.cash)
 				return await replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
@@ -56,12 +56,12 @@ export default {
 					"Parece que el pollo aún no se encuentra en la tienda.\nUn administrador debe usar el comando `items` y agregarlo a la tienda."
 				);
 			if (!userData.inventory.includes(data._id))
-				return await replyError(interaction, "Necesitas comprar un pollo para ponerlo a pelear.'");
+				return await replyError(interaction, "Necesitas comprar un pollo para ponerlo a pelear.");
 
 			// Calcular resultado según el nivel del pollo
 			if (!level.has(interaction.user.id)) level.set(interaction.user.id, 49);
 			const win = Math.random() < level.get(interaction.user.id) / 100 && level.get(interaction.user.id) < 80;
-			const earn = win ? -amount : calculateJobMultiplier(userData.profile?.job, amount, userData.couples || []);
+			const earn = win ? calculateJobMultiplier(userData.profile?.job, amount, userData.couples || []) : -amount;
 			await betDone(interaction, interaction.user.id, amount, earn);
 			if (win) level.set(interaction.user.id, level.get(interaction.user.id) + 1);
 
