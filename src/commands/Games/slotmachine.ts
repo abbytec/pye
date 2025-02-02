@@ -44,7 +44,7 @@ export default {
 				);
 
 			const game = [[], [], []].map(() => [Math.random(), Math.random(), Math.random()].map((v) => Math.floor(v * 7)));
-			const loseWinRate = Math.random() < 0.5;
+			const loseWinRate = Math.random() < 0.45;
 
 			// Crear embed de respuesta
 			const embed = new EmbedBuilder().setAuthor({
