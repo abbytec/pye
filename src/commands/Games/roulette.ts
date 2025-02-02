@@ -64,7 +64,7 @@ export default {
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			let choice: string = interaction.options.getString("eleccion", true);
 			// Validar datos
-			if (amount <= 100 || amount > maxBet || amount > userData.cash)
+			if (amount < 100 || amount > maxBet || amount > userData.cash)
 				return replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
@@ -111,53 +111,79 @@ export default {
 } as Command;
 
 async function roulette(interaction: IPrefixChatInputCommand) {
-	// Se ejecuta luego de 30s
-	let msg = "";
+	// Reiniciar el estado de la partida.
 	data.fin = -1;
-	let valor = Math.floor(Math.random() * 36);
+	let valor = Math.floor(Math.random() * 37); // Aseguramos valores de 0 a 36.
 	let vcolor = colores.green;
 	if (rojos.includes(valor)) {
 		vcolor = colores.red;
 	} else if (negros.includes(valor)) {
 		vcolor = colores.black;
 	}
-	data.bola = { valor: valor, color: vcolor }; //En la ruleta saldrá un número del 1 al 24
-	const resultados: { jugador: string; cantidad: number; apuesta: any }[] = [];
-	const bola = data.bola ?? {};
+	data.bola = { valor, color: vcolor };
 
+	// Creamos un mapa para acumular resultados de cada jugador.
+	// Cada entrada tendrá la forma: { totalApostado, neto }
+	const resultadosPorJugador: Map<string, { totalApostado: number; neto: number }> = new Map();
+
+	// Procesamos cada apuesta individualmente.
 	for (const apuesta of data.apuestas) {
-		// Verificar si el jugador acierta en su apuesta
-		let initValue = apuesta.cantidad;
-		if (bola.color === "green" && bola.color === apuesta.apuesta) apuesta.cantidad = apuesta.cantidad * 36;
-		if (bola.color != "green" && apuesta.apuesta === bola.color) apuesta.cantidad = apuesta.cantidad * 2;
-		if (apuesta.apuesta === colores.even && bola.valor % 2 === 0) apuesta.cantidad = apuesta.cantidad * 2;
-		if (apuesta.apuesta === colores.odd && bola.valor % 2 === 1) apuesta.cantidad = apuesta.cantidad * 2;
+		// Se guarda el monto apostado en esta apuesta.
+		const montoApostado = apuesta.cantidad;
+		let gananciaBruta = 0; // Ganancia bruta sin incluir la apuesta inicial.
 
-		let userData: IUserModel = await getOrCreateUser(apuesta.jugador);
-		if (initValue != apuesta.cantidad) {
-			// si ganó el valor inicial es dintinto, evitamos volver a calcular si ganó
-			apuesta.cantidad += calculateJobMultiplier(userData.profile?.job, apuesta.cantidad, userData.couples || []);
+		// Calculamos el multiplicador según la apuesta.
+		// Importante: si apuestas a "even" o "odd", nos aseguramos de excluir el 0.
+		if (vcolor === "green" && apuesta.apuesta === "green") {
+			gananciaBruta = montoApostado * 36 - montoApostado;
+		} else if (apuesta.apuesta === vcolor && vcolor !== "green") {
+			gananciaBruta = montoApostado * 2 - montoApostado;
+		} else if (apuesta.apuesta === colores.even && valor !== 0 && valor % 2 === 0) {
+			gananciaBruta = montoApostado * 2 - montoApostado;
+		} else if (apuesta.apuesta === colores.odd && valor !== 0 && valor % 2 === 1) {
+			gananciaBruta = montoApostado * 2 - montoApostado;
 		} else {
-			apuesta.cantidad = 0 - apuesta.cantidad;
+			// En cualquier otro caso se pierde la apuesta.
+			gananciaBruta = -montoApostado;
 		}
-		const resultado = resultados.find((res) => res.jugador === apuesta.jugador);
-		if (resultado) {
-			resultado.cantidad += apuesta.cantidad;
-			resultado.apuesta += initValue;
+
+		// Acumulamos los resultados por jugador.
+		if (resultadosPorJugador.has(apuesta.jugador)) {
+			const acumulado = resultadosPorJugador.get(apuesta.jugador)!;
+			acumulado.totalApostado += montoApostado;
+			acumulado.neto += gananciaBruta;
 		} else {
-			resultados.push({ jugador: apuesta.jugador, cantidad: apuesta.cantidad, apuesta: initValue });
+			resultadosPorJugador.set(apuesta.jugador, {
+				totalApostado: montoApostado,
+				neto: gananciaBruta,
+			});
 		}
 	}
 
-	for (const resultado of resultados) {
-		await betDone(interaction, resultado.jugador, resultado.apuesta, resultado.cantidad);
+	// Mensaje que se enviará al canal.
+	let msg = "";
 
-		if (resultado.cantidad < 0) {
-			msg += `<@${resultado.jugador}> ha perdido ${pyecoin} **${Math.abs(resultado.cantidad).toLocaleString()}**.\n`;
-		} else if (resultado.cantidad > 0) {
-			msg += `<@${resultado.jugador}> ha ganado ${pyecoin} **${resultado.cantidad.toLocaleString()}**.\n`;
+	// Ahora procesamos el resultado global por jugador y aplicamos el bono de forma única.
+	for (const [jugador, { totalApostado, neto }] of resultadosPorJugador) {
+		// Obtenemos la información del usuario.
+		const userData: IUserModel = await getOrCreateUser(jugador);
+		let resultadoFinal = neto;
+
+		// Si el neto es positivo, aplicamos el bono una sola vez.
+		if (neto > 0) {
+			resultadoFinal = calculateJobMultiplier(userData.profile?.job, neto, userData.couples || []);
+		}
+
+		// Actualizamos al jugador.
+		await betDone(interaction, jugador, totalApostado, resultadoFinal);
+
+		// Construimos el mensaje.
+		if (resultadoFinal < 0) {
+			msg += `<@${jugador}> ha perdido ${pyecoin} **${Math.abs(resultadoFinal).toLocaleString()}**.\n`;
+		} else if (resultadoFinal > 0) {
+			msg += `<@${jugador}> ha ganado ${pyecoin} **${resultadoFinal.toLocaleString()}**.\n`;
 		} else {
-			msg += `<@${resultado.jugador}> no ha perdido ${pyecoin}, sus pérdidas se cancelaron con sus ganancias.\n`;
+			msg += `<@${jugador}> no ha perdido ni ganado, sus apuestas se cancelaron.\n`;
 		}
 	}
 
@@ -165,8 +191,11 @@ async function roulette(interaction: IPrefixChatInputCommand) {
 	(interaction.client.channels.cache.get(getChannelFromEnv("casinoPye")) as TextChannel | undefined)?.send({
 		embeds: [
 			new EmbedBuilder()
-				.setAuthor({ name: "Ruleta", iconURL: (interaction.guild as Guild).iconURL() ?? undefined })
-				.setDescription(`La bola ha caído en: **${bola.valor}**, \`${bola.color}\`.`)
+				.setAuthor({
+					name: "Ruleta",
+					iconURL: (interaction.guild as Guild).iconURL() ?? undefined,
+				})
+				.setDescription(`La bola ha caído en: **${valor}**, \`${vcolor}\`.`)
 				.addFields([{ name: "Resultados", value: msg }])
 				.setColor(COLORS.okGreen)
 				.setThumbnail("https://media.discordapp.net/attachments/687397125793120288/917501566527868968/spin.gif")
