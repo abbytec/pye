@@ -65,18 +65,20 @@ export default {
 			}
 			// Añadir apuestas si no están jugando ya
 			const jugador = data.apuestas.find((apu) => apu.jugador === interaction.user.id);
+
+			if (data.apuestas.length === 6) {
+				return await replyError(interaction, `Ya hay 6 jugadores en la ruleta`);
+			}
+
 			if (!jugador) {
+				if (amount >= data.apuestaMin) {
+					data.apuestaMin = amount;
+				} else {
+					return await replyError(interaction, `No puedes apostar un monto menor a ${data.apuestaMin}`);
+				}
 				data.apuestas.push({ jugador: interaction.user.id, cantidad: amount });
 			} else {
 				return await replyError(interaction, "Ya te encuentras dentro del juego");
-			}
-			if (amount >= data.apuestaMin) {
-				data.apuestaMin = amount;
-			} else {
-				return await replyError(interaction, `No puedes apostar un monto menor a ${data.apuestaMin}`);
-			}
-			if (data.apuestas.length === 6) {
-				return await replyError(interaction, `Ya hay 6 jugadores en la ruleta`);
 			}
 
 			// Mensaje de respuesta del comando
