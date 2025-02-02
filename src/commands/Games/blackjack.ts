@@ -226,7 +226,7 @@ function startGame(
 	interactionResponse
 		.createMessageComponentCollector({
 			filter: (interactionB) =>
-				["bj-hit", "bj-stand", "bj-ddown", "bj-split", "bj-cancel"].includes(interactionB.customId) && interactionB.user.id === userId,
+				["bj-hit", "bj-stand", "bj-ddown", "bj-split"].includes(interactionB.customId) && interactionB.user.id === userId,
 			time: 60e3,
 		})
 		.on("collect", async (i: ButtonInteraction) => {
@@ -266,10 +266,12 @@ function startGame(
 
 					break;
 				case "bj-stand":
-					newCardsDealer = cards.randomKey(getRandomNumber(2, 3));
-					changeCard(null, newCardsDealer, cardsGame, cards);
-					removeCards(null, newCardsDealer, cards);
-					gameDealerCards = gameDealerCards.concat(newCardsDealer);
+					while (cardsValue(gameDealerCards, cardsGame) < 17) {
+						const newCard = cards.randomKey(1);
+						gameDealerCards.push(newCard[0]);
+						changeCard(null, newCard, cardsGame, cards);
+						removeCards(null, newCard, cards);
+					}
 					await checkGame(
 						amount,
 						userId,
@@ -582,7 +584,7 @@ function parseRelatable(value: number, card: "relatable" | number) {
 }
 
 function createGames(hands: string[][], cards: Collection<string, number | "relatable">, cardsInGame: Collection<string, number | "relatable">) {
-	let newCards = cards.filter((x) => x != cardsInGame.get(hands[0][0]));
+	let newCards = cards.filter((_, key) => key !== hands[0][0]);
 	let randomCards = newCards.randomKey(2);
 	changeCard(randomCards, null, cardsInGame, cards);
 	removeCards(randomCards, null, cards);
