@@ -36,7 +36,9 @@ export default {
 			// Buscar la advertencia más reciente que no esté oculta
 			const latestWarn = await ModLogs.findOneAndUpdate(
 				{ id: user.id, type: "Warn", hiddenCase: { $ne: true } },
-				{ $set: { hiddenCase: true, reasonUnpenalized: reason } },
+				{
+					$set: { hiddenCase: true, reasonUnpenalized: reason },
+				},
 				{ sort: { date: -1 }, new: true }
 			);
 

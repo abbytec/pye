@@ -113,7 +113,7 @@ export default {
 async function roulette(interaction: IPrefixChatInputCommand) {
 	// Reiniciar el estado de la partida.
 	data.fin = -1;
-	let valor = Math.floor(Math.random() * 37); // Aseguramos valores de 0 a 36.
+	let valor = Math.floor(Math.random() * 36); // Aseguramos valores de 0 a 36.
 	let vcolor = colores.green;
 	if (rojos.includes(valor)) {
 		vcolor = colores.red;

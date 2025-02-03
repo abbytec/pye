@@ -132,7 +132,14 @@ async function handleToggle(interaction: IPrefixChatInputCommand, member: GuildM
 
 			await ModLogs.findOneAndUpdate(
 				{ id: member.id, type: "Voice-mute", hiddenCase: { $ne: true } },
-				{ $set: { hiddenCase: true, reasonUnpenalized: reason } },
+				{
+					$set: { hiddenCase: true, reasonUnpenalized: reason },
+					$setOnInsert: {
+						moderator: interaction.user.tag,
+						date: new Date(),
+						reasonUnpenalized: reason,
+					},
+				},
 				{ sort: { date: -1 }, new: true, upsert: true }
 			);
 

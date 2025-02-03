@@ -11,6 +11,7 @@ import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { logMessages } from "../../utils/finalwares/logMessages.js";
+import { ModLogs } from "../../Models/ModLogs.js";
 
 export default {
 	group: "⚙️ - Administración y Moderación",
@@ -34,7 +35,6 @@ export default {
 					option.setName("motivo").setDescription("El motivo de la restricción/desrestricción.").setRequired(false)
 				)
 		)
-		// Configuración de permisos: solo usuarios con 'Manage Roles' pueden usar 'toggle'
 		.setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
 
 	execute: composeMiddlewares(
@@ -115,20 +115,37 @@ async function handleToggle(interaction: IPrefixChatInputCommand, member: GuildM
 		const reason = interaction.options.getString("motivo") ?? "Ninguno";
 
 		const hasRestrictedRole = member.roles.cache.has(restrictedRoleId);
-		let action: "Restringido" | "Desrestringido";
 		let message: string;
-
 		if (hasRestrictedRole) {
-			// Desrestringir
 			await member.roles.remove(restrictedRole, `${reason} - Desrestringido por ${interaction.user.tag}`);
-			action = "Desrestringido";
-			message = `Se ha ${action.toLowerCase()} a: **${member.user.tag}**.`;
+			message = `Se ha desrestringido a: **${member.user.tag}**.`;
+			await ModLogs.findOneAndUpdate(
+				{ id: member.id, type: "Restrict", hiddenCase: { $ne: true } },
+				{
+					$set: { hiddenCase: true, reasonUnpenalized: reason },
+					$setOnInsert: {
+						moderator: interaction.user.tag,
+						date: new Date(),
+						reason: "Desconocida",
+						reasonUnpenalized: reason,
+					},
+				},
+				{ upsert: true, new: true }
+			).catch((e) => console.error(e));
 		} else {
-			// Restringir
 			await member.roles.add(restrictedRole, `${reason} - Restringido por ${interaction.user.tag}`);
-			action = "Restringido";
-			message = `Se ha ${action.toLowerCase()} a: **${member.user.tag}**.`;
+			message = `Se ha restringido a: **${member.user.tag}**.`;
+			await ModLogs.create({
+				id: member.id,
+				moderator: interaction.user.tag,
+				reason: reason,
+				date: new Date(),
+				type: "Restrict",
+			});
 		}
+
+		// Registrar la acción en ModLogs
+
 		await replyWarning(interaction, message, undefined, undefined, undefined, undefined, false);
 		const logChannelId = getChannelFromEnv("bansanciones");
 		if (logChannelId) {

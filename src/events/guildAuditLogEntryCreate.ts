@@ -95,9 +95,11 @@ export default {
 					});
 					await ModLogs.findOneAndUpdate(
 						{ id: memberId, type: "Ban", hiddenCase: { $ne: true } }, // Filtro
-						{ $set: { hiddenCase: true, reasonUnpenalized: entry.reason ?? "No se proporciono una razon." } }, // Actualización
+						{
+							$set: { hiddenCase: true, reasonUnpenalized: entry.reason ?? "No se proporciono una razon." },
+						}, // Actualización
 						{ sort: { date: -1 }, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
-					);
+					).catch(() => null);
 					return;
 				}
 			}

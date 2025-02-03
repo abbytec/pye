@@ -39,14 +39,21 @@ export default {
 			else
 				await interaction.guild?.members.unban(userId, reason).catch(async (error) => {
 					console.error(`Error al desbanear al usuario: ${error}`);
-					await replyError(interaction, "No se pudo desbanear al usuario.");
+					await replyError(interaction, "No se pudo desbanear al usuario. Quizas no estaba baneado.");
 				});
 
 			// Buscar el ban más reciente que no esté oculto
 			const latestTimeout = await ModLogs.findOneAndUpdate(
 				{ id: user.id, type: "Ban", hiddenCase: { $ne: true } }, // Filtro
-				{ $set: { hiddenCase: true, reasonUnpenalized: reason } }, // Actualización
-				{ sort: { date: -1 }, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
+				{
+					$set: { hiddenCase: true, reasonUnpenalized: reason },
+					$setOnInsert: {
+						moderator: interaction.user.tag,
+						date: new Date(),
+						reasonUnpenalized: reason,
+					},
+				}, // Actualización
+				{ sort: { date: -1 }, upsert: true, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
 			);
 
 			if (!latestTimeout) {

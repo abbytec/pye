@@ -39,15 +39,25 @@ export default {
 
 			// Remover el timeout
 			try {
-				await member.timeout(null, reason).catch(() => null);
+				const latestTimeout = await member
+					.timeout(null, reason)
+					.then(async () => {
+						await ModLogs.findOneAndUpdate(
+							{ id: user.id, type: "Timeout", hiddenCase: { $ne: true } }, // Filtro
+							{
+								$set: { hiddenCase: true, reasonUnpenalized: reason },
+								$setOnInsert: {
+									moderator: interaction.user.tag,
+									date: new Date(),
+									reasonUnpenalized: reason,
+								},
+							}, // Actualización
+							{ sort: { date: -1 }, upsert: true, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
+						);
+					})
+					.catch(() => null);
 
 				// Buscar el timeout más reciente que no esté oculto
-				const latestTimeout = await ModLogs.findOneAndUpdate(
-					{ id: user.id, type: "Timeout", hiddenCase: { $ne: true } }, // Filtro
-					{ $set: { hiddenCase: true, reasonUnpenalized: reason } }, // Actualización
-					{ sort: { date: -1 }, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
-				);
-
 				if (!latestTimeout) {
 					return await replyError(interaction, "Este usuario no tiene timeouts recientes.");
 				}
