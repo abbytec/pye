@@ -63,7 +63,7 @@ export default {
 				}
 
 				// Calcular el costo total
-				const totalCost = itemData.price * amount;
+				const totalCost = itemData.price * amount * ExtendedClient.getInflationRate();
 
 				// Verificar si el usuario tiene suficiente dinero
 				if (totalCost > (userData.cash ?? 0))

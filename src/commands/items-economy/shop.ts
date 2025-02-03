@@ -69,12 +69,15 @@ export default {
 				})
 				.setDescription(`Compra un ítem con el comando \`/buy [nombre del ítem]\`.\nÚsalos con el comando \`/use [nombre del ítem]\`.`)
 				.addFields(
-					items.map((item, index) => ({
-						name: `\`${(page - 1) * ITEMS_PER_PAGE + index + 1}\`. ${item.icon ? item.icon + " " : ""}${
-							item.name
-						} \`[ID ${item.itemId.toString().padStart(2, "0")}]\` — 💰 ${item.price.toLocaleString()}`,
-						value: item.description,
-					}))
+					items.map((item, index) => {
+						item.price = (item.price || 0) * ExtendedClient.getInflationRate();
+						return {
+							name: `\`${(page - 1) * ITEMS_PER_PAGE + index + 1}\`. ${item.icon ? item.icon + " " : ""}${
+								item.name
+							} \`[ID ${item.itemId.toString().padStart(2, "0")}]\` — 💰 ${item.price.toLocaleString()}`,
+							value: item.description,
+						};
+					})
 				)
 				.setFooter({ text: `Página ${page}/${totalPages}` })
 				.setColor(COLORS.pyeLightBlue)
@@ -141,12 +144,15 @@ export default {
 						`Compra un ítem con el comando \`/buy [nombre del ítem]\`.\nÚsalos con el comando \`/use [nombre del ítem]\`.`
 					)
 					.addFields(
-						newItems.map((item, index) => ({
-							name: `\`${(page - 1) * ITEMS_PER_PAGE + index + 1}\`. ${item.icon} ${item.name} \`[ID ${item.itemId
-								.toString()
-								.padStart(2, "0")}]\` — 💰 ${item.price.toLocaleString()}`,
-							value: item.description,
-						}))
+						newItems.map((item, index) => {
+							item.price = (item.price || 0) * ExtendedClient.getInflationRate();
+							return {
+								name: `\`${(page - 1) * ITEMS_PER_PAGE + index + 1}\`. ${item.icon} ${item.name} \`[ID ${item.itemId
+									.toString()
+									.padStart(2, "0")}]\` — 💰 ${item.price.toLocaleString()}`,
+								value: item.description,
+							};
+						})
 					)
 					.setFooter({ text: `Página ${page}/${totalPages}` })
 					.setColor(COLORS.pyeLightBlue)

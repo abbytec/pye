@@ -25,6 +25,7 @@ import { AnyBulkWriteOperation } from "mongoose";
 import { inspect } from "util";
 import {} from "../globals.js";
 import { PrefixChatInputCommand } from "./utils/messages/chatInputCommandConverter.js";
+import { Users } from "./Models/User.js";
 
 interface VoiceFarming {
 	date: Date;
@@ -49,6 +50,7 @@ export class ExtendedClient extends Client {
 	public static readonly trending: Trending = new Trending();
 	private static readonly stickerTypeCache: Map<string, StickerType> = new Map();
 	public static guildManager: GuildManager | undefined;
+	public static bankAvgCoins: number = 100000;
 
 	constructor() {
 		super({
@@ -228,6 +230,7 @@ export class ExtendedClient extends Client {
 			ExtendedClient.trending.dailySave();
 			await this.saveCompartePosts().catch((error) => console.error(error));
 		}
+		await this.updateBankAvgCoins();
 	}
 
 	private limpiarCompartePosts(): void {
@@ -324,5 +327,25 @@ export class ExtendedClient extends Client {
 				return sticker.type;
 			})
 		);
+	}
+
+	private async updateBankAvgCoins() {
+		const averageBank = await Users.aggregate([
+			{
+				$match: { bank: { $ne: 0 } }, // Filtra los valores donde "bank" no es 0
+			},
+			{
+				$group: {
+					_id: null,
+					averageBank: { $avg: "$bank" },
+				},
+			},
+		]).catch(() => []);
+		console.log(`BankAvgCoins: ${JSON.stringify(averageBank)}`);
+		ExtendedClient.bankAvgCoins = averageBank[0]?.averageBank ?? ExtendedClient.bankAvgCoins;
+	}
+
+	public static getInflationRate() {
+		return ExtendedClient.bankAvgCoins / 100000;
 	}
 }

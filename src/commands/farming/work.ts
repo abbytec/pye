@@ -58,10 +58,13 @@ export default {
 			};
 
 			// Generar ganancia aleatoria
-			let profit = getRandomNumber(command.lowestMoney, command.highestMoney);
+			let profit = getRandomNumber(
+				command.lowestMoney * ExtendedClient.getInflationRate(),
+				command.highestMoney * ExtendedClient.getInflationRate()
+			);
 
 			// Ajustar ganancia según el trabajo del usuario y su pareja
-			profit = calculateJobMultiplier(userData.profile?.job, profit, userData.couples || []);
+			profit = calculateJobMultiplier(userData.profile?.job, profit, userData.couples || [], false);
 
 			profit = Math.floor(profit);
 			const profitFormatted = profit.toLocaleString();

@@ -75,7 +75,7 @@ export default {
 				profitFormatted = profit.toLocaleString();
 			} else {
 				// Ajustar ganancia según el trabajo del usuario y su pareja
-				profit = calculateJobMultiplier(userData.profile?.job, profit, userData.couples || []);
+				profit = calculateJobMultiplier(userData.profile?.job, profit, userData.couples || [], false);
 
 				profit = Math.floor(profit);
 				profitFormatted = profit.toLocaleString();

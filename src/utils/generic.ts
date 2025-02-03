@@ -115,14 +115,14 @@ export async function checkRole(msg: Message<boolean> | IPrefixChatInputCommand,
 	}
 }
 
-export function calculateJobMultiplier(job: string | undefined, profit: number, couples: ICouple[]) {
+export function calculateJobMultiplier(job: string | undefined, profit: number, couples: ICouple[], isGame: boolean = true) {
 	if ((job === "Enfermero" || job === "Enfermera") && couples.some((s) => s.job === "Doctor" || s.job === "Doctora")) {
 		profit += profit * 0.5;
 	}
 	if ((job === "Doctor" || job === "Doctora") && couples.some((s) => s.job === "Enfermero" || s.job === "Enfermera")) {
 		profit += profit * 0.5;
 	}
-	if (job === "Bombero" || job === "Bombera") profit += Math.ceil(profit * 0.35);
+	if (isGame && (job === "Bombero" || job === "Bombera")) profit += Math.ceil(profit * 0.35);
 	return Math.floor(profit);
 }
 

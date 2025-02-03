@@ -76,7 +76,7 @@ export default {
 				userData.cash = (userData.cash ?? 0) - profit;
 			} else {
 				// El usuario gana, ajustar profit por bonificaciones de trabajo
-				profit = calculateJobMultiplier(userData.profile?.job, profit, userData.couples || []);
+				profit = calculateJobMultiplier(userData.profile?.job, profit, userData.couples || [], false);
 
 				profit = Math.floor(profit);
 				userData.cash = (userData.cash ?? 0) + profit;
