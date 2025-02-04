@@ -148,5 +148,5 @@ export const levels: LevelConfig[] = [
 ];
 export const MAX_LEVEL = levels.length;
 function inflatedMoney(money: number) {
-	return ExtendedClient.getInflationRate() * money;
+	return ExtendedClient.getInflatedRate(money);
 }

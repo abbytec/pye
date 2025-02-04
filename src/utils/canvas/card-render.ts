@@ -97,7 +97,7 @@ interface RenderParams {
 export function getRender({ name, role, points, rank, pyeCoins, foreground, avatar, customBackground, customDecoration }: RenderParams) {
 	const data = {
 		nickName: name[0].toUpperCase() + name.slice(1),
-		role: role ? getRoleName(role.id) : "-",
+		role: role ? getRoleName(role.id) : "novato",
 		avatar: avatar,
 		pyeCoins: pyeCoins,
 		reputation: {

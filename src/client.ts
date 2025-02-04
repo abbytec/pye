@@ -341,11 +341,10 @@ export class ExtendedClient extends Client {
 				},
 			},
 		]).catch(() => []);
-		console.log(`BankAvgCoins: ${JSON.stringify(averageBank)}`);
 		ExtendedClient.bankAvgCoins = averageBank[0]?.averageBank ?? ExtendedClient.bankAvgCoins;
 	}
 
-	public static getInflationRate() {
-		return ExtendedClient.bankAvgCoins / 100000;
+	public static getInflatedRate(amount: number) {
+		return Math.round((amount * ExtendedClient.bankAvgCoins) / 100000);
 	}
 }

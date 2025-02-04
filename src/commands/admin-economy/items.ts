@@ -55,6 +55,9 @@ export default {
 				.addRoleOption((option) => option.setName("rol").setDescription("Rol a dar al usar el ítem.").setRequired(false))
 				.addStringOption((option) => option.setName("grupo").setDescription("Grupo del ítem.").setRequired(false))
 				.addStringOption((option) => option.setName("timeout").setDescription("Duración del rol (ejemplo: 1h, 30m).").setRequired(false))
+				.addStringOption((option) =>
+					option.setName("background").setDescription("Nombre de la imagen de fondo con extensión.").setRequired(false)
+				)
 		)
 		.addSubcommand((subcommand) =>
 			subcommand
@@ -72,6 +75,9 @@ export default {
 				.addRoleOption((option) => option.setName("rol").setDescription("Nuevo rol a dar al usar el ítem.").setRequired(false))
 				.addStringOption((option) => option.setName("grupo").setDescription("Nuevo grupo del ítem.").setRequired(false))
 				.addStringOption((option) => option.setName("timeout").setDescription("Nueva duración del rol.").setRequired(false))
+				.addStringOption((option) =>
+					option.setName("background").setDescription("Nuevo fondo (nombre de imagen con extensión).").setRequired(false)
+				)
 		)
 		.addSubcommand((subcommand) =>
 			subcommand
@@ -193,11 +199,13 @@ async function visualizarItems(interaction: IPrefixChatInputCommand) {
 			.setTitle(`${item.name}`)
 			.setDescription(`${item.description}`)
 			.addFields(
+				{ name: "Mensaje", value: item.message || "No tiene.", inline: false },
 				{ name: "Icono", value: item.icon || "No tiene.", inline: true },
 				{ name: "Precio", value: `${item.price}`, inline: true },
 				{ name: "Almacenable", value: item.storable ? "Sí" : "No", inline: true },
 				{ name: "Rol a dar", value: item.role || "Ninguno", inline: true },
 				{ name: "Grupo", value: item.group || "Ninguno", inline: true },
+				{ name: "Fondo", value: item.background ?? "No tiene.", inline: true },
 				{
 					name: "Timeout",
 					value: item.timeout ? ms(item.timeout, { long: true }) : "No tiene.",
@@ -235,6 +243,7 @@ async function añadirItem(interaction: IPrefixChatInputCommand) {
 	const role = await interaction.options.getRole("rol", false);
 	const group = interaction.options.getString("grupo", false);
 	const timeoutStr = interaction.options.getString("timeout", false);
+	const background = interaction.options.getString("background", false);
 
 	let timeout = 0;
 	if (timeoutStr) {
@@ -260,6 +269,7 @@ async function añadirItem(interaction: IPrefixChatInputCommand) {
 			role: role ? role.id : undefined,
 			group,
 			timeout,
+			background,
 		});
 
 		await newItem.save();
@@ -269,11 +279,13 @@ async function añadirItem(interaction: IPrefixChatInputCommand) {
 			.setDescription(`Se ha creado un ítem llamado \`${name}\``)
 			.addFields(
 				{ name: "Descripción", value: description, inline: false },
+				{ name: "Mensaje", value: messageContent ?? "No tiene.", inline: false },
 				{ name: "Icono", value: icon ?? "No tiene.", inline: true },
 				{ name: "Precio", value: price.toString(), inline: true },
 				{ name: "Almacenable", value: storable ? "Sí" : "No", inline: true },
 				{ name: "Rol a dar", value: role ? role.name : "Ninguno", inline: true },
 				{ name: "Grupo", value: group ?? "Ninguno", inline: true },
+				{ name: "Fondo", value: background ?? "No tiene.", inline: true },
 				{ name: "Timeout", value: timeoutStr ?? "No tiene.", inline: true }
 			)
 			.setColor(COLORS.okGreen);
@@ -360,6 +372,13 @@ async function getUpdatedFields(interaction: IPrefixChatInputCommand, item: ISho
 		item.timeout = timeout;
 		modified = true;
 	}
+
+	const background = interaction.options.getString("background", false);
+	if (background !== null) {
+		item.background = background;
+		modified = true;
+	}
+
 	return modified;
 }
 

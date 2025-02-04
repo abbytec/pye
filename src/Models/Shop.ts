@@ -11,6 +11,7 @@ export interface IShop {
 	role: string;
 	timeout: number;
 	group: string;
+	background?: string;
 }
 
 export interface IShopDocument extends IShop, Document {
@@ -58,6 +59,10 @@ const schemaShop = new Schema<IShop>(
 		group: {
 			type: String,
 			default: "",
+		},
+		background: {
+			type: String,
+			required: false,
 		},
 	},
 	{ versionKey: false }

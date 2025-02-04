@@ -59,8 +59,8 @@ export default {
 
 			// Generar ganancia aleatoria
 			let profit = getRandomNumber(
-				command.lowestMoney * ExtendedClient.getInflationRate(),
-				command.highestMoney * ExtendedClient.getInflationRate()
+				ExtendedClient.getInflatedRate(command.lowestMoney),
+				ExtendedClient.getInflatedRate(command.highestMoney)
 			);
 
 			// Ajustar ganancia según el trabajo del usuario y su pareja
