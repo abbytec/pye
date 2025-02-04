@@ -23,4 +23,6 @@ export interface IUser {
 	inventory: Types.ObjectId[];
 	caps: number;
 	total: number;
+	customBackground?: string;
+	customDecoration?: string;
 }

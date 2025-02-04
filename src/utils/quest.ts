@@ -69,7 +69,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 	// Verificar si se cumplen los requisitos
 	const req = levelConfig.requirements;
 	const progressMet =
-		(!req.money || user.money >= req.money) &&
+		(!req.money || user.money >= req.money()) &&
 		(!req.bump || user.bump >= req.bump) &&
 		(!req.text || user.text >= req.text) &&
 		(!req.rep || user.rep >= req.rep);

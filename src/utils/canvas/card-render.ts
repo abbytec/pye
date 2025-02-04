@@ -1,4 +1,4 @@
-import { createCanvas, Image } from "@napi-rs/canvas";
+import { createCanvas, Image, SKRSContext2D } from "@napi-rs/canvas";
 import { Role } from "discord.js";
 import { getRoleName } from "../constants.js";
 import cardRoles from "../constants/card-roles.js";
@@ -13,26 +13,74 @@ function formatNumber(numStr: string) {
 	if (num < 1000) {
 		return num.toString();
 	} else if (num < 1000000) {
-		// Redondea al millar más cercano y luego divide por 1000
 		return Math.round(num / 1000).toString() + "k";
 	} else {
-		// Redondea al millón más cercano y luego divide por 1000000
 		return Math.round(num / 1000000).toString() + "M";
 	}
 }
 
-/**
- * get render canvas
- *
- * @param {object} params - Objeto con los parámetros.
- * @param {string} params.name - User name
- * @param {import('discord.js').Role} params.role - role object
- * @param {string} params.points - Reputation points
- * @param {string} params.rank - Reputation rank.
- * @param {string} params.pyeCoins - PyE coins of the suer.
- * @param {import('canvas').Image} params.background - backround image path.
- * @param {import('canvas').Image} params.avatar - url path'.
- */
+// Función para dibujar un rectángulo redondeado
+function drawRoundedRect(ctx: SKRSContext2D, x: number, y: number, width: number, height: number, radius: number) {
+	ctx.beginPath();
+	ctx.moveTo(x + radius, y);
+	ctx.lineTo(x + width - radius, y);
+	ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+	ctx.lineTo(x + width, y + height - radius);
+	ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+	ctx.lineTo(x + radius, y + height);
+	ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+	ctx.lineTo(x, y + radius);
+	ctx.quadraticCurveTo(x, y, x + radius, y);
+	ctx.closePath();
+	ctx.fill();
+}
+
+// Función que dibuja texto con un recuadro semitransparente y esquinas redondeadas
+function drawTextWithBox(
+	ctx: SKRSContext2D,
+	text: string,
+	x: number,
+	y: number,
+	{
+		font = "bold 30px Rajdhani",
+		textColor = "#FFFFFF",
+		boxColor = "rgba(0, 0, 0, 0.5)",
+		paddingX = 20,
+		paddingY = 10,
+		radius = 10,
+		textAlign = "center",
+		textBaseline = "middle",
+	}
+) {
+	ctx.save();
+	ctx.font = font;
+	ctx.textAlign = textAlign;
+	ctx.textBaseline = textBaseline;
+
+	const metrics = ctx.measureText(text);
+	const textWidth = metrics.width;
+	let textHeight = parseInt(font.match(/\d+/)?.[0] ?? "30", 10);
+
+	// Si se soportan las métricas reales, usarlas para ajustar la altura del recuadro.
+	if (metrics.actualBoundingBoxAscent !== undefined && metrics.actualBoundingBoxDescent !== undefined) {
+		textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+	}
+
+	const boxWidth = textWidth + paddingX * 2;
+	const boxHeight = textHeight + paddingY * 2;
+
+	// Calcular la posición vertical exacta del recuadro según las métricas reales
+	const boxX = x - boxWidth / 2;
+	const boxY = metrics.actualBoundingBoxAscent !== undefined ? y - metrics.actualBoundingBoxAscent - paddingY : y - textHeight / 2 - paddingY;
+
+	ctx.fillStyle = boxColor;
+	drawRoundedRect(ctx, boxX, boxY, boxWidth, boxHeight, radius);
+
+	ctx.fillStyle = textColor;
+	ctx.fillText(text, x, y);
+
+	ctx.restore();
+}
 
 interface RenderParams {
 	name: string;
@@ -40,10 +88,13 @@ interface RenderParams {
 	points: string;
 	rank: string;
 	pyeCoins: string;
-	background: Image;
+	foreground: Image;
 	avatar: Image;
+	customBackground?: Image;
+	customDecoration?: Image;
 }
-export function getRender({ name, role, points, rank, pyeCoins, background, avatar }: RenderParams) {
+
+export function getRender({ name, role, points, rank, pyeCoins, foreground, avatar, customBackground, customDecoration }: RenderParams) {
 	const data = {
 		nickName: name[0].toUpperCase() + name.slice(1),
 		role: role ? getRoleName(role.id) : "-",
@@ -62,131 +113,84 @@ export function getRender({ name, role, points, rank, pyeCoins, background, avat
 
 	ctx.imageSmoothingEnabled = false;
 
-	ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+	// Dibujar fondo custom si está disponible
+	if (customBackground) {
+		ctx.drawImage(customBackground, 0, 0, canvas.width, canvas.height);
+	}
+	// Dibujar el foreground
+	ctx.drawImage(foreground, 0, 0, canvas.width, canvas.height);
+
+	if (customDecoration) {
+		ctx.drawImage(customDecoration, 0, 0, canvas.width, canvas.height);
+	}
+
+	// AVATAR
 	ctx.save();
-
-	/**
-	 * Dynamic section
-	 */
-
-	// AVATAR data
-	// avatar circle clip
 	ctx.beginPath();
-	const circleX = 316; // 132.5
-	const circleY = 243; // 120.6
+	const circleX = 316;
+	const circleY = 243;
 	const avatarRadius = 216;
 	ctx.arc(circleX, circleY, avatarRadius / 2, 0, Math.PI * 2);
 	ctx.closePath();
 	ctx.clip();
-	// avatar image inside circle
-	const avatarX = 206;
-	const avatarY = 132;
-	const avatarW = 220;
-	const avatarH = 220;
-	ctx.drawImage(avatar, avatarX, avatarY, avatarW, avatarH);
+	ctx.drawImage(avatar, 206, 132, 220, 220);
+	ctx.restore();
 
-	// NICKNAME data
-	const nickItem = {
-		text: data.nickName,
-		x: canvas.width / 2,
-		y: 420,
-		fontSize: 42,
-	};
-	ctx.restore();
-	ctx.fillStyle = contentColor;
-	ctx.font = `bold ${nickItem.fontSize}px Rajdhani`;
-	ctx.textAlign = "center";
-	ctx.textBaseline = "middle";
-	ctx.fillText(nickItem.text, nickItem.x, nickItem.y);
+	// Nickname
+	drawTextWithBox(ctx, data.nickName, canvas.width / 2, 420, {
+		font: "bold 42px Rajdhani",
+		textColor: contentColor,
+		boxColor: "rgba(0, 0, 0, 0.5)",
+	});
 
-	// REP data
-	ctx.restore();
-	const reputation = {
-		x: canvas.width / 2, // TODO: center with measure text??
-		y: 705,
-		fontSize: 30,
-	};
-	ctx.font = `bold ${reputation.fontSize}px Rajdhani`;
-	ctx.fillStyle = contentColor;
-	ctx.textAlign = "center";
-	ctx.fillText(data.reputation.points, reputation.x, reputation.y);
+	// Reputación (valor)
+	drawTextWithBox(ctx, data.reputation.points, canvas.width / 2, 705, {
+		font: "bold 30px Rajdhani",
+		textColor: contentColor,
+		boxColor: "rgba(0, 0, 0, 0.5)",
+	});
 
-	// TOP data
-	ctx.restore();
-	const topRep = {
-		x: 495,
-		y: 803,
-		fontSize: 30,
-	};
-	ctx.font = `600 ${topRep.fontSize}px Rajdhani`;
-	ctx.fillStyle = contentColor;
-	ctx.textAlign = "center";
-	ctx.fillText(data.reputation.top, topRep.x, topRep.y);
+	// TOP
+	drawTextWithBox(ctx, data.reputation.top, 495, 803, {
+		font: "600 30px Rajdhani",
+		textColor: contentColor,
+		boxColor: "rgba(0, 0, 0, 0.5)",
+	});
 
-	// PYE COINS data
-	ctx.restore();
-	const pyeCoinsConfig = {
-		x: 135,
-		y: 803,
-		fontSize: 30,
-	};
-	ctx.font = `600 ${pyeCoinsConfig.fontSize}px Rajdhani`;
-	ctx.textAlign = "center";
-	ctx.fillStyle = contentColor;
-	ctx.fillText(formatNumber(data.pyeCoins).toLocaleString(), pyeCoinsConfig.x, pyeCoinsConfig.y);
+	// PyE Coins
+	drawTextWithBox(ctx, formatNumber(data.pyeCoins), 135, 803, {
+		font: "600 30px Rajdhani",
+		textColor: contentColor,
+		boxColor: "rgba(0, 0, 0, 0.5)",
+	});
 
-	// RANGO data
-	ctx.restore();
-	const rango = {
-		text: label,
-		x: canvas.width / 2,
-		y: 891,
-		fontSize: 36,
-	};
-	ctx.restore();
-	ctx.fillStyle = contentColor;
-	ctx.font = `bold ${rango.fontSize}px Rajdhani`;
-	ctx.textAlign = "center";
-	ctx.fillText(rango.text.toLocaleUpperCase(), rango.x, rango.y);
+	// Rango (texto label)
+	drawTextWithBox(ctx, label.toUpperCase(), canvas.width / 2, 891, {
+		font: "bold 36px Rajdhani",
+		textColor: contentColor,
+		boxColor: "rgba(0, 0, 0, 0.5)",
+	});
 
-	/**
-	 *  Static section, only color might change
-	 */
-	// PYE COINS title
-	ctx.restore();
-	const pyeCoinsTitle = {
-		x: 139, // TODO: center with measure text??
-		y: 764,
-		fontSize: 36,
-	};
-	ctx.font = `600 ${pyeCoinsTitle.fontSize}px Rajdhani`;
-	ctx.textAlign = "center";
-	ctx.fillStyle = headlineColor;
-	ctx.fillText("PyE Coins", pyeCoinsTitle.x, pyeCoinsTitle.y);
+	// Título "PyE Coins"
+	drawTextWithBox(ctx, "PyE Coins", 139, 764, {
+		font: "600 36px Rajdhani",
+		textColor: headlineColor,
+		boxColor: "rgba(0, 0, 0, 0.5)",
+	});
 
-	// rep title
-	ctx.restore();
-	const repTitle = {
-		x: canvas.width / 2,
-		y: 664,
-		fontSize: 36,
-	};
-	ctx.font = `600 ${repTitle.fontSize}px Rajdhani`;
-	ctx.textAlign = "center";
-	ctx.fillStyle = headlineColor;
-	ctx.fillText("Reputación", repTitle.x, repTitle.y);
+	// Título "Reputación"
+	drawTextWithBox(ctx, "Reputación", canvas.width / 2, 664, {
+		font: "600 36px Rajdhani",
+		textColor: headlineColor,
+		boxColor: "rgba(0, 0, 0, 0.5)",
+	});
 
-	// top title
-	ctx.restore();
-	const topTitle = {
-		x: 495,
-		y: 764,
-		fontSize: 36,
-	};
-	ctx.font = `600 ${topTitle.fontSize}px Rajdhani`;
-	ctx.textAlign = "center";
-	ctx.fillStyle = headlineColor;
-	ctx.fillText("Top", topTitle.x, topTitle.y);
+	// Título "Top"
+	drawTextWithBox(ctx, "Top", 495, 764, {
+		font: "600 36px Rajdhani",
+		textColor: headlineColor,
+		boxColor: "rgba(0, 0, 0, 0.5)",
+	});
 
 	return canvas;
 }

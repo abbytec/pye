@@ -3,7 +3,7 @@ import { EmbedBuilder } from "discord.js";
 import { ExtendedClient } from "../client.js";
 
 export interface LevelRequirements {
-	money?: number;
+	money?: () => number;
 	bump?: number;
 	text?: number;
 	rep?: number;
@@ -24,7 +24,7 @@ export interface LevelConfig {
 export const levels: LevelConfig[] = [
 	{
 		level: 1,
-		requirements: { money: inflatedMoney(1000) },
+		requirements: { money: () => inflatedMoney(1000) },
 		interactiveReward: { type: "color" },
 		levelUpEmbed: (username, newLevel) =>
 			new EmbedBuilder()
@@ -34,7 +34,7 @@ export const levels: LevelConfig[] = [
 	},
 	{
 		level: 2,
-		requirements: { money: inflatedMoney(2000) },
+		requirements: { money: () => inflatedMoney(2000) },
 		levelUpEmbed: (username, newLevel) =>
 			new EmbedBuilder()
 				.setAuthor({ name: "🏠 Nuevo nivel en tu casa." })
@@ -43,7 +43,7 @@ export const levels: LevelConfig[] = [
 	},
 	{
 		level: 3,
-		requirements: { money: inflatedMoney(3000) },
+		requirements: { money: () => inflatedMoney(3000) },
 		game: true,
 		levelUpEmbed: (username, newLevel) =>
 			new EmbedBuilder()
@@ -53,7 +53,7 @@ export const levels: LevelConfig[] = [
 	},
 	{
 		level: 4,
-		requirements: { money: inflatedMoney(4000), bump: 1 },
+		requirements: { money: () => inflatedMoney(4000), bump: 1 },
 		levelUpEmbed: (username, newLevel) =>
 			new EmbedBuilder()
 				.setAuthor({ name: "🏠 Nuevo nivel en tu casa." })
@@ -71,7 +71,7 @@ export const levels: LevelConfig[] = [
 	},
 	{
 		level: 6,
-		requirements: { money: inflatedMoney(5000) },
+		requirements: { money: () => inflatedMoney(5000) },
 		levelUpEmbed: (username, newLevel) =>
 			new EmbedBuilder()
 				.setAuthor({ name: "🏠 Nuevo nivel en tu casa." })
@@ -80,7 +80,7 @@ export const levels: LevelConfig[] = [
 	},
 	{
 		level: 7,
-		requirements: { money: inflatedMoney(6000) },
+		requirements: { money: () => inflatedMoney(6000) },
 		game: true,
 		levelUpEmbed: (username, newLevel) =>
 			new EmbedBuilder()
@@ -99,7 +99,7 @@ export const levels: LevelConfig[] = [
 	},
 	{
 		level: 9,
-		requirements: { money: inflatedMoney(7000), bump: 2, rep: 1 },
+		requirements: { money: () => inflatedMoney(7000), bump: 2, rep: 1 },
 		levelUpEmbed: (username, newLevel) =>
 			new EmbedBuilder()
 				.setAuthor({ name: "🏠 Nuevo nivel en tu casa." })
@@ -108,7 +108,7 @@ export const levels: LevelConfig[] = [
 	},
 	{
 		level: 10,
-		requirements: { money: inflatedMoney(8000) },
+		requirements: { money: () => inflatedMoney(8000) },
 		game: true,
 		levelUpEmbed: (username, newLevel) =>
 			new EmbedBuilder()
@@ -118,7 +118,7 @@ export const levels: LevelConfig[] = [
 	},
 	{
 		level: 11,
-		requirements: { money: inflatedMoney(9000), rep: 2 },
+		requirements: { money: () => inflatedMoney(9000), rep: 2 },
 		levelUpEmbed: (username, newLevel) =>
 			new EmbedBuilder()
 				.setAuthor({ name: "🏠 Nuevo nivel en tu casa." })

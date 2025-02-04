@@ -2,15 +2,13 @@ import { SlashCommandBuilder, AttachmentBuilder, ChatInputCommandInteraction, Te
 import { Users } from "../../Models/User.js";
 import { loadImage } from "@napi-rs/canvas";
 import { HelperPoint } from "../../Models/HelperPoint.js";
-import { getChannelFromEnv, getRepRolesByOrder, getRoleName, ROLES_REP_RANGE } from "../../utils/constants.js";
+import { getRepRolesByOrder, getRoleName, ROLES_REP_RANGE } from "../../utils/constants.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { getRender } from "../../utils/canvas/card-render.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
-import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
@@ -28,14 +26,14 @@ export default {
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false)],
 		async (msg: IPrefixChatInputCommand) => {
-			// get user
+			// Obtener usuario
 			const member = (await msg.options.getUser("usuario", false)) ?? msg.user;
 			const guildMember = await msg.guild?.members.fetch(member.id).catch(() => null);
 
-			// validate bot
+			// Validar bots
 			if (member.bot) return await replyError(msg, "Los bots no pueden tener puntos de ayuda.");
 
-			// get data
+			// Obtener datos
 			let data: any = (await HelperPoint.findOne({ _id: member.id })) ?? { points: 0 };
 			let people = await HelperPoint.find().sort({ points: -1 });
 
@@ -47,21 +45,34 @@ export default {
 			const name = member.username.length > 9 ? member.username.substring(0, 8).trim() + "..." : member.username;
 			const role = guildMember ? getRole(guildMember) : null;
 			if (!role) return replyWarning(msg, "El usuario seleccionado no tiene ningun rol de reputación.", member);
-			const background = await loadImage(
-				path.join(__dirname, `../../assets/Images/reputation/${role ? getRoleName(role.id) : "novato"}.jpg`)
+
+			// Cargar imagen del foreground (antes background)
+			const foreground = await loadImage(
+				path.join(__dirname, `../../assets/Images/reputation/${role ? getRoleName(role.id) : "novato"}.png`)
 			);
+
+			// Cargar fondo custom si está definido en el usuario
+
+			const customBackground = userData?.customBackground
+				? await loadImage(path.join(__dirname, `../../assets/Images/custom-backgrounds/${userData.customBackground}`))
+				: null;
+			const customDecoration = userData?.customDecoration
+				? await loadImage(path.join(__dirname, `../../assets/Images/custom-decorations/${userData.customDecoration}`))
+				: null;
 
 			const canvas = getRender({
 				name,
 				points,
 				rank,
 				avatar,
-				background,
+				foreground,
 				pyeCoins,
 				role,
+				customBackground: customBackground || undefined,
+				customDecoration: customDecoration || undefined,
 			});
 
-			// send avatar
+			// Enviar imagen generada
 			return replyOk(msg, [], undefined, undefined, [new AttachmentBuilder(canvas.toBuffer("image/jpeg"), { name: "rank.png" })]);
 		},
 		[]

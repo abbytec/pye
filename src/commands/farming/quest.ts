@@ -55,10 +55,11 @@ export default {
 					const levelConfig = levels.find((l) => l.level === data.house.level);
 					if (levelConfig) {
 						const progressParts = [];
-						if (levelConfig.requirements.money)
+						if (levelConfig.requirements.money) {
 							progressParts.push(
-								`${pyecoin} \`PyE coins\`: ${data.money.toLocaleString()} / ${levelConfig.requirements.money.toLocaleString()}`
+								`${pyecoin} \`PyE coins\`: ${data.money.toLocaleString()} / ${levelConfig.requirements.money().toLocaleString()}`
 							);
+						}
 						if (levelConfig.requirements.bump)
 							progressParts.push(`👍 \`Bumps\`: ${data.bump.toLocaleString()} / ${levelConfig.requirements.bump}`);
 						if (levelConfig.requirements.text)

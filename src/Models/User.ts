@@ -67,6 +67,14 @@ const userSchema = new Schema<IUserModel>(
 			type: Number,
 			default: 0,
 		},
+		customBackground: {
+			type: String,
+			required: false,
+		},
+		customDecoration: {
+			type: String,
+			required: false,
+		},
 	},
 	{ versionKey: false }
 );
