@@ -17,7 +17,7 @@ import { Rob } from "./rob.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 
-const cooldownDuration = 2 * 60 * 60 * 1000;
+const cooldownDuration = 1 * 60 * 60 * 1000;
 
 const policeReactionTime = 3e4;
 const militarReactionTime = 6e4;
