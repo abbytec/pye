@@ -63,7 +63,12 @@ export default {
 				const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
 				page = Math.min(page, totalPages);
 
-				const items = await Shop.find({}, "name price description itemId icon")
+				const items = await Shop.find(
+					{
+						$or: [{ background: { $exists: false } }, { background: null }],
+					},
+					"name price description itemId icon"
+				)
 					.sort({ price: 1 })
 					.skip((page - 1) * ITEMS_PER_PAGE)
 					.limit(ITEMS_PER_PAGE)

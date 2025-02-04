@@ -135,16 +135,6 @@ export const levels: LevelConfig[] = [
 				.setDescription(`\`${username}\` ha subido al nivel: \`${newLevel}\``)
 				.setTimestamp(),
 	},
-	/* {
-		level: 13,
-		requirements: { money: inflatedMoney(10000), rep: 1, text: 2000 },
-        interactiveReward: { type: "background" },
-		levelUpEmbed: (username, newLevel) =>
-			new EmbedBuilder()
-				.setAuthor({ name: " ⭐ ¡Enhorabuena!" })
-				.setDescription(`¡${username} ha alcanzado el nivel ${newLevel}. Lo que desbloqueó la posiblilidad de comprar fondos de perfil!`)
-				.setTimestamp(),
-	}, */
 ];
 export const MAX_LEVEL = levels.length;
 function inflatedMoney(money: number) {

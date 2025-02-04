@@ -15,16 +15,13 @@ import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputComman
 import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 const level = new Map();
-const maxBet = 750;
 
 export default {
 	group: "🎮 • Juegos",
 	data: new SlashCommandBuilder()
 		.setName("chicken-fight")
 		.setDescription("Apuesta dinero metiendo tu pollo a una pelea 🐔.")
-		.addIntegerOption((option) =>
-			option.setName("cantidad").setDescription(`la cantidad que quieres apostar (Máximo ${maxBet} pyecoins)`).setRequired(true)
-		),
+		.addIntegerOption((option) => option.setName("cantidad").setDescription(`la cantidad que quieres apostar`).setRequired(true)),
 
 	execute: composeMiddlewares(
 		[
@@ -38,11 +35,11 @@ export default {
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 
 			// Verificar que el monto sea válido
-			if (amount < 100 || amount > maxBet || amount > userData.cash)
+			if (amount < 100 || amount > ExtendedClient.getGamexMaxCoins() || amount > userData.cash)
 				return await replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "como minimo 100" : `menor que ${maxBet}`
+						amount < 100 ? "como minimo 100" : `menor que ${ExtendedClient.getGamexMaxCoins()}`
 					} o no tienes suficiente dinero.`
 				);
 

@@ -112,9 +112,7 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName("blackjack")
 		.setDescription("Juega a las cartas con el bot, quien llegue a estar más cerca sin pasarse u obtenga 21, gana.")
-		.addIntegerOption((option) =>
-			option.setName("cantidad").setDescription("la cantidad que quieres apostar (Máximo 1100)").setRequired(true)
-		),
+		.addIntegerOption((option) => option.setName("cantidad").setDescription("la cantidad que quieres apostar").setRequired(true)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), verifyCooldown("blackjack", 1000)],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
@@ -122,7 +120,8 @@ export default {
 			let data = await getOrCreateUser(interaction.user.id);
 			if (amount < 0) return replyError(interaction, "Debe ser mayor a 0 claro.");
 			if (data.cash < amount) return replyError(interaction, "No tienes suficiente para apostar.");
-			if (amount > 1100) return replyError(interaction, "No puedes apostar más de 1100 PyE Coins.");
+			if (amount > ExtendedClient.getGamexMaxCoins())
+				return replyError(interaction, `No puedes apostar más de ${ExtendedClient.getGamexMaxCoins()} PyE Coins.`);
 			if (game.has(interaction.user.id)) return replyError(interaction, "Ya te encuentras jugando.");
 			game.add(interaction.user.id);
 			const cardsGame = new Collection<string, "relatable" | number>();

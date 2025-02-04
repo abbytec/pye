@@ -14,16 +14,12 @@ import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputComman
 import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 
-const maxBet = 4000;
-
 export default {
 	group: "🎮 • Juegos",
 	data: new SlashCommandBuilder()
 		.setName("flipcoin")
 		.setDescription("Tira la moneda y prueba tu suerte.")
-		.addIntegerOption((option) =>
-			option.setName("cantidad").setDescription(`la cantidad que quieres apostar (Máximo ${maxBet})`).setRequired(true)
-		)
+		.addIntegerOption((option) => option.setName("cantidad").setDescription(`la cantidad que quieres apostar`).setRequired(true))
 		.addStringOption((option) =>
 			option
 				.setName("lado")
@@ -47,11 +43,11 @@ export default {
 			let side: string = interaction.options.getString("lado") ?? ["cara", "cruz"][Math.floor(Math.random() * 2)];
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 
-			if (amount < 100 || amount > maxBet || amount > userData.cash)
+			if (amount < 100 || amount > ExtendedClient.getGamexMaxCoins() || amount > userData.cash)
 				return await replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "mayor que 100" : `menor que ${maxBet}`
+						amount < 100 ? "mayor que 100" : `menor que ${ExtendedClient.getGamexMaxCoins()}`
 					} o no tienes suficiente dinero`
 				);
 

@@ -31,9 +31,7 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName("russian-roulette")
 		.setDescription("Inicia un juego de ruleta o coloca tu apuesta en un juego existente.")
-		.addIntegerOption((option) =>
-			option.setName("cantidad").setDescription("la cantidad que quieres apostar (Máximo 7300)").setRequired(true)
-		),
+		.addIntegerOption((option) => option.setName("cantidad").setDescription("la cantidad que quieres apostar").setRequired(true)),
 
 	execute: composeMiddlewares(
 		[
@@ -46,11 +44,11 @@ export default {
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			// Validar datos
-			if (amount <= 100 || amount > 7300 || amount > userData.cash)
+			if (amount <= 100 || amount > ExtendedClient.getGamexMaxCoins() || amount > userData.cash)
 				return replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "como minimo 100" : "menor que 7300"
+						amount < 100 ? "como minimo 100" : `menor que ${ExtendedClient.getGamexMaxCoins()}`
 					} o no tienes suficiente dinero`
 				);
 			// Comenzar el juego

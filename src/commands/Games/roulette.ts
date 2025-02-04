@@ -28,16 +28,12 @@ const rojos = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36
 const negros = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35];
 const colores = { red: "red", black: "black", green: "green", even: "even", odd: "odd" };
 
-const maxBet = 1500;
-
 export default {
 	group: "🎮 • Juegos",
 	data: new SlashCommandBuilder()
 		.setName("roulette")
 		.setDescription("Inicia un juego de ruleta o coloca tu apuesta en un juego existente.")
-		.addIntegerOption((option) =>
-			option.setName("cantidad").setDescription(`la cantidad que quieres apostar (entre 100 y ${maxBet})`).setRequired(true)
-		)
+		.addIntegerOption((option) => option.setName("cantidad").setDescription(`la cantidad que quieres apostar`).setRequired(true))
 		.addStringOption((option) =>
 			option
 				.setName("eleccion")
@@ -64,11 +60,11 @@ export default {
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			let choice: string = interaction.options.getString("eleccion", true);
 			// Validar datos
-			if (amount < 100 || amount > maxBet || amount > userData.cash)
+			if (amount < 100 || amount > ExtendedClient.getGamexMaxCoins() || amount > userData.cash)
 				return replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "como minimo 100" : `menor que${maxBet}`
+						amount < 100 ? "como minimo 100" : `menor que ${ExtendedClient.getGamexMaxCoins()}`
 					} o no tienes suficiente dinero`
 				);
 			// Comenzar el juego
