@@ -32,7 +32,7 @@ export default {
 			if (!member) {
 				// El usuario no es miembro activo del servidor
 				// Procedemos a verificar si está baneado
-				const isBanned = (await interaction.guild?.bans.fetch())?.has(user.id);
+				const isBanned = (await interaction.guild?.bans.fetch().catch(() => undefined))?.has(user.id);
 				if (isBanned) {
 					return await replyError(interaction, "Este usuario ya está baneado.");
 				} else {
@@ -46,7 +46,7 @@ export default {
 			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes banearte a ti mismo.");
 
 			// Verificar si el usuario ya está baneado
-			const bannedUsers = await interaction.guild?.bans.fetch();
+			const bannedUsers = await interaction.guild?.bans.fetch().catch(() => undefined);
 			if (bannedUsers?.has(user.id)) return await replyError(interaction, "Este usuario ya está baneado.");
 
 			try {

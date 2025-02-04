@@ -32,7 +32,7 @@ export default {
 			if (!user) return await replyError(interaction, "No se pudo encontrar al usuario con esa ID.");
 
 			// Verificar si el usuario está baneado
-			const bannedUsers = await interaction.guild?.bans.fetch();
+			const bannedUsers = await interaction.guild?.bans.fetch().catch(() => undefined);
 			let isBanned = bannedUsers?.has(userId);
 
 			if (!isBanned) await replyError(interaction, "Este usuario no está baneado.");

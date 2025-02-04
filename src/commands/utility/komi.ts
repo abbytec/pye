@@ -263,11 +263,10 @@ export default {
 // Función para obtener una imagen aleatoria de un lenguaje específico
 async function getRandomImageFromRepo(language: string): Promise<string | null> {
 	try {
-		const response = await fetch(`${GITHUB_API_URL}/repos/${REPO_OWNER}/${REPO_NAME}/contents/${language}`);
-		if (!response.ok) {
-			console.error(`Error al obtener contenido de GitHub: ${response.status}`);
-			return null;
-		}
+		const response = await fetch(`${GITHUB_API_URL}/repos/${REPO_OWNER}/${REPO_NAME}/contents/${language}`).catch((response) =>
+			console.error(`Error al obtener contenido de GitHub: ${response?.status}`)
+		);
+		if (!response) return null;
 		const data = await response.json();
 		if (!Array.isArray(data)) {
 			console.error("El formato de los datos recibidos no es válido.");

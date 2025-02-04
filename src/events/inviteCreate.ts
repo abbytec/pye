@@ -23,7 +23,7 @@ export default {
 		let inviterTag = "Desconocido";
 		let inviterId: string | null = null;
 		try {
-			const inviter = await invite.inviter?.fetch();
+			const inviter = await invite.inviter?.fetch().catch(() => undefined);
 			if (inviter) {
 				inviterTag = inviter.tag;
 				inviterId = inviter.id;
@@ -52,7 +52,10 @@ export default {
 					inviteTracker.delete(userKey);
 
 					try {
-						const member = await client.guilds.cache.get(process.env.GUILD_ID ?? "")?.members.fetch(inviterId);
+						const member = await client.guilds.cache
+							.get(process.env.GUILD_ID ?? "")
+							?.members.fetch(inviterId)
+							.catch(() => undefined);
 
 						await member
 							?.timeout(60000, "Creación muy rápida de invitaciones")

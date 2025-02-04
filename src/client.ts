@@ -136,12 +136,12 @@ export class ExtendedClient extends Client {
 		const guild =
 			this.guilds.cache.get(process.env.GUILD_ID ?? "") ?? (await this.guilds.fetch(process.env.GUILD_ID ?? "").catch(() => undefined));
 		this._staffMembers =
-			(await guild?.members.fetch())
+			(await guild?.members.fetch().catch(() => undefined))
 				?.filter((member) => member.roles.cache.some((role) => [getRoleFromEnv("staff")].includes(role.id)))
 				.map((member) => member.user.id) || this._staffMembers;
 
 		this._modMembers =
-			(await guild?.members.fetch())
+			(await guild?.members.fetch().catch(() => undefined))
 				?.filter((member) => member.roles.cache.some((role) => [getRoleFromEnv("moderadorChats")].includes(role.id)))
 				.map((member) => member.user.id) || this._modMembers;
 
@@ -158,9 +158,7 @@ export class ExtendedClient extends Client {
 							?.channels.resolve(getChannelFromEnv("logs")) as TextChannel
 					).send({
 						content: `${
-							process.env.NODE_ENV === "development"
-								? `@here`
-								: "<@220683580467052544> <@1088883078405038151> <@602240617862660096>"
+							process.env.NODE_ENV === "development" ? `@here` : "<@220683580467052544> <@602240617862660096>"
 						}Error en promesa no capturado, razon: ${reason}. Promesa: \`\`\`js\n${inspect(promise)}\`\`\``,
 						flags: MessageFlags.SuppressNotifications,
 					});
@@ -175,9 +173,7 @@ export class ExtendedClient extends Client {
 							?.channels.resolve(getChannelFromEnv("logs")) as TextChannel
 					).send({
 						content: `${
-							process.env.NODE_ENV === "development"
-								? `@here`
-								: "<@220683580467052544> <@1088883078405038151> <@602240617862660096>"
+							process.env.NODE_ENV === "development" ? `@here` : "<@220683580467052544> <@602240617862660096>"
 						}Error no capturado (${error.message}):\n \`\`\`js\n${error.stack}\`\`\``,
 						flags: MessageFlags.SuppressNotifications,
 					});
@@ -214,12 +210,16 @@ export class ExtendedClient extends Client {
 				}
 			});
 			console.log("loading emojis");
-			let emojis = (await guild?.emojis.fetch())?.map((emoji) => (emoji.name ?? "_") + ":" + emoji.id).filter((emoji) => emoji) ?? [];
+			let emojis =
+				(await guild?.emojis.fetch().catch(() => undefined))
+					?.map((emoji) => (emoji.name ?? "_") + ":" + emoji.id)
+					.filter((emoji) => emoji) ?? [];
 			console.log("loading stickers");
-			let stickers = (await guild?.stickers.fetch())?.map((sticker) => sticker.id).filter((sticker) => sticker) ?? [];
+			let stickers =
+				(await guild?.stickers.fetch().catch(() => undefined))?.map((sticker) => sticker.id).filter((sticker) => sticker) ?? [];
 			console.log("loading channels");
 			let forumChannels =
-				(await guild?.channels.fetch())
+				(await guild?.channels.fetch().catch(() => undefined))
 					?.filter((channel) => {
 						return channel?.type === ChannelType.GuildForum && channel?.parent?.id === getChannelFromEnv("categoryForos");
 					})
@@ -322,10 +322,13 @@ export class ExtendedClient extends Client {
 	public getStickerTypeCache(sticker: Sticker) {
 		return (
 			ExtendedClient.stickerTypeCache.get(sticker.id) ??
-			sticker.fetch().then((sticker) => {
-				ExtendedClient.stickerTypeCache.set(sticker.id, sticker.type ?? StickerType.Guild);
-				return sticker.type;
-			})
+			sticker
+				.fetch()
+				.then((sticker) => {
+					ExtendedClient.stickerTypeCache.set(sticker.id, sticker.type ?? StickerType.Guild);
+					return sticker.type;
+				})
+				.catch(() => StickerType.Guild)
 		);
 	}
 

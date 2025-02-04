@@ -69,10 +69,10 @@ const threadsHelp = async function (tittle: string, pregunta: string, m: ThreadC
 
 		const fullMessage = `${response} \n\n **Fue útil mi respuesta? 🦾👀 | Recuerda que de todos modos puedes esperar que otros usuarios te ayuden!** 😉`;
 
-		const authorName = (await m.guild.members.fetch(m.ownerId)).displayName; 
+		const authorName = (await m.guild.members.fetch(m.ownerId).catch(() => undefined))?.displayName ?? "Usuario";
 
 		const embed = new EmbedBuilder()
-			.setColor(0x0099ff) 
+			.setColor(0x0099ff)
 			.setTitle(`Hola ${authorName}!`)
 			.setDescription(fullMessage)
 			.setFooter({ text: "✨ Generado por IA" });
@@ -83,10 +83,7 @@ const threadsHelp = async function (tittle: string, pregunta: string, m: ThreadC
 			const chunks = splitMessage(fullMessage, MAX_MESSAGE_LENGTH);
 			let lastChunk: Message | undefined;
 			for (const chunk of chunks) {
-				const chunkEmbed = new EmbedBuilder()
-					.setColor(0x0099ff)
-					.setDescription(chunk)
-					.setFooter({ text: "✨ Generado por IA" });
+				const chunkEmbed = new EmbedBuilder().setColor(0x0099ff).setDescription(chunk).setFooter({ text: "✨ Generado por IA" });
 
 				if (lastChunk) {
 					await lastChunk.reply({ embeds: [chunkEmbed] });
@@ -100,7 +97,6 @@ const threadsHelp = async function (tittle: string, pregunta: string, m: ThreadC
 	}
 };
 
-
 async function processHelpForumPost(thread: ThreadChannel) {
 	try {
 		const canal = (await getChannel(thread.guild, "chatProgramadores", true)) as TextChannel;
@@ -113,9 +109,9 @@ async function processHelpForumPost(thread: ThreadChannel) {
 			value: `	 <#${thread.id}>`,
 		};
 
-		const fetchedMessages = await canal.messages.fetch({ limit: 2 });
+		const fetchedMessages = await canal.messages.fetch({ limit: 2 }).catch(() => undefined);
 
-		const targetEmbedMessage = fetchedMessages.find((msg) => msg.embeds.length > 0 && msg.embeds[0].title === "Nueva publicación 🌟");
+		const targetEmbedMessage = fetchedMessages?.find((msg) => msg.embeds.length > 0 && msg.embeds[0].title === "Nueva publicación 🌟");
 
 		if (targetEmbedMessage) {
 			const existingEmbed = EmbedBuilder.from(targetEmbedMessage.embeds[0]);

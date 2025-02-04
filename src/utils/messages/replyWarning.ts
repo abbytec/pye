@@ -55,7 +55,7 @@ export async function replyWarning(
 			}
 			(
 				(interaction.guild?.channels.cache.get(interaction?.channelId ?? "") ??
-					(await interaction.guild?.channels.fetch(interaction?.channelId ?? ""))) as TextChannel
+					(await interaction.guild?.channels.fetch(interaction?.channelId ?? "").catch(() => undefined))) as TextChannel
 			)
 				?.send(messageToSend)
 				.catch((e) => null);

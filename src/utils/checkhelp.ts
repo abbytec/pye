@@ -34,25 +34,23 @@ interface FetchResult {
  * @returns An object containing messages and helpers.
  */
 async function fetchMessagesAndHelpers(gratitudeMessage: Message): Promise<FetchResult> {
-	const messagesFetched = await gratitudeMessage.channel.messages.fetch({
-		limit: 10,
-		before: gratitudeMessage.id,
-	});
+	const messagesFetched = await gratitudeMessage.channel.messages
+		.fetch({
+			limit: 10,
+			before: gratitudeMessage.id,
+		})
+		.catch(() => undefined);
 
 	let repliedMessage: Message | null = null;
 	if (gratitudeMessage.reference?.messageId) {
-		try {
-			repliedMessage = await gratitudeMessage.channel.messages.fetch(gratitudeMessage.reference.messageId);
-		} catch {
-			// Si no se puede encontrar el mensaje referenciado, se ignora.
-			repliedMessage = null;
-		}
+		repliedMessage = await gratitudeMessage.channel.messages.fetch(gratitudeMessage.reference.messageId).catch(() => null);
 	}
 
-	const messages = messagesFetched
-		.filter((msg) => !msg.author.bot && !msg.system && msg.content)
-		.sort((a, b) => a.createdTimestamp - b.createdTimestamp)
-		.values();
+	const messages =
+		messagesFetched
+			?.filter((msg) => !msg.author.bot && !msg.system && msg.content)
+			.sort((a, b) => a.createdTimestamp - b.createdTimestamp)
+			.values() ?? [];
 
 	let helpers: string[] = [];
 	let msges: Message[] = [];
@@ -191,9 +189,9 @@ async function sendHelpNotification(msg: Message, fields: APIEmbedField[], butto
 		.addFields(fields)
 		.setTimestamp(new Date());
 
-	const user = await msg.author.fetch();
+	const user = await msg.author.fetch().catch(() => undefined);
 	const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-	if ((user.createdAt?.getTime() ?? 0) > daysAgo(2).getTime()) {
+	if ((user?.createdAt?.getTime() ?? 0) > daysAgo(2).getTime()) {
 		embed.setDescription(`\`\`\`ansi\n[35mEl miembro que agradeció (${msg.author.username})\nCreó su cuenta recientemente.\n\`\`\``);
 		embed.setColor(COLORS.warnOrange);
 	} else if ((msg.member?.joinedTimestamp ?? 0) > daysAgo(5).getTime()) {

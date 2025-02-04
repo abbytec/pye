@@ -134,18 +134,20 @@ async function cronEventsProcessor(client: ExtendedClient) {
 							role?.members.forEach((member) => {
 								member.roles.remove(usuarioDelMesRoleId).catch(null);
 							});
-						});
+						})
+						.catch(null);
 					client.guilds.cache
 						.get(process.env.GUILD_ID ?? "")
 						?.members.fetch(topUserId)
 						.then((member) => {
 							member?.roles.add(usuarioDelMesRoleId).catch(null);
-						});
+						})
+						.catch(null);
 				}
 
 				// Enviar el mensaje al canal "anuncios"
 				const anunciosChannelId = getChannelFromEnv("anuncios");
-				const channel = (await client.channels.fetch(anunciosChannelId)) as TextChannel;
+				const channel = (await client.channels.fetch(anunciosChannelId).catch(() => undefined)) as TextChannel;
 				if (channel?.isTextBased()) await channel.send(message);
 
 				// Reiniciar el ranking 'top:rep' para el próximo mes

@@ -52,8 +52,8 @@ export default {
 			const proposalTags: string[] = await Promise.all(
 				proposals.map(async (id) => {
 					try {
-						const proposer = await guild.members.fetch(id);
-						return `**${proposer.user.tag}**`;
+						const proposer = await guild.members.fetch(id).catch(() => undefined);
+						return `**${proposer?.user.tag ?? "Desconocido"}**`;
 					} catch {
 						return `**ID: ${id}**`;
 					}

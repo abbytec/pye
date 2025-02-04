@@ -102,13 +102,11 @@ async function deleteChannel(interaction: ButtonInteraction): Promise<void> {
 
 // Función para cancelar el punto (eliminar el mensaje)
 async function cancelPoint(interaction: ButtonInteraction): Promise<void> {
-	try {
-		const message = await interaction.message.fetch();
-		await message.delete().catch(() => null);
-		await interaction.deferUpdate();
-	} catch (error) {
-		console.error("Error al eliminar el mensaje:", error);
-	}
+	await interaction.message
+		.fetch()
+		.then(async (message) => await message.delete().catch(() => null))
+		.then(async () => await interaction.deferUpdate())
+		.catch((error) => console.error("Error al eliminar el mensaje:", error));
 }
 
 // Función para otorgar un punto de ayuda

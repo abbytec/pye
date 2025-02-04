@@ -299,13 +299,19 @@ class Trending {
 		const map = this.getMapByType(type);
 		let entries = Array.from(map.entries());
 		if (type === "emoji") {
-			const svEmojis = await client.guilds.cache.get(process.env.GUILD_ID ?? "")?.emojis.fetch();
+			const svEmojis = await client.guilds.cache
+				.get(process.env.GUILD_ID ?? "")
+				?.emojis.fetch()
+				.catch(() => undefined);
 			if (svEmojis)
 				entries = entries.filter(([id]) => {
 					return svEmojis.has(RegExp(/:(\d+)$/).exec(id)?.[1] ?? "");
 				});
 		} else if (type === "sticker") {
-			const svStickers = await client.guilds.cache.get(process.env.GUILD_ID ?? "")?.stickers.fetch();
+			const svStickers = await client.guilds.cache
+				.get(process.env.GUILD_ID ?? "")
+				?.stickers.fetch()
+				.catch(() => undefined);
 			if (svStickers) entries = entries.filter(([id]) => svStickers.has(id));
 		}
 		entries.sort((a, b) => a[1] - b[1]); // Orden descendente

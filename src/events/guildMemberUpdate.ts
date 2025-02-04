@@ -16,12 +16,12 @@ export default {
 		if (oldMember.user.bot || newMember.user.bot) return;
 		// Asegúrate de que oldMember tenga información completa
 		if (oldMember.partial) {
-			try {
-				await oldMember.fetch();
-			} catch (error) {
+			let oldMemberResolved = await oldMember.fetch().catch((error) => {
 				console.error("Error al obtener información del miembro antiguo:", error);
-				return;
-			}
+				return undefined;
+			});
+
+			if (!oldMemberResolved) return;
 		}
 
 		// Gestionar cambios de roles

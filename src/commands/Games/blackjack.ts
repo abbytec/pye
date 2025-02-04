@@ -337,7 +337,7 @@ async function checkEmbed(amount: number, userId: string, msg: InteractionRespon
 		cards: [playerCards, dealerCards],
 		values: [playerValue, dealerValue],
 	} = cards;
-	const user = await msg.client.users.fetch(userId);
+	const user = await msg.client.users.fetch(userId).catch(() => undefined);
 	const unEmbed = new EmbedBuilder().setAuthor({ name: user?.displayName ?? "Desconocido", iconURL: user?.displayAvatarURL() });
 	if (playerValue >= 21 || dealerValue >= 21) {
 		if (playerValue > 21 && dealerValue > 21) {

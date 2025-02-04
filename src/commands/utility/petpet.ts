@@ -89,10 +89,9 @@ export default {
 				// Obtener la imagen
 				let imageBuffer: Buffer;
 				if (typeof source === "string") {
-					const res = await fetch(source);
-					if (!res.ok) {
-						return await replyError(interaction, `No se pudo obtener la imagen desde la URL proporcionada.`);
-					}
+					const res = await fetch(source).catch(() => undefined);
+					if (!res) return await replyError(interaction, `No se pudo obtener la imagen desde la URL proporcionada.`);
+
 					const arrayBuffer = await res.arrayBuffer();
 					imageBuffer = Buffer.from(arrayBuffer);
 				} else {

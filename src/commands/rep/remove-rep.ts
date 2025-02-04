@@ -25,7 +25,7 @@ export default {
 			const channel = interaction.channel;
 
 			if (user.bot) return await replyError(interaction, "No puedo quitarle puntos a los bots.\nUso: `add-rep [@Usuario]`");
-			const member = await interaction.guild?.members.fetch(user.id);
+			const member = await interaction.guild?.members.fetch(user.id).catch(() => undefined);
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
 			let data = await HelperPoint.findOneAndUpdate(

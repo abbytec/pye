@@ -190,13 +190,10 @@ async function generateBumpsLeaderboard(page: number, user: any, interaction: IP
 		sortFunction: (a, b) => b.count - a.count,
 		positionFinder: (data, userId) => data.findIndex((u) => u._id === userId),
 		descriptionBuilder: async (item, index, start) => {
-			let member;
-			try {
-				member = await interaction.guild?.members.fetch(item._id);
-			} catch {
-				return `**${start + index + 1}.** [Usuario Desconocido](https://discord.com/users/${item._id}) • ${item.count} bumps`;
-			}
-			return `**${start + index + 1}.** [${member?.user.username}](https://discord.com/users/${item._id}) • ${item.count} bumps`;
+			let member = await interaction.guild?.members.fetch(item._id).catch(() => undefined);
+			return `**${start + index + 1}.** [${member?.user.username ?? "Usuario Desconocido"}](https://discord.com/users/${item._id}) • ${
+				item.count
+			} bumps`;
 		},
 	});
 }
@@ -211,17 +208,10 @@ async function generateHouseLeaderboard(page: number, user: any, interaction: IP
 		sortFunction: (a: IHomeDocument, b: IHomeDocument) => b.house.level - a.house.level,
 		positionFinder: (data: IHomeDocument[], userId) => data.findIndex((u) => u.id === userId),
 		descriptionBuilder: async (item, index, start) => {
-			let member;
-			try {
-				member = await interaction.guild?.members.fetch(item.id);
-			} catch {
-				return `**${start + index + 1}.** [Usuario Desconocido](https://discord.com/users/${item.id}) • \`Nivel:\` **${
-					item.house.level
-				}**.\n\`Nombre:\` ${item.name ? item.name : "🏠 Casa de Usuario Desconocido"}`;
-			}
-			return `**${start + index + 1}.** [${member?.user.tag}](https://discord.com/users/${item.id}) • \`Nivel:\` **${
-				item.house.level
-			}**.\n\`Nombre:\` ${item.name ?? "🏠 Casa de " + member?.user.tag}}`;
+			let member = await interaction.guild?.members.fetch(item.id).catch(() => undefined);
+			return `**${start + index + 1}.** [${member?.user.tag ?? "Usuario Desconocido"}](https://discord.com/users/${
+				item.id
+			}) • \`Nivel:\` **${item.house.level}**.\n\`Nombre:\` ${item.name ?? "🏠 Casa de " + (member?.user.tag ?? "Usuario Desconocido")}}`;
 		},
 	});
 }
@@ -245,21 +235,16 @@ async function generateRedisLeaderboard(type: LeaderboardType, page: number, use
 			?.filter((_, i) => i % 2 === 0)
 			.map(async (id, index) => {
 				const score = Number(topData[index * 2 + 1]);
-				let member;
-				try {
-					member = await interaction.guild?.members.fetch(id.toString());
-				} catch {
-					return `**${
-						start + index + 1
-					}.** [Usuario Desconocido](https://discord.com/users/${id}) • ${pyecoin} ${score.toLocaleString()}`;
-				}
+				let member = await interaction.guild?.members.fetch(id.toString()).catch(() => undefined);
 
 				let rankIcon = `${start + index + 1}`;
 				if (start + index + 1 === 1) {
 					rankIcon = type === "caps" ? "<:policebadge:1313338489290489897>" : "<:server_owner:1313337498893815858>";
 				}
 
-				return `**${rankIcon}.** [${member?.user.tag}](https://discord.com/users/${id}) • ${pyecoin} ${score.toLocaleString()}`;
+				return `**${rankIcon}.** [${
+					member?.user.tag ?? "Usuario Desconocido"
+				}](https://discord.com/users/${id}) • ${pyecoin} ${score.toLocaleString()}`;
 			})
 	);
 

@@ -132,7 +132,7 @@ export default {
 			const user = await interaction.options.getUser("usuario", true).catch(() => null);
 			if (!user) return;
 			const member = await interaction.guild?.members.fetch(user.id).catch(() => null);
-			const viewer = await interaction.guild?.members.fetch(interaction.user.id);
+			const viewer = await interaction.guild?.members.fetch(interaction.user.id).catch(() => undefined);
 
 			const data = await ModLogs.find({
 				id: user.id,

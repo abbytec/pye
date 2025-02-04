@@ -149,7 +149,7 @@ export class PrefixChatInputCommand {
 		}
 
 		try {
-			const fetchedUser = await this.client.users.fetch(userId);
+			const fetchedUser = await this.client.users.fetch(userId).catch(() => undefined);
 			if (!fetchedUser && required) {
 				throw new ParameterError(
 					`No se pudo encontrar el usuario, asegurate de ingresarlo correctamente. Si tienes dudas, usa \`/help\`.`
@@ -164,42 +164,42 @@ export class PrefixChatInputCommand {
 
 	private async getAttachment(name: string, required?: boolean): Promise<Attachment | null> {
 		const val = this.argsMap.get(name);
-	
+
 		if (!val) {
 			if (required) {
 				throw new ParameterError(`El archivo adjunto requerido "${name}" no fue proporcionado.`);
 			}
-	
+
 			if (this.message?.reference) {
-				const repliedMessage = await this.message.channel.messages.fetch(this.message.reference.messageId ?? "");
+				const repliedMessage = await this.message.channel.messages.fetch(this.message.reference.messageId ?? "").catch(() => undefined);
 				return repliedMessage?.attachments.first() ?? null;
 			}
-	
+
 			if (this.message && this.message?.attachments.size > 0) {
 				return this.message.attachments.first() ?? null;
 			}
-	
+
 			return null;
 		}
-	
+
 		try {
 			const attachments = this.message?.attachments;
-	
-			if (required && (!attachments || !attachments.size)) {
+
+			if (required && !attachments?.size) {
 				throw new ParameterError(
 					`No se pudo encontrar el archivo adjunto en el mensaje proporcionado. Asegúrate de adjuntar un archivo.`
 				);
 			}
-	
+
 			return attachments?.first() ?? null;
 		} catch (error) {
 			if (required) {
 				throw new ParameterError(`El archivo adjunto requerido "${name}" no fue proporcionado correctamente.`);
 			}
 		}
-	
+
 		return null;
-	}	
+	}
 
 	private readonly getInteger = (name: string, required?: boolean): number | null => {
 		const val = this.argsMap.get(name);
