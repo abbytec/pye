@@ -1,4 +1,8 @@
-import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  PermissionFlagsBits,
+} from "discord.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { COLORS } from "../../utils/constants.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
@@ -16,8 +20,8 @@ import { execSync } from "child_process";
 export default {
   data: new SlashCommandBuilder()
     .setName("usage")
-    .setDescription("Muestra información del servidor."),
-
+    .setDescription("Muestra información del servidor.")
+    .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
   execute: composeMiddlewares(
     [verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff")],
     async (
@@ -42,7 +46,7 @@ export default {
         const cpuCores = os.cpus().length;
 
         // Uptime
-        const uptime = formatTime(os.uptime() * 1000);
+        const uptime = formatTime(process.uptime() * 1000);
 
         // Disk Usage
         const diskUsage = getDiskUsage();
@@ -55,10 +59,10 @@ export default {
           },
           {
             name: "📊 RAM",
-            value: `Usada: **${formatBytes(usedRam)}** / **${formatBytes(totalRam)}**\nUso: **${ramUsagePercent}%**`,
+            value: `**${formatBytes(usedRam)}** / **${formatBytes(totalRam)}**\nUso: **${ramUsagePercent}%**`,
             inline: true,
           },
-          { name: "🕒 Tiempo de encendido", value: uptime, inline: true },
+          { name: "🕒 Tiempo de encendido (bot)", value: uptime, inline: true },
           {
             name: "💾 Disco",
             value: `Usado: **${diskUsage.used}** / **${diskUsage.total}**\nUso: **${diskUsage.percent}**`,
