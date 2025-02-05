@@ -139,7 +139,10 @@ export default {
 						return;
 					}
 
-					const newItems = await Shop.find({}, "name price description itemId icon")
+					const newItems = await Shop.find(
+						{ $or: [{ background: { $exists: false } }, { background: null }] },
+						"name price description itemId icon"
+					)
 						.sort({ price: 1 })
 						.skip((page - 1) * ITEMS_PER_PAGE)
 						.limit(ITEMS_PER_PAGE)
@@ -236,7 +239,7 @@ export default {
 						(fondo.description || "") + "\n\n" + `💰 Precio: ${ExtendedClient.getInflatedRate(fondo.price).toLocaleString()}`
 					)
 					.setImage("attachment://preview.png")
-					.setFooter({ text: `Fondo ${index + 1} de ${totalFondos}` })
+					.setFooter({ text: `Fondo ${index + 1} de ${totalFondos}. ID: ${fondo.itemId}` })
 					.setColor(COLORS.pyeLightBlue)
 					.setTimestamp();
 
