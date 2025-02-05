@@ -91,11 +91,16 @@ userSchema.virtual("total").get(function (this: IUserModel) {
  */
 userSchema.post(["save", "findOneAndUpdate"], async function (doc: IUserModel | null) {
 	if (!doc) return;
-	await client.sendCommand(["ZADD", "top:all", (doc.total ?? 0).toString(), doc.id]);
-	await client.sendCommand(["ZADD", "top:cash", (doc.cash ?? 0).toString(), doc.id]);
-	await client.sendCommand(["ZADD", "top:rob", (doc.rob ?? 0).toString(), doc.id]);
-	await client.sendCommand(["ZADD", "top:apuestas", (doc.earnings ?? 0).toString(), doc.id]);
-	await client.sendCommand(["ZADD", "top:caps", (doc.caps ?? 0).toString(), doc.id]);
+	const pipeline = client.multi();
+	pipeline.zAdd("top:all", { score: doc.total || 0, value: doc.id });
+	pipeline.zAdd("top:cash", { score: doc.cash || 0, value: doc.id });
+	pipeline.zAdd("top:rob", { score: doc.rob || 0, value: doc.id });
+	pipeline.zAdd("top:apostador", { score: doc.earnings || 0, value: doc.id });
+	pipeline.zAdd("top:caps", { score: doc.caps || 0, value: doc.id });
+
+	await pipeline.exec().catch((error) => {
+		console.error("Error actualizando Redis en 'save'/'findOneAndUpdate':", error);
+	});
 });
 
 userSchema.post(["updateOne", "updateMany"], async function (result) {
@@ -159,7 +164,7 @@ export async function betDone(msg: IPrefixChatInputCommand | Message | Interacti
 		});
 	}
 
-	await Users.findOneAndUpdate({ id: userId }, { $inc: { bet: amount, earnings: profit, cash: profit } }).catch((error) => {
+	await Users.findOneAndUpdate({ id: userId }, { $inc: { bet: amount, earnings: profit, cash: profit } }, { new: true }).catch((error) => {
 		console.error("Error actualizando el usuario:", error);
 		ExtendedClient.logError("Error actualizando el usuario: " + error.message, error.stack, userId);
 	});
