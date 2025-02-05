@@ -11,6 +11,7 @@ import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { DateTime } from "luxon";
 import { COLORS } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { replyInfo } from "../../utils/messages/replyInfo.js";
 
 export default {
 	group: "⚙️ - Administración - General",
@@ -48,13 +49,13 @@ export default {
 				.addStringOption((option) => option.setName("id").setDescription("ID del mensaje a eliminar").setRequired(true))
 		),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false)],
 		async (interaction: IPrefixChatInputCommand) => {
 			const subcommand = interaction.options.getSubcommand();
 
 			if (subcommand === "view") {
 				// Obtiene todos los mensajes programados de la base de datos
-				const cronMessages = await CronMessage.find();
+				const cronMessages = await CronMessage.find().exec();
 				if (cronMessages.length === 0) {
 					return replyWarning(interaction, "No hay mensajes programados.");
 				}
@@ -151,34 +152,41 @@ export default {
 					repeat: repeat,
 				});
 
-				try {
-					const savedCronMessage = await cronMessage.save();
-					const jobData = {
-						channelId: channel.id,
-						content: content,
-						embed: embedData,
-						cronMessageId: savedCronMessage.id,
-					};
+				await cronMessage
+					.save()
+					.then(async (savedCronMessage) => {
+						const jobData = {
+							channelId: channel.id,
+							content: content,
+							embed: embedData,
+							cronMessageId: savedCronMessage.id,
+						};
 
-					// Programa el trabajo con Agenda
-					if (repeat) {
-						// Trabajo recurrente
-						await ExtendedClient.agenda.every(cronString, "send cron message", jobData, {
-							startDate: startDate,
-						});
-					} else {
-						// Trabajo único
-						const job = ExtendedClient.agenda.create("send cron message", { ...jobData, cronMessageId: savedCronMessage.id });
-						job.unique({ cronMessageId: savedCronMessage.id });
-						job.schedule(startDate);
-						await job.save();
-					}
-
-					return replyOk(interaction, `Mensaje programado con éxito.`, undefined, undefined, undefined, undefined, true);
-				} catch (error) {
-					console.error("Error al agregar mensaje programado:", error);
-					return replyError(interaction, "Hubo un error al agregar el mensaje programado.");
-				}
+						// Programa el trabajo con Agenda
+						if (repeat) {
+							// Trabajo recurrente
+							await ExtendedClient.agenda
+								.every(cronString, "send cron message", jobData, {
+									startDate: startDate,
+								})
+								.catch((error) => {
+									console.error("Error al programar el trabajo recurrente:", error);
+								});
+						} else {
+							// Trabajo único
+							const job = ExtendedClient.agenda.create("send cron message", { ...jobData, cronMessageId: savedCronMessage.id });
+							job.unique({ cronMessageId: savedCronMessage.id });
+							job.schedule(startDate);
+							await job.save().catch((error) => {
+								console.error("Error al programar el trabajo de ejecución unica:", error);
+							});
+						}
+						return replyOk(interaction, `Mensaje programado con éxito.`, undefined, undefined, undefined, undefined, true);
+					})
+					.catch((error) => {
+						console.error("Error al guardar el mensaje programado:", error);
+						replyError(interaction, "Hubo un error al agregar el mensaje programado.");
+					});
 			} else if (subcommand === "remove") {
 				const id = interaction.options.getString("id", true);
 
@@ -189,7 +197,7 @@ export default {
 					// Cancela el trabajo en Agenda
 					await ExtendedClient.agenda.cancel({ "data.cronMessageId": id });
 
-					return replyOk(
+					return replyInfo(
 						interaction,
 						`Mensaje programado con ID \`${id}\` eliminado.`,
 						undefined,
