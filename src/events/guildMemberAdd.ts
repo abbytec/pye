@@ -11,7 +11,7 @@ export default {
 	name: Events.GuildMemberAdd,
 	once: false,
 	async execute(member: GuildMember) {
-		if (regex.test(member?.user.displayName.toLocaleLowerCase())) return member.ban({ reason: "spam" });
+		if (regex.test(member?.user.displayName.toLocaleLowerCase())) return member.kick({ reason: "spam" });
 		if (member.user.bot) return;
 		member.roles.add(getInitialRoles(["novato"])).catch(() => null);
 		if (process.env.ENABLE_AUTO_WELCOME_MESSAGE) ExtendedClient.newUsers.add(member.id);
