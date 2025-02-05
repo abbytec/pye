@@ -30,8 +30,6 @@ export const verifyCooldown = (
 		// Obtener el tiempo restante de cooldown
 		const remainingCooldown = await getCooldown(interaction.client, userId, commandName, finalCooldownDuration);
 
-		console.log(remainingCooldown);
-
 		if (remainingCooldown > 0) {
 			const timeLeft = formatTime(remainingCooldown);
 			let message = await interaction.reply({

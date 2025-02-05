@@ -21,13 +21,16 @@ import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import { ExtendedClient } from "../../client.js";
+
 const game = new Set();
+
 const Aces = [
 	"<:A_clubs:917537119772213289>",
 	"<:A_diamonds:917537145315524658>",
 	"<:A_hearts:917537176001052672>",
 	"<:A_spades:917537196402176041>",
 ];
+
 const buttonsDisabled = [
 	new ActionRowBuilder<ButtonBuilder>().addComponents([
 		new ButtonBuilder().setStyle(1).setCustomId("bj-hit").setLabel("Otra").setDisabled(true),
@@ -37,19 +40,19 @@ const buttonsDisabled = [
 	]),
 ];
 
-const usage = [
-	"`Otra` - toma otra carta.",
-	"`Quedarse` - termina el juego.",
-	"`Doblar apuesta` - duplica tu apuesta, toma una carta y termina el juego.",
-];
-
 const buttons = [
 	new ActionRowBuilder<ButtonBuilder>().addComponents([
 		new ButtonBuilder().setStyle(1).setCustomId("bj-hit").setLabel("Otra"),
 		new ButtonBuilder().setStyle(3).setCustomId("bj-stand").setLabel("Quedarse"),
 		new ButtonBuilder().setStyle(2).setCustomId("bj-ddown").setLabel("Doblar apuesta"),
-		new ButtonBuilder().setStyle(2).setCustomId("bj-split").setLabel("Dividir juego").setDisabled(true),
+		new ButtonBuilder().setStyle(2).setCustomId("bj-split").setLabel("Dividir juego"),
 	]),
+];
+
+const usage = [
+	"`Otra` - toma otra carta.",
+	"`Quedarse` - termina el juego.",
+	"`Doblar apuesta` - duplica tu apuesta, toma una carta y termina el juego.",
 ];
 
 const STATIC_CARDS: Record<string, number | "relatable"> = {
@@ -124,14 +127,18 @@ export default {
 				return replyError(interaction, `No puedes apostar más de ${ExtendedClient.getGamexMaxCoins()} PyE Coins.`);
 			if (game.has(interaction.user.id)) return replyError(interaction, "Ya te encuentras jugando.");
 			game.add(interaction.user.id);
+
+			// Colección que usaremos para ir registrando las cartas jugadas
 			const cardsGame = new Collection<string, "relatable" | number>();
+
 			const gameEmbed = new EmbedBuilder().setColor(0x3a9f4).setAuthor({
 				name: interaction.user.tag,
 				iconURL: interaction.user.displayAvatarURL({ extension: "png", size: 1024 }),
 			});
-			// <:A_diamonds:917537145315524658> y <:5_hearts:917517203698491412>, <:K_hearts:917518224625655828>, <:K_hearts:917518224625655828>, <:Q_clubs:917518386601295882>
-			//const firstCards = ['<:Q_clubs:917518386601295882>', '<:K_hearts:917518224625655828>']
+
+			// Se crea una copia de las cartas disponibles
 			const CARDS: Collection<string, number | "relatable"> = new Collection(Object.entries(STATIC_CARDS));
+
 			const dealerCards = CARDS.randomKey(1);
 			const firstCards = CARDS.randomKey(2);
 			const dealerValue = dealerCards.reduce((a, b) => a + parseRelatable(a, CARDS.get(b) ?? 0), 0);
@@ -140,33 +147,35 @@ export default {
 			let res = await isBlackJack(firstValue, dealerValue, gameEmbed, data, game, amount, interaction, firstCards, dealerCards);
 			if (res) return;
 
-			let gameCards = [...firstCards];
+			// La mano del jugador y la del dealer (inicial) se crean como arrays
+			let gameCardsArr = [...firstCards];
 			let gameDealerCards = [...dealerCards];
-			let hands = [[gameCards[0]], [gameCards[1]]];
-			changeCard(gameCards, gameDealerCards, cardsGame, CARDS);
-			removeCards(gameCards, gameDealerCards, CARDS);
-			const cardsValue = () => gameCards.reduce((a, b) => a + parseRelatable(a, cardsGame.get(b) ?? 0), 0);
-			const dealerCardsValue = () => gameDealerCards.reduce((a, b) => a + parseRelatable(a, cardsGame.get(b) ?? 0), 0);
+			// Para el juego “normal” (sin split) usaremos un array de manos; en caso de split se tendrá 2
+			let hands = [[...gameCardsArr]];
+			// Registra las cartas ya mostradas
+			changeCard(gameCardsArr, gameDealerCards, cardsGame, CARDS);
+			removeCards(gameCardsArr, gameDealerCards, CARDS);
+
+			const cardsValueFunc = () => gameCardsArr.reduce((a, b) => a + parseRelatable(a, cardsGame.get(b) ?? 0), 0);
+			const dealerCardsValueFunc = () => gameDealerCards.reduce((a, b) => a + parseRelatable(a, cardsGame.get(b) ?? 0), 0);
 
 			gameEmbed.setDescription(usage.join("\n")).addFields([
 				{
 					name: "**Tu mano**",
-					value: `${gameCards.join(" ")}\n\n**Valor:** \`${cardsValue()}\``,
+					value: `${gameCardsArr.join(" ")}\n\n**Valor:** \`${cardsValueFunc()}\``,
 					inline: true,
 				},
 				{
 					name: "**Mano del dealer**",
-					value: `${gameDealerCards.join(" ")} <:back_card:1313512667775893608>\n\n**Valor:** \`${dealerCardsValue()}\``,
+					value: `${gameDealerCards.join(" ")} <:back_card:1313512667775893608>\n\n**Valor:** \`${dealerCardsValueFunc()}\``,
 					inline: true,
 				},
-				{
-					name: "\u200b",
-					value: "\u200b",
-					inline: true,
-				},
+				{ name: "\u200b", value: "\u200b", inline: true },
 			]);
 
-			const buttons = [
+			// Se arma el panel de botones; si la mano ya tiene más de 2 cartas (por ejemplo, luego de split)
+			// se deshabilita el botón de split.
+			const buttonsInstance = [
 				new ActionRowBuilder<ButtonBuilder>().addComponents([
 					new ButtonBuilder().setStyle(1).setCustomId("bj-hit").setLabel("Otra"),
 					new ButtonBuilder().setStyle(3).setCustomId("bj-stand").setLabel("Quedarse"),
@@ -175,17 +184,19 @@ export default {
 						.setStyle(2)
 						.setCustomId("bj-split")
 						.setLabel("Dividir juego")
-						.setDisabled(cardsGame.get(gameCards[0]) !== cardsGame.get(gameCards[1])),
+						.setDisabled(
+							gameCardsArr.length !== 2 ||
+								(gameCardsArr.length === 2 && cardsGame.get(gameCardsArr[0]) !== cardsGame.get(gameCardsArr[1]))
+						),
 				]),
 			];
 
-			const m = await interaction.reply({ embeds: [gameEmbed], components: [...buttons] });
+			const m = await interaction.reply({ embeds: [gameEmbed], components: [...buttonsInstance] });
 			const check = await checkEmbed(amount, interaction.user.id, m, {
-				cards: [gameCards, gameDealerCards],
-				values: [cardsValue(), dealerCardsValue()],
+				cards: [gameCardsArr, gameDealerCards],
+				values: [cardsValueFunc(), dealerCardsValueFunc()],
 			});
-
-			if (!check) return startGame(m, gameCards, gameDealerCards, cardsGame, CARDS, amount, interaction.user.id, interaction, hands);
+			if (!check) return startGame(m, gameCardsArr, gameDealerCards, cardsGame, CARDS, amount, interaction.user.id, interaction, hands, 1);
 		}
 	),
 	prefixResolver: (client: ExtendedClient) =>
@@ -202,6 +213,8 @@ export default {
 		),
 } as Command;
 
+/* ------------------------ Funciones auxiliares ------------------------ */
+
 function cardsValue(cards: string[], cardsGame: Collection<string, number | "relatable">) {
 	let newOrder: string[] = [];
 	if (cards.some((card) => Aces.includes(card))) newOrder = orderGame(cards) ?? [];
@@ -209,128 +222,174 @@ function cardsValue(cards: string[], cardsGame: Collection<string, number | "rel
 	return newOrder.reduce((a, b) => a + parseRelatable(a, cardsGame.get(b) ?? 0), 0);
 }
 
+/**
+ * startGame registra el collector para la jugada de una mano en particular.
+ * Se usa el parámetro handNumber para identificar si es la mano 1 o 2 (en caso de split).
+ * Se detiene el collector (con collector.stop()) en acciones que finalizan la jugada.
+ */
+// En la definición de startGame se agrega el parámetro alreadySplit:
 function startGame(
 	interactionResponse: InteractionResponse<true> | Message,
-	gameCards: string[],
-	gameDealerCards: string[],
+	playerCards: string[],
+	dealerCards: string[],
 	cardsGame: Collection<string, number | "relatable">,
 	cards: Collection<string, number | "relatable">,
 	amount: number,
 	userId: string,
 	interaction: IPrefixChatInputCommand,
-	hands: string[][]
+	hands: string[][],
+	handNumber: number = 1,
+	alreadySplit: boolean = false // <-- NUEVO parámetro (por defecto false)
 ) {
-	let newCard, res, otherGame, newCardsDealer, otherCard, games;
+	const collector = interactionResponse.createMessageComponentCollector({
+		filter: (i) => ["bj-hit", "bj-stand", "bj-ddown", "bj-split"].includes(i.customId) && i.user.id === userId,
+		time: 60e3,
+	});
 
-	interactionResponse
-		.createMessageComponentCollector({
-			filter: (interactionB) =>
-				["bj-hit", "bj-stand", "bj-ddown", "bj-split"].includes(interactionB.customId) && interactionB.user.id === userId,
-			time: 60e3,
-		})
-		.on("collect", async (i: ButtonInteraction) => {
-			if (!i.deferred) await i.deferUpdate().catch(() => null);
-			switch (i.customId) {
-				case "bj-hit":
-					newCard = cards.randomKey(1);
-					gameCards.push(newCard[0]);
-					changeCard(newCard, null, cardsGame, cards);
-					removeCards(newCard, null, cards);
-					res = await checkEmbed(amount, userId, interactionResponse, {
-						cards: [gameCards, gameDealerCards],
-						values: [cardsValue(gameCards, cardsGame), cardsValue(gameDealerCards, cardsGame)],
-					});
-
-					if (!res) {
-						let gameEmbed = new EmbedBuilder()
-							.setDescription(usage.join("\n"))
-							.addFields([
-								{
-									name: "**Tu mano**",
-									value: `${gameCards.join(" ")}\n\n**Valor:** \`${cardsValue(gameCards, cardsGame)}\``,
-									inline: true,
-								},
-								{
-									name: "**Mano del dealer**",
-									value: `${gameDealerCards.join(" ")} <:back_card:1313512667775893608>\n\n**Valor:** \`${cardsValue(
-										gameDealerCards,
-										cardsGame
-									)}\``,
-									inline: true,
-								},
-							])
-							.setColor(0x3a9f4);
-						return interactionResponse.edit({ embeds: [gameEmbed], components: [...buttons] }).catch(() => null);
-					}
-
-					break;
-				case "bj-stand":
-					while (cardsValue(gameDealerCards, cardsGame) < 17) {
-						const newCard = cards.randomKey(1);
-						gameDealerCards.push(newCard[0]);
-						changeCard(null, newCard, cardsGame, cards);
-						removeCards(null, newCard, cards);
-					}
-					await checkGame(
-						amount,
-						userId,
-						{
-							cards: [gameCards, gameDealerCards],
-							values: [cardsValue(gameCards, cardsGame), cardsValue(gameDealerCards, cardsGame)],
-						},
-
-						interactionResponse,
-						game
-					);
-					break;
-				case "bj-ddown":
-					amount = amount * 2;
-					otherCard = cards.randomKey(1);
-					gameCards.push(otherCard[0]);
-					changeCard(otherCard, null, cardsGame, cards);
-					removeCards(otherCard, null, cards);
-					if (cardsValue(gameCards, cardsGame) < 21) {
-						let extraCard = cards.randomKey(getRandomNumber(2, 3));
-						changeCard(null, extraCard, cardsGame, cards);
-						removeCards(null, extraCard, cards);
-						gameDealerCards = gameDealerCards.concat(extraCard);
-					}
-					await checkGame(
-						amount,
-						userId,
-						{
-							cards: [gameCards, gameDealerCards],
-							values: [cardsValue(gameCards, cardsGame), cardsValue(gameDealerCards, cardsGame)],
-						},
-						interactionResponse,
-						game
-					);
-					break;
-				case "bj-split":
-					games = createGames(hands, cards, cardsGame);
-					gameCards = games[0];
-					otherGame = games[1];
-					otherCard = cards.randomKey(1);
-					changeCard(null, otherCard, cardsGame, cards);
-					removeCards(null, otherCard, cards);
-					await splitGame(
-						interactionResponse,
-						gameCards,
-						gameDealerCards,
-						cardsGame,
-						cards,
-						amount,
-						interaction,
-						hands,
-						otherGame,
-						otherCard
-					);
-					break;
+	collector.on("collect", async (i: ButtonInteraction) => {
+		if (!i.deferred) await i.deferUpdate().catch(() => null);
+		switch (i.customId) {
+			case "bj-hit": {
+				const newCard = cards.randomKey(1)[0];
+				playerCards.push(newCard);
+				changeCard([newCard], null, cardsGame, cards);
+				removeCards([newCard], null, cards);
+				const currentPlayerValue = playerCards.reduce((a, b) => a + parseRelatable(a, cardsGame.get(b) ?? 0), 0);
+				const currentDealerValue = dealerCards.reduce((a, b) => a + parseRelatable(a, cardsGame.get(b) ?? 0), 0);
+				const res = await checkEmbed(amount, userId, interactionResponse, {
+					cards: [playerCards, dealerCards],
+					values: [currentPlayerValue, currentDealerValue],
+				});
+				if (!res) {
+					const gameEmbed = new EmbedBuilder()
+						.setDescription(usage.join("\n"))
+						.addFields([
+							{
+								name: handNumber === 1 ? "**Tu mano 1**" : "**Tu mano 2**",
+								value: `${playerCards.join(" ")}\n\n**Valor:** \`${currentPlayerValue}\``,
+								inline: true,
+							},
+							{
+								name: "**Mano del dealer**",
+								value: `${dealerCards.join(" ")} <:back_card:1313512667775893608>\n\n**Valor:** \`${currentDealerValue}\``,
+								inline: true,
+							},
+						])
+						.setColor(0x3a9f4);
+					return interactionResponse
+						.edit({
+							embeds: [gameEmbed],
+							components: [
+								new ActionRowBuilder<ButtonBuilder>().addComponents([
+									new ButtonBuilder().setStyle(1).setCustomId("bj-hit").setLabel("Otra"),
+									new ButtonBuilder().setStyle(3).setCustomId("bj-stand").setLabel("Quedarse"),
+									new ButtonBuilder().setStyle(2).setCustomId("bj-ddown").setLabel("Doblar apuesta"),
+									// Aquí se deshabilita split si ya se hizo split o no se cumplen las condiciones
+									new ButtonBuilder()
+										.setStyle(2)
+										.setCustomId("bj-split")
+										.setLabel("Dividir juego")
+										.setDisabled(
+											alreadySplit ||
+												playerCards.length !== 2 ||
+												cardsGame.get(playerCards[0]) !== cardsGame.get(playerCards[1])
+										),
+								]),
+							],
+						})
+						.catch(() => null);
+				}
+				break;
 			}
-		})
-		.on("end", () => game.delete(userId));
+			case "bj-stand": {
+				while (dealerCards.reduce((a, b) => a + parseRelatable(a, cardsGame.get(b) ?? 0), 0) < 17) {
+					const newCard = cards.randomKey(1)[0];
+					dealerCards.push(newCard);
+					changeCard([newCard], null, cardsGame, cards);
+					removeCards([newCard], null, cards);
+				}
+				collector.stop(); // Se detiene este collector al finalizar la jugada
+				await checkGame(
+					amount,
+					userId,
+					{
+						cards: [playerCards, dealerCards],
+						values: [
+							playerCards.reduce((a, b) => a + parseRelatable(a, cardsGame.get(b) ?? 0), 0),
+							dealerCards.reduce((a, b) => a + parseRelatable(a, cardsGame.get(b) ?? 0), 0),
+						],
+					},
+					interactionResponse,
+					game
+				);
+				break;
+			}
+			case "bj-ddown": {
+				amount = amount * 2;
+				const extraCard = cards.randomKey(1)[0];
+				playerCards.push(extraCard);
+				changeCard([extraCard], null, cardsGame, cards);
+				removeCards([extraCard], null, cards);
+				if (playerCards.reduce((a, b) => a + parseRelatable(a, cardsGame.get(b) ?? 0), 0) < 21) {
+					const extra = cards.randomKey(getRandomNumber(2, 3));
+					if (Array.isArray(extra)) {
+						extra.forEach((card) => {
+							changeCard([card], null, cardsGame, cards);
+							removeCards([card], null, cards);
+							dealerCards.push(card);
+						});
+					}
+				}
+				collector.stop(); // Se detiene el collector para esta jugada
+				await checkGame(
+					amount,
+					userId,
+					{
+						cards: [playerCards, dealerCards],
+						values: [
+							playerCards.reduce((a, b) => a + parseRelatable(a, cardsGame.get(b) ?? 0), 0),
+							dealerCards.reduce((a, b) => a + parseRelatable(a, cardsGame.get(b) ?? 0), 0),
+						],
+					},
+					interactionResponse,
+					game
+				);
+				break;
+			}
+			case "bj-split": {
+				// Bloqueamos la acción si la mano ya fue dividida o no tiene exactamente 2 cartas
+				if (playerCards.length !== 2) return;
+				if (cardsGame.get(playerCards[0]) !== cardsGame.get(playerCards[1])) return;
+				// Se crean dos manos separadas: cada una con una de las cartas originales
+				const hand1 = [playerCards[0]];
+				const hand2 = [playerCards[1]];
+				// Se asigna a cada mano una carta extra
+				const extra1 = cards.randomKey(1)[0];
+				const extra2 = cards.randomKey(1)[0];
+				hand1.push(extra1);
+				hand2.push(extra2);
+				changeCard([extra1], null, cardsGame, cards);
+				removeCards([extra1], null, cards);
+				changeCard([extra2], null, cardsGame, cards);
+				removeCards([extra2], null, cards);
+				const newHands = [hand1, hand2];
+				collector.stop(); // Se detiene el collector de la mano original
+				// En el split, llamamos a startGame con alreadySplit = true
+				await splitGame(interactionResponse, hand1, dealerCards, cardsGame, cards, amount, interaction, newHands, hand2);
+				break;
+			}
+		}
+	});
+
+	collector.on("end", () => {
+		// Se elimina el usuario del set de juego para esta mano.
+		game.delete(userId);
+	});
 }
 
+/**
+ * checkEmbed revisa si se alcanzó o superó 21 y, en ese caso, finaliza la partida.
+ */
 async function checkEmbed(amount: number, userId: string, msg: InteractionResponse | Message, cards: { cards: string[][]; values: number[] }) {
 	const data = await getOrCreateUser(userId);
 	const {
@@ -338,7 +397,10 @@ async function checkEmbed(amount: number, userId: string, msg: InteractionRespon
 		values: [playerValue, dealerValue],
 	} = cards;
 	const user = await msg.client.users.fetch(userId).catch(() => undefined);
-	const unEmbed = new EmbedBuilder().setAuthor({ name: user?.displayName ?? "Desconocido", iconURL: user?.displayAvatarURL() });
+	const unEmbed = new EmbedBuilder().setAuthor({
+		name: user?.displayName ?? "Desconocido",
+		iconURL: user?.displayAvatarURL(),
+	});
 	if (playerValue >= 21 || dealerValue >= 21) {
 		if (playerValue > 21 && dealerValue > 21) {
 			unEmbed.setColor(0xff8d01).setDescription("Resultado: Empate. Devolviendo dinero.");
@@ -350,7 +412,6 @@ async function checkEmbed(amount: number, userId: string, msg: InteractionRespon
 			await betDone(msg, userId, amount, earn);
 			unEmbed.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste! ${pyecoin} **${earn}**.`);
 		}
-
 		unEmbed.addFields([
 			{
 				name: "**Tu mano**",
@@ -368,6 +429,9 @@ async function checkEmbed(amount: number, userId: string, msg: InteractionRespon
 	} else return null;
 }
 
+/**
+ * checkGame se invoca al terminar la jugada (Stand o DDown) y calcula el resultado final.
+ */
 async function checkGame(
 	amount: number,
 	userId: string,
@@ -382,7 +446,10 @@ async function checkGame(
 		values: [playerValue, dealerValue],
 	} = cards;
 	const user = msg.client.users.resolve(userId);
-	const endGame = new EmbedBuilder().setAuthor({ name: user?.displayName ?? "Desconocido", iconURL: user?.displayAvatarURL() });
+	const endGame = new EmbedBuilder().setAuthor({
+		name: user?.displayName ?? "Desconocido",
+		iconURL: user?.displayAvatarURL(),
+	});
 	if (playerValue >= 21 || dealerValue >= 21) {
 		if (playerValue > 21 && dealerValue > 21) {
 			endGame.setColor(0xff8d01).setDescription("Resultado: Empate. Devolviendo dinero.");
@@ -392,16 +459,12 @@ async function checkGame(
 		} else if (dealerValue === 21) {
 			await betDone(msg, userId, amount, -amount);
 			await data.save();
-			endGame
-				.setColor(0xef5350)
-
-				.setDescription(`Resultado: Dealer se acerco más. ${pyecoin} **${amount}**.`);
+			endGame.setColor(0xef5350).setDescription(`Resultado: Dealer se acerco más. ${pyecoin} **${amount}**.`);
 		} else {
 			const earn = calculateJobMultiplier(data.profile?.job, amount, data.couples);
 			await betDone(msg, userId, amount, earn);
-			endGame.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste! ${pyecoin} **${earn}**.`);
+			endGame.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste!  ${pyecoin} **${earn}**.`);
 		}
-
 		endGame.addFields([
 			{
 				name: "**Tu mano**",
@@ -426,7 +489,6 @@ async function checkGame(
 			await betDone(msg, userId, amount, earn);
 			endGame.setColor(0x66bb6a).setDescription(`Resultado: ¡Ganaste!  ${pyecoin} **${earn}**.`);
 		}
-
 		endGame.addFields([
 			{
 				name: "**Tu mano**",
@@ -443,6 +505,9 @@ async function checkGame(
 	}
 }
 
+/**
+ * isBlackJack evalúa la situación inmediatamente después de repartir las cartas iniciales.
+ */
 async function isBlackJack(
 	firstValue: number,
 	dealerValue: number,
@@ -481,23 +546,26 @@ async function isBlackJack(
 				inline: true,
 			},
 		]);
-
 		return await interaction.reply({ embeds: [embed], components: [...buttonsDisabled] });
 	} else return null;
 }
 
+/**
+ * splitGame envía dos mensajes independientes (uno para cada mano) y registra
+ * dos colectores para que el usuario juegue cada mano de forma separada.
+ */
 async function splitGame(
 	m: InteractionResponse | Message,
-	gameCards: string[],
-	gameDealerCards: string[],
+	hand1: string[],
+	dealerCards: string[],
 	cardsGame: Collection<string, number | "relatable">,
 	cards: Collection<string, number | "relatable">,
 	amount: number,
 	interaction: IPrefixChatInputCommand,
 	hands: string[][],
-	otherHand: string[],
-	otherCard: string[]
+	hand2: string[]
 ) {
+	// Actualizamos el mensaje de la primera mano
 	await m
 		.edit({
 			embeds: [
@@ -506,15 +574,12 @@ async function splitGame(
 					.addFields([
 						{
 							name: "**Tu mano 1**",
-							value: `${gameCards.join(" ")}\n\nValor: ${cardsValue(gameCards, cardsGame)}`,
+							value: `${hand1.join(" ")}\n\nValor: ${cardsValue(hand1, cardsGame)}`,
 							inline: true,
 						},
 						{
 							name: "**Mano del dealer**",
-							value: `${gameDealerCards.join(" ")} <:back_card:1313512667775893608>\n\nValor: ${cardsValue(
-								gameDealerCards,
-								cardsGame
-							)}`,
+							value: `${dealerCards.join(" ")} <:back_card:1313512667775893608>\n\nValor: ${cardsValue(dealerCards, cardsGame)}`,
 							inline: true,
 						},
 					])
@@ -523,6 +588,8 @@ async function splitGame(
 			components: [...buttons],
 		})
 		.catch(() => null);
+
+	// Se envía un mensaje nuevo para la segunda mano
 	const msgSplit = await (interaction.channel as TextChannel).send({
 		embeds: [
 			new EmbedBuilder()
@@ -530,25 +597,37 @@ async function splitGame(
 				.addFields([
 					{
 						name: "**Tu mano 2**",
-						value: `${otherHand.join(" ")}\n\nValor: ${cardsValue(otherHand, cardsGame)}`,
+						value: `${hand2.join(" ")}\n\nValor: ${cardsValue(hand2, cardsGame)}`,
 						inline: true,
 					},
 					{
 						name: "**Mano del dealer**",
-						value: `${otherCard.join(" ")} <:back_card:1313512667775893608>\n\nValor: ${cardsValue(otherCard, cardsGame)}`,
+						value: `${dealerCards.join(" ")} <:back_card:1313512667775893608>\n\nValor: ${cardsValue(dealerCards, cardsGame)}`,
 						inline: true,
 					},
 				])
-
 				.setColor(0x3a9f4),
 		],
 		components: [...buttons],
 	});
-	const check = await checkEmbed(amount, interaction.user.id, msgSplit, {
-		cards: [gameCards, gameDealerCards],
-		values: [cardsValue(otherHand, cardsGame), cardsValue(otherCard, cardsGame)],
+
+	// Se verifica cada mano y se inicia un collector para cada una (de forma independiente)
+	const check1 = await checkEmbed(amount, interaction.user.id, m, {
+		cards: [hand1, dealerCards],
+		values: [cardsValue(hand1, cardsGame), cardsValue(dealerCards, cardsGame)],
 	});
-	if (!check) return startGame(msgSplit, gameCards, gameDealerCards, cardsGame, cards, amount, interaction.user.id, interaction, hands);
+	const check2 = await checkEmbed(amount, interaction.user.id, msgSplit, {
+		cards: [hand2, dealerCards],
+		values: [cardsValue(hand2, cardsGame), cardsValue(dealerCards, cardsGame)],
+	});
+	if (!check1) {
+		// Iniciamos para hand1 con alreadySplit = true para que no se permita dividirla nuevamente
+		startGame(m, hand1, dealerCards, cardsGame, cards, amount, interaction.user.id, interaction, hands, 1, true);
+	}
+	if (!check2) {
+		// Iniciamos para hand2 con alreadySplit = true
+		startGame(msgSplit, hand2, dealerCards, cardsGame, cards, amount, interaction.user.id, interaction, hands, 2, true);
+	}
 }
 
 function changeCard(
@@ -558,8 +637,7 @@ function changeCard(
 	cartas: Collection<string, string | number>
 ) {
 	const agregarCartas = (carta: string) => {
-		let res = cartas.has(carta);
-		if (res) {
+		if (cartas.has(carta)) {
 			let val = cartas.get(carta);
 			cartasJugadas.set(carta, val ?? "");
 		}
@@ -572,7 +650,6 @@ function removeCards(cardsPlayer: string[] | null, cardsBot: string[] | null, ca
 	cardsPlayer?.forEach((card) => {
 		cartas.delete(card);
 	});
-
 	cardsBot?.forEach((card) => {
 		cartas.delete(card);
 	});
@@ -580,17 +657,6 @@ function removeCards(cardsPlayer: string[] | null, cardsBot: string[] | null, ca
 
 function parseRelatable(value: number, card: "relatable" | number) {
 	return card === "relatable" ? (Number(value) + 11 > 21 ? 1 : 11) : card;
-}
-
-function createGames(hands: string[][], cards: Collection<string, number | "relatable">, cardsInGame: Collection<string, number | "relatable">) {
-	let newCards = cards.filter((_, key) => key !== hands[0][0]);
-	let randomCards = newCards.randomKey(2);
-	changeCard(randomCards, null, cardsInGame, cards);
-	removeCards(randomCards, null, cards);
-	for (let i = 0; i < hands.length; i++) {
-		hands[i].push(randomCards[i]);
-	}
-	return hands;
 }
 
 function orderGame(cards: string[]) {
