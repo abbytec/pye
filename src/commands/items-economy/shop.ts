@@ -27,6 +27,7 @@ import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import { getRender } from "../../utils/canvas/card-render.js";
 import { fileURLToPath } from "url";
+import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -47,7 +48,12 @@ export default {
 		.addSubcommand((subcommand) => subcommand.setName("fondos").setDescription("Ver fondos disponibles.")),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction(false)],
+		[
+			verifyIsGuild(process.env.GUILD_ID ?? ""),
+			verifyChannel(getChannelFromEnv("casinoPye")),
+			verifyCooldown("shop", 20000),
+			deferInteraction(false),
+		],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const subcommand = interaction.options.getSubcommand();
 
