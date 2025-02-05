@@ -8,12 +8,14 @@ loadEnvVariables();
 
 const regex = new RegExp(/(https?:\/\/[^\s]+)/i);
 export default {
-	name: Events.GuildMemberAdd,
-	once: false,
-	async execute(member: GuildMember) {
-		if (regex.test(member?.user.displayName.toLocaleLowerCase())) return member.kick({ reason: "spam" });
-		if (member.user.bot) return;
-		member.roles.add(getInitialRoles(["novato"])).catch(() => null);
-		if (process.env.ENABLE_AUTO_WELCOME_MESSAGE) ExtendedClient.newUsers.add(member.id);
-	},
+  name: Events.GuildMemberAdd,
+  once: false,
+  async execute(member: GuildMember) {
+    if (regex.test(member?.user.displayName.toLocaleLowerCase()))
+      return member.kick("spam");
+    if (member.user.bot) return;
+    member.roles.add(getInitialRoles(["novato"])).catch(() => null);
+    if (process.env.ENABLE_AUTO_WELCOME_MESSAGE)
+      ExtendedClient.newUsers.add(member.id);
+  },
 } as Evento;
