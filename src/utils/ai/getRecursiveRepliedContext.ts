@@ -1,6 +1,11 @@
 import { Message } from "discord.js";
 
-export async function getRecursiveRepliedContext(message: Message<boolean>, pyeChan: boolean, maxDepth: number = 10): Promise<string> {
+export async function getRecursiveRepliedContext(
+	message: Message<boolean>,
+	pyeChan: boolean,
+	maxDepth: number = 10,
+	initialMessage?: string
+): Promise<string> {
 	let contextLines: string[] = [];
 	let currentMessage: Message<boolean> | null = message;
 	let depth = 0;
@@ -26,7 +31,8 @@ export async function getRecursiveRepliedContext(message: Message<boolean>, pyeC
 	// Finalmente, añade el mensaje inicial al contexto
 	const initialAuthorName = message.author.id === (process.env.CLIENT_ID ?? "") ? botName : message.author.username;
 
-	contextLines.push(`${initialAuthorName}: ${message.content}`);
+	if (initialMessage) contextLines.push(`${initialAuthorName}: ${initialMessage}`);
+	else contextLines.push(`${initialAuthorName}: ${message.content}`);
 
 	// Combina todas las líneas en una sola cadena de texto
 	return contextLines.join("\n") + "\n" + botName + "(continúa con tu respuesta)";

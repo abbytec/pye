@@ -64,7 +64,20 @@ export const pyeChanPrompt = `
 `;
 
 export const modelPyeChanAnswer = genAI.getGenerativeModel({
-	model: "gemini-1.5-flash",
+	model: "gemini-2.0-flash-001",
+	safetySettings: safetySettingszzz,
+	systemInstruction: pyeChanPrompt,
+	generationConfig: {
+		candidateCount: 1,
+		maxOutputTokens: 500,
+		temperature: 0.65,
+		topK: 35,
+		topP: 0.75,
+	},
+});
+
+export const modelPyeChanReasoningAnswer = genAI.getGenerativeModel({
+	model: "gemini-2.0-flash-thinking-exp-01-21",
 	safetySettings: safetySettingszzz,
 	systemInstruction: pyeChanPrompt,
 	generationConfig: {

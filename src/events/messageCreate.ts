@@ -50,6 +50,7 @@ import {
 import { checkQuestLevel, IQuest } from "../utils/quest.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createChatEmbed, createForumEmbed, generateChatResponse, generateForumResponse, sendLongReply } from "../utils/ai/aiResponseService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -350,8 +351,8 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 	if (message.mentions.everyone) return;
 
 	let botShouldAnswer = message.mentions.has(process.env.CLIENT_ID ?? "");
-	let contexto;
 
+	// Si el mensaje es una respuesta, se verifica si el mensaje original fue enviado por el bot
 	if (message.reference?.messageId) {
 		botShouldAnswer =
 			botShouldAnswer ||
@@ -362,38 +363,17 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 	}
 
 	if (botShouldAnswer) {
-		contexto = await getRecursiveRepliedContext(message, !isForumPost);
+		const contexto = await getRecursiveRepliedContext(message, !isForumPost);
 
 		if (isForumPost) {
 			const threadName = (message.channel as PublicThreadChannel).name;
 			const forumTopic = getForumTopic(isForumPost ?? "");
-
 			try {
-				const fullMessage = (
-					await geminiModel.generateContent(
-						`El tema principal es: "${threadName}" (${forumTopic}) si no lo entiendes no le des importancia. El contexto es: \n"${contexto}"`
-					)
-				).response.text();
-
-				const embed = new EmbedBuilder().setColor(0x0099ff).setDescription(fullMessage).setFooter({ text: "✨ Generado por IA" });
-
-				if (fullMessage.length <= MAX_MESSAGE_LENGTH) {
-					await message.reply({ embeds: [embed] });
-				} else {
-					const chunks = splitMessage(fullMessage, MAX_MESSAGE_LENGTH);
-					let lastMsg: Message | null | undefined;
-
-					for (const chunk of chunks) {
-						if (lastMsg) {
-							lastMsg = await lastMsg.reply({ embeds: [embed.setDescription(chunk)] }).catch(() => null);
-						} else if (message.channel.isSendable()) {
-							lastMsg = await message.reply({ embeds: [embed.setDescription(chunk)] }).catch(() => null);
-						}
-					}
-				}
-			} catch (err) {
-				const error = err as Error;
-				ExtendedClient.logError("Error al generar la respuesta de IA en foro:" + error.message, error.stack, message.author.id);
+				const fullMessage = await generateForumResponse(contexto, threadName, forumTopic);
+				const embed = createForumEmbed(fullMessage);
+				await sendLongReply(message, embed, fullMessage);
+			} catch (err: any) {
+				ExtendedClient.logError("Error al generar la respuesta de IA en foro:" + err.message, err.stack, message.author.id);
 				const errorEmbed = new EmbedBuilder()
 					.setColor(0xff0000)
 					.setTitle("Error")
@@ -402,42 +382,8 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 				await message.reply({ embeds: [errorEmbed] });
 			}
 		} else {
-			let text: string;
-
-			try {
-				text = (
-					await modelPyeChanAnswer.generateContent(contexto + pyeChanSecurityConstraint).catch((err) => {
-						ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + err.message, err.stack, message.author.id);
-						return {
-							response: { text: () => "Estoy comiendo mucho sushi como para procesar esa respuesta, porfa intentá mas tarde 🍣" },
-						};
-					})
-				).response.text();
-			} catch (error) {
-				text = "Mejor comamos un poco de sushi! 🍣";
-			}
-
-			if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8) {
-				text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
-			}
-
-			const emojiFile = emojiMapper(findEmojis(text)[0] ?? "");
-			const embed = new EmbedBuilder()
-				.setColor(getColorFromEmojiFile(emojiFile))
-				.setAuthor({
-					name: "PyE Chan",
-					iconURL:
-						"https://cdn.discordapp.com/attachments/1115058778736431104/1282790824744321167/vecteezy_heart_1187438.png?ex=66e0a38d&is=66df520d&hm=d59a5c3cfdaf988f7a496004f905854677c6f2b18788b288b59c4c0b60d937e6&",
-					url: "https://cdn.discordapp.com/attachments/1115058778736431104/1282780704979292190/image_2.png?ex=66e09a20&is=66df48a0&hm=0df37331fecc81a080a8c7bee4bcfab858992b55d9ca675bafedcf4c4c7879a1&",
-				})
-				.setDescription(text)
-				.setThumbnail(
-					"https://cdn.discordapp.com/attachments/1282932921203818509/1332238415676047430/pyechan.png?ex=67948736&is=679335b6&hm=0d15d3794e6478f5469ff4c4a34f805067bd6b476d9928a00a01c1cf78a8a682&"
-				)
-				.setImage(getCachedImage(emojiFile))
-				.setTimestamp()
-				.setFooter({ text: "♥" });
-
+			const text = await generateChatResponse(contexto, message.author.id);
+			const embed = createChatEmbed(text);
 			await message.reply({ embeds: [embed] }).catch(() => null);
 		}
 	}

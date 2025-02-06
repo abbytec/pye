@@ -82,6 +82,7 @@ export class PrefixChatInputCommand {
 				return this._isDeferred;
 			},
 			fetchReply: async () => await this._reply,
+			message: message,
 		} as IPrefixChatInputCommand & {
 			_isReplied: boolean;
 			_isDeferred: boolean;
