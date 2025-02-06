@@ -7,7 +7,7 @@ import {
 	Message,
 	InteractionReplyOptions,
 	MessagePayload,
-	Attachment
+	Attachment,
 } from "discord.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { ExtendedClient } from "../../client.js";
@@ -52,7 +52,7 @@ export function chatInputCommandParser(interaction: ChatInputCommandInteraction)
 					return null;
 				}
 				return attachment;
-			}
+			},
 		},
 		guild: interaction.guild,
 		guildId: interaction.guildId,

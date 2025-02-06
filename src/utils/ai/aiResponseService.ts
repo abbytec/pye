@@ -7,6 +7,7 @@ import {
 	getCachedImage,
 	getColorFromEmojiFile,
 	modelPyeChanAnswer,
+	modelPyeChanReasoningAnswer,
 	pyeChanPrompt,
 	pyeChanSecurityConstraint,
 } from "./gemini.js";
@@ -32,14 +33,31 @@ export async function generateForumResponse(context: string, threadName: string,
  * @param authorId El id del autor, para logging.
  * @returns El texto generado por IA.
  */
-export async function generateChatResponse(context: string, authorId: string, model = modelPyeChanAnswer): Promise<string> {
-	const result = await model.generateContent(context + pyeChanSecurityConstraint).catch((e) => {
+export async function generateChatResponse(context: string, authorId: string): Promise<string> {
+	const result = await modelPyeChanAnswer.generateContent(context + pyeChanSecurityConstraint).catch((e) => {
 		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
 		return {
 			response: { text: () => "Mejor comamos un poco de sushi! 🍣" },
 		};
 	});
 	let text = result.response.text();
+	// Si el texto es muy similar al prompt (respuesta por defecto), elegimos una respuesta alternativa
+	if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8) {
+		text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
+	}
+	return text;
+}
+
+export async function generateChatResponseStream(context: string, authorId: string): Promise<string> {
+	const result = await modelPyeChanReasoningAnswer.generateContentStream(context + pyeChanSecurityConstraint).catch((e) => {
+		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
+		return {
+			response: new Promise<{ text: () => string }>(() => {
+				return { text: () => "Mejor comamos un poco de sushi! 🍣" };
+			}),
+		};
+	});
+	let text = (await result.response).text();
 	// Si el texto es muy similar al prompt (respuesta por defecto), elegimos una respuesta alternativa
 	if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8) {
 		text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];

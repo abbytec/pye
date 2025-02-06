@@ -8,6 +8,7 @@ interface IPrefixChatInputCommandOption {
 	name: string;
 	required: boolean;
 	options?: string[];
+	infinite?: boolean;
 }
 
 export class PrefixChatInputCommand {
@@ -49,6 +50,10 @@ export class PrefixChatInputCommand {
 		// Parseo de argumentos
 		for (let i = 0; i < this.argsDefinition.length; i++) {
 			const def = this.argsDefinition[i];
+			if (def.infinite && i == 0) {
+				this.argsMap.set(def.name, withoutPrefix.slice(def.name.length));
+				break;
+			}
 			const value = split[i];
 
 			if (def.required && (value === undefined || value === "")) {
