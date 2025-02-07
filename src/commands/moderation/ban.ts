@@ -1,4 +1,3 @@
-// src/commands/Staff/ban.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } from "discord.js";
 import { getChannelFromEnv, getRoleFromEnv, USERS } from "../../utils/constants.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
@@ -19,7 +18,16 @@ export default {
 		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
 		.setDescription("Banea a un usuario del servidor.")
 		.addUserOption((option) => option.setName("usuario").setDescription("Selecciona el usuario a banear").setRequired(true))
-		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo del ban").setRequired(true)),
+		.addStringOption((option) => option.setName("razon").setDescription("Escribe el motivo del ban").setRequired(true))
+		.addStringOption((option) =>
+			option
+				.setName("borradotiempo")
+				.setDescription("¿Cuánto tiempo de mensajes se borrarán? (opcional)")
+				.setRequired(false)
+				.addChoices({ name: "1 hora", value: "3600" }, { name: "3 horas", value: "10800" }, { name: "1 día", value: "86400" })
+		),
+
+	// El middleware y la ejecución del comando:
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
 		async (interaction: IPrefixChatInputCommand) => {
@@ -27,19 +35,22 @@ export default {
 			if (!user) return;
 			const reason = interaction.options.getString("razon") ?? "No se proporcionó una razón.";
 
+			// OBTENEMOS LA OPCIÓN DE TIEMPO DE BORRADO
+			const deleteTimeOption = interaction.options.getString("borradotiempo");
+			const deleteTimeSeconds = deleteTimeOption ? parseInt(deleteTimeOption, 10) : undefined;
+
+			// Intentamos obtener el miembro en el servidor
 			const member = await interaction.guild?.members.fetch(user.id).catch(() => null);
 
 			if (!member) {
 				// El usuario no es miembro activo del servidor
 				// Procedemos a verificar si está baneado
 				const isBanned = (await interaction.guild?.bans.fetch().catch(() => undefined))?.has(user.id);
-				if (isBanned) {
-					return await replyError(interaction, "Este usuario ya está baneado.");
-				} else {
-					return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
-				}
+				if (isBanned) return await replyError(interaction, "Este usuario ya está baneado.");
+				else return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 			}
 
+			// Comprobamos si el usuario es Staff o si es el mismo que intenta banear
 			if (member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
 				return await replyError(interaction, "No puedes banear a un miembro del staff.");
 
@@ -50,7 +61,7 @@ export default {
 			if (bannedUsers?.has(user.id)) return await replyError(interaction, "Este usuario ya está baneado.");
 
 			try {
-				// Enviar mensaje directo al usuario
+				// Enviar mensaje directo al usuario informando del ban
 				await user
 					.send({
 						embeds: [
@@ -67,14 +78,12 @@ export default {
 								.setTimestamp(),
 						],
 					})
-					.catch(() => null)
-					.finally(
-						async () =>
-							await interaction.guild?.members.ban(user.id, { reason }).catch((error) => {
-								console.error(`Error al banear al usuario: ${error}`);
-								ExtendedClient.logError("Error al banear al usuario: " + error.message, error.stack, interaction.user.id);
-							})
-					);
+					.catch(() => null);
+
+				await interaction.guild?.members.ban(user.id, {
+					reason,
+					deleteMessageSeconds: deleteTimeSeconds,
+				});
 
 				// Registrar en ModLogs
 				await ModLogs.create({
@@ -87,7 +96,6 @@ export default {
 
 				await replyOk(interaction, `**${user.tag}** hasta la vista papu. Te fuiste baneado.`);
 
-				// Responder al comando
 				return {
 					logMessages: [
 						{
@@ -105,6 +113,7 @@ export default {
 			} catch (error: any) {
 				console.error(`Error al banear al usuario: ${error}`);
 				ExtendedClient.logError("Error al banear al usuario: " + error.message, error.stack, interaction.user.id);
+				return await replyError(interaction, "Ocurrió un error al intentar banear al usuario.");
 			}
 		},
 		[logMessages]
