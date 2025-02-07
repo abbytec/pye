@@ -99,7 +99,9 @@ export async function generateLeaderboard(
 }
 
 export async function checkRole(msg: Message<boolean> | IPrefixChatInputCommand, roleId: string, limit: number, roleName?: string) {
-	if ((msg.member as GuildMember).roles.cache.has(roleId)) return;
+	if (!msg.guild) return;
+	let member = msg instanceof Message ? msg.member : msg.guild.members.cache.get(msg.user.id);
+	if (member?.roles.cache.has(roleId)) return;
 	let autor = msg instanceof Message ? msg.author.id : msg.user.id;
 	let data = await TextMessages.findOneAndUpdate(
 		{ channelId: roleName ?? msg.channel?.id, id: autor },
@@ -107,11 +109,7 @@ export async function checkRole(msg: Message<boolean> | IPrefixChatInputCommand,
 		{ new: true, upsert: true }
 	);
 	if (data?.messages >= limit) {
-		if (!msg.guild) return;
-		let member = msg instanceof Message ? msg.member : msg.guild.members.cache.get(msg.user.id);
-		if (member && !member.roles.cache.has(roleId)) {
-			member.roles.add(roleId).catch(() => null);
-		}
+		await member?.roles.add(roleId).catch(() => null);
 	}
 }
 
