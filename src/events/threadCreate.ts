@@ -10,8 +10,7 @@ import {
 import { addRep } from "../commands/rep/add-rep.js";
 import { ExtendedClient } from "../client.js";
 import { spamFilter } from "../security/spamFilters.js";
-import { geminiModel } from "../utils/ai/gemini.js";
-import { getFirstValidAttachment, splitMessage } from "../utils/generic.js";
+import { getFirstValidAttachment } from "../utils/generic.js";
 import { createForumEmbed, generateForumResponse, sendLongReply } from "../utils/ai/aiResponseService.js";
 
 export default {
@@ -68,7 +67,10 @@ const threadsHelp = async function (tittle: string, message: Message | null, m: 
 		const authorName = (await m.guild.members.fetch(m.ownerId).catch(() => undefined))?.displayName ?? "Usuario";
 
 		if (message) {
-			const attachmentData = await getFirstValidAttachment(message.attachments);
+			const attachmentData = await getFirstValidAttachment(message.attachments).catch(async (e) => {
+				message.reply(e.message);
+				return undefined;
+			});
 			const fullMessage = await generateForumResponse(prompt, m.name, getForumTopic(m.parentId ?? ""), attachmentData);
 
 			let embed = createForumEmbed(fullMessage, authorName);

@@ -39,6 +39,7 @@ import { checkQuestLevel, IQuest } from "../utils/quest.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createChatEmbed, createForumEmbed, generateChatResponse, generateForumResponse, sendLongReply } from "../utils/ai/aiResponseService.js";
+import { replyError } from "../utils/messages/replyError.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -359,7 +360,10 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 
 	if (botShouldAnswer) {
 		const contexto = await getRecursiveRepliedContext(message, !isForumPost);
-		const attachmentData = await getFirstValidAttachment(message.attachments);
+		const attachmentData = await getFirstValidAttachment(message.attachments).catch(async (e) => {
+			message.reply(e.message);
+			return undefined;
+		});
 
 		if (isForumPost) {
 			const threadName = (message.channel as PublicThreadChannel).name;
