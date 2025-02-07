@@ -13,6 +13,7 @@ import {
 } from "./gemini.js";
 import { ExtendedClient } from "../../client.js";
 import { findEmojis, splitMessage } from "../generic.js";
+import { GenerateContentRequest, Part } from "@google/generative-ai";
 
 /**
  * Genera la respuesta para un foro.
@@ -33,8 +34,38 @@ export async function generateForumResponse(context: string, threadName: string,
  * @param authorId El id del autor, para logging.
  * @returns El texto generado por IA.
  */
-export async function generateChatResponse(context: string, authorId: string): Promise<string> {
-	const result = await modelPyeChanAnswer.generateContent(context + pyeChanSecurityConstraint).catch((e) => {
+export async function generateChatResponse(
+	context: string,
+	authorId: string,
+	image?: { mimeType: string; imageBase64: string }
+): Promise<string> {
+	let userParts: Part[] = [];
+
+	userParts = [
+		{
+			text: context + pyeChanSecurityConstraint,
+		},
+	];
+
+	if (image) {
+		userParts.push({
+			inlineData: {
+				mimeType: image.mimeType,
+				data: image.imageBase64,
+			},
+		});
+	}
+
+	let request: GenerateContentRequest = {
+		contents: [
+			{
+				role: "user",
+				parts: userParts,
+			},
+		],
+	};
+
+	const result = await modelPyeChanAnswer.generateContent(request).catch((e) => {
 		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
 		return {
 			response: { text: () => "Mejor comamos un poco de sushi! 🍣" },

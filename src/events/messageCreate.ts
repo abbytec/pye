@@ -1,11 +1,9 @@
 import {
-	AttachmentBuilder,
 	ChannelType,
 	DMChannel,
 	EmbedBuilder,
 	Events,
 	Guild,
-	GuildBasedChannel,
 	GuildMember,
 	Message,
 	PublicThreadChannel,
@@ -30,27 +28,18 @@ import {
 } from "../utils/constants.js";
 import { Users } from "../Models/User.js";
 import { getCooldown, setCooldown } from "../utils/cooldowns.js";
-import { checkRole, convertMsToUnixTimestamp, findEmojis, splitMessage } from "../utils/generic.js";
+import { checkRole, convertMsToUnixTimestamp } from "../utils/generic.js";
 import { checkHelp } from "../utils/checkhelp.js";
 import { bumpHandler } from "../utils/bumpHandler.js";
 import natural from "natural";
 import { checkMentionSpam, IDeletableContent, spamFilter } from "../security/spamFilters.js";
 import { hashMessage } from "../security/messageHashing.js";
 import { getRecursiveRepliedContext } from "../utils/ai/getRecursiveRepliedContext.js";
-import {
-	ANTI_DUMBS_RESPONSES,
-	emojiMapper,
-	geminiModel,
-	getCachedImage,
-	getColorFromEmojiFile,
-	modelPyeChanAnswer,
-	pyeChanPrompt,
-	pyeChanSecurityConstraint,
-} from "../utils/ai/gemini.js";
 import { checkQuestLevel, IQuest } from "../utils/quest.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createChatEmbed, createForumEmbed, generateChatResponse, generateForumResponse, sendLongReply } from "../utils/ai/aiResponseService.js";
+import fetch from "node-fetch";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -382,7 +371,18 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 				await message.reply({ embeds: [errorEmbed] });
 			}
 		} else {
-			const text = await generateChatResponse(contexto, message.author.id);
+			const imageAttachments = message.attachments.filter((attachment) => attachment.contentType?.startsWith("image/"));
+			let imageBase64: { mimeType: string; imageBase64: string } | undefined = undefined;
+			if (imageAttachments.size > 0) {
+				imageBase64 = await fetch(imageAttachments.at(0)?.url ?? "")
+					.then((r) => r.arrayBuffer())
+					.then((arrayBuffer) => Buffer.from(arrayBuffer))
+					.then((buffer) => {
+						return { mimeType: imageAttachments.at(0)?.contentType ?? "", imageBase64: buffer.toString("base64") };
+					})
+					.catch(() => undefined);
+			}
+			const text = await generateChatResponse(contexto, message.author.id, imageBase64);
 			const embed = createChatEmbed(text);
 			await message.reply({ embeds: [embed] }).catch(() => null);
 		}
