@@ -1,4 +1,14 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, GuildMember, Message } from "discord.js";
+import {
+	ActionRowBuilder,
+	Attachment,
+	ButtonBuilder,
+	ButtonStyle,
+	ChatInputCommandInteraction,
+	Collection,
+	EmbedBuilder,
+	GuildMember,
+	Message,
+} from "discord.js";
 import { COLORS } from "./constants.js";
 import { TextMessages } from "../Models/TextMessages.js";
 import { ICouple } from "../interfaces/IUser.js";
@@ -211,4 +221,33 @@ export function findEmojis(text: string) {
 
 	const matches = text.match(emojiRegex);
 	return matches || [];
+}
+
+const MAX_ATTACHMENT_SIZE = 7 * 1024 * 1024;
+
+const SUPPORTED_MIME_TYPES_REGEX =
+	/^(application\/pdf|audio\/(?:mpeg|mp3|wav)|image\/(?:png|jpeg|webp)|text\/plain|video\/(?:mov|mpeg|mp4|mpg|avi|wmv|mpegps|flv))$/;
+
+export async function getFirstValidAttachment(
+	attachments: Collection<string, Attachment>
+): Promise<{ mimeType: string; base64: string } | undefined> {
+	const validAttachment = attachments.find((att) => att.contentType && SUPPORTED_MIME_TYPES_REGEX.test(att.contentType));
+	if (!validAttachment) return undefined;
+
+	// Verifica si el tamaño del archivo supera el límite permitido
+	if (validAttachment.size && validAttachment.size > MAX_ATTACHMENT_SIZE) {
+		return Promise.reject(new Error("El archivo es demasiado grande."));
+	}
+
+	try {
+		const response = await fetch(validAttachment.url);
+		const arrayBuffer = await response.arrayBuffer();
+		const buffer = Buffer.from(arrayBuffer);
+		return {
+			mimeType: validAttachment.contentType ?? "",
+			base64: buffer.toString("base64"),
+		};
+	} catch (err) {
+		return undefined;
+	}
 }

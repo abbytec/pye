@@ -11,7 +11,8 @@ import { addRep } from "../commands/rep/add-rep.js";
 import { ExtendedClient } from "../client.js";
 import { spamFilter } from "../security/spamFilters.js";
 import { geminiModel } from "../utils/ai/gemini.js";
-import { splitMessage } from "../utils/generic.js";
+import { getFirstValidAttachment, splitMessage } from "../utils/generic.js";
+import { createForumEmbed, generateForumResponse, sendLongReply } from "../utils/ai/aiResponseService.js";
 
 export default {
 	name: Events.ThreadCreate,
@@ -56,41 +57,26 @@ async function sendTagReminder(thread: ThreadChannel) {
 	}
 }
 
-const MAX_MESSAGE_LENGTH = 2000;
-
-const threadsHelp = async function (tittle: string, pregunta: string, m: ThreadChannel) {
+const threadsHelp = async function (tittle: string, message: Message | null, m: ThreadChannel) {
 	try {
 		const prompt = `el contexto es: "${tittle}" (tema: ${getForumTopic(
 			m.parentId ?? ""
-		)}) si no lo entiendes no le des importancia. el prompt es: \n "${pregunta}" intenta resolver y ayudar con el prompt de manera clara y simple`.toString();
-
-		const result = await geminiModel.generateContent(prompt);
-		const response = result.response.text();
-
-		const fullMessage = `${response} \n\n **Fue útil mi respuesta? 🦾👀 | Recuerda que de todos modos puedes esperar que otros usuarios te ayuden!** 😉`;
+		)}) si no lo entiendes no le des importancia. el prompt es: \n "${
+			message?.content ?? ""
+		}" intenta resolver y ayudar con el prompt de manera clara y simple`.toString();
 
 		const authorName = (await m.guild.members.fetch(m.ownerId).catch(() => undefined))?.displayName ?? "Usuario";
 
-		const embed = new EmbedBuilder()
-			.setColor(0x0099ff)
-			.setTitle(`Hola ${authorName}!`)
-			.setDescription(fullMessage)
-			.setFooter({ text: "✨ Generado por IA" });
+		if (message) {
+			const attachmentData = await getFirstValidAttachment(message.attachments);
+			const fullMessage = await generateForumResponse(prompt, m.name, getForumTopic(m.parentId ?? ""), attachmentData);
 
-		if (fullMessage.length <= MAX_MESSAGE_LENGTH) {
-			await m.send({ embeds: [embed] });
+			let embed = createForumEmbed(fullMessage, authorName);
+			await sendLongReply(message, embed, fullMessage);
 		} else {
-			const chunks = splitMessage(fullMessage, MAX_MESSAGE_LENGTH);
-			let lastChunk: Message | undefined;
-			for (const chunk of chunks) {
-				const chunkEmbed = new EmbedBuilder().setColor(0x0099ff).setDescription(chunk).setFooter({ text: "✨ Generado por IA" });
-
-				if (lastChunk) {
-					await lastChunk.reply({ embeds: [chunkEmbed] });
-				} else {
-					await m.send({ embeds: [chunkEmbed] }).then((msg) => (lastChunk = msg));
-				}
-			}
+			const fullMessage = await generateForumResponse(prompt, m.name, getForumTopic(m.parentId ?? ""));
+			let embed = createForumEmbed(fullMessage, authorName);
+			await sendLongReply(m, embed, fullMessage);
 		}
 	} catch (error) {
 		console.log(error);
@@ -152,7 +138,7 @@ async function processHelpForumPost(thread: ThreadChannel) {
 	// GEMINI Api para responder threads.
 	thread.fetchStarterMessage().then(async (msg) => {
 		thread.sendTyping();
-		await threadsHelp(thread.name, msg?.content ?? "", thread).catch((err) => {
+		await threadsHelp(thread.name, msg, thread).catch((err) => {
 			console.log(err);
 		});
 	});
