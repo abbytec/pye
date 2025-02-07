@@ -233,6 +233,6 @@ async function handleGameCommands(interaction: IPrefixChatInputCommand) {
 	const command = client.commands.get(interaction.commandName);
 	if (!command?.group) return;
 	if (command.group.toLowerCase().includes("juegos")) {
-		checkRole(interaction, getRoleFromEnv("granApostador"), 75);
+		checkRole(interaction, getRoleFromEnv("granApostador"), 75, "apostador");
 	}
 }

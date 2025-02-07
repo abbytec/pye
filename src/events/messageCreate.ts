@@ -145,7 +145,16 @@ async function processPrefixCommand(message: Message, client: ExtendedClient) {
 	try {
 		const parsedMessage = await command.parseMessage(message);
 		if (parsedMessage) {
-			client.commands.get(command.commandName)?.execute(parsedMessage);
+			let commandFunction = client.commands.get(command.commandName);
+			if (commandFunction) {
+				commandFunction.execute(parsedMessage);
+				if (!commandFunction?.group) return;
+				if (commandFunction.group.toLowerCase().includes("juegos")) {
+					await checkRole(message, getRoleFromEnv("granApostador"), 75, "apostador");
+				}
+			} else {
+				ExtendedClient.logError("Comando no encontrado: " + command.commandName, undefined, message.author.id);
+			}
 		} else {
 			message.reply({ content: "Hubo un error ejecutando ese comando.", ephemeral: true } as any);
 		}
@@ -221,7 +230,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 					});
 					await msg.delete().catch(() => null);
 
-					await setTimeout(async () => await warn.delete().catch(() => null), 10000);
+					setTimeout(async () => await warn.delete().catch(() => null), 10000);
 				} else {
 					client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
 					msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
