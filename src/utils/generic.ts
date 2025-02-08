@@ -251,3 +251,61 @@ export async function getFirstValidAttachment(
 		return undefined;
 	}
 }
+
+/**
+ * Checks if the provided MIME type is a valid text MIME type.
+ * @param mimeType - The MIME type to check.
+ * @returns True if the MIME type is valid, false otherwise.
+ */
+function isValidTextMimeType(mimeType: string): boolean {
+	// Text types
+	if (/^text\//.test(mimeType)) {
+		return true;
+	}
+
+	// Some extra types
+	const extraAllowedMimeTypes = ["application/json", "application/xml", "application/x-shellscript"];
+
+	return extraAllowedMimeTypes.includes(mimeType);
+}
+
+const MAX_TEXT_ATTACHMENT_SIZE = 3 * 1024 * 1024;
+
+/**
+ * Retrieves the content of valid text attachments from a collection of attachments.
+ * @param attachments - The collection of attachments to process.
+ * @returns A promise that resolves to a string containing the formatted content of the valid text attachments.
+ */
+export async function getTextAttachmentsContent(attachments: Collection<string, Attachment>): Promise<string> {
+	let formattedContent = "";
+	let currentSize = 0;
+
+	for (const attachment of attachments.values()) {
+		if (!attachment.contentType || !isValidTextMimeType(attachment.contentType)) {
+			continue;
+		}
+
+		if (attachment.size && attachment.size > MAX_TEXT_ATTACHMENT_SIZE) {
+			formattedContent += `// ${attachment.name} - El archivo es demasiado grande para procesarlo.\n`;
+			continue;
+		}
+
+		if (currentSize + attachment.size > MAX_TEXT_ATTACHMENT_SIZE) {
+			break;
+		}
+
+		try {
+			const response = await fetch(attachment.url);
+			const arrayBuffer = await response.arrayBuffer();
+			const buffer = Buffer.from(arrayBuffer);
+
+			const textContent = buffer.toString("utf-8");
+			formattedContent += `// ${attachment.name}\n${textContent}\n\n`;
+			currentSize += attachment.size;
+		} catch (err) {
+			formattedContent += `// ${attachment.name} - Error al obtener el contenido.\n`;
+		}
+	}
+
+	return formattedContent;
+}

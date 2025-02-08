@@ -42,6 +42,8 @@ export class PrefixChatInputCommand {
 		const withoutPrefix = content.slice(PREFIX.length).trim();
 		const split = withoutPrefix.split(/\s+/);
 
+		split.shift(); // Eliminar el nombre del comando
+
 		const parsedSubCommand = split.shift() ?? null;
 		if (parsedSubCommand) {
 			this.argsMap.set("subcommand", parsedSubCommand);

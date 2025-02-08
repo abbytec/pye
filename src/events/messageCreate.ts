@@ -28,7 +28,7 @@ import {
 } from "../utils/constants.js";
 import { Users } from "../Models/User.js";
 import { getCooldown, setCooldown } from "../utils/cooldowns.js";
-import { checkRole, convertMsToUnixTimestamp, getFirstValidAttachment } from "../utils/generic.js";
+import { checkRole, convertMsToUnixTimestamp, getFirstValidAttachment, getTextAttachmentsContent } from "../utils/generic.js";
 import { checkHelp } from "../utils/checkhelp.js";
 import { bumpHandler } from "../utils/bumpHandler.js";
 import natural from "natural";
@@ -359,7 +359,14 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 	}
 
 	if (botShouldAnswer) {
-		const contexto = await getRecursiveRepliedContext(message, !isForumPost);
+		let contexto = await getRecursiveRepliedContext(message, !isForumPost);
+
+		const textFilesContent = await getTextAttachmentsContent(message.attachments);
+
+		if (textFilesContent) {
+			contexto = contexto + textFilesContent;
+		}
+
 		const attachmentData = await getFirstValidAttachment(message.attachments).catch(async (e) => {
 			message.reply(e.message);
 			return undefined;
