@@ -351,7 +351,7 @@ export class ExtendedClient extends Client {
 		return Math.round((amount * ExtendedClient.bankAvgCoins) / 100000);
 	}
 
-	public static getGamexMaxCoins() {
-		return Math.round(ExtendedClient.bankAvgCoins / 3);
+	public static getGamexMaxCoins(dividerMultiplier: number = 1) {
+		return Math.round(ExtendedClient.bankAvgCoins / (3 * dividerMultiplier));
 	}
 }

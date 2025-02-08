@@ -32,11 +32,11 @@ export default {
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			let initialAmount = amount;
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
-			if (amount <= 100 || amount > ExtendedClient.getGamexMaxCoins() || amount > userData.cash)
+			if (amount <= 100 || amount > ExtendedClient.getGamexMaxCoins(2.3) || amount > userData.cash)
 				return replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "mayor que 100" : `menor que${ExtendedClient.getGamexMaxCoins()}`
+						amount < 100 ? "mayor que 100" : `menor que${ExtendedClient.getGamexMaxCoins(2.3)}`
 					} o no tienes suficiente dinero`
 				);
 
