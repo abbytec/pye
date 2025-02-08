@@ -347,8 +347,8 @@ export class ExtendedClient extends Client {
 		ExtendedClient.bankAvgCoins = averageBank[0]?.averageBank ?? ExtendedClient.bankAvgCoins;
 	}
 
-	public static getInflatedRate(amount: number) {
-		return Math.round((amount * ExtendedClient.bankAvgCoins) / 100000);
+	public static getInflatedRate(amount: number, dividerMultiplier: number = 1) {
+		return Math.round((amount * ExtendedClient.bankAvgCoins) / (100000 * dividerMultiplier));
 	}
 
 	public static getGamexMaxCoins(dividerMultiplier: number = 1) {

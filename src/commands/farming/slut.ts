@@ -63,7 +63,10 @@ export default {
 			};
 
 			// Generar ganancia aleatoria
-			let profit = getRandomNumber(command.lowestMoney, command.highestMoney);
+			let profit = getRandomNumber(
+				ExtendedClient.getInflatedRate(command.lowestMoney, 3),
+				ExtendedClient.getInflatedRate(command.highestMoney, 3)
+			);
 
 			// Determinar si el usuario pierde
 			const lose = Math.random() <= command.failRate / 100;
