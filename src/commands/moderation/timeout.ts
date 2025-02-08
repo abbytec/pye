@@ -44,32 +44,28 @@ export default {
 				return await replyError(interaction, "La duración del timeout no es válida. Debe ser entre 1s y 28d.");
 
 			// Aplicar el timeout
-			try {
-				let result = await applyTimeout(
-					duration,
-					reason,
-					member,
-					interaction.guild?.iconURL({ extension: "gif" }) ?? null,
-					interaction.user
-				);
-				if ("logMessages" in result) {
-					await replyWarning(
-						interaction,
-						`**${user.username}** ha recibido un timeout.`,
-						undefined,
-						undefined,
-						undefined,
-						undefined,
-						false
-					);
-					return result;
-				} else {
-					return await replyError(interaction, "No se pudo aplicar el timeout al usuario, por favor revisa los logs.");
-				}
-			} catch (error) {
-				console.error("No se pudo aplicar el timeout al usuario." + error);
-				return await replyError(interaction, "No se pudo aplicar el timeout al usuario.");
-			}
+
+			await applyTimeout(duration, reason, member, interaction.guild?.iconURL({ extension: "gif" }) ?? null, interaction.user)
+				.then(async (result) => {
+					if ("logMessages" in result) {
+						await replyWarning(
+							interaction,
+							`**${user.username}** ha recibido un timeout.`,
+							undefined,
+							undefined,
+							undefined,
+							undefined,
+							false
+						);
+						return result;
+					} else {
+						return await replyError(interaction, "No se pudo aplicar el timeout al usuario, por favor revisa los logs.");
+					}
+				})
+				.catch(async (error) => {
+					console.error("No se pudo aplicar el timeout al usuario." + error);
+					return await replyError(interaction, "No se pudo aplicar el timeout al usuario.");
+				});
 		},
 		[logMessages]
 	),

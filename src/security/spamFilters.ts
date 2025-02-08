@@ -81,7 +81,7 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 								"Spam Filter",
 								author,
 								client.guilds.cache.get(process.env.GUILD_ID ?? "")?.iconURL({ extension: "gif" }) ?? null
-							);
+							).catch(() => null);
 						}
 					});
 				} else if (detectedFilter.mute === true) {
@@ -92,7 +92,7 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 						"Spam Filter",
 						author,
 						client.guilds.cache.get(process.env.GUILD_ID ?? "")?.iconURL({ extension: "gif" }) ?? null
-					);
+					).catch(() => null);
 				}
 
 				console.log("Mensaje borrado que contenía texto en la black list");
