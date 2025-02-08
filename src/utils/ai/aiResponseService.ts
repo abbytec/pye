@@ -48,8 +48,8 @@ export async function generateForumResponse(
 		],
 	};
 
-	const result = await modelPyeChanAnswer.generateContent(request).catch((e) => {
-		ExtendedClient.logError("Error al generar la respuesta de PyEChan en foro: " + e.message, e.stack, threadName);
+	const result = await geminiModel.generateContent(request).catch((e) => {
+		ExtendedClient.logError("Error al generar la respuesta de PyEChan en foro: " + e.message, e.stack, process.env.CLIENT_ID);
 		return {
 			response: { text: () => "En este momento, la IA no puede responder tu pregunta." },
 		};
@@ -92,7 +92,7 @@ export async function generateChatResponse(context: string, authorId: string, im
 		],
 	};
 
-	const result = await geminiModel.generateContent(request).catch((e) => {
+	const result = await modelPyeChanAnswer.generateContent(request).catch((e) => {
 		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
 		return {
 			response: { text: () => "Mejor comamos un poco de sushi! 🍣" },
