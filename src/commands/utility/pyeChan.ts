@@ -11,6 +11,7 @@ import { createChatEmbed, generateChatResponseStream } from "../../utils/ai/aiRe
 import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import { getRecursiveRepliedContext } from "../../utils/ai/getRecursiveRepliedContext.js";
+import { aiSecurityConstraint } from "../../utils/ai/gemini.js";
 
 loadEnvVariables();
 
@@ -28,7 +29,7 @@ export default {
 			if (interaction.message) {
 				contextForAI = await getRecursiveRepliedContext(interaction.message, true, 10, mensajeInput);
 			} else {
-				contextForAI = mensajeInput;
+				contextForAI = mensajeInput + aiSecurityConstraint;
 			}
 
 			const resultText = await generateChatResponseStream(contextForAI, interaction.user.id);

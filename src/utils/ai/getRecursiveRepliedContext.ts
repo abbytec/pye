@@ -1,4 +1,5 @@
 import { Message } from "discord.js";
+import { aiSecurityConstraint } from "./gemini.js";
 
 export async function getRecursiveRepliedContext(
 	message: Message<boolean>,
@@ -35,5 +36,5 @@ export async function getRecursiveRepliedContext(
 	else contextLines.push(`${initialAuthorName}: ${message.content}`);
 
 	// Combina todas las líneas en una sola cadena de texto
-	return contextLines.join("\n") + "\n" + botName + "(continúa con tu respuesta)";
+	return contextLines.join("\n") + aiSecurityConstraint + "\n" + botName + "(continúa con tu respuesta):";
 }

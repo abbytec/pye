@@ -9,7 +9,7 @@ import {
 	modelPyeChanAnswer,
 	modelPyeChanReasoningAnswer,
 	pyeChanPrompt,
-	pyeChanSecurityConstraint,
+	aiSecurityConstraint,
 } from "./gemini.js";
 import { ExtendedClient } from "../../client.js";
 import { findEmojis, splitMessage } from "../generic.js";
@@ -27,7 +27,7 @@ export async function generateForumResponse(
 	const forumContext = `Foro: ${forumTopic}\nHilo: ${threadName}\nContexto: ${context}`;
 
 	userParts.push({
-		text: forumContext + pyeChanSecurityConstraint,
+		text: forumContext,
 	});
 
 	if (image) {
@@ -70,7 +70,7 @@ export async function generateChatResponse(context: string, authorId: string, im
 
 	userParts = [
 		{
-			text: context + pyeChanSecurityConstraint,
+			text: context,
 		},
 	];
 
@@ -107,7 +107,7 @@ export async function generateChatResponse(context: string, authorId: string, im
 }
 
 export async function generateChatResponseStream(context: string, authorId: string): Promise<string> {
-	const result = await modelPyeChanReasoningAnswer.generateContentStream(context + pyeChanSecurityConstraint).catch((e) => {
+	const result = await modelPyeChanReasoningAnswer.generateContentStream(context + aiSecurityConstraint).catch((e) => {
 		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
 		return {
 			response: new Promise<{ text: () => string }>(() => {
