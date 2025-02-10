@@ -98,7 +98,12 @@ export async function generateChatResponse(context: string, authorId: string, im
 			response: { text: () => "Mejor comamos un poco de sushi! 🍣" },
 		};
 	});
-	let text = result.response.text();
+	let text;
+	try {
+		text = result.response.text();
+	} catch (error) {
+		text = "Mejor comamos un poco de sushi! 🍣";
+	}
 	// Si el texto es muy similar al prompt (respuesta por defecto), elegimos una respuesta alternativa
 	if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8) {
 		text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
@@ -131,7 +136,7 @@ export function createForumEmbed(responseText: string, helloUsername?: string): 
 		embedBuilder.setTitle(`Hola ${helloUsername}!`);
 		fullMessage += `\n\n **Fue útil mi respuesta? 🦾👀 | Recuerda que de todos modos puedes esperar que otros usuarios te ayuden!** 😉`;
 	}
-	embedBuilder.setDescription(responseText);
+	embedBuilder.setDescription(fullMessage);
 	return embedBuilder;
 }
 
