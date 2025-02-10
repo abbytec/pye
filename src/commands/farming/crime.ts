@@ -74,15 +74,11 @@ export default {
 			const lose = Math.random() <= command.failRate / 100;
 			const negativeCash = (userData.cash ?? 0) < 0;
 
-			if (lose) {
-				// El usuario pierde, deducir profit de su cash
-				userData.cash = (userData.cash ?? 0) - profit;
-			} else {
+			if (!lose) {
 				// El usuario gana, ajustar profit por bonificaciones de trabajo
 				profit = calculateJobMultiplier(userData.profile?.job, profit, userData.couples || [], false);
 
 				profit = Math.floor(profit);
-				userData.cash = (userData.cash ?? 0) + profit;
 
 				try {
 					await increaseHomeMonthlyIncome(user.id, profit);
@@ -95,7 +91,7 @@ export default {
 
 			// Actualizar el usuario en la base de datos
 			try {
-				await Users.updateOne({ id: user.id }, { $set: { cash: userData.cash } });
+				await Users.updateOne({ id: user.id }, { $inc: { cash: lose ? -profit : profit } });
 			} catch (error) {
 				console.error("Error actualizando el usuario:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
