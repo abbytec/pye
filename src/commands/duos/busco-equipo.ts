@@ -22,7 +22,7 @@ import { replyError } from "../../utils/messages/replyError.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 
-const SESSIONS_PER_PAGE = 1;
+const SESSIONS_PER_PAGE = 5;
 
 export default {
 	group: "🎮 - Teams",
