@@ -49,6 +49,7 @@ export interface IPrefixChatInputCommand {
 	deferred: boolean;
 	_reply?: Promise<Message>;
 	message?: Message;
+	showModal?: (options: any) => Promise<void>;
 }
 
 export class ParameterError extends Error {

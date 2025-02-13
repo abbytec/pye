@@ -8,6 +8,7 @@ import {
 	EmbedBuilder,
 	Events,
 	Interaction,
+	ModalSubmitInteraction,
 	TextChannel,
 } from "discord.js";
 import { ExtendedClient } from "../client.js";
@@ -20,6 +21,7 @@ import { checkRole } from "../utils/generic.js";
 import { Command } from "../types/command.js";
 import { chatInputCommandParser } from "../utils/messages/chatInputCommandParser.js";
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
+import { handleCreateSessionModal } from "../commands/duos/crear-grupo.js";
 
 const limiter = new Bottleneck({
 	maxConcurrent: 15, // Máximo de comandos en paralelo
@@ -52,12 +54,10 @@ export default {
 
 			// Boton de cerrar el warn cuando el user no tenía md abierto
 			if (customId === "close_warn") return deleteChannel(interaction);
-
 			// Boton de eliminar el mensaje de #puntos
-			if (customId === "cancel-point") return cancelPoint(interaction);
-
+			else if (customId === "cancel-point") return cancelPoint(interaction);
 			// Boton de dar puntos en #puntos TODO: sacar el signo de pregunta
-			if (/^(point-)?\d{17,19}$/.test(customId)) {
+			else if (/^(point-)?\d{17,19}$/.test(customId)) {
 				if (userId === USERS.maby) {
 					await interaction.reply({
 						content: "Tranquila, tenés un equipo hermoso que tambien se podría encargar de esto! :D",
@@ -66,6 +66,11 @@ export default {
 				}
 				if (customId.startsWith("point-")) customId = customId.slice(6);
 				return helpPoint(interaction, customId);
+			}
+		}
+		if (interaction.isModalSubmit()) {
+			if (interaction.customId.startsWith("create_session_modal")) {
+				await handleCreateSessionModal(interaction);
 			}
 		}
 	},

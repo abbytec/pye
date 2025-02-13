@@ -26,6 +26,7 @@ import { inspect } from "util";
 import {} from "../globals.js";
 import { PrefixChatInputCommand } from "./utils/messages/chatInputCommandConverter.js";
 import { Users } from "./Models/User.js";
+import { IGameSession } from "./interfaces/IGameSession.js";
 
 interface VoiceFarming {
 	date: Date;
@@ -41,6 +42,7 @@ export class ExtendedClient extends Client {
 	public cooldowns: Map<string, ICooldown>;
 	public lastRobs: Rob[];
 	public voiceFarmers: Map<string, VoiceFarming>;
+	public static readonly lookingForGame: Map<string, IGameSession> = new Map();
 
 	private static agendaElement: Agenda;
 	private _staffMembers: string[] = [];

@@ -17,6 +17,7 @@ export function chatInputCommandParser(interaction: ChatInputCommandInteraction)
 	return {
 		client: interaction.client as ExtendedClient,
 		commandName: interaction.commandName,
+		showModal: interaction.showModal.bind(interaction),
 		options: {
 			getString: interaction.options.getString.bind(interaction.options),
 			getNumber: interaction.options.getNumber.bind(interaction.options),

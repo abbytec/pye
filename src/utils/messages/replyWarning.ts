@@ -60,7 +60,7 @@ export async function replyWarning(
 				?.send(messageToSend)
 				.catch((e) => null);
 		} else await interaction.followUp(messageToSend).catch((e) => null);
-	} else if (components) {
+	} else if (components && (interaction.replied || interaction.deferred)) {
 		await interaction.editReply(messageToSend).catch((e) => null);
 	} else {
 		await interaction.reply(messageToSend).catch((e) => null);
