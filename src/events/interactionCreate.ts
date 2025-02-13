@@ -8,7 +8,6 @@ import {
 	EmbedBuilder,
 	Events,
 	Interaction,
-	ModalSubmitInteraction,
 	TextChannel,
 } from "discord.js";
 import { ExtendedClient } from "../client.js";
@@ -21,7 +20,7 @@ import { checkRole } from "../utils/generic.js";
 import { Command } from "../types/command.js";
 import { chatInputCommandParser } from "../utils/messages/chatInputCommandParser.js";
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
-import { handleCreateSessionModal } from "../commands/duos/crear-grupo.js";
+import { createGameSessionModal, handleCreateSessionModal, handleGameSessionPagination } from "../commands/duos/busco-equipo.js";
 
 const limiter = new Bottleneck({
 	maxConcurrent: 15, // Máximo de comandos en paralelo
@@ -52,6 +51,17 @@ export default {
 			let customId = interaction.customId;
 			const userId = interaction.user.id;
 
+			if (customId.startsWith("create_session_button")) {
+				const parts = customId.split("/");
+				const juego = parts[2];
+				const tiempoLimiteStr = parts[3];
+				const tiempoLimite = parseInt(tiempoLimiteStr, 10);
+				if (isNaN(tiempoLimite)) return;
+				const modal = createGameSessionModal(interaction, juego, tiempoLimite);
+				return interaction.showModal?.(modal);
+			} else if (customId.startsWith("session_pagination")) {
+				return handleGameSessionPagination(interaction);
+			}
 			// Boton de cerrar el warn cuando el user no tenía md abierto
 			if (customId === "close_warn") return deleteChannel(interaction);
 			// Boton de eliminar el mensaje de #puntos
