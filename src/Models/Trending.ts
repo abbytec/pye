@@ -224,7 +224,7 @@ class Trending {
 				{
 					name: "🚫 3 Emojis No Utilizados",
 					value:
-						this.getUnused("emoji")
+						this.getUnused("emoji", client, 3)
 							.map((id) => `<:${id}>`)
 							.join(", ") || "Ninguno",
 				},
@@ -244,7 +244,7 @@ class Trending {
 				{
 					name: "🚫 3 Foros No Utilizados",
 					value:
-						this.getUnused("threadPost")
+						this.getUnused("threadPost", client, 3)
 							.map((id) => `<#${id}>`)
 							.join(", ") || "Ninguno",
 				},
@@ -264,7 +264,7 @@ class Trending {
 				{
 					name: "🚫 3 Stickers No Utilizados",
 					value:
-						this.getUnused("sticker")
+						this.getUnused("sticker", client, 3)
 							.map((id) => `**${id}**`)
 							.join(", ") || "Ninguno",
 				},
@@ -322,16 +322,24 @@ class Trending {
 	}
 
 	// Método para obtener elementos no utilizados
-	private getUnused(type: TrendingType, count: number = 3): string[] {
+	private getUnused(type: TrendingType, client: ExtendedClient, count: number = 3): string[] {
 		const map = this.getMapByType(type);
-		const unused = [];
-		for (const [id, score] of map.entries()) {
-			if (score === 0) {
-				unused.push(id);
-			}
+		let entries = Array.from(map.entries());
+		if (type === "emoji") {
+			const svEmojis = client.guilds.cache.get(process.env.GUILD_ID ?? "")?.emojis.cache;
+			if (svEmojis)
+				entries = entries.filter(([id]) => {
+					return svEmojis.has(RegExp(/:(\d+)$/).exec(id)?.[1] ?? "");
+				});
+		} else if (type === "sticker") {
+			const svStickers = client.guilds.cache.get(process.env.GUILD_ID ?? "")?.stickers.cache;
+			if (svStickers) entries = entries.filter(([id]) => svStickers.has(id));
 		}
-		unused.sort(() => Math.random() - 0.5);
-		return unused.slice(0, count);
+		entries.sort((a, b) => a[1] - b[1]); // Orden descendente
+		return entries
+			.filter(([, score]) => score === 0)
+			.map(([id]) => id)
+			.slice(0, count);
 	}
 
 	// Método privado para obtener el mapa según el tipo
