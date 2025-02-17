@@ -12,7 +12,7 @@ const ruleData: ICustomCommand[] = [
 		name: "r1",
 		embeds: [
 			{
-				title: "Regla 1°",
+				title: "1. Discord Guidelines",
 				color: COLORS.pyeLightBlue,
 				description: "Esta comunidad se rige principalmente bajo las directivas de Discord:\nhttps://discord.com/guidelines",
 				fields: [
@@ -28,7 +28,7 @@ const ruleData: ICustomCommand[] = [
 		name: "r2",
 		embeds: [
 			{
-				title: "Regla 2°",
+				title: "2. No contenido NSFW",
 				color: COLORS.pyeLightBlue,
 				description: "El contenido NSFW explícito **(+18) o muy sugestivo** no está permitido.",
 				thumbnail: {
@@ -47,7 +47,7 @@ const ruleData: ICustomCommand[] = [
 		name: "r3",
 		embeds: [
 			{
-				title: "Regla 3°",
+				title: "3. Anti piratería/hacking",
 				color: COLORS.pyeLightBlue,
 				description:
 					"Esta comunidad no promueve ni ninguna práctica ilegal, como piratería o hacking, sin embargo actividades educativas relacionadas al hacking ético (pentesting o ciberseguridad) pueden desarrollarse con normalidad.",
@@ -67,7 +67,7 @@ const ruleData: ICustomCommand[] = [
 		name: "r4",
 		embeds: [
 			{
-				title: "Regla 4°",
+				title: "4. Respeto",
 				color: COLORS.pyeLightBlue,
 				description:
 					"No acosar o incomodar a otros usuarios mediante pings, mensajes privados sin su consentimiento o faltando el respeto (ya sea en canales de texto o de voz).",
@@ -87,7 +87,7 @@ const ruleData: ICustomCommand[] = [
 		name: "r5",
 		embeds: [
 			{
-				title: "Regla 5°",
+				title: "5. No desvirtuar canales",
 				color: COLORS.pyeLightBlue,
 				description: `Está PROHIBIDO desvirtuar los canales. Haz tus preguntas en un solo canal y NO preguntes si hay alguien disponible, directamente coloca tu problema a resolver.\nRevisa <id:customize> y si no encuentras un canal adecuado para tu duda, entonces publica en ⁠<#${getChannelFromEnv(
 					"ayuda-general"
@@ -108,7 +108,7 @@ const ruleData: ICustomCommand[] = [
 		name: "r6",
 		embeds: [
 			{
-				title: "Regla 6°",
+				title: "6. No floodear",
 				color: COLORS.pyeLightBlue,
 				description: `Solo se permite flood de videos e imágenes y en el canal de memes ⁠<#${getChannelFromEnv(
 					"memes"
@@ -126,7 +126,7 @@ const ruleData: ICustomCommand[] = [
 		name: "r7",
 		embeds: [
 			{
-				title: "Regla 7°",
+				title: "7. Auto-promoción",
 				color: COLORS.pyeLightBlue,
 				description: `Solo se permite auto-promoción de contenido relacionado a la programación o tecnologías informáticas y solo está permitido en <#${getChannelFromEnv(
 					"chatProgramadores"
@@ -147,7 +147,7 @@ const ruleData: ICustomCommand[] = [
 		name: "r8",
 		embeds: [
 			{
-				title: "Regla 8°",
+				title: "8. No spam de trabajos",
 				color: COLORS.pyeLightBlue,
 				description: `Los mensajes en los canales de ⁠⁠<#${getChannelFromEnv("ofertasDeEmpleos")}>, ⁠⁠<#${getChannelFromEnv(
 					"ofreceServicios"
@@ -167,7 +167,7 @@ const ruleData: ICustomCommand[] = [
 		name: "r9",
 		embeds: [
 			{
-				title: "Regla 9°",
+				title: "9. No se resuelven tareas escolares",
 				color: COLORS.pyeLightBlue,
 				description:
 					"**NO** se resuelven tareas escolares, bajo ninguna circunstancia debes subir un ejercicio y pedir que lo resuelvan. Pero puedes pedir ayuda para llegar a la resolución de tu problema.",
@@ -184,7 +184,7 @@ const ruleData: ICustomCommand[] = [
 		name: "r10",
 		embeds: [
 			{
-				title: "Regla 10°",
+				title: "10. Sentido común",
 				color: COLORS.pyeLightBlue,
 				description: "Sentido común: Respeta a los demás, si alguien te dice que te detengas es porque estás haciendo algo mal.",
 				fields: [
