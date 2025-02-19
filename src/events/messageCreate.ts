@@ -172,6 +172,8 @@ const employmentsDescription =
 	"• Si tienes pruebas sobre la conducta cuestionable de un usuario, puedes reportarlo para impedirle el acceso a estos canales.\n" +
 	"\nDesde este servidor nos comprometemos a mantener estos canales lo más seguros y ordenados dentro de lo posible, **sin embargo** nuestro rol principal es el de brindar un lugar para que los usuarios puedan visibilizar sus publicaciones. Muchas resoluciones de conflicto *exceden* nuestro alcance y obligaciones, por eso recomendamos encarecidamente tener precaución.\n¡En nombre del Staff agradecemos tu atención!";
 
+const repoRegex =
+	/(?:https?:\/\/)?(?:www\.)?(?:(?:(?:github\.com|gitlab\.com|bitbucket\.org|codecommit\.amazonaws\.com)[^\s]*)|(?:git\.[^\s]+)|(?:[^\s]+\.git))/i;
 async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 	switch (msg.channel.id) {
 		case getChannelFromEnv("recursos"):
@@ -260,6 +262,23 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 			break;
 		case getChannelFromEnv("filosofiaPolitica"):
 			checkRole(msg, getRoleFromEnv("granDebatidor"), 500);
+			break;
+		case getChannelFromEnv("openSource"):
+			if (!repoRegex.test(msg.content)) {
+				try {
+					await msg.delete();
+					if (msg.channel.isSendable()) {
+						const aviso = await msg.channel.send(
+							`${msg.author}, tu mensaje ha sido eliminado porque debe incluir un enlace a un repositorio.`
+						);
+						setTimeout(() => {
+							aviso.delete().catch(console.error);
+						}, 5000);
+					}
+				} catch (error) {
+					console.error("Error al procesar el mensaje:", error);
+				}
+			}
 			break;
 	}
 }
