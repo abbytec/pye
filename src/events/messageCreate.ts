@@ -288,7 +288,7 @@ async function checkUserThanking(msg: Message<boolean>) {
 	if (msg.channel.type === ChannelType.PublicThread) {
 		const threadAuthor = await (msg.channel as PublicThreadChannel).fetchOwner().catch(() => null);
 		return threadAuthor?.id === msg.author.id;
-	}
+	} else return msg.reference;
 }
 
 /** Check channels to trigger Point Helper system */
@@ -296,8 +296,10 @@ function checkThanksChannel(msg: Message<boolean>) {
 	let channelId: string | undefined = undefined;
 	if (msg.channel.type === ChannelType.PublicThread) {
 		channelId = (msg.channel as PublicThreadChannel).parentId ?? undefined;
+	} else {
+		channelId = msg.channel.id;
 	}
-	return getHelpForumsIdsFromEnv().includes(channelId ?? "") ? channelId : undefined;
+	return [...getHelpForumsIdsFromEnv(), getChannelFromEnv("chatProgramadores")].includes(channelId ?? "") ? channelId : undefined;
 }
 
 async function registerNewTrends(message: Message<boolean>, client: ExtendedClient) {
