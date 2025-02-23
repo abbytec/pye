@@ -36,7 +36,7 @@ export default {
 				return replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "mayor que 100" : `menor que${ExtendedClient.getGamexMaxCoins(2.3)}`
+						amount < 100 ? "mayor que 100" : `menor que ${ExtendedClient.getGamexMaxCoins(2.3)}`
 					} o no tienes suficiente dinero`
 				);
 
