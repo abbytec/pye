@@ -1,12 +1,22 @@
-import { Events, ActivityType, EmbedBuilder, TextChannel } from "discord.js";
+import {
+	Events,
+	ActivityType,
+	EmbedBuilder,
+	TextChannel,
+	StringSelectMenuOptionBuilder,
+	StringSelectMenuBuilder,
+	ActionRowBuilder,
+	Message,
+} from "discord.js";
 import { ExtendedClient } from "../client.js";
 import { Users } from "../Models/User.js";
 import { Agenda, Job } from "agenda";
 import { CronMessage } from "../Models/CronMessage.js";
 import { sendWelcomeMessageProcessor } from "../utils/welcome.js";
 import redisClient from "../redis.js";
-import { getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
+import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
 import { capitalizeFirstLetter } from "../utils/generic.js";
+import { ticketOptions } from "../utils/constants/ticketOptions.js";
 
 export default {
 	name: Events.ClientReady,
@@ -14,6 +24,7 @@ export default {
 	async execute(client: ExtendedClient) {
 		console.log(`Bot Listo como: ${client.user?.tag} ! `);
 		await client.updateClientData(true);
+		ticketProcessor(client);
 		cronEventsProcessor(client);
 		voiceFarmingProcessor(client);
 		activityProcessor(client);
@@ -22,6 +33,48 @@ export default {
 		}, 36e5);
 	},
 };
+
+async function ticketProcessor(client: ExtendedClient) {
+	const ticketChannel =
+		(client.channels.cache.get(getChannelFromEnv("tickets")) as TextChannel) ??
+		(client.channels.resolve(getChannelFromEnv("tickets")) as TextChannel);
+	if (!ticketChannel) return ExtendedClient.logError("Ticket channel not found", "", client.user?.id);
+
+	let ticketMessage = await ticketChannel.messages.fetch({ limit: 2 }).then((m) => {
+		const message = m.filter((m) => m.author.id === process.env.CLIENT_ID).first();
+		if (message?.author.id === process.env.CLIENT_ID) return message;
+	});
+
+	const selectMenu = new StringSelectMenuBuilder().setCustomId("ticket_select").setPlaceholder("Selecciona una opción");
+	ticketOptions.forEach((option) => {
+		selectMenu.addOptions(
+			new StringSelectMenuOptionBuilder()
+				.setLabel(option.button.charAt(0).toUpperCase() + option.button.slice(1))
+				.setDescription(option.description)
+				.setEmoji(option.emoji)
+				.setValue(option.type)
+		);
+	});
+	const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
+
+	const embed = new EmbedBuilder()
+		.setAuthor({ iconURL: client.user?.displayAvatarURL(), name: "Gestión de tickets" })
+		.setThumbnail(client.guilds.cache.get(process.env.GUILD_ID ?? "")?.iconURL() ?? null)
+		.setTitle("Elije el tipo de ticket a abrir")
+		.setDescription(
+			`Abajo puedes elegir el tipo de ticket que deseas abrir para hablar con los administradores.\n\nPara consultas de programación utiliza: \n<#${getChannelFromEnv(
+				"chatProgramadores"
+			)}>`
+		)
+		.setColor(COLORS.pyeLightBlue)
+		.setTimestamp();
+
+	if (ticketMessage) {
+		await ticketMessage.edit({ embeds: [embed], components: [row] });
+	} else {
+		await ticketChannel.send({ embeds: [embed], components: [row] });
+	}
+}
 
 async function cronEventsProcessor(client: ExtendedClient) {
 	ExtendedClient.agenda = new Agenda({

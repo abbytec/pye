@@ -1,5 +1,5 @@
 import Bottleneck from "bottleneck";
-import { Channel, ChatInputCommandInteraction, Guild, Message } from "discord.js";
+import { ButtonInteraction, Channel, ChatInputCommandInteraction, Guild, Message } from "discord.js";
 import loadEnvVariables from "./environment.js";
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 
@@ -49,6 +49,7 @@ const CHANNELS = {
 	matemáticas: "1305675508637499493",
 	"física-química": "867526069875507240",
 	tickets: "865047053884457012",
+	ticketsLogs: "904954213501632542",
 
 	// staff
 	notificaciones: "925121655578173440",
@@ -82,6 +83,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	"html-css": "1300952181171818536",
 	starboard: "1296190631026233347",
 	tickets: "1296190631026233346",
+	ticketsLogs: "1296190632792031232",
 	retos: "1309615377235312681",
 	anuncios: "1310011599003586600",
 	invitaciones: "1296190632317943908",
@@ -178,13 +180,13 @@ export function getChannelFromEnv(channel: keyof typeof CHANNELS): string {
 }
 
 export async function getChannel(
-	interaction: ChatInputCommandInteraction | Message | Guild | IPrefixChatInputCommand,
+	interaction: ChatInputCommandInteraction | Message | Guild | IPrefixChatInputCommand | ButtonInteraction,
 	channel: keyof typeof CHANNELS,
 	textBased?: boolean,
 	channelId?: string
 ): Promise<Channel | undefined> {
 	const canal = interaction.client.channels.resolve(channelId ?? getChannelFromEnv(channel));
-	if (textBased && !canal?.isTextBased() && !(interaction instanceof Guild)) {
+	if (textBased && !canal?.isTextBased() && !(interaction instanceof Guild) && !(interaction instanceof Message)) {
 		await interaction.reply({
 			content: `No se pudo encontrar el canal de texto ${channel}. Por favor, contacta al administrador.`,
 			ephemeral: true,

@@ -8,7 +8,10 @@ import {
 	EmbedBuilder,
 	Events,
 	Interaction,
+	ModalBuilder,
 	TextChannel,
+	TextInputBuilder,
+	TextInputStyle,
 } from "discord.js";
 import { ExtendedClient } from "../client.js";
 import { COLORS, getChannelFromEnv, getRoleFromEnv, USERS } from "../utils/constants.js";
@@ -21,6 +24,7 @@ import { Command } from "../types/command.js";
 import { chatInputCommandParser } from "../utils/messages/chatInputCommandParser.js";
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 import { createGameSessionModal, handleCreateSessionModal, handleGameSessionPagination } from "../commands/duos/busco-equipo.js";
+import { handleTicketButtonInteraction, handleTicketCreation } from "../utils/ticketManager.js";
 
 const limiter = new Bottleneck({
 	maxConcurrent: 15, // Máximo de comandos en paralelo
@@ -51,6 +55,16 @@ export default {
 			let customId = interaction.customId;
 			const userId = interaction.user.id;
 
+			if (interaction.customId === "close_ticket") {
+				await handleTicketButtonInteraction(interaction, "close");
+			} else if (interaction.customId === "escalate_ticket") {
+				await handleTicketButtonInteraction(interaction, "escalate");
+			} else if (interaction.customId === "save_ticket") {
+				await handleTicketButtonInteraction(interaction, "save");
+			} else if (interaction.customId === "reopen_ticket") {
+				await handleTicketButtonInteraction(interaction, "reopen");
+			}
+
 			if (customId.startsWith("create_session_button")) {
 				const parts = customId.split("/");
 				const juego = parts[2];
@@ -78,8 +92,34 @@ export default {
 				return helpPoint(interaction, customId);
 			}
 		}
+		if (interaction.isStringSelectMenu() && interaction.customId === "ticket_select") {
+			// No usamos deferUpdate porque vamos a mostrar un modal
+			const selected = interaction.values[0];
+
+			// Crea el modal. En el customId se inyecta el tipo de ticket.
+			const modal = new ModalBuilder().setCustomId(`ticket_reason_modal-${selected}`).setTitle("Razón del ticket");
+
+			const reasonInput = new TextInputBuilder()
+				.setCustomId("ticket_reason_input")
+				.setLabel("Especifica la razón del ticket")
+				.setStyle(TextInputStyle.Paragraph)
+				.setRequired(true);
+
+			const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(reasonInput);
+			modal.addComponents(actionRow);
+
+			await interaction.showModal(modal);
+			return;
+		}
 		if (interaction.isModalSubmit()) {
-			if (interaction.customId.startsWith("create_session_modal")) {
+			if (interaction.customId.startsWith("ticket_reason_modal-")) {
+				// Extrae el tipo de ticket del customId
+				const ticketType = interaction.customId.split("-")[1];
+				const reason = interaction.fields.getTextInputValue("ticket_reason_input");
+
+				await handleTicketCreation(interaction, ticketType, reason);
+				return;
+			} else if (interaction.customId.startsWith("create_session_modal")) {
 				await handleCreateSessionModal(interaction);
 			}
 		}

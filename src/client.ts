@@ -39,6 +39,7 @@ export class ExtendedClient extends Client {
 	public prefixCommands: Map<string, PrefixChatInputCommand>;
 	private readonly _commandLimits: Map<string, ICommandLimits>;
 	private readonly moneyConfigs: Map<string, IMoney>;
+	public static readonly openTickets: Set<string> = new Set();
 	public cooldowns: Map<string, ICooldown>;
 	public lastRobs: Rob[];
 	public voiceFarmers: Map<string, VoiceFarming>;
