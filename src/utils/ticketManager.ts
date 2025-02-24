@@ -278,17 +278,17 @@ export async function logTicketEvent(
 	switch (eventType) {
 		case "CREADO":
 			title = "Ticket creado";
-			description = `Ticket creado por ${user.username}`;
+			description = `Ticket creado por **${user.username}**`;
 			color = COLORS.okGreen;
 			break;
 		case "CERRADO":
 			title = "Ticket cerrado";
-			description = `Ticket cerrado por ${user.username}`;
+			description = `Ticket cerrado por **${user.username}**`;
 			color = COLORS.errRed;
 			break;
 		case "TRANSCRIPCION":
 			title = "Transcripción Guardada";
-			description = `El usuario ${user.username} guardó la transcripción del ticket.`;
+			description = `El usuario **${user.username}** guardó la transcripción del ticket.`;
 			color = COLORS.warnOrange;
 			break;
 	}
@@ -299,12 +299,6 @@ export async function logTicketEvent(
 		fields.push({
 			name: "Ticket",
 			value: ticketChannel.toString(),
-			inline: false,
-		});
-	} else {
-		fields.push({
-			name: "Ticket",
-			value: ticketChannel.name,
 			inline: false,
 		});
 	}
