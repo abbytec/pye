@@ -269,27 +269,27 @@ export async function logTicketEvent(
 	transcript?: AttachmentBuilder
 ) {
 	const logsChannel = guild.channels.cache.get(getChannelFromEnv("ticketsLogs")) as TextChannel;
-	if (!logsChannel) return; // Si no existe el canal de logs, se ignora
+	if (!logsChannel) return;
 
 	let title = "";
 	let description = "";
-	let color = 0x2f3136; // Color por defecto (gris oscuro)
+	let color = 0x2f3136;
 
 	switch (eventType) {
 		case "CREADO":
 			title = "Ticket creado";
 			description = `Ticket creado por ${user.username}`;
-			color = COLORS.okGreen; // Un verde suave, por ejemplo
+			color = COLORS.okGreen;
 			break;
 		case "CERRADO":
 			title = "Ticket cerrado";
 			description = `Ticket cerrado por ${user.username}`;
-			color = COLORS.errRed; // Un rojo suave, por ejemplo
+			color = COLORS.errRed;
 			break;
 		case "TRANSCRIPCION":
 			title = "Transcripción Guardada";
 			description = `El usuario ${user.username} guardó la transcripción del ticket.`;
-			color = COLORS.warnOrange; // Un amarillo, por ejemplo
+			color = COLORS.warnOrange;
 			break;
 	}
 
