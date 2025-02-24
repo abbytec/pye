@@ -293,8 +293,23 @@ export async function logTicketEvent(
 			break;
 	}
 
-	const fields = [
-		{ name: "Ticket", value: ticketChannel.toString(), inline: false },
+	let fields = [];
+
+	if (eventType == "CREADO") {
+		fields.push({
+			name: "Ticket",
+			value: ticketChannel.toString(),
+			inline: false,
+		});
+	} else {
+		fields.push({
+			name: "Ticket",
+			value: ticketChannel.name,
+			inline: false,
+		});
+	}
+
+	fields.push(
 		{
 			name: "Panel",
 			value: ticketType ?? "Desconocido",
@@ -304,8 +319,8 @@ export async function logTicketEvent(
 			name: "Propietario",
 			value: `${ticketChannel.topic ?? "N/A"}`,
 			inline: false,
-		},
-	];
+		}
+	);
 
 	const embed = new EmbedBuilder().setTitle(title).setDescription(description).setColor(color).addFields(fields).setTimestamp();
 
