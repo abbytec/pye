@@ -21,7 +21,7 @@ export const ticketOptions: TicketOption[] = [
 		embedData: {
 			title: "Bienvenido a tu ticket",
 			description:
-				"Por favor ve escribiendo el motivo de tu ticket mientras esperas que un Staff te atienda para poder agilizar tu atención.",
+				"Por favor ve escribiendo el motivo de tu ticket mientras esperas que un Staff te atienda para poder agilizar tu atención.\nReportar comportamientos que tu también tienes, hará que también puedas ser sancionado.",
 			color: COLORS.pyeLightBlue,
 		},
 	},
