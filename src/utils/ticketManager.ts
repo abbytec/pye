@@ -24,7 +24,7 @@ export async function handleTicketCreation(interaction: Interaction, ticketType:
 	const guild = interaction.guild;
 	const member = interaction.member as GuildMember;
 
-	const ticketKey = `${ticketType}-${member.user}`;
+	const ticketKey = `${ticketType}-${member.user.username}`;
 
 	if (lastTicketDate.getTime() + 1000 * 10 < Date.now()) {
 		lastTicketDate = new Date();
