@@ -42,7 +42,7 @@ export const spamFilterList: IFilter[] = [
 		staffWarn: spamBot,
 	},
 	{
-		filter: /(?=.*\b(eth|ethereum|btc|bitcoin|capital|crypto|memecoins|nitro|\$|nsfw)\b)(?=.*\b(gana\w*|gratis|multiplica\w*|inver\w*|giveaway|server|free)\b)/is,
+		filter: /(?=.*\b(eth|ethereum|btc|bitcoin|capital|crypto|memecoins|nitro|\$|nsfw)\b)(?=.*\b(gana\w*|gratis|multiplica\w*|inver\w*|giveaway|server|free|earn)\b)/is,
 		mute: false,
 		staffWarn: "Posible estafa detectada",
 	},
