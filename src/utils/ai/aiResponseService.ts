@@ -127,8 +127,15 @@ export async function generateChatResponseStream(context: string, authorId: stri
 	}
 	return text;
 }
+export class ForumAIError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = "ForumError";
+	}
+}
 
 export function createForumEmbed(responseText: string, helloUsername?: string): EmbedBuilder {
+	if (!responseText) throw new ForumAIError("La IA dió una respuesta vacía");
 	const embedBuilder = new EmbedBuilder().setColor(0x0099ff).setFooter({ text: "✨ Generado por IA" });
 
 	let fullMessage: string = responseText;

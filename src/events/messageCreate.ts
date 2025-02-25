@@ -39,7 +39,14 @@ import { getRecursiveRepliedContext } from "../utils/ai/getRecursiveRepliedConte
 import { checkQuestLevel, IQuest } from "../utils/quest.js";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createChatEmbed, createForumEmbed, generateChatResponse, generateForumResponse, sendLongReply } from "../utils/ai/aiResponseService.js";
+import {
+	createChatEmbed,
+	createForumEmbed,
+	ForumAIError,
+	generateChatResponse,
+	generateForumResponse,
+	sendLongReply,
+} from "../utils/ai/aiResponseService.js";
 import { replyError } from "../utils/messages/replyError.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -403,20 +410,16 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 				await sendLongReply(message, embed, fullMessage);
 			} catch (err: any) {
 				let errorEmbed;
+				let desc = "Error al generar la respuesta. ";
+				errorEmbed = new EmbedBuilder().setColor(0xff0000).setTitle("Error").setFooter({ text: "Por favor, intenta más tarde." });
 				if (err instanceof DiscordAPIError && err.message == "Unknown message") {
-					errorEmbed = new EmbedBuilder()
-						.setColor(0xff0000)
-						.setTitle("Error")
-						.setDescription("Error al generar la respuesta. No se encontró el mensaje original.")
-						.setFooter({ text: "Por favor, intenta más tarde." });
+					errorEmbed.setDescription(desc + "No se encontró el mensaje original.");
+					if (message.channel.isSendable()) await message.channel.send({ embeds: [errorEmbed] }).catch(() => null);
+				} else if (err instanceof ForumAIError) {
+					errorEmbed.setDescription(desc + err.message);
 					if (message.channel.isSendable()) await message.channel.send({ embeds: [errorEmbed] }).catch(() => null);
 				} else {
 					ExtendedClient.logError("Error al generar la respuesta de IA en foro:" + err.message, err.stack, message.author.id);
-					errorEmbed = new EmbedBuilder()
-						.setColor(0xff0000)
-						.setTitle("Error")
-						.setDescription("Error al generar la respuesta.")
-						.setFooter({ text: "Por favor, intenta más tarde." });
 					await message.reply({ embeds: [errorEmbed] }).catch(() => null);
 				}
 			}
