@@ -148,6 +148,7 @@ export async function handleTicketButtonInteraction(interaction: Interaction, ac
 		await channel.send({ embeds: [embed], components: [row] });
 		await interaction.reply({ content: "Ticket cerrado.", ephemeral: true });
 		await logTicketEvent(interaction.guild, "CERRADO", interaction.user, interaction.channel as TextChannel, channel.name.split("-")[0]);
+		ExtendedClient.openTickets.delete(channel.name);
 	} else if (action === "escalate") {
 		// Eleva el ticket: solo rol staff lo verá
 		await interaction.channel.permissionOverwrites.edit(getRoleFromEnv("moderadorChats"), {
@@ -193,6 +194,7 @@ export async function handleTicketButtonInteraction(interaction: Interaction, ac
 			}
 		});
 		await interaction.reply({ content: "Ticket reabierto.", ephemeral: true });
+		ExtendedClient.openTickets.add(channel.name);
 	}
 }
 
