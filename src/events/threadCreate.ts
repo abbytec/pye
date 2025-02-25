@@ -1,4 +1,4 @@
-import { Events, ChannelType, EmbedBuilder, ThreadChannel, TextChannel, Message } from "discord.js";
+import { Events, ChannelType, EmbedBuilder, ThreadChannel, TextChannel, Message, DiscordAPIError } from "discord.js";
 import {
 	COLORS,
 	getChannel,
@@ -56,32 +56,34 @@ async function sendTagReminder(thread: ThreadChannel) {
 	}
 }
 
-const threadsHelp = async function (tittle: string, message: Message | null, m: ThreadChannel) {
+const threadsHelp = async function (tittle: string, starterMessage: Message | null, m: ThreadChannel) {
 	try {
 		const prompt = `el contexto es: "${tittle}" (tema: ${getForumTopic(
 			m.parentId ?? ""
 		)}) si no lo entiendes no le des importancia. el prompt es: \n "${
-			message?.content ?? ""
+			starterMessage?.content ?? ""
 		}" intenta resolver y ayudar con el prompt de manera clara y simple`.toString();
 
 		const authorName = (await m.guild.members.fetch(m.ownerId).catch(() => undefined))?.displayName ?? "Usuario";
 
-		if (message) {
-			const attachmentData = await getFirstValidAttachment(message.attachments).catch(async (e) => {
-				message.reply(e.message);
+		if (starterMessage) {
+			const attachmentData = await getFirstValidAttachment(starterMessage.attachments).catch(async (e) => {
+				starterMessage.reply(e.message);
 				return undefined;
 			});
 			const fullMessage = await generateForumResponse(prompt, m.name, getForumTopic(m.parentId ?? ""), attachmentData);
 
 			let embed = createForumEmbed(fullMessage, authorName);
-			await sendLongReply(message, embed, fullMessage);
+			await sendLongReply(starterMessage, embed, fullMessage);
 		} else {
 			const fullMessage = await generateForumResponse(prompt, m.name, getForumTopic(m.parentId ?? ""));
 			let embed = createForumEmbed(fullMessage, authorName);
 			await sendLongReply(m, embed, fullMessage);
 		}
-	} catch (error) {
-		console.log(error);
+	} catch (err: any) {
+		if (!(err instanceof DiscordAPIError && err.message == "Unknown message")) {
+			ExtendedClient.logError("Error al generar la respuesta de IA en foro:" + err.message, err.stack);
+		}
 	}
 };
 

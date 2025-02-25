@@ -1,5 +1,6 @@
 import {
 	ChannelType,
+	DiscordAPIError,
 	DMChannel,
 	EmbedBuilder,
 	Events,
@@ -401,13 +402,23 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 				const embed = createForumEmbed(fullMessage);
 				await sendLongReply(message, embed, fullMessage);
 			} catch (err: any) {
-				ExtendedClient.logError("Error al generar la respuesta de IA en foro:" + err.message, err.stack, message.author.id);
-				const errorEmbed = new EmbedBuilder()
-					.setColor(0xff0000)
-					.setTitle("Error")
-					.setDescription("Error al generar la respuesta.")
-					.setFooter({ text: "Por favor, intenta más tarde." });
-				await message.reply({ embeds: [errorEmbed] });
+				let errorEmbed;
+				if (err instanceof DiscordAPIError && err.message == "Unknown message") {
+					errorEmbed = new EmbedBuilder()
+						.setColor(0xff0000)
+						.setTitle("Error")
+						.setDescription("Error al generar la respuesta. No se encontró el mensaje original.")
+						.setFooter({ text: "Por favor, intenta más tarde." });
+					if (message.channel.isSendable()) await message.channel.send({ embeds: [errorEmbed] }).catch(() => null);
+				} else {
+					ExtendedClient.logError("Error al generar la respuesta de IA en foro:" + err.message, err.stack, message.author.id);
+					errorEmbed = new EmbedBuilder()
+						.setColor(0xff0000)
+						.setTitle("Error")
+						.setDescription("Error al generar la respuesta.")
+						.setFooter({ text: "Por favor, intenta más tarde." });
+					await message.reply({ embeds: [errorEmbed] }).catch(() => null);
+				}
 			}
 		} else {
 			const text = await generateChatResponse(contexto, message.author.id, attachmentData);

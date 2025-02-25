@@ -1,4 +1,4 @@
-import { Message, EmbedBuilder, ThreadChannel } from "discord.js";
+import { Message, EmbedBuilder, ThreadChannel, DiscordAPIError } from "discord.js";
 import natural from "natural";
 import {
 	ANTI_DUMBS_RESPONSES,
@@ -182,18 +182,14 @@ export async function sendLongReply(message: Message<boolean> | ThreadChannel, e
 				}
 			}
 		}
-	} else {
+	} else if ("reply" in message) {
 		if (fullMessage.length <= MAX_MESSAGE_LENGTH) {
 			await message.reply({ embeds: [embed] });
 		} else {
 			const chunks = splitMessage(fullMessage, MAX_MESSAGE_LENGTH);
 			let lastMsg: Message | null | undefined;
 			for (const chunk of chunks) {
-				if (lastMsg) {
-					lastMsg = await lastMsg.reply({ embeds: [embed.setDescription(chunk)] }).catch(() => null);
-				} else if (message.channel.isSendable()) {
-					lastMsg = await message.reply({ embeds: [embed.setDescription(chunk)] }).catch(() => null);
-				}
+				lastMsg = await (lastMsg ?? message).reply({ embeds: [embed.setDescription(chunk)] }).catch(() => null);
 			}
 		}
 	}
