@@ -61,6 +61,21 @@ const validInvites: string[] = [
 	"1292897627431763999", // Server de apelaciónes
 	process.env.GUILD_ID ?? "",
 ];
+const userSpamMap = new Map<string, Date[]>();
+function cleanUserEntries(userId: string) {
+	const now = Date.now();
+	const timestamps = userSpamMap.get(userId) || [];
+	const recent = timestamps.filter((ts) => now - ts.getTime() <= 60000); // últimos 60 seg.
+	if (recent.length > 0) {
+		userSpamMap.set(userId, recent);
+	} else {
+		userSpamMap.delete(userId);
+	}
+}
+
+setInterval(() => {
+	userSpamMap.clear();
+}, 24 * 60 * 60 * 1000);
 
 export async function spamFilter(author: GuildMember | null, client: ExtendedClient, deletable: IDeletableContent, messageContent = "") {
 	if (!author || messageContent.length < 8) return false;
@@ -98,6 +113,25 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 						author,
 						client.guilds.cache.get(process.env.GUILD_ID ?? "")?.iconURL({ extension: "gif" }) ?? null
 					).catch(() => null);
+				} else if (detectedFilter.mute === false) {
+					const now = new Date();
+					// Obtén el array de timestamps para el usuario o crea uno nuevo
+					const timestamps = userSpamMap.get(author.id) || [];
+					timestamps.push(now);
+					userSpamMap.set(author.id, timestamps);
+
+					// Limpia las entradas viejas para este usuario
+					cleanUserEntries(author.id);
+					if (userSpamMap.get(author.id)!.length >= 3) {
+						await deletable.delete("Spam Filter");
+						shouldStopAlgorithm = true;
+						applyTimeout(
+							10000,
+							"Spam Filter",
+							author,
+							client.guilds.cache.get(process.env.GUILD_ID ?? "")?.iconURL({ extension: "gif" }) ?? null
+						).catch(() => null);
+					}
 				}
 
 				console.log("Mensaje borrado que contenía texto en la black list");
