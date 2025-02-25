@@ -135,7 +135,9 @@ export class ForumAIError extends Error {
 }
 
 export function createForumEmbed(responseText: string, helloUsername?: string): EmbedBuilder {
-	if (!responseText) throw new ForumAIError("La IA dió una respuesta vacía");
+	// Chequear si alguna vez ocurre esto... Porque hubo logs de errores extraños donde fallaba el setDescription
+	if (typeof responseText !== "string") ExtendedClient.logError("Respuesta extraña de la IA en foro", responseText, process.env.CLIENT_ID);
+	if (!responseText || responseText.length === 0) throw new ForumAIError("La IA dió una respuesta vacía");
 	const embedBuilder = new EmbedBuilder().setColor(0x0099ff).setFooter({ text: "✨ Generado por IA" });
 
 	let fullMessage: string = responseText;

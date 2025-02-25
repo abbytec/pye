@@ -47,7 +47,6 @@ import {
 	generateForumResponse,
 	sendLongReply,
 } from "../utils/ai/aiResponseService.js";
-import { replyError } from "../utils/messages/replyError.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
