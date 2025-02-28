@@ -113,8 +113,6 @@ export async function generateChatResponse(context: string, authorId: string, im
 	if (result.response.candidates && result.response.candidates.length > 0) {
 		const candidate = result.response.candidates[0];
 
-		console.log(JSON.stringify(candidate.content?.parts));
-
 		candidate.content?.parts?.forEach(async (part) => {
 			if (part.text) {
 				text = part.text;

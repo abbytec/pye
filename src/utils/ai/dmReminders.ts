@@ -3,9 +3,7 @@ import { ExtendedClient } from "../../client.js";
 
 export async function scheduleDMReminder(reminderDateTime: string, message: string, userId: string) {
 	// Todo: limitador de recordatorios por usuario
-	console.log(reminderDateTime);
 	const reminderTime = new Date(reminderDateTime);
-	console.log(reminderTime);
 	const now = new Date();
 	if (reminderTime < now || reminderTime > new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)) {
 		return;
