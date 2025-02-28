@@ -90,10 +90,8 @@ async function cronEventsProcessor(client: ExtendedClient) {
 		const { userId, message } = job.attrs.data;
 		console.log(`Enviando recordatorio por DM a ${userId}`);
 		const guild = client.guilds.cache.get(process.env.GUILD_ID ?? "") ?? (await client.guilds.fetch(process.env.GUILD_ID ?? ""));
-		console.log(guild?.id);
 		if (!guild) return;
 		const member = guild.members.cache.get(userId) ?? (await guild.members.fetch(userId));
-		console.log(member?.id);
 		if (member)
 			await member
 				.send(`⏰ **<@${userId}>  Recordatorio:** ${message}`)
