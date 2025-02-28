@@ -4,7 +4,7 @@ const USER_MEMORY = new Map<string, DatedUserMemoryResponse[]>();
 
 export function saveUserPreferences(uid: string, likes: string[], wants: string[]): void {
 	if (!USER_MEMORY.has(uid)) {
-		USER_MEMORY.set(uid, [{ date: new Date(), memory: { likes, wants } }]);
+		USER_MEMORY.set(uid, [{ date: new Date(), memory: { likes: likes ?? [], wants: wants ?? [] } }]);
 	} else {
 		USER_MEMORY.get(uid)?.push({ date: new Date(), memory: { likes, wants } });
 	}
