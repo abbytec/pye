@@ -91,7 +91,7 @@ export const modelPyeChanAnswer = genAI.getGenerativeModel({
 	},
 	tools: [
 		{
-			functionDeclarations: [saveUserPreferencesFunctionSchema(pyeChanPrompt)],
+			functionDeclarations: [saveUserPreferencesFunctionSchema],
 		},
 	],
 	toolConfig: {

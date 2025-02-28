@@ -13,7 +13,7 @@ import {
 } from "./gemini.js";
 import { ExtendedClient } from "../../client.js";
 import { findEmojis, splitMessage } from "../generic.js";
-import { GenerateContentRequest, GoogleGenerativeAIFetchError, Part, EnhancedGenerateContentResponse } from "@google/generative-ai";
+import { GenerateContentRequest, GoogleGenerativeAIFetchError, Part } from "@google/generative-ai";
 import { getUserMemories, saveUserPreferences, UserMemoryResponse } from "./userMemory.js";
 
 export async function generateForumResponse(

@@ -47,27 +47,25 @@ setInterval(() => {
 	});
 }, 60 * 1000);
 
-export const saveUserPreferencesFunctionSchema = (prompt: string): FunctionDeclaration => {
-	return {
-		name: "saveUserPreferences",
-		description: "Guarda información sobre el usuario, incluyendo lo que le gusta, hace y lo que desea hacer.",
-		parameters: {
-			type: SchemaType.OBJECT,
-			properties: {
-				likes: {
-					type: SchemaType.ARRAY,
-					items: { type: SchemaType.STRING },
-					description: "Lo que le gusta, disfruta o hace el usuario (array of strings).",
-				},
-				wants: {
-					type: SchemaType.ARRAY,
-					items: { type: SchemaType.STRING },
-					description: "Lo que el usuario quiere o desea (array of strings).",
-				},
+export const saveUserPreferencesFunctionSchema: FunctionDeclaration = {
+	name: "saveUserPreferences",
+	description: "Guarda información sobre el usuario, incluyendo lo que le gusta, hace y lo que desea hacer.",
+	parameters: {
+		type: SchemaType.OBJECT,
+		properties: {
+			likes: {
+				type: SchemaType.ARRAY,
+				items: { type: SchemaType.STRING },
+				description: "Lo que le gusta, disfruta o hace el usuario (array of strings).",
 			},
-			required: [],
+			wants: {
+				type: SchemaType.ARRAY,
+				items: { type: SchemaType.STRING },
+				description: "Lo que el usuario quiere o desea (array of strings).",
+			},
 		},
-	};
+		required: [],
+	},
 };
 
 interface DatedUserMemoryResponse {
