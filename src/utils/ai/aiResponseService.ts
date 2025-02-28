@@ -116,6 +116,7 @@ export async function generateChatResponse(context: string, authorId: string, im
 		candidate.content?.parts?.forEach(async (part) => {
 			if (part.text) {
 				text = part.text;
+				if (text.startsWith(": ")) text = text.substring(2);
 			} else if (part.functionCall) {
 				const functionName = part.functionCall.name;
 				const functionArgs = part.functionCall.args;
