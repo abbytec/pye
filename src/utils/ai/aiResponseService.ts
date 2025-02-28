@@ -1,4 +1,4 @@
-import { Message, EmbedBuilder, ThreadChannel, DiscordAPIError } from "discord.js";
+import { Message, EmbedBuilder, ThreadChannel } from "discord.js";
 import natural from "natural";
 import {
 	ANTI_DUMBS_RESPONSES,
@@ -13,7 +13,8 @@ import {
 } from "./gemini.js";
 import { ExtendedClient } from "../../client.js";
 import { findEmojis, splitMessage } from "../generic.js";
-import { GenerateContentRequest, GoogleGenerativeAIError, GoogleGenerativeAIFetchError, Part } from "@google/generative-ai";
+import { GenerateContentRequest, GoogleGenerativeAIFetchError, Part, EnhancedGenerateContentResponse } from "@google/generative-ai";
+import { getUserMemories, saveUserPreferences, UserMemoryResponse } from "./userMemory.js";
 
 export async function generateForumResponse(
 	context: string,
@@ -72,7 +73,7 @@ export async function generateChatResponse(context: string, authorId: string, im
 
 	userParts = [
 		{
-			text: context,
+			text: context + getUserMemories(authorId),
 		},
 	];
 
@@ -94,24 +95,38 @@ export async function generateChatResponse(context: string, authorId: string, im
 		],
 	};
 
-	const result = await modelPyeChanAnswer.generateContent(request).catch((e) => {
+	const result = await modelPyeChanAnswer.generateContent(request, { timeout: 10000 }).catch((e) => {
 		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
 			return {
 				response: {
 					text: () => "En este momento, comí demasiado sushi como para procesar esta respuesta! 🍣\nIntente denuevo mas tarde.",
+					candidates: [],
 				},
 			};
 		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
 		return {
-			response: { text: () => "Mejor comamos un poco de sushi! 🍣" },
+			response: { text: () => "Mejor comamos un poco de sushi! 🍣", candidates: [] },
 		};
 	});
-	let text;
-	try {
-		text = result.response.text();
-	} catch (error) {
-		text = "Mejor comamos un poco de sushi! 🍣";
+	let text = "";
+	if (result.response.candidates && result.response.candidates.length > 0) {
+		const candidate = result.response.candidates[0];
+
+		candidate.content?.parts?.forEach(async (part) => {
+			if (part.text) {
+				text = part.text;
+			} else if (part.functionCall) {
+				const functionName = part.functionCall.name;
+				const functionArgs = part.functionCall.args;
+				if (functionName === "saveUserPreferences") {
+					const args = functionArgs as UserMemoryResponse;
+					saveUserPreferences(authorId, args.likes, args.wants);
+				}
+			}
+		});
 	}
+
+	if (text?.length === 0) text = "Mejor comamos un poco de sushi! 🍣";
 	// Si el texto es muy similar al prompt (respuesta por defecto), elegimos una respuesta alternativa
 	if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8) {
 		text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
