@@ -15,6 +15,7 @@ import { ExtendedClient } from "../../client.js";
 import { findEmojis, splitMessage } from "../generic.js";
 import { GenerateContentRequest, GoogleGenerativeAIFetchError, Part } from "@google/generative-ai";
 import { getUserMemories, saveUserPreferences, UserMemoryResponse } from "./userMemory.js";
+import { getActualDateTime, Reminder, scheduleDMReminder } from "./dmReminders.js";
 
 export async function generateForumResponse(
 	context: string,
@@ -73,7 +74,7 @@ export async function generateChatResponse(context: string, authorId: string, im
 
 	userParts = [
 		{
-			text: context + getUserMemories(authorId),
+			text: context + getUserMemories(authorId) + "\n" + getActualDateTime(),
 		},
 	];
 
@@ -112,6 +113,8 @@ export async function generateChatResponse(context: string, authorId: string, im
 	if (result.response.candidates && result.response.candidates.length > 0) {
 		const candidate = result.response.candidates[0];
 
+		console.log(JSON.stringify(candidate.content?.parts));
+
 		candidate.content?.parts?.forEach(async (part) => {
 			if (part.text) {
 				text = part.text;
@@ -121,6 +124,9 @@ export async function generateChatResponse(context: string, authorId: string, im
 				if (functionName === "saveUserPreferences") {
 					const args = functionArgs as UserMemoryResponse;
 					saveUserPreferences(authorId, args.likes, args.wants);
+				} else if (functionName === "createReminder") {
+					const args = functionArgs as Reminder;
+					await scheduleDMReminder(args.reminderTime, args.message, authorId);
 				}
 			}
 		});
