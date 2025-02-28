@@ -86,6 +86,23 @@ async function cronEventsProcessor(client: ExtendedClient) {
 	});
 
 	// Define el trabajo para enviar recordatorios
+	ExtendedClient.agenda.define("send reminder dm", async (job: Job) => {
+		const { userId, message } = job.attrs.data;
+		console.log(`Enviando recordatorio por DM a ${userId}`);
+		const guild = client.guilds.cache.get(process.env.GUILD_ID ?? "") ?? (await client.guilds.fetch(process.env.GUILD_ID ?? ""));
+		console.log(guild?.id);
+		if (!guild) return;
+		const member = guild.members.cache.get(userId) ?? (await guild.members.fetch(userId));
+		console.log(member?.id);
+		if (member)
+			await member
+				.send(`⏰ **<@${userId}>  Recordatorio:** ${message}`)
+				.then(() => console.log(`Recordatorio por DM enviado a ${userId}`))
+				.then(async () => await job.remove())
+				.catch((error) => console.error(`Error al enviar recordatorio a ${userId} via DM:`, error));
+	});
+
+	// Define el trabajo para enviar recordatorios
 	ExtendedClient.agenda.define("send reminder", async (job: Job) => {
 		const { username, userId, message, channelId } = job.attrs.data;
 		const channel = (client.channels.cache.get(channelId) ?? client.channels.resolve(channelId)) as TextChannel;
@@ -262,17 +279,21 @@ async function voiceFarmingProcessor(client: ExtendedClient) {
 		});
 	}, 6e4);
 }
-
+const URL_State = "🔗 discord.gg/programacion";
 async function activityProcessor(client: ExtendedClient) {
 	setInterval(() => {
-		setTimeout(() => client.user?.setActivity("discord.gg/programacion", { type: ActivityType.Watching }), 1000);
-		setTimeout(() => client.user?.setActivity("ella no te ama, pyechan tampoco", { type: ActivityType.Watching }), 10000);
-		setTimeout(() => client.user?.setActivity("+20 Millones de comentarios", { type: ActivityType.Watching }), 20000);
-		setTimeout(() => client.user?.setActivity("PyE coins en el Casino (#comandos)", { type: ActivityType.Competing }), 30000);
+		setTimeout(() => client.user?.setActivity("discord.gg/programacion", { type: ActivityType.Watching, state: URL_State }), 1000);
+		setTimeout(() => client.user?.setActivity("ella no te ama, pyechan tampoco", { type: ActivityType.Watching, state: URL_State }), 10000);
+		setTimeout(() => client.user?.setActivity("+20 Millones de comentarios", { type: ActivityType.Watching, state: URL_State }), 20000);
+		setTimeout(
+			() => client.user?.setActivity("PyE coins en el Casino (#comandos)", { type: ActivityType.Competing, state: URL_State }),
+			30000
+		);
 		setTimeout(
 			() =>
 				client.user?.setActivity(`a ${client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0)}`, {
 					type: ActivityType.Watching,
+					state: URL_State,
 				}),
 			40000
 		);
