@@ -195,6 +195,13 @@ export async function checkMentionSpam(message: Message<boolean>, client: Extend
 	const mentions = new Collection<string, User | Role>(message.mentions.users).concat(message.mentions.roles);
 	const authorId = message.author.id;
 
+	if (message.reference?.messageId) {
+		const referencedMessage = await message.channel.messages.fetch(message.reference.messageId);
+		if (referencedMessage) {
+			mentions.set(referencedMessage.author.id, referencedMessage.author);
+		}
+	}
+
 	let deleted = false;
 
 	mentions.forEach(async (mentionedUser) => {
@@ -215,7 +222,7 @@ export async function checkMentionSpam(message: Message<boolean>, client: Extend
 			if (entry.count >= 3) {
 				clearTimeout(entry.timeout);
 				let warn = await (message.channel as TextChannel).send({
-					content: `<@${message.author.id}> Mencionar tanto a una misma persona puede traerte problemas. No seas bot, que para eso estoy yo!`,
+					content: `<@${message.author.id}> Mencionar tanto a una misma persona/bot puede traerte problemas. No seas bot, que para eso estoy yo!`,
 				});
 				let guild = client.guilds.cache.get(process.env.GUILD_ID ?? "") ?? client.guilds.resolve(process.env.GUILD_ID ?? "");
 				let member = guild?.members.cache.get(message.author.id) ?? guild?.members.resolve(message.author.id);
