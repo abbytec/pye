@@ -50,7 +50,7 @@ export default {
 				type: "Warn",
 			});
 
-			let data = (await ModLogs.find({ id: user.id })) ?? [];
+			let data = (await ModLogs.countDocuments({ id: user.id })) ?? [];
 
 			member
 				?.send({
@@ -63,7 +63,7 @@ export default {
 								)}> para evitar que vuelva a pasar y conocer las sanciones.`
 							)
 							.addFields([
-								{ name: "Casos", value: `#${data.length}`, inline: true },
+								{ name: "Casos", value: `#${data}`, inline: true },
 								{ name: "Razón", value: reason, inline: true },
 							])
 							.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)
@@ -111,7 +111,7 @@ export default {
 											)}> para evitar que vuelva a pasar y conocer las sanciones.`
 										)
 										.addFields([
-											{ name: "Casos", value: `#${data.length}`, inline: true },
+											{ name: "Casos", value: `#${data}`, inline: true },
 											{ name: "Razón", value: reason, inline: true },
 										])
 										.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)
@@ -146,7 +146,7 @@ export default {
 							{ name: "Razón", value: reason, inline: true },
 							{ name: "\u200b", value: "\u200b", inline: true },
 							{ name: "Moderador", value: interaction.user.tag, inline: true },
-							{ name: "Casos", value: `#${data.length}`, inline: true },
+							{ name: "Casos", value: `#${data}`, inline: true },
 						],
 					},
 				],

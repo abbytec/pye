@@ -90,7 +90,7 @@ export async function applyTimeout(
 		});
 
 		// Obtener todos los casos actuales del usuario
-		const data = await ModLogs.find({ id: member.id });
+		const data = await ModLogs.countDocuments({ id: member.id });
 
 		// Enviar mensaje directo al usuario
 		await member
@@ -108,7 +108,7 @@ export async function applyTimeout(
 						)
 						.addFields([
 							{ name: "Tiempo", value: `\`${ms(duration, { long: true })}\``, inline: true },
-							{ name: "Casos", value: `#${data.length}`, inline: true },
+							{ name: "Casos", value: `#${data}`, inline: true },
 							{ name: "Razón", value: reason, inline: true },
 						])
 						.setThumbnail(interactionGuildIconURL)
@@ -127,7 +127,7 @@ export async function applyTimeout(
 						{ name: "Razón", value: reason, inline: true },
 						{ name: "ID", value: `${member.id}`, inline: true },
 						{ name: "Moderador", value: moderator?.username ?? "BotPyE", inline: true },
-						{ name: "Casos", value: `#${data.length}`, inline: true },
+						{ name: "Casos", value: `#${data}`, inline: true },
 					],
 				},
 			],
