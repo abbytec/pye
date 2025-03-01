@@ -254,15 +254,29 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 		// Enviar notificación en un canal específico
 		const notificationChannel = interaction.client.channels.resolve(getChannelFromEnv("logPuntos")) as TextChannel | null;
 		if (notificationChannel) {
-			let message = `Se le ha dado +1 rep al usuario: \`${member.user.username}\`\n> *Puntos anteriores: ${
-				user.points - point
-			}. Puntos actuales: ${user.points}*`;
-			await interaction.client.channels
-				.fetch(postId)
-				.then((channel) => {
-					(channel as TextChannel | null)?.send(message + "\n 🎉 Felicitaciones!");
-				})
-				.catch(() => null);
+			let message = `Se le ha dado +1 rep al usuario: \`${member.user.username}\``;
+			const helpchannel = interaction.client.channels.resolve(postId) as TextChannel | null;
+			let thankMessageId: string | null = null;
+			if (helpchannel?.id === getChannelFromEnv("chatProgramadores")) {
+				const thanksFieldIndex = embed.data.fields?.findIndex((field) => field.name === "# Mensaje de agradecimiento");
+				if (thanksFieldIndex !== undefined && thanksFieldIndex !== -1 && embed.data.fields) {
+					const regex = /\[.*?\]\(https:\/\/discord\.com\/channels\/(\d+)\/(\d+)\/(\d+)\)/g;
+					const matches = [...embed.data.fields[thanksFieldIndex].value.matchAll(regex)];
+					if (matches) {
+						[, , , thankMessageId] = matches[matches.length - 1];
+						await helpchannel?.messages
+							.fetch(thankMessageId)
+							.then(async (msg) => {
+								await msg?.reply(message).catch(() => null);
+							})
+							.catch(() => null);
+					}
+				}
+			} else {
+				message += `\n> *Puntos anteriores: ${user.points - point}. Puntos actuales: ${user.points}*\n 🎉 Felicitaciones!`;
+				helpchannel?.send(message).catch(() => null);
+			}
+
 			message = `**${interaction.user.username}** ` + message.slice(2);
 			message += ` (Canal: <#${getChannelFromEnv("notificaciones")}>) - (Razón: <#${postId}>)`;
 			interaction.message.embeds.at(0)?.description && (message += `\n${interaction.message.embeds.at(0)?.description}`);

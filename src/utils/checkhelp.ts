@@ -34,34 +34,37 @@ interface FetchResult {
  * @returns An object containing messages and helpers.
  */
 async function fetchMessagesAndHelpers(gratitudeMessage: Message): Promise<FetchResult> {
-	const messagesFetched = await gratitudeMessage.channel.messages
-		.fetch({
-			limit: 10,
-			before: gratitudeMessage.id,
-		})
-		.catch(() => undefined);
+	let helpers: string[] = [];
+	let msges: Message[] = [];
 
 	let repliedMessage: Message | null = null;
 	if (gratitudeMessage.reference?.messageId) {
 		repliedMessage = await gratitudeMessage.channel.messages.fetch(gratitudeMessage.reference.messageId).catch(() => null);
 	}
 
-	const messages =
-		messagesFetched
-			?.filter((msg) => !msg.author.bot && !msg.system && msg.content)
-			.sort((a, b) => a.createdTimestamp - b.createdTimestamp)
-			.values() ?? [];
+	if (gratitudeMessage.channelId !== getChannelFromEnv("chatProgramadores")) {
+		const messagesFetched = await gratitudeMessage.channel.messages
+			.fetch({
+				limit: 10,
+				before: gratitudeMessage.id,
+			})
+			.catch(() => undefined);
 
-	let helpers: string[] = [];
-	let msges: Message[] = [];
-	for (const msg of messages) {
-		if (!helpers.includes(msg.author.id) && msg.author.id !== gratitudeMessage.author.id && !msg.author.bot) {
-			helpers.push(msg.author.id);
-			msges.push(msg);
+		const messages =
+			messagesFetched
+				?.filter((msg) => !msg.author.bot && !msg.system && msg.content)
+				.sort((a, b) => a.createdTimestamp - b.createdTimestamp)
+				.values() ?? [];
+
+		for (const msg of messages) {
+			if (!helpers.includes(msg.author.id) && msg.author.id !== gratitudeMessage.author.id && !msg.author.bot) {
+				helpers.push(msg.author.id);
+				msges.push(msg);
+			}
 		}
 	}
 
-	if (repliedMessage && repliedMessage.author.id !== gratitudeMessage.author.id) {
+	if (repliedMessage && repliedMessage.author.id !== gratitudeMessage.author.id && !repliedMessage.author.bot) {
 		helpers.unshift(repliedMessage.author.id);
 	}
 
@@ -233,7 +236,7 @@ export async function checkHelp(msg: Message): Promise<void> {
 		"thank you",
 	];
 
-	const negativeKeywords = ["no funciono", "gracias de antemano"];
+	const negativeKeywords = ["no funciono", "no me funciono", "gracias de antemano"];
 
 	// Verificar si el mensaje contiene alguna de las palabras de gratitud
 	const containsGratitude = gratitudeKeywords.some((keyword) => normalizedString.includes(keyword));
