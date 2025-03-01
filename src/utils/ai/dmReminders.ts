@@ -16,7 +16,7 @@ export async function scheduleDMReminder(reminderDateTime: string, message: stri
 
 export const createReminderFunctionSchema: FunctionDeclaration = {
 	name: "createReminder",
-	description: "Crea un recordatorio para enviar un mensaje directo a un usuario en una fecha/hora específica.",
+	description: "Crea un recordatorio para enviarle un mensaje directo al usuario en una fecha/hora (en formato ISO 8601) específica.",
 	parameters: {
 		type: SchemaType.OBJECT,
 		properties: {

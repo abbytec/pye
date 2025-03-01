@@ -97,7 +97,7 @@ export const modelPyeChanAnswer = genAI.getGenerativeModel({
 	],
 	toolConfig: {
 		functionCallingConfig: {
-			mode: FunctionCallingMode.MODE_UNSPECIFIED,
+			mode: FunctionCallingMode.AUTO,
 		},
 	},
 });

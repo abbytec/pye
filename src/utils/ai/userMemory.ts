@@ -6,7 +6,18 @@ export function saveUserPreferences(uid: string, likes: string[], wants: string[
 	if (!USER_MEMORY.has(uid)) {
 		USER_MEMORY.set(uid, [{ date: new Date(), memory: { likes: likes ?? [], wants: wants ?? [] } }]);
 	} else {
-		USER_MEMORY.get(uid)?.push({ date: new Date(), memory: { likes: likes ?? [], wants: wants ?? [] } });
+		const userMemories = USER_MEMORY.get(uid);
+		if (userMemories) {
+			const allLikes = new Set(userMemories.flatMap((entry) => entry.memory.likes));
+			const allWants = new Set(userMemories.flatMap((entry) => entry.memory.wants));
+
+			const newLikes = likes?.filter((like) => !allLikes.has(like)) ?? [];
+			const newWants = wants?.filter((want) => !allWants.has(want)) ?? [];
+
+			if (newLikes.length > 0 || newWants.length > 0) {
+				userMemories.push({ date: new Date(), memory: { likes: [...newLikes], wants: [...newWants] } });
+			}
+		}
 	}
 }
 
@@ -16,23 +27,25 @@ export function getUserMemories(uid: string): string {
 		return "";
 	}
 
-	const allLikes: string[] = [];
-	const allWants: string[] = [];
+	let allLikes: string[] = [];
+	let allWants: string[] = [];
 
 	for (const { memory } of memories) {
 		allLikes.push(...memory.likes);
 		allWants.push(...memory.wants);
 	}
+	allLikes = allLikes.filter((like) => like.length > 0);
+	allWants = allWants.filter((want) => want.length > 0);
 
 	const resultParts: string[] = [];
 	if (allLikes.length > 0) {
-		resultParts.push(`Al usuario le gusta: ${allLikes.join(", ")}`);
+		resultParts.push(`Me gusta: ${allLikes.join(", ")}`);
 	}
 	if (allWants.length > 0) {
-		resultParts.push(`El usuario quiere/espera: ${allWants.join(", ")}`);
+		resultParts.push(`Quiero/espero: ${allWants.join(", ")}`);
 	}
 
-	return resultParts.join("\n");
+	return resultParts.length !== 0 ? resultParts.join("\n") + "\n" : "";
 }
 
 setInterval(() => {

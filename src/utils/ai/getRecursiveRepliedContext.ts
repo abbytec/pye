@@ -1,6 +1,9 @@
 import { Message } from "discord.js";
 import { aiSecurityConstraint } from "./gemini.js";
+import { getUserMemories } from "./userMemory.js";
+import { getActualDateTime } from "./dmReminders.js";
 
+const SYSTEM = "System: ";
 export async function getRecursiveRepliedContext(
 	message: Message<boolean>,
 	pyeChan: boolean,
@@ -11,7 +14,14 @@ export async function getRecursiveRepliedContext(
 	let currentMessage: Message<boolean> | null = message;
 	let depth = 0;
 	const botName = pyeChan ? "PyE chan: " : "PyE Bot: ";
-
+	let finalMessage = "";
+	if (pyeChan) {
+		const memories = getUserMemories(message.author.id);
+		if (memories) {
+			contextLines.unshift(`${message.author.username}: ${memories}`);
+		}
+		contextLines.unshift(`${SYSTEM}${getActualDateTime()}`);
+	}
 	while (currentMessage?.reference?.messageId && depth < maxDepth) {
 		// Intenta obtener el mensaje referenciado
 		const repliedMessage: Message | null = await message.channel.messages.fetch(currentMessage.reference.messageId).catch(() => null);
@@ -36,5 +46,9 @@ export async function getRecursiveRepliedContext(
 	else contextLines.push(`${initialAuthorName}: ${message.content}`);
 
 	// Combina todas las líneas en una sola cadena de texto
-	return contextLines.join("\n") + aiSecurityConstraint + "\n" + botName + ": ";
+	contextLines = contextLines.reverse();
+
+	finalMessage += contextLines.join("\n");
+
+	return finalMessage + "\n" + SYSTEM + aiSecurityConstraint + "\n" + botName;
 }

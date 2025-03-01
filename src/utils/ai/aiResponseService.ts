@@ -14,8 +14,8 @@ import {
 import { ExtendedClient } from "../../client.js";
 import { findEmojis, splitMessage } from "../generic.js";
 import { GenerateContentRequest, GoogleGenerativeAIFetchError, Part } from "@google/generative-ai";
-import { getUserMemories, saveUserPreferences, UserMemoryResponse } from "./userMemory.js";
-import { getActualDateTime, Reminder, scheduleDMReminder } from "./dmReminders.js";
+import { saveUserPreferences, UserMemoryResponse } from "./userMemory.js";
+import { Reminder, scheduleDMReminder } from "./dmReminders.js";
 
 export async function generateForumResponse(
 	context: string,
@@ -74,7 +74,7 @@ export async function generateChatResponse(context: string, authorId: string, im
 
 	userParts = [
 		{
-			text: context + getUserMemories(authorId) + "\n" + getActualDateTime(),
+			text: context,
 		},
 	];
 
@@ -112,11 +112,9 @@ export async function generateChatResponse(context: string, authorId: string, im
 	let text = "";
 	if (result.response.candidates && result.response.candidates.length > 0) {
 		const candidate = result.response.candidates[0];
-
 		candidate.content?.parts?.forEach(async (part) => {
 			if (part.text) {
 				text = part.text;
-				if (text.startsWith(": ")) text = text.substring(2);
 			} else if (part.functionCall) {
 				const functionName = part.functionCall.name;
 				const functionArgs = part.functionCall.args;
