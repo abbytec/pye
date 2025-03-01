@@ -61,7 +61,6 @@ export async function generateForumResponse(
 
 	let text = result.response.text();
 
-	// Si el texto obtenido es muy similar al prompt (respuesta por defecto), se selecciona una respuesta alternativa
 	if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8) {
 		text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
 	}
@@ -130,7 +129,6 @@ export async function generateChatResponse(context: string, authorId: string, im
 	}
 
 	if (text?.length === 0) text = "Mejor comamos un poco de sushi! 🍣";
-	// Si el texto es muy similar al prompt (respuesta por defecto), elegimos una respuesta alternativa
 	if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8) {
 		text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
 	}
@@ -147,7 +145,6 @@ export async function generateChatResponseStream(context: string, authorId: stri
 		};
 	});
 	let text = (await result.response).text();
-	// Si el texto es muy similar al prompt (respuesta por defecto), elegimos una respuesta alternativa
 	if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8) {
 		text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
 	}

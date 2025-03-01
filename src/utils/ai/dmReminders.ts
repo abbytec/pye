@@ -1,8 +1,12 @@
 import { FunctionDeclaration, SchemaType } from "@google/generative-ai";
 import { ExtendedClient } from "../../client.js";
+import natural from "natural";
+import { pyeChanPrompt } from "./gemini.js";
 
 export async function scheduleDMReminder(reminderDateTime: string, message: string, userId: string) {
-	// Todo: limitador de recordatorios por usuario
+	if (natural.JaroWinklerDistance(message, pyeChanPrompt) > 0.8) {
+		return;
+	}
 	const reminderTime = new Date(reminderDateTime);
 	const now = new Date();
 	if (reminderTime < now || reminderTime > new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)) {
