@@ -29,7 +29,7 @@ export async function getRecursiveRepliedContext(
 		if (!repliedMessage) break;
 		// Determina el nombre del autor, reemplazando el nombre del bot si es necesario
 		if (repliedMessage.author.id === (process.env.CLIENT_ID ?? "")) {
-			contextLines.unshift(`${botName}: ${repliedMessage.content || repliedMessage.embeds[0]?.description}`);
+			contextLines.unshift(`${botName}${repliedMessage.content || repliedMessage.embeds[0]?.description}`);
 		} else {
 			contextLines.unshift(`${repliedMessage.author.username}: ${repliedMessage.content}`);
 		}
