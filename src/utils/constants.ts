@@ -211,7 +211,6 @@ const ROLES = {
 	sabio: "769538041084903464",
 	experto: "838285410995929119",
 	adalovelace: "1190365725865545828",
-	alanturing: "1190366029633814570",
 	usuarioDelMes: "1169106408856363058",
 
 	// team
@@ -254,7 +253,6 @@ const DEV_ROLES: Record<Roles, string> = {
 	sabio: "1296190630678233117",
 	experto: "1296190630686494852",
 	adalovelace: "1296190630686494853",
-	alanturing: "1296190630686494854",
 	usuarioDelMes: "1296190630724370499",
 
 	// team
@@ -314,7 +312,6 @@ export function getRepRolesByOrder() {
 		sabio: roles.sabio,
 		experto: roles.experto,
 		adalovelace: roles.adalovelace,
-		alanturing: roles.alanturing,
 	};
 }
 
@@ -333,7 +330,6 @@ export const ROLES_REP_RANGE = {
 	sabio: 128,
 	experto: 256,
 	adalovelace: 512,
-	alanturing: 1024,
 };
 
 export const COLORS = {

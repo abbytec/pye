@@ -1,21 +1,13 @@
 // middlewares/updateRepRoles.ts
 import { Finalware } from "../../types/middleware.js";
 import { AttachmentBuilder, GuildMember, TextChannel } from "discord.js";
-import { getChannelFromEnv, getRoleFromEnv, getRoleName, ROLES_REP_RANGE } from "../constants.js";
+import { getChannelFromEnv, getRepRolesByOrder, getRoleFromEnv, getRoleName, ROLES_REP_RANGE } from "../constants.js";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { ExtendedClient } from "../../client.js";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import redisClient from "../../redis.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
-// Define los IDs de los roles de reputación
-const rep = {
-	diez: "ROLE_ID_DIEZ",
-	veinte: "ROLE_ID_VEINTE",
-	cincuenta: "ROLE_ID_CINCUENTA",
-	cien: "ROLE_ID_CIEN",
-	doscientos: "ROLE_ID_DOSCIENTOS",
-	quinientos: "ROLE_ID_QUINIENTOS",
-};
 
 export const updateRepRoles: Finalware = async (postHandleableInteraction, result) => {
 	// Aseguramos que interaction tenga el tipo PostHandleable
@@ -39,14 +31,38 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 		minPoints,
 	}));
 
+	const rawData = await redisClient.sendCommand<string[]>(["ZREVRANGE", "top:rep", "9", "10", "WITHSCORES"]).catch(() => []);
+	const tenthScore = Number(rawData[1] ?? 512);
+	const eleventhUserId = Number(rawData[2] ?? null);
+
 	// Determinamos el rol más alto que el miembro debe tener
 	let maxRoleId: string | null = null;
 	let maxRoleMinPoints = 0;
+	const adaLovelaceId = getRepRolesByOrder().adalovelace;
 
-	for (const role of rolesWithPoints) {
-		if ((points >= role.minPoints || member.roles.cache.has(role.id)) && maxRoleMinPoints < role.minPoints) {
-			maxRoleId = role.id;
-			maxRoleMinPoints = role.minPoints;
+	if (points >= tenthScore) {
+		if (member.roles.cache.has(adaLovelaceId)) return;
+		else {
+			maxRoleId = adaLovelaceId;
+			maxRoleMinPoints = ROLES_REP_RANGE.adalovelace;
+			if (eleventhUserId)
+				client.guilds.cache
+					.get(process.env.GUILD_ID ?? "")
+					?.members.fetch(eleventhUserId.toString())
+					?.then((member) => {
+						member.roles
+							.remove(adaLovelaceId)
+							.then(() => member.roles.add(getRepRolesByOrder().experto))
+							.catch(() => null);
+					})
+					.catch(() => null);
+		}
+	} else {
+		for (const role of rolesWithPoints) {
+			if ((points >= role.minPoints || member.roles.cache.has(role.id)) && maxRoleMinPoints < role.minPoints) {
+				maxRoleId = role.id;
+				maxRoleMinPoints = role.minPoints;
+			}
 		}
 	}
 

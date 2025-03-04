@@ -37,11 +37,11 @@ export async function bumpHandler(message: Message): Promise<void> {
 		// Ajustar bump según el trabajo y las parejas
 		let bumpAmount = money.bump;
 
-		if (["Enfermero", "Enfermera"].includes(user.profile?.job || "") && user.couples?.some((s) => ["Doctor", "Doctora"].includes(s.job))) {
+		if (["Enfermero", "Enfermera"].includes(user.profile?.job ?? "") && user.couples?.some((s) => ["Doctor", "Doctora"].includes(s.job))) {
 			bumpAmount += bumpAmount * 0.5;
 		}
 
-		if (["Doctor", "Doctora"].includes(user.profile?.job || "") && user.couples?.some((s) => ["Enfermero", "Enfermera"].includes(s.job))) {
+		if (["Doctor", "Doctora"].includes(user.profile?.job ?? "") && user.couples?.some((s) => ["Enfermero", "Enfermera"].includes(s.job))) {
 			bumpAmount += bumpAmount * 0.5;
 		}
 
