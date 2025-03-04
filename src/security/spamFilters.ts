@@ -196,7 +196,7 @@ export async function checkMentionSpam(message: Message<boolean>, client: Extend
 	const authorId = message.author.id;
 
 	if (message.reference?.messageId) {
-		const referencedMessage = await message.channel.messages.fetch(message.reference.messageId);
+		const referencedMessage = await message.channel.messages.fetch(message.reference.messageId).catch(() => null);
 		if (referencedMessage) {
 			mentions.set(referencedMessage.author.id, referencedMessage.author);
 		}
