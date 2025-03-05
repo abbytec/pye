@@ -44,8 +44,7 @@ export default {
 				return await replyError(interaction, "La duración del timeout no es válida. Debe ser entre 1s y 28d.");
 
 			// Aplicar el timeout
-
-			await applyTimeout(duration, reason, member, interaction.guild?.iconURL({ extension: "gif" }) ?? null, interaction.user)
+			return await applyTimeout(duration, reason, member, interaction.guild?.iconURL({ extension: "gif" }) ?? null, interaction.user)
 				.then(async (result) => {
 					if ("logMessages" in result) {
 						await replyWarning(
