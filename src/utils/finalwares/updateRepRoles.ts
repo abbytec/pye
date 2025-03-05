@@ -31,31 +31,17 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 		minPoints,
 	}));
 
-	const rawData = await redisClient.sendCommand<string[]>(["ZREVRANGE", "top:rep", "9", "10", "WITHSCORES"]).catch(() => []);
-	const tenthScore = Number(rawData[1] ?? 512);
-	const eleventhUserId = Number(rawData[2] ?? null);
-
 	// Determinamos el rol más alto que el miembro debe tener
 	let maxRoleId: string | null = null;
 	let maxRoleMinPoints = 0;
+	const lastAdaLovelaceTop10 = ExtendedClient.adaLovelaceTop10Id;
 	const adaLovelaceId = getRepRolesByOrder().adalovelace;
 
-	if (points >= tenthScore) {
+	if (points >= ExtendedClient.adaLovelaceReps) {
 		if (member.roles.cache.has(adaLovelaceId)) return;
 		else {
 			maxRoleId = adaLovelaceId;
 			maxRoleMinPoints = ROLES_REP_RANGE.adalovelace;
-			if (eleventhUserId)
-				client.guilds.cache
-					.get(process.env.GUILD_ID ?? "")
-					?.members.fetch(eleventhUserId.toString())
-					?.then((member) => {
-						member.roles
-							.remove(adaLovelaceId)
-							.then(() => member.roles.add(getRepRolesByOrder().experto))
-							.catch(() => null);
-					})
-					.catch(() => null);
 		}
 	} else {
 		for (const role of rolesWithPoints) {
@@ -80,6 +66,19 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 	if (maxRoleId && !member.roles.cache.has(maxRoleId)) {
 		await member.roles.add(maxRoleId).catch((error) => console.error(`Error al añadir el rol ${maxRoleId} a ${member.user.tag}:`, error));
 		await sendAnnoucement(member, maxRoleId, client, maxRoleMinPoints >= ROLES_REP_RANGE.veterano);
+	}
+	if (maxRoleId === adaLovelaceId) await client.updateAdaLovelace();
+	if (lastAdaLovelaceTop10 !== ExtendedClient.adaLovelaceTop10Id) {
+		client.guilds.cache
+			.get(process.env.GUILD_ID ?? "")
+			?.members.fetch(lastAdaLovelaceTop10)
+			?.then((member) => {
+				member.roles
+					.remove(adaLovelaceId)
+					.then(() => member.roles.add(getRepRolesByOrder().experto))
+					.catch(() => null);
+			})
+			.catch(() => null);
 	}
 }
 async function sendAnnoucement(member: GuildMember, roleId: string, client: ExtendedClient, veterano: boolean) {

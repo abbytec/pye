@@ -27,6 +27,7 @@ import {} from "../globals.js";
 import { PrefixChatInputCommand } from "./utils/messages/chatInputCommandConverter.js";
 import { Users } from "./Models/User.js";
 import { IGameSession } from "./interfaces/IGameSession.js";
+import { HelperPoint, IHelperPoint } from "./Models/HelperPoint.js";
 
 interface VoiceFarming {
 	date: Date;
@@ -54,6 +55,8 @@ export class ExtendedClient extends Client {
 	private static readonly stickerTypeCache: Map<string, StickerType> = new Map();
 	public static guildManager: GuildManager | undefined;
 	public static bankAvgCoins: number = 100000;
+	public static adaLovelaceReps: number = 512;
+	public static adaLovelaceTop10Id: string = "";
 
 	constructor() {
 		super({
@@ -181,6 +184,8 @@ export class ExtendedClient extends Client {
 						flags: MessageFlags.SuppressNotifications,
 					});
 				});
+
+				await this.updateAdaLovelace();
 			}
 
 			console.log("loading latest CompartePosts");
@@ -356,5 +361,17 @@ export class ExtendedClient extends Client {
 
 	public static getGamexMaxCoins(dividerMultiplier: number = 1) {
 		return Math.round(ExtendedClient.bankAvgCoins / (3 * dividerMultiplier));
+	}
+
+	public async updateAdaLovelace() {
+		await HelperPoint.find()
+			.sort({ points: -1 })
+			.skip(9)
+			.limit(1)
+			.lean()
+			.then((res: IHelperPoint[]) => {
+				ExtendedClient.adaLovelaceTop10Id = res.at(0)?._id ?? "";
+				ExtendedClient.adaLovelaceReps = res.at(0)?.points ?? 512;
+			});
 	}
 }

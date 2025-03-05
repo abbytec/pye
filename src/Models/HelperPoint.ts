@@ -2,7 +2,7 @@ import { Schema, Document, model } from "mongoose";
 import client from "../redis.js";
 import { ExtendedClient } from "../client.js";
 
-interface IHelperPoint {
+export interface IHelperPoint {
 	_id: string;
 	points: number;
 }
