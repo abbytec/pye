@@ -17,7 +17,8 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName("add-rep")
 		.setDescription("Agrega puntos de ayuda.")
-		.addUserOption((option) => option.setName("usuario").setDescription("selecciona el usuario").setRequired(true)),
+		.addUserOption((option) => option.setName("usuario").setDescription("selecciona el usuario").setRequired(true))
+		.addIntegerOption((option) => option.setName("cantidad").setDescription("cantidad de puntos").setRequired(false)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "moderadorChats", "helper", "creadorDeRetos"), deferInteraction()],
 		async (interaction: IPrefixChatInputCommand) => {
@@ -25,26 +26,28 @@ export default {
 			if (!user) return;
 			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes darte puntos a ti mismo.");
 			const channel = interaction.channel;
-			const points = 1;
+			const amount = interaction.options.getInteger("cantidad") ?? 1;
 
 			try {
-				const { member, data } = await addRep(user, interaction.guild, points).catch(async (error: any) => {
+				const { member, data } = await addRep(user, interaction.guild, amount).catch(async (error: any) => {
 					await replyError(interaction, error.message);
 					return { member: null, data: null };
 				});
 				if (!member || !data) return;
-				await replyOk(interaction, `se le ha dado un rep al usuario: \`${user.tag}\``);
+				await replyOk(interaction, `se le ha dado **${amount == 1 ? "un" : amount}** rep al usuario: \`${user.tag}\``);
 
-				checkQuestLevel({ msg: interaction, userId: user.id, rep: 1 } as IQuest);
+				checkQuestLevel({ msg: interaction, userId: user.id, rep: amount } as IQuest);
 				return {
 					guildMember: member,
 					helperPoint: data,
 					logMessages: [
 						{
 							channel: getChannelFromEnv("logPuntos"),
-							content: `**${interaction.user.tag}** le ha dado un rep al usuario: \`${user.tag}\` en el canal: <#${
-								channel?.id
-							}>.\n> *Puntos anteriores: ${data.points - points}. Puntos actuales: ${data.points}*`,
+							content: `**${interaction.user.tag}** le ha dado **${amount == 1 ? "un" : amount}** rep al usuario: \`${
+								user.tag
+							}\` en el canal: <#${channel?.id}>.\n> *Puntos anteriores: ${data.points - amount}. Puntos actuales: ${
+								data.points
+							}*`,
 						},
 					],
 				};
@@ -61,9 +64,9 @@ export async function addRep(user: User | null, guild: Guild | null, points: num
 	const member = await guild?.members.fetch(user?.id ?? "").catch(() => null);
 	if (!member) throw new Error("No se pudo encontrar al usuario en el servidor.");
 
-	let data = await HelperPoint.findOneAndUpdate({ _id: user?.id }, { $inc: { points: points } }, { new: true, upsert: true });
+	let data = await HelperPoint.findOneAndUpdate({ _id: user?.id }, { $inc: { points } }, { new: true, upsert: true });
 
-	if (!data) data = await HelperPoint.create({ _id: user?.id, points: 1 });
+	if (!data) data = await HelperPoint.create({ _id: user?.id, points });
 
 	return { member, data };
 }

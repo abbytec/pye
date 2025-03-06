@@ -16,13 +16,15 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName("remove-rep")
 		.setDescription("Resta puntos de ayuda.")
-		.addUserOption((option) => option.setName("usuario").setDescription("selecciona el usuario").setRequired(true)),
+		.addUserOption((option) => option.setName("usuario").setDescription("selecciona el usuario").setRequired(true))
+		.addIntegerOption((option) => option.setName("cantidad").setDescription("cantidad de puntos").setRequired(false)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff", "moderadorChats", "helper", "creadorDeRetos"), deferInteraction()],
 		async (interaction: IPrefixChatInputCommand) => {
 			const user = await interaction.options.getUser("usuario", true);
 			if (!user) return;
 			const channel = interaction.channel;
+			const amount = interaction.options.getInteger("cantidad") ?? 1;
 
 			if (user.bot) return await replyError(interaction, "No puedo quitarle puntos a los bots.\nUso: `add-rep [@Usuario]`");
 			const member = await interaction.guild?.members.fetch(user.id).catch(() => undefined);
@@ -30,13 +32,13 @@ export default {
 
 			let data = await HelperPoint.findOneAndUpdate(
 				{ _id: user.id, points: { $gt: 0 } },
-				{ $inc: { points: -1 } },
+				{ $inc: { points: -amount } },
 				{ new: true, upsert: true }
 			);
 
 			if (!data) return replyError(interaction, "No se encontraron puntos para restar.");
 
-			await replyOk(interaction, `se le ha quitado un rep al usuario: \`${user.tag}\``);
+			await replyOk(interaction, `se le ha quitado **${amount == 1 ? "un" : amount}** rep al usuario: \`${user.tag}\``);
 
 			return {
 				guildMember: member,
@@ -44,7 +46,9 @@ export default {
 				logMessages: [
 					{
 						channel: getChannelFromEnv("logPuntos"),
-						content: `**${interaction.user.tag}** le ha quitado un rep al usuario: \`${user.tag}\` en el canal: <#${channel?.id}>`,
+						content: `**${interaction.user.tag}** le ha quitado **${amount == 1 ? "un" : amount}** rep al usuario: \`${
+							user.tag
+						}\` en el canal: <#${channel?.id}>`,
 					},
 				],
 			};
