@@ -105,7 +105,7 @@ export const modelPyeChanAnswer = genAI.getGenerativeModel({
 export const modelPyeChanReasoningAnswer = genAI.getGenerativeModel({
 	model: "gemini-2.0-flash-thinking-exp-01-21",
 	safetySettings: safetySettingszzz,
-	systemInstruction: pyeChanPrompt,
+	systemInstruction: pyeChanReasoningPrompt,
 	generationConfig: {
 		candidateCount: 1,
 		maxOutputTokens: 500,

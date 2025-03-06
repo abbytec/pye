@@ -676,6 +676,6 @@ function cardsMove(array: string[], from: number, to: number) {
 		}
 		return array;
 	} catch (e) {
-		console.log(e);
+		console.error(e);
 	}
 }

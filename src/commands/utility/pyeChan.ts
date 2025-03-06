@@ -18,13 +18,12 @@ loadEnvVariables();
 export default {
 	data: new SlashCommandBuilder()
 		.setName("pyechan")
-		.setDescription("Preguntale algo complejo a PyE Chan")
+		.setDescription("Preguntale algo complejo a PyE Chan para que razone")
 		.addStringOption((option) => option.setName("mensaje").setDescription("Qué quieres decirme").setRequired(true).setMaxLength(200)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(true), verifyCooldown("pyechan", 1000)],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false), verifyCooldown("pyechan", 1000)],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const mensajeInput = interaction.options.getString("mensaje", true) ?? "";
-			console.log(mensajeInput);
 			let contextForAI: string;
 			if (interaction.message) {
 				contextForAI = await getRecursiveRepliedContext(interaction.message, true, 10, mensajeInput);
@@ -34,7 +33,7 @@ export default {
 
 			const resultText = await generateChatResponseStream(contextForAI, interaction.user.id);
 
-			await replyInfo(interaction, [createChatEmbed(resultText)]);
+			await interaction.editReply({ embeds: [createChatEmbed(resultText)] }).catch(null);
 		}
 	),
 	prefixResolver: (client: ExtendedClient) => {

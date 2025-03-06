@@ -13,7 +13,13 @@ import {
 } from "./gemini.js";
 import { ExtendedClient } from "../../client.js";
 import { findEmojis, splitMessage } from "../generic.js";
-import { GenerateContentRequest, GoogleGenerativeAIFetchError, Part } from "@google/generative-ai";
+import {
+	EnhancedGenerateContentResponse,
+	GenerateContentCandidate,
+	GenerateContentRequest,
+	GoogleGenerativeAIFetchError,
+	Part,
+} from "@google/generative-ai";
 import { saveUserPreferences, UserMemoryResponse } from "./userMemory.js";
 import { Reminder, scheduleDMReminder } from "./dmReminders.js";
 
@@ -69,13 +75,7 @@ export async function generateForumResponse(
 }
 
 export async function generateChatResponse(context: string, authorId: string, image?: { mimeType: string; base64: string }): Promise<string> {
-	let userParts: Part[] = [];
-
-	userParts = [
-		{
-			text: context,
-		},
-	];
+	let userParts: Part[] = [{ text: context }];
 
 	if (image) {
 		userParts.push({
@@ -105,51 +105,88 @@ export async function generateChatResponse(context: string, authorId: string, im
 			};
 		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
 		return {
-			response: { text: () => "Mejor comamos un poco de sushi! 🍣", candidates: [] },
+			response: {
+				text: () => "Mejor comamos un poco de sushi! 🍣",
+				candidates: [],
+			},
 		};
 	});
-	let text = "";
-	if (result.response.candidates && result.response.candidates.length > 0) {
-		const candidate = result.response.candidates[0];
-		candidate.content?.parts?.forEach(async (part) => {
-			if (part.text) {
-				text = part.text;
-			} else if (part.functionCall) {
-				const functionName = part.functionCall.name;
-				const functionArgs = part.functionCall.args;
-				if (functionName === "saveUserPreferences") {
-					const args = functionArgs as UserMemoryResponse;
-					saveUserPreferences(authorId, args.likes, args.wants);
-				} else if (functionName === "createReminder") {
-					const args = functionArgs as Reminder;
-					await scheduleDMReminder(args.reminderTime, args.message, authorId);
-				}
-			}
+	return processResponse(result.response, authorId);
+}
+
+export async function generateChatResponseStream(
+	context: string,
+	authorId: string,
+	image?: { mimeType: string; base64: string }
+): Promise<string> {
+	let userParts: Part[] = [{ text: context }];
+
+	if (image) {
+		userParts.push({
+			inlineData: {
+				mimeType: image.mimeType,
+				data: image.base64,
+			},
 		});
 	}
 
-	if (text?.length === 0) text = "Mejor comamos un poco de sushi! 🍣";
-	if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8) {
-		text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
+	const request: GenerateContentRequest = {
+		contents: [
+			{
+				role: "user",
+				parts: userParts,
+			},
+		],
+	};
+
+	let result;
+	try {
+		result = await modelPyeChanReasoningAnswer.generateContentStream(request, { timeout: 10000 });
+	} catch (e: any) {
+		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
+			return "En este momento, comí demasiado sushi como para procesar esta respuesta! 🍣\nIntente denuevo mas tarde.";
+		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
+		return "Mejor comamos un poco de sushi! 🍣";
 	}
+
+	const response = await result.response;
+
+	return await processResponse(response, authorId);
+}
+
+async function processResponse(
+	response: EnhancedGenerateContentResponse | { text: () => string; candidates: GenerateContentCandidate[] },
+	authorId: string
+): Promise<string> {
+	let text = "";
+	if (response.candidates && response.candidates.length > 0) {
+		const candidate = response.candidates[0];
+		if (candidate.content?.parts) {
+			for (const part of candidate.content.parts) {
+				if (part.text) {
+					text = part.text;
+				} else if (part.functionCall) {
+					const { name: functionName, args: functionArgs } = part.functionCall;
+					if (functionName === "saveUserPreferences") {
+						const args = functionArgs as UserMemoryResponse;
+						saveUserPreferences(authorId, args.likes, args.wants);
+					} else if (functionName === "createReminder") {
+						const args = functionArgs as Reminder;
+						await scheduleDMReminder(args.reminderTime, args.message, authorId);
+					}
+				}
+			}
+		}
+	} else {
+		text = response.text ? response.text() : "";
+	}
+
+	if (text?.length === 0) text = "Mejor comamos un poco de sushi! 🍣";
+	if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8)
+		text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
 	return text;
 }
 
-export async function generateChatResponseStream(context: string, authorId: string): Promise<string> {
-	const result = await modelPyeChanReasoningAnswer.generateContentStream(context + aiSecurityConstraint).catch((e) => {
-		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
-		return {
-			response: new Promise<{ text: () => string }>(() => {
-				return { text: () => "Mejor comamos un poco de sushi! 🍣" };
-			}),
-		};
-	});
-	let text = (await result.response).text();
-	if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8) {
-		text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
-	}
-	return text;
-}
 export class ForumAIError extends Error {
 	constructor(message: string) {
 		super(message);
