@@ -106,9 +106,9 @@ async function checkReactions(reaction: MessageReaction, starboard: IStarBoardDo
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: msg.author?.username ?? "Unknown User", iconURL: data.avatarURL })
 			.setDescription(data.content)
-			.setImage(data.imageURL ?? null)
 			.addFields([{ name: data.fields.name, value: data.fields.value }])
 			.setTimestamp();
+		if (data.imageURL) embed.setImage(data.imageURL);
 
 		await postChannel
 			.send({
