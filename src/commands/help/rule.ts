@@ -89,7 +89,7 @@ export const ruleData: ICustomCommand[] = [
 			{
 				title: "5. No desvirtuar canales",
 				color: COLORS.pyeLightBlue,
-				description: `Está PROHIBIDO desvirtuar los canales. Haz tus preguntas en un solo canal y NO preguntes si hay alguien disponible, directamente coloca tu problema a resolver.\nRevisa <id:customize> y si no encuentras un canal adecuado para tu duda, entonces publica en ⁠<#${getChannelFromEnv(
+				description: `Está PROHIBIDO desvirtuar los canales. Haz tus preguntas en un solo canal y NO preguntes si hay alguien disponible, directamente coloca tu problema a resolver.\nRevisa <id:browse> y si no encuentras un canal adecuado para tu duda, entonces publica en ⁠<#${getChannelFromEnv(
 					"ayuda-general"
 				)}>`,
 				thumbnail: {
