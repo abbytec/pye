@@ -30,7 +30,7 @@ export default {
 			const member = await interaction.guild?.members.fetch(user.id).catch(() => undefined);
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
-			let data = await HelperPoint.findOneAndUpdate(
+			const data = await HelperPoint.findOneAndUpdate(
 				{ _id: user.id, points: { $gt: 0 } },
 				{ $inc: { points: -amount } },
 				{ new: true, upsert: true }
@@ -48,7 +48,7 @@ export default {
 						channel: getChannelFromEnv("logPuntos"),
 						content: `**${interaction.user.tag}** le ha quitado **${amount == 1 ? "un" : amount}** rep al usuario: \`${
 							user.tag
-						}\` en el canal: <#${channel?.id}>`,
+						}\` en el canal: <#${channel?.id}>\n> *Puntos anteriores: ${data.points - amount}. Puntos actuales: ${data.points}*`,
 					},
 				],
 			};

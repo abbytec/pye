@@ -45,9 +45,7 @@ export default {
 							channel: getChannelFromEnv("logPuntos"),
 							content: `**${interaction.user.tag}** le ha dado **${amount == 1 ? "un" : amount}** rep al usuario: \`${
 								user.tag
-							}\` en el canal: <#${channel?.id}>.\n> *Puntos anteriores: ${data.points - amount}. Puntos actuales: ${
-								data.points
-							}*`,
+							}\` en el canal: <#${channel?.id}>\n> *Puntos anteriores: ${data.points - amount}. Puntos actuales: ${data.points}*`,
 						},
 					],
 				};
