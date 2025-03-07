@@ -87,9 +87,9 @@ export const modelPyeChanAnswer = genAI.getGenerativeModel({
 	generationConfig: {
 		candidateCount: 1,
 		maxOutputTokens: 800,
-		temperature: 0.7,
+		temperature: 0.68,
 		topK: 35,
-		topP: 0.8,
+		topP: 0.77,
 	},
 	tools: [
 		{
@@ -110,9 +110,9 @@ export const modelPyeChanReasoningAnswer = genAI.getGenerativeModel({
 	generationConfig: {
 		candidateCount: 1,
 		maxOutputTokens: 800,
-		temperature: 0.7,
+		temperature: 0.68,
 		topK: 35,
-		topP: 0.8,
+		topP: 0.77,
 	},
 });
 
