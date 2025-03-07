@@ -371,8 +371,6 @@ export async function saveTranscript(channel: TextChannel | AnyThreadChannel, ti
   `;
 
 	const filePath = path.join(transcriptsDir, `transcript-${channel.id}.html`);
-	fs.writeFile(filePath, htmlContent, "utf8", (err) => {
-		console.error(err);
-	});
+	fs.writeFileSync(filePath, htmlContent, "utf8");
 	return filePath;
 }
