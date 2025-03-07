@@ -400,6 +400,7 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 
 	if (botShouldAnswer) {
 		let contexto = await getRecursiveRepliedContext(message, !isForumPost);
+		console.log(contexto);
 
 		const textFilesContent = await getTextAttachmentsContent(message.attachments);
 

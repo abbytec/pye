@@ -15,13 +15,7 @@ export async function getRecursiveRepliedContext(
 	let depth = 0;
 	const botName = pyeChan ? "PyE chan: " : "PyE Bot: ";
 	let finalMessage = "";
-	if (pyeChan) {
-		const memories = getUserMemories(message.author.id);
-		if (memories) {
-			contextLines.unshift(`${message.author.username}: ${memories}`);
-		}
-		contextLines.unshift(`${SYSTEM}${getActualDateTime()}`);
-	}
+
 	while (currentMessage?.reference?.messageId && depth < maxDepth) {
 		// Intenta obtener el mensaje referenciado
 		const repliedMessage: Message | null = await message.channel.messages.fetch(currentMessage.reference.messageId).catch(() => null);
@@ -38,6 +32,13 @@ export async function getRecursiveRepliedContext(
 		currentMessage = repliedMessage;
 		depth++;
 	}
+	if (pyeChan) {
+		const memories = getUserMemories(message.author.id);
+		if (memories) {
+			contextLines.unshift(`${message.author.username}: ${memories}`);
+		}
+		contextLines.unshift(`${SYSTEM}${getActualDateTime()}.\n${aiSecurityConstraint}`);
+	}
 
 	// Finalmente, añade el mensaje inicial al contexto
 	const initialAuthorName = message.author.id === (process.env.CLIENT_ID ?? "") ? botName : message.author.username;
@@ -45,10 +46,7 @@ export async function getRecursiveRepliedContext(
 	if (initialMessage) contextLines.push(`${initialAuthorName}: ${initialMessage}`);
 	else contextLines.push(`${initialAuthorName}: ${message.content}`);
 
-	// Combina todas las líneas en una sola cadena de texto
-	contextLines = contextLines.reverse();
-
 	finalMessage += contextLines.join("\n");
 
-	return finalMessage + "\n" + SYSTEM + aiSecurityConstraint + "\n" + botName;
+	return finalMessage + "\n" + botName;
 }
