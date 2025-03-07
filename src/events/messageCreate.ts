@@ -48,9 +48,6 @@ import {
 	sendLongReply,
 } from "../utils/ai/aiResponseService.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 export default {
 	name: Events.MessageCreate,
 	async execute(message: Message) {
@@ -181,13 +178,14 @@ const employmentsDescription =
 
 const repoRegex =
 	/(?:https?:\/\/)?(?:www\.)?(?:(?:(?:github\.com|gitlab\.com|bitbucket\.org|codecommit\.amazonaws\.com)[^\s]*)|(?:git\.[^\s]+)|(?:[^\s]+\.git))/i;
+const linkedinRegex = /https?:\/\/(?:www\.)?linkedin\.com\/[^\s]+/gim;
 async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 	switch (msg.channel.id) {
 		case getChannelFromEnv("recursos"):
 			msg.react("👍").catch(() => null);
 			msg.react("👎").catch(() => null);
 			msg.react("⭐").catch(() => null);
-			msg.startThread({ name: `${msg.author.username}'s Thread` });
+			msg.startThread({ name: `Hilo de ${msg.author.username}` });
 			checkRole(msg, getRoleFromEnv("granAportador"), 50);
 			break;
 		case getChannelFromEnv("ofreceServicios"):
@@ -285,6 +283,20 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 				} catch (error) {
 					console.error("Error al procesar el mensaje:", error);
 				}
+			}
+			break;
+		case getChannelFromEnv("gruposDeEstudio"):
+			msg.startThread({ name: `Grupo de ${msg.author.username}` });
+			break;
+		case getChannelFromEnv("linkedin"):
+			if (msg.content.match(linkedinRegex)) {
+				msg.startThread({ name: `Comentarios sobre mi LinkedIn` });
+			} else {
+				let warn = await (msg.channel as TextChannel).send({
+					content: `🚫 <@${msg.author.id}>Por favor, incluye un enlace a tu perfil de LinkedIn en el mensaje.`,
+				});
+				await msg.delete().catch(() => null);
+				setTimeout(async () => await warn.delete().catch(() => null), 10000);
 			}
 			break;
 	}

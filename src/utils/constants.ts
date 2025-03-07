@@ -25,6 +25,8 @@ const CHANNELS = {
 	retos: "1141493769699606528",
 	anuncios: "797974300283240489",
 	invitaciones: "1169865263718600704",
+	gruposDeEstudio: "1249222442199814257",
+	linkedin: "1344535477268774912",
 
 	// foros
 	hardware: "1019727139173576814",
@@ -88,6 +90,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	anuncios: "1310011599003586600",
 	invitaciones: "1296190632317943908",
 	memes: "1296190631533608960",
+	gruposDeEstudio: "1296190631269372054",
 
 	// staff
 	notificaciones: "1296190632317943913",
