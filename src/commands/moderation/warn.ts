@@ -51,6 +51,15 @@ export default {
 			});
 
 			let data = (await ModLogs.countDocuments({ id: user.id })) ?? [];
+			await replyWarning(
+				interaction,
+				`Se envió una advertencia a **${user.username}**.`,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				false
+			);
 
 			member
 				?.send({
@@ -71,7 +80,9 @@ export default {
 					],
 				})
 				.catch(() => {
-					interaction.editReply("El usuario tiene MD cerrado.");
+					interaction
+						.editReply(`El usuario **${user.username}** tiene MD cerrado, creando un canal para la advertencia.`)
+						.catch(() => null);
 					interaction.guild?.channels
 						.create({
 							name: `warn-${member.user.username}`,
@@ -125,16 +136,6 @@ export default {
 							});
 						});
 				});
-
-			await replyWarning(
-				interaction,
-				`**${user.username}** ha recibido una advertencia.`,
-				undefined,
-				undefined,
-				undefined,
-				undefined,
-				false
-			);
 
 			return {
 				logMessages: [
