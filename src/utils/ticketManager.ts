@@ -12,10 +12,10 @@ import {
 	User,
 } from "discord.js";
 import { ticketOptions } from "./constants/ticketOptions.js";
-import { COLORS, getChannel, getChannelFromEnv, getRoleFromEnv } from "./constants.js";
+import { COLORS, getChannelFromEnv, getRoleFromEnv } from "./constants.js";
 import { ExtendedClient } from "../client.js";
 import fs from "fs";
-import path from "path";
+import { saveTranscript } from "./generic.js";
 
 let lastTicketDate: Date = new Date();
 
@@ -196,68 +196,6 @@ export async function handleTicketButtonInteraction(interaction: Interaction, ac
 		await interaction.reply({ content: "Ticket reabierto.", ephemeral: true });
 		ExtendedClient.openTickets.add(channel.name);
 	}
-}
-
-// Función auxiliar para obtener TODOS los mensajes del canal
-async function fetchAllMessages(channel: TextChannel) {
-	let allMessages = await channel.messages.fetch({ limit: 100 });
-	let lastId = allMessages.last()?.id;
-	while (lastId) {
-		const options: { limit: number; before?: string } = { limit: 100 };
-		options.before = lastId;
-		const messages = await channel.messages.fetch(options);
-		if (messages.size === 0) break;
-		allMessages = allMessages.concat(messages);
-		lastId = messages.last()?.id;
-	}
-	return allMessages;
-}
-
-// Función para generar la transcripción en HTML y guardarla en un archivo temporal
-async function saveTranscript(channel: TextChannel): Promise<string> {
-	const transcriptsDir = path.resolve(process.cwd(), "transcripts");
-	if (!fs.existsSync(transcriptsDir)) {
-		fs.mkdirSync(transcriptsDir, { recursive: true });
-	}
-
-	const messages = await fetchAllMessages(channel);
-	const sortedMessages = messages.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
-
-	let htmlContent = `
-  <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>Transcripción del Ticket</title>
-      <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
-        .message { margin-bottom: 10px; padding: 10px; background: #fff; border-radius: 5px; }
-        .author { font-weight: bold; }
-        .time { color: #555; font-size: 0.85em; }
-      </style>
-    </head>
-    <body>
-      <h1>Transcripción del Ticket</h1>
-  `;
-
-	sortedMessages.forEach((msg) => {
-		const time = new Date(msg.createdTimestamp).toLocaleString();
-		const content = msg.content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-		htmlContent += `
-      <div class="message">
-        <div class="author">${msg.author.tag} <span class="time">[${time}]</span></div>
-        <div class="content">${content}</div>
-      </div>
-    `;
-	});
-
-	htmlContent += `
-    </body>
-  </html>
-  `;
-
-	const filePath = path.join(transcriptsDir, `transcript-${channel.id}.html`);
-	fs.writeFileSync(filePath, htmlContent, "utf8");
-	return filePath;
 }
 
 export type TicketLogType = "CREADO" | "CERRADO" | "TRANSCRIPCION";

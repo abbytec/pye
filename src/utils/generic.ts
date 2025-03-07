@@ -1,18 +1,21 @@
 import {
 	ActionRowBuilder,
+	AnyThreadChannel,
 	Attachment,
 	ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction,
 	Collection,
 	EmbedBuilder,
-	GuildMember,
 	Message,
+	TextChannel,
+	ThreadChannel,
 } from "discord.js";
 import { COLORS } from "./constants.js";
 import { TextMessages } from "../Models/TextMessages.js";
 import { ICouple } from "../interfaces/IUser.js";
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
+import path from "path";
+import fs from "fs";
 
 export const getRandomNumber = (min = 0, max = 1) => (Math.random() * (max - min) + min) | 0;
 
@@ -308,4 +311,68 @@ export async function getTextAttachmentsContent(attachments: Collection<string, 
 	}
 
 	return formattedContent;
+}
+
+// Función auxiliar para obtener TODOS los mensajes del canal
+async function fetchAllMessages(channel: TextChannel | AnyThreadChannel) {
+	let allMessages = await channel.messages.fetch({ limit: 100 });
+	let lastId = allMessages.last()?.id;
+	while (lastId) {
+		const options: { limit: number; before?: string } = { limit: 100 };
+		options.before = lastId;
+		const messages = await channel.messages.fetch(options);
+		if (messages.size === 0) break;
+		allMessages = allMessages.concat(messages);
+		lastId = messages.last()?.id;
+	}
+	return allMessages;
+}
+
+// Función para generar la transcripción en HTML y guardarla en un archivo temporal
+export async function saveTranscript(channel: TextChannel | AnyThreadChannel, title = "Transcripción del Ticket"): Promise<string> {
+	const transcriptsDir = path.resolve(process.cwd(), "transcripts");
+	if (!fs.existsSync(transcriptsDir)) {
+		fs.mkdirSync(transcriptsDir, { recursive: true });
+	}
+
+	const messages = await fetchAllMessages(channel);
+	const sortedMessages = messages.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+
+	let htmlContent = `
+  <html>
+	<head>
+	  <meta charset="UTF-8">
+	  <title>${title}</title>
+	  <style>
+		body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+		.message { margin-bottom: 10px; padding: 10px; background: #fff; border-radius: 5px; }
+		.author { font-weight: bold; }
+		.time { color: #555; font-size: 0.85em; }
+	  </style>
+	</head>
+	<body>
+	  <h1>${title}</h1>
+  `;
+
+	sortedMessages.forEach((msg) => {
+		const time = new Date(msg.createdTimestamp).toLocaleString();
+		const content = msg.content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+		htmlContent += `
+	  <div class="message">
+		<div class="author">${msg.author.tag} <span class="time">[${time}]</span></div>
+		<div class="content">${content}</div>
+	  </div>
+	`;
+	});
+
+	htmlContent += `
+	</body>
+  </html>
+  `;
+
+	const filePath = path.join(transcriptsDir, `transcript-${channel.id}.html`);
+	fs.writeFile(filePath, htmlContent, "utf8", (err) => {
+		console.error(err);
+	});
+	return filePath;
 }
