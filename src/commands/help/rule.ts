@@ -7,7 +7,7 @@ import { ICustomCommand } from "../../interfaces/ICustomCommand.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
-const ruleData: ICustomCommand[] = [
+export const ruleData: ICustomCommand[] = [
 	{
 		name: "r1",
 		embeds: [
@@ -91,7 +91,7 @@ const ruleData: ICustomCommand[] = [
 				color: COLORS.pyeLightBlue,
 				description: `Está PROHIBIDO desvirtuar los canales. Haz tus preguntas en un solo canal y NO preguntes si hay alguien disponible, directamente coloca tu problema a resolver.\nRevisa <id:customize> y si no encuentras un canal adecuado para tu duda, entonces publica en ⁠<#${getChannelFromEnv(
 					"ayuda-general"
-				)}`,
+				)}>`,
 				thumbnail: {
 					url: "https://cdn.discordapp.com/attachments/809180235810734110/1004211341134942319/925047.png",
 				},
