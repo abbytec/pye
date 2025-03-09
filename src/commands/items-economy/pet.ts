@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
+import { getRandomNumber } from "../../utils/generic.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -216,4 +217,76 @@ export async function cleanPet(interaction: IPrefixChatInputCommand, petInfo: IP
 	await petInfo.save();
 
 	return await replyOk(interaction, "🧼 - Has limpiado a tu mascota. ¡Está más limpia!");
+}
+
+export async function checkFood() {
+	let arr = await Pets.find().exec();
+	if (!arr.length) return;
+	for (const data of arr) {
+		minFeed(data);
+	}
+}
+
+export async function checkMood() {
+	let arr = await Pets.find().exec();
+	if (!arr.length) return;
+	for (const data of arr) {
+		minPlay(data);
+	}
+}
+
+export async function checkShower() {
+	let arr = await Pets.find().exec();
+	if (!arr.length) return;
+	for (const data of arr) {
+		minClean(data);
+	}
+}
+
+async function minPlay(petInfo: IPetDocument) {
+	if (!petInfo) return;
+	let total = getRandomNumber(5, 12);
+	if (petInfo.mood - total < 0) petInfo.mood = 0;
+	else petInfo.mood -= total;
+	return await petInfo.save();
+}
+
+async function minFeed(petInfo: IPetDocument) {
+	if (!petInfo) return;
+	let total = getRandomNumber(5, 12);
+	if (petInfo.food - total < 0) petInfo.food = 0;
+	else petInfo.food -= total;
+	return await petInfo.save();
+}
+
+async function minClean(petInfo: IPetDocument) {
+	if (!petInfo) return;
+	let total = getRandomNumber(5, 12);
+	if (petInfo.shower - total < 0) petInfo.shower = 0;
+	else petInfo.shower -= total;
+	return await petInfo.save();
+}
+
+export async function checkPets(client: ExtendedClient) {
+	let arr = await Pets.find().exec();
+	let badge = false;
+	if (!arr.length) return;
+	for (const getData of arr) {
+		if (getData && !getData?.mood && !getData?.food && !getData?.shower) {
+			if (badge) return;
+			badge = true;
+			setTimeout(async () => {
+				let House = await Home.findOne({ id: getData.id }).exec();
+				if (!House) {
+					await getData.deleteOne();
+					return;
+				}
+				await House.updateOne({ text: 0, pet: "none", level: 12, house: { level: 12, color: "Naranja" } }).exec();
+				await getData.deleteOne();
+				(client.channels.resolve(getChannelFromEnv("casinoPye")) as TextChannel)?.send(
+					`<:petgone:1008539448637665300> - La mascota de <@${getData.id}> se ha escapado debido a que no fue un buen dueño...\nPuedes volver a completar la ultima quest para tener otra mascota, cuidala mejor esta vez!`
+				);
+			}, 7200000);
+		}
+	}
 }

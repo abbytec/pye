@@ -28,6 +28,10 @@ import { PrefixChatInputCommand } from "./utils/messages/chatInputCommandConvert
 import { Users } from "./Models/User.js";
 import { IGameSession } from "./interfaces/IGameSession.js";
 import { HelperPoint, IHelperPoint } from "./Models/HelperPoint.js";
+import { UserRole } from "./Models/Role.js";
+import { Pets } from "./Models/Pets.js";
+import { Home } from "./Models/Home.js";
+import { checkFood, checkMood, checkPets, checkShower } from "./commands/items-economy/pet.js";
 
 interface VoiceFarming {
 	date: Date;
@@ -153,6 +157,8 @@ export class ExtendedClient extends Client {
 
 		this.limpiarCompartePosts();
 
+		this.borrarRolesTemporales();
+
 		if (firstTime) {
 			ExtendedClient.guildManager = this.guilds;
 			if (process.env.NODE_ENV !== "development") {
@@ -239,6 +245,10 @@ export class ExtendedClient extends Client {
 			await this.saveCompartePosts().catch((error) => console.error(error));
 		}
 		await this.updateBankAvgCoins();
+		setInterval(() => checkPets(this), 23400000);
+		setInterval(() => checkFood(), 28800000);
+		setInterval(() => checkMood(), 14400000);
+		setInterval(() => checkShower(), 18000000);
 	}
 
 	private limpiarCompartePosts(): void {
@@ -373,5 +383,19 @@ export class ExtendedClient extends Client {
 				ExtendedClient.adaLovelaceTop10Id = res.at(0)?._id ?? "";
 				ExtendedClient.adaLovelaceReps = res.at(0)?.points ?? 512;
 			});
+	}
+
+	private async borrarRolesTemporales() {
+		let arr = await UserRole.find().exec();
+		let guild = this.guilds.resolve(process.env.GUILD_ID ?? "");
+		if (arr.length && guild) {
+			for (const data of arr) {
+				if (data.count < Date.now()) {
+					let member = guild.members.resolve(data.id);
+					if (member) member.roles.remove(data.rolId);
+					await data.deleteOne();
+				}
+			}
+		}
 	}
 }
