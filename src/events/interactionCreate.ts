@@ -301,12 +301,15 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 					}
 				}
 			} else {
-				message += `\n> *Puntos anteriores: ${user.points - point}. Puntos actuales: ${user.points}*\n 🎉 Felicitaciones!`;
-				helpchannel?.send(message).catch(() => null);
+				helpchannel
+					?.send(message + `\n> *Puntos anteriores: ${user.points - point}. Puntos actuales: ${user.points}*\n🎉 Felicitaciones!`)
+					.catch(() => null);
 			}
 
 			message = `**${interaction.user.username}** ` + message.slice(2);
-			message += ` (Canal: <#${getChannelFromEnv("notificaciones")}>) - (Razón: <#${postId}>)`;
+			message += ` (Canal: <#${getChannelFromEnv("notificaciones")}>) - (Razón: <#${postId}>) \n> *Puntos anteriores: ${
+				user.points - point
+			}. Puntos actuales: ${user.points}*`;
 			interaction.message.embeds.at(0)?.description && (message += `\n${interaction.message.embeds.at(0)?.description}`);
 			await notificationChannel.send(message);
 		}
