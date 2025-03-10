@@ -8,6 +8,7 @@ import {
 	EmbedBuilder,
 	Events,
 	Interaction,
+	Message,
 	ModalBuilder,
 	TextChannel,
 	TextInputBuilder,
@@ -264,12 +265,39 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 					const matches = [...embed.data.fields[thanksFieldIndex].value.matchAll(regex)];
 					if (matches) {
 						[, , , thankMessageId] = matches[matches.length - 1];
-						await helpchannel?.messages
-							.fetch(thankMessageId)
-							.then(async (msg) => {
-								await msg?.reply(message).catch(() => null);
-							})
-							.catch(() => null);
+						const thanksFieldIndex = embed.data.fields?.findIndex((field) => field.name === "# Miembro Ayudado");
+						let userHelpedId: string | null = null;
+						if (thanksFieldIndex !== undefined && thanksFieldIndex !== -1) {
+							let userString = embed.data.fields[thanksFieldIndex].value;
+							const userMatch = RegExp(/<@(\d+)>/).exec(userString);
+							userHelpedId = userMatch ? userMatch[1] : null;
+						}
+						let repMessage: Message | null = await helpchannel?.messages.fetch({ limit: 10 }).then(async (messages) => {
+							let repMessageTemp: Message | null = null;
+							for (const msg of messages.values()) {
+								if (msg.reference && msg.author.bot && msg.author.id === process.env.CLIENT_ID) {
+									await helpchannel.messages
+										.fetch(msg.reference.messageId ?? "")
+										.then((msg2) => {
+											if (msg2.author.id === userHelpedId) {
+												repMessageTemp = msg;
+											}
+										})
+										.catch(() => null);
+								}
+							}
+							return repMessageTemp;
+						});
+						if (repMessage !== null) {
+							repMessage.edit(repMessage.content + "\n" + message).catch(() => null);
+						} else {
+							await helpchannel?.messages
+								.fetch(thankMessageId)
+								.then(async (msg) => {
+									await msg?.reply(message).catch(() => null);
+								})
+								.catch(() => null);
+						}
 					}
 				}
 			} else {
