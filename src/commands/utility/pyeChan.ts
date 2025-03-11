@@ -31,7 +31,7 @@ export default {
 				contextForAI = mensajeInput + aiSecurityConstraint;
 			}
 
-			const resultText = await generateChatResponseStream(contextForAI, interaction.user.id);
+			const resultText = (await generateChatResponseStream(contextForAI, interaction.user.id)).text;
 
 			await interaction.editReply({ embeds: [createChatEmbed(resultText)] }).catch(null);
 		}

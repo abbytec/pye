@@ -6,11 +6,6 @@ import { createReminderFunctionSchema } from "./dmReminders.js";
 
 loadEnvVariables();
 const genAI = new GoogleGenerativeAI(process.env.gemini_API_KEY ?? "");
-const generationConfigzzz = {
-	temperature: 0.55,
-	topK: 15,
-	topP: 1,
-};
 
 export const safetySettingszzz: SafetySetting[] = [
 	{
@@ -30,17 +25,6 @@ export const safetySettingszzz: SafetySetting[] = [
 		threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
 	},
 ];
-
-export const geminiModel = genAI.getGenerativeModel({
-	model: "gemini-2.0-flash-001",
-	generationConfig: generationConfigzzz,
-	safetySettings: safetySettingszzz,
-	systemInstruction: `
-		Eres PyE Bot (${process.env.CLIENT_ID}), 
-		una programadora que ayuda a los demas con sus problemas y dudas. 
-		Intenta resolver, ayudar y explicar en pocas palabras los problemas de codigo de los demas porgramadores de manera clara y simple.
-	`,
-});
 
 export const ANTI_DUMBS_RESPONSES = [
 	"No molestes, estoy comiendo un delicioso sushi! 🍣",
@@ -80,8 +64,27 @@ export const pyeChanReasoningPrompt = `
     5. Proporciona la respuesta o solución más lógica y fundamentada.
 `;
 
+export const pyeBotPrompt = `
+		Eres PyE Bot (${process.env.CLIENT_ID}), 
+		una programadora que ayuda a los demas con sus problemas y dudas. 
+		Intenta resolver, ayudar y explicar en pocas palabras los problemas de codigo de los demas porgramadores de manera clara y simple.
+	`;
+
+export const geminiModel = genAI.getGenerativeModel({
+	model: "gemini-2.0-flash",
+	generationConfig: {
+		candidateCount: 1,
+		maxOutputTokens: 800,
+		temperature: 0.5,
+		topK: 30,
+		topP: 0.85,
+	},
+	safetySettings: safetySettingszzz,
+	systemInstruction: pyeBotPrompt,
+});
+
 export const modelPyeChanAnswer = genAI.getGenerativeModel({
-	model: "gemini-2.0-flash-001",
+	model: "gemini-2.0-flash",
 	safetySettings: safetySettingszzz,
 	systemInstruction: pyeChanPrompt,
 	generationConfig: {
@@ -104,14 +107,14 @@ export const modelPyeChanAnswer = genAI.getGenerativeModel({
 });
 
 export const modelPyeChanReasoningAnswer = genAI.getGenerativeModel({
-	model: "gemini-2.0-flash-thinking-exp-01-21",
+	model: "gemini-2.0-flash-thinking-exp",
 	safetySettings: safetySettingszzz,
 	systemInstruction: pyeChanReasoningPrompt,
 	generationConfig: {
 		candidateCount: 1,
-		maxOutputTokens: 800,
-		temperature: 0.68,
-		topK: 35,
+		maxOutputTokens: 1000,
+		temperature: 0.65,
+		topK: 30,
 		topP: 0.77,
 	},
 });

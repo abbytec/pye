@@ -3,13 +3,13 @@ import natural from "natural";
 import {
 	ANTI_DUMBS_RESPONSES,
 	emojiMapper,
-	geminiModel,
 	getCachedImage,
 	getColorFromEmojiFile,
 	modelPyeChanAnswer,
 	modelPyeChanReasoningAnswer,
 	pyeChanPrompt,
-	aiSecurityConstraint,
+	pyeChanReasoningPrompt,
+	pyeBotPrompt,
 } from "./gemini.js";
 import { ExtendedClient } from "../../client.js";
 import { findEmojis, splitMessage } from "../generic.js";
@@ -56,25 +56,31 @@ export async function generateForumResponse(
 		],
 	};
 
-	const result = await geminiModel.generateContent(request).catch((e) => {
-		if (e instanceof GoogleGenerativeAIFetchError && e.status !== 503)
-			ExtendedClient.logError("Error al generar la respuesta de PyEChan en foro: " + e.message, e.stack, process.env.CLIENT_ID);
-
+	const result = await modelPyeChanAnswer.generateContent(request, { timeout: 10000 }).catch((e) => {
+		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
+			return {
+				response: {
+					text: () => "En este momento, la IA no puede responder tu pregunta.\nIntente denuevo mas tarde.",
+					candidates: [],
+				},
+			};
+		ExtendedClient.logError("Error al generar la respuesta de PyEChan en foro:" + e.message, e.stack, process.env.CLIENT_ID);
 		return {
-			response: { text: () => "En este momento, la IA no puede responder tu pregunta." },
+			response: {
+				text: () => "En este momento, la IA no puede responder tu pregunta.",
+				candidates: [],
+			},
 		};
 	});
 
-	let text = result.response.text();
-
-	if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8) {
-		text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
-	}
-
-	return text;
+	return (await processResponse(result.response, process.env.CLIENT_ID ?? "", pyeBotPrompt)).text;
 }
 
-export async function generateChatResponse(context: string, authorId: string, image?: { mimeType: string; base64: string }): Promise<string> {
+export async function generateChatResponse(
+	context: string,
+	authorId: string,
+	image?: { mimeType: string; base64: string }
+): Promise<{ text: string; image?: Buffer }> {
 	let userParts: Part[] = [{ text: context }];
 
 	if (image) {
@@ -111,14 +117,14 @@ export async function generateChatResponse(context: string, authorId: string, im
 			},
 		};
 	});
-	return processResponse(result.response, authorId);
+	return processResponse(result.response, authorId, pyeChanPrompt);
 }
 
 export async function generateChatResponseStream(
 	context: string,
 	authorId: string,
 	image?: { mimeType: string; base64: string }
-): Promise<string> {
+): Promise<{ text: string; image?: Buffer }> {
 	let userParts: Part[] = [{ text: context }];
 
 	if (image) {
@@ -144,27 +150,29 @@ export async function generateChatResponseStream(
 		result = await modelPyeChanReasoningAnswer.generateContentStream(request, { timeout: 10000 });
 	} catch (e: any) {
 		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
-			return "En este momento, comí demasiado sushi como para procesar esta respuesta! 🍣\nIntente denuevo mas tarde.";
+			return { text: "En este momento, comí demasiado sushi como para procesar esta respuesta! 🍣\nIntente denuevo mas tarde." };
 		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
-		return "Mejor comamos un poco de sushi! 🍣";
+		return { text: "Mejor comamos un poco de sushi! 🍣" };
 	}
 
 	const response = await result.response;
 
-	return await processResponse(response, authorId);
+	return await processResponse(response, authorId, pyeChanReasoningPrompt);
 }
 
 async function processResponse(
 	response: EnhancedGenerateContentResponse | { text: () => string; candidates: GenerateContentCandidate[] },
-	authorId: string
-): Promise<string> {
+	authorId: string,
+	prompt: string
+): Promise<{ text: string; image?: Buffer }> {
 	let text = "";
+	let image: Buffer | undefined;
 	if (response.candidates && response.candidates.length > 0) {
 		const candidate = response.candidates[0];
 		if (candidate.content?.parts) {
 			for (const part of candidate.content.parts) {
 				if (part.text) {
-					text = part.text;
+					text += part.text;
 				} else if (part.functionCall) {
 					const { name: functionName, args: functionArgs } = part.functionCall;
 					if (functionName === "saveUserPreferences") {
@@ -174,6 +182,8 @@ async function processResponse(
 						const args = functionArgs as Reminder;
 						await scheduleDMReminder(args.reminderTime, args.message, authorId);
 					}
+				} else if (part.inlineData?.mimeType.startsWith("image")) {
+					image = Buffer.from(part.inlineData.data, "base64");
 				}
 			}
 		}
@@ -182,9 +192,8 @@ async function processResponse(
 	}
 
 	if (text?.length === 0) text = "Mejor comamos un poco de sushi! 🍣";
-	if (natural.JaroWinklerDistance(text, pyeChanPrompt) > 0.8)
-		text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
-	return text;
+	if (natural.JaroWinklerDistance(text, prompt) > 0.8) text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
+	return { text, image };
 }
 
 export class ForumAIError extends Error {

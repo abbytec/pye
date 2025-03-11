@@ -1,4 +1,5 @@
 import {
+	AttachmentBuilder,
 	ChannelType,
 	DiscordAPIError,
 	DMChannel,
@@ -7,6 +8,8 @@ import {
 	Guild,
 	GuildMember,
 	Message,
+	MessagePayload,
+	MessageReplyOptions,
 	PublicThreadChannel,
 	Sticker,
 	StickerType,
@@ -44,9 +47,11 @@ import {
 	createForumEmbed,
 	ForumAIError,
 	generateChatResponse,
+	generateChatResponseStream,
 	generateForumResponse,
 	sendLongReply,
 } from "../utils/ai/aiResponseService.js";
+import fs from "fs";
 
 export default {
 	name: Events.MessageCreate,
@@ -400,7 +405,6 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 
 	if (botShouldAnswer) {
 		let contexto = await getRecursiveRepliedContext(message, !isForumPost);
-		console.log(contexto);
 
 		const textFilesContent = await getTextAttachmentsContent(message.attachments);
 
@@ -436,9 +440,26 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 				}
 			}
 		} else {
-			const text = await generateChatResponse(contexto, message.author.id, attachmentData);
-			const embed = createChatEmbed(text);
-			await message.reply({ embeds: [embed] }).catch(() => null);
+			const response = await generateChatResponse(contexto, message.author.id, attachmentData);
+			const embed = createChatEmbed(response.text);
+			const fileName = "generated_image.png";
+			let responseToReply: MessagePayload | MessageReplyOptions = {};
+			if (response.image) {
+				fs.writeFileSync(fileName, new Uint8Array(response.image));
+
+				const attachment = new AttachmentBuilder(fileName, { name: fileName });
+
+				embed.setImage(`attachment://${fileName}`);
+
+				responseToReply = {
+					files: [attachment],
+				};
+			}
+
+			responseToReply.embeds = [embed];
+
+			await message.reply(responseToReply).catch(() => null);
+			if (response.image) fs.unlinkSync(fileName);
 		}
 	}
 }
