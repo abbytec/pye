@@ -1,6 +1,6 @@
 // src/commands/Currency/buy.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, GuildMember } from "discord.js";
-import { getOrCreateUser } from "../../Models/User.js";
+import { getOrCreateUser, Users } from "../../Models/User.js";
 import { Shop } from "../../Models/Shop.js";
 import { UserRole } from "../../Models/Role.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
@@ -70,7 +70,7 @@ export default {
 					return await replyError(interaction, "No tienes suficientes **PyE Coins** para comprar este ítem.");
 
 				// Manejar ítems que otorgan roles temporales
-				if (itemData.role && itemData.timeout > 0) return await handleTempRole(interaction, userData, itemData, amount);
+				if (itemData.role && itemData.timeout > 0) await handleTempRole(interaction, userData, itemData, amount);
 
 				// Deduct cash
 				userData.cash -= totalCost;
@@ -79,7 +79,7 @@ export default {
 				for (let i = 0; i < amount; i++) userData.inventory.push(itemData._id);
 
 				// Guardar los cambios del usuario
-				await userData.save();
+				await Users.updateOne({ id: user.id }, { $inc: { cash: -totalCost } });
 
 				const icon = itemData.icon ? itemData.icon + " " : "";
 
