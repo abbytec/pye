@@ -10,6 +10,7 @@ import {
 	pyeChanPrompt,
 	pyeChanReasoningPrompt,
 	pyeBotPrompt,
+	modelPyeBotAnswer,
 } from "./gemini.js";
 import { ExtendedClient } from "../../client.js";
 import { findEmojis, splitMessage } from "../generic.js";
@@ -56,7 +57,7 @@ export async function generateForumResponse(
 		],
 	};
 
-	const result = await modelPyeChanAnswer.generateContent(request, { timeout: 10000 }).catch((e) => {
+	const result = await modelPyeBotAnswer.generateContent(request, { timeout: 10000 }).catch((e) => {
 		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
 			return {
 				response: {

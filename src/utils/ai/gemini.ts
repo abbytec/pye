@@ -70,7 +70,7 @@ export const pyeBotPrompt = `
 		Intenta resolver, ayudar y explicar en pocas palabras los problemas de codigo de los demas porgramadores de manera clara y simple.
 	`;
 
-export const geminiModel = genAI.getGenerativeModel({
+export const modelPyeBotAnswer = genAI.getGenerativeModel({
 	model: "gemini-2.0-flash",
 	generationConfig: {
 		candidateCount: 1,
