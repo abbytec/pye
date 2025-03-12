@@ -70,7 +70,7 @@ export default {
 					return await replyError(interaction, "No tienes suficientes **PyE Coins** para comprar este ítem.");
 
 				// Manejar ítems que otorgan roles temporales
-				if (itemData.role && itemData.timeout > 0) await handleTempRole(interaction, userData.id, itemData, amount);
+				if (itemData.role && itemData.timeout > 0) await handleTempRole(interaction, userData.id, itemData);
 
 				// Deduct cash
 				userData.cash -= totalCost;
@@ -113,8 +113,7 @@ export default {
 async function handleTempRole(
 	interaction: IPrefixChatInputCommand,
 	userid: string,
-	itemData: any, // Reemplaza con la interfaz adecuada si está definida
-	amount: number
+	itemData: any // Reemplaza con la interfaz adecuada si está definida
 ) {
 	const member = interaction.member;
 
@@ -126,9 +125,6 @@ async function handleTempRole(
 	if (member.roles.cache.has(itemData.role)) {
 		return await replyError(interaction, "Ya posees este rol en tu perfil.");
 	}
-
-	// Calcular el costo total
-	const totalCost = itemData.price * amount;
 
 	// Asignar el rol al usuario
 	try {
