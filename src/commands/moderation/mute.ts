@@ -75,17 +75,17 @@ async function handleView(interaction: IPrefixChatInputCommand, member: GuildMem
 		const mutedRole = interaction.guild?.roles.cache.get(mutedRoleId);
 		const isVoiceMuted = member.voice.mute;
 
-		let description = "**Muteado por Rol:**" + (hasMutedRole ? "Sí (" + mutedRole?.name + ")" : "No");
+		let description = "**Muteado por Rol:**" + (hasMutedRole ? "Sí (" + mutedRole?.name + ")" : "No") + "\n";
 		description += "**En Canal de Voz:**" + (member.voice.channel ? member.voice.channel.name : "No está conectado a ningú canal de voz.");
 
 		if (!hasMutedRole && isVoiceMuted) {
-			description += "**Silenciado manualmente:** Sí";
+			description += "\n**Silenciado manualmente:** Sí";
 		}
 
 		const embed = new EmbedBuilder()
 			.setAuthor({
-				name: interaction.client.user?.tag || "Bot",
-				iconURL: interaction.client.user?.displayAvatarURL() || "",
+				name: interaction.client.user?.tag ?? "Bot",
+				iconURL: interaction.client.user?.displayAvatarURL() ?? "",
 			})
 			.setTitle(`Estado de Muteo de ${member.user.tag}`)
 			.setDescription(description)
@@ -108,15 +108,11 @@ async function handleToggle(interaction: IPrefixChatInputCommand, member: GuildM
 	try {
 		const mutedRoleId = getRoleFromEnv("silenced");
 
-		if (!mutedRoleId) {
-			return await replyError(interaction, "El rol de muteo no está configurado correctamente.");
-		}
+		if (!mutedRoleId) return await replyError(interaction, "El rol de muteo no está configurado correctamente.");
 
 		const mutedRole = interaction.guild?.roles.cache.get(mutedRoleId);
 
-		if (!mutedRole) {
-			return await replyError(interaction, "El rol de muteo no existe en este servidor.");
-		}
+		if (!mutedRole) return await replyError(interaction, "El rol de muteo no existe en este servidor.");
 
 		const reason = interaction.options.getString("motivo") ?? "Ninguno";
 
@@ -137,7 +133,6 @@ async function handleToggle(interaction: IPrefixChatInputCommand, member: GuildM
 					$setOnInsert: {
 						moderator: interaction.user.tag,
 						date: new Date(),
-						reasonUnpenalized: reason,
 					},
 				},
 				{ sort: { date: -1 }, new: true, upsert: true }
