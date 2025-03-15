@@ -2,13 +2,14 @@
 import { AuditLogEvent, EmbedBuilder, Events, TextChannel, VoiceState } from "discord.js";
 import { ExtendedClient } from "../client.js";
 import { EventoConClienteForzado } from "../types/event.js";
-import { COLORS, getChannelFromEnv } from "../utils/constants.js";
+import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
+import { ModLogs } from "../Models/ModLogs.js";
 
 export default {
 	name: Events.VoiceStateUpdate,
 	once: false,
 	async executeWithClient(client: ExtendedClient, oldState: VoiceState, newState: VoiceState) {
-		const userId = newState.member?.id ?? oldState.member?.id;
+		const userId = newState.member?.user.id ?? oldState.member?.user.id;
 		const isBot = newState.member?.user.bot ?? oldState.member?.user.bot;
 		if (!userId || isBot) return;
 		let logChannel = (client.channels.cache.get(getChannelFromEnv("voiceLogs")) ??
@@ -18,9 +19,16 @@ export default {
 
 		// Member joins a voice channel
 		if (!oldState.channelId && newState.channelId) {
+			if ((newState.member?.joinedAt?.getTime() ?? 0) > Date.now() - 60000) {
+				let userMuted = await ModLogs.findOne({ id: userId, type: "Voice-mute", reasonUnpenalized: { $exists: false } });
+				if (userMuted) {
+					await newState.member?.voice.setMute(true).catch(() => null);
+					await newState.member?.roles.add(getRoleFromEnv("silenced")).catch(() => null);
+				}
+			}
 			embed.setColor(COLORS.okGreen);
 			embed.setAuthor({ name: newState.member?.user.tag ?? "Usuario", iconURL: newState.member?.user.displayAvatarURL() });
-			embed.setDescription(`<@${newState.member?.user.id}> has joined a voice channel.`);
+			embed.setDescription(`<@${userId}> has joined a voice channel.`);
 			embed.setFields(
 				{ name: "Channel", value: newState.channel?.name ?? "Unknown", inline: true },
 				{ name: "Member Count", value: `${newState.channel?.members.size ?? 0}`, inline: true }
