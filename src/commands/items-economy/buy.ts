@@ -72,22 +72,26 @@ export default {
 				// Manejar ítems que otorgan roles temporales
 				if (itemData.role && itemData.timeout > 0) await handleTempRole(interaction, userData.id, itemData);
 
-				// Deduct cash
-				userData.cash -= totalCost;
-
 				// Añadir el ítem al inventario
-				for (let i = 0; i < amount; i++) userData.inventory.push(itemData._id);
+				if (!itemData.storable) amount = 0;
 
 				// Guardar los cambios del usuario
-				await Users.updateOne({ id: user.id }, { $inc: { cash: -totalCost } });
+				await Users.updateOne(
+					{ id: user.id },
+					{ $push: { inventory: { $each: new Array(amount).fill(itemData._id) } }, $inc: { cash: -totalCost } }
+				);
 
 				const icon = itemData.icon ? itemData.icon + " " : "";
 
 				// Crear la respuesta de éxito
-				const successMessage =
-					amount <= 1
-						? `Has comprado el ítem ${icon}**${itemData.name}**.`
-						: `Has comprado el ítem ${icon}**${itemData.name}** (x${amount}).`;
+
+				let successMessage;
+				if (itemData.message) successMessage = itemData.message;
+				else
+					successMessage =
+						amount <= 1
+							? `Has comprado el ítem ${icon}**${itemData.name}**.`
+							: `Has comprado el ítem ${icon}**${itemData.name}** (x${amount}).`;
 
 				return await replyOk(interaction, successMessage);
 			} catch (error) {
@@ -151,18 +155,5 @@ async function handleTempRole(
 			console.error("Error removiendo el rol tras fallo en UserRole:", removeError);
 		}
 		return await replyError(interaction, "Ocurrió un error al procesar tu rol temporal. Inténtalo de nuevo más tarde.");
-	}
-
-	// Enviar mensaje personalizado si existe
-	if (itemData.message) {
-		try {
-			await interaction.followUp({ content: itemData.message, ephemeral: true });
-		} catch (error) {
-			console.error("Error enviando mensaje personalizado:", error);
-			// No es crítico, continuar
-		}
-	} else {
-		// Respuesta de éxito
-		return await replyOk(interaction, `Has comprado el ítem \`${itemData.name}\` con éxito.`);
 	}
 }
