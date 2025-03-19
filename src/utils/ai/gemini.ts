@@ -88,6 +88,7 @@ export const modelPyeChanAnswer = genAI.getGenerativeModel({
 	safetySettings: safetySettingszzz,
 	systemInstruction: pyeChanPrompt,
 	generationConfig: {
+		//responseModalities: ["Text", "Image"],
 		candidateCount: 1,
 		maxOutputTokens: 800,
 		temperature: 0.68,

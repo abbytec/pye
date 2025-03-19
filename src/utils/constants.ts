@@ -328,10 +328,10 @@ export const ROLES_REP_RANGE = {
 	novato: 0,
 	iniciante: 1,
 	regular: 16,
-	avanzado: 32,
-	veterano: 64,
-	sabio: 128,
-	experto: 256,
+	avanzado: 40,
+	veterano: 80,
+	sabio: 100,
+	experto: 150,
 	adalovelace: 512,
 };
 
