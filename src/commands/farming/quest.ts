@@ -57,7 +57,9 @@ export default {
 						const progressParts = [];
 						if (levelConfig.requirements.money) {
 							progressParts.push(
-								`${pyecoin} \`PyE coins\`: ${data.money.toLocaleString()} / ${levelConfig.requirements.money().toLocaleString()}`
+								`${pyecoin} \`PyE coins\` ${
+									levelConfig.game ? "(En Juegos)" : ""
+								}: ${data.money.toLocaleString()} / ${levelConfig.requirements.money().toLocaleString()}`
 							);
 						}
 						if (levelConfig.requirements.bump)

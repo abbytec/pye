@@ -29,8 +29,6 @@ import { Users } from "./Models/User.js";
 import { IGameSession } from "./interfaces/IGameSession.js";
 import { HelperPoint, IHelperPoint } from "./Models/HelperPoint.js";
 import { UserRole } from "./Models/Role.js";
-import { Pets } from "./Models/Pets.js";
-import { Home } from "./Models/Home.js";
 import { checkFood, checkMood, checkPets, checkShower } from "./commands/items-economy/pet.js";
 
 interface VoiceFarming {

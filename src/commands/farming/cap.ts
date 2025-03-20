@@ -76,7 +76,7 @@ export default {
 
 			// Actualizar quest
 			try {
-				await checkQuestLevel({
+				checkQuestLevel({
 					msg: interaction,
 					money: amount,
 					userId: user.id,

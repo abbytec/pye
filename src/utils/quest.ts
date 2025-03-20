@@ -10,7 +10,6 @@ import {
 	ButtonBuilder,
 	EmbedBuilder,
 	StringSelectMenuBuilder,
-	ChatInputCommandInteraction,
 	TextChannel,
 	MessageCreateOptions,
 	StringSelectMenuInteraction,

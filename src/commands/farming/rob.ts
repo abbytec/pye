@@ -119,37 +119,28 @@ export default {
 
 			const targetUserMention = `<@${targetUser.id}>`;
 
-			if (lose) {
-				userData.cash = (userData.cash ?? 0) - profit;
-			} else {
-				targetUserData.cash = targetUserData.cash - profit;
-				userData.cash = (userData.cash ?? 0) + profit;
+			// Guardar datos actualizados
+			try {
+				if (lose) {
+					await Users.updateOne({ id: userData.id }, { $inc: { cash: -profit } });
+				} else {
+					await Users.updateOne({ id: userData.id }, { $inc: { cash: profit, rob: profit } });
+					await Users.updateOne({ id: targetUserData.id }, { $inc: { cash: -profit } });
 
-				interaction.client.lastRobs.push({
-					userId: user.id,
-					lastTime: Date.now(),
-					amount: profit,
-				});
-				// Actualizar misiones y otros datos
-				try {
-					await checkQuestLevel({
+					interaction.client.lastRobs.push({
+						userId: user.id,
+						lastTime: Date.now(),
+						amount: profit,
+					});
+					checkQuestLevel({
 						msg: interaction,
 						money: profit,
 						userId: user.id,
-					} as IQuest);
-				} catch (error) {
-					console.error("Error actualizando la quest:", error);
-					await replyError(interaction, "Hubo un error al intentar actualizar los datos de quest.");
+					} as IQuest).catch(async (error) => {
+						console.error("Error actualizando la quest:", error);
+						await replyError(interaction, "Hubo un error al intentar actualizar los datos de quest.");
+					});
 				}
-
-				// Actualizar estadísticas de robo
-				userData.rob = (userData.rob ?? 0) + profit;
-			}
-
-			// Guardar datos actualizados
-			try {
-				await Users.updateOne({ id: user.id }, userData);
-				await Users.updateOne({ id: targetUser.id }, targetUserData);
 			} catch (error) {
 				console.error("Error actualizando los datos del usuario:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");

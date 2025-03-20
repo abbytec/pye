@@ -85,6 +85,12 @@ export default {
 
 				// Actualizar el dinero del usuario
 				userData.cash = (userData.cash ?? 0) + profit;
+				increaseHomeMonthlyIncome(user.id, profit)
+					.then(async () => await checkQuestLevel({ msg: interaction, money: profit, userId: user.id } as IQuest))
+					.catch((error) => {
+						console.error("Error actualizando la quest:", error);
+						replyError(interaction, "Hubo un error al intentar actualizar los datos de Quest.");
+					});
 			}
 
 			try {
@@ -106,16 +112,6 @@ export default {
 				.setTimestamp();
 
 			await replyOk(interaction, [embed]);
-
-			if (!lose) {
-				try {
-					await increaseHomeMonthlyIncome(user.id, profit);
-					await checkQuestLevel({ msg: interaction, money: profit, userId: user.id } as IQuest);
-				} catch (error) {
-					console.error("Error actualizando la quest:", error);
-					await replyError(interaction, "Hubo un error al intentar actualizar los datos de Quest.");
-				}
-			}
 
 			if (negativeCash)
 				return {
