@@ -49,7 +49,6 @@ export default {
 								$setOnInsert: {
 									moderator: interaction.user.tag,
 									date: new Date(),
-									reasonUnpenalized: reason,
 								},
 							}, // Actualización
 							{ sort: { date: -1 }, upsert: true, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
