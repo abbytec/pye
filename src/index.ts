@@ -17,11 +17,16 @@ GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/OpenSans.ttf")
 GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Aaargh.ttf"), "Argh");
 GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/BunnyBear.otf"), "Bunny");
 GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Green-London.ttf"), "Greeen");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Rajdhani-Bold.ttf"), "Rajdhani");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Rajdhani-Light.ttf"), "Rajdhani");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Rajdhani-Medium.ttf"), "Rajdhani");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Rajdhani-Regular.ttf"), "Rajdhani");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Rajdhani-SemiBold.ttf"), "Rajdhani");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/rajdhani/Rajdhani-Bold.ttf"), "Rajdhani");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/rajdhani/Rajdhani-Light.ttf"), "Rajdhani");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/rajdhani/Rajdhani-Medium.ttf"), "Rajdhani");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/rajdhani/Rajdhani-Regular.ttf"), "Rajdhani");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/rajdhani/Rajdhani-SemiBold.ttf"), "Rajdhani");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/poppins/Poppins-Bold.ttf"), "Poppins");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/poppins/Poppins-Light.ttf"), "Poppins");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/poppins/Poppins-Medium.ttf"), "Poppins");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/poppins/Poppins-Regular.ttf"), "Poppins");
+GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/poppins/Poppins-SemiBold.ttf"), "Poppins");
 
 const client = new ExtendedClient();
 const extension = process.env.NODE_ENV === "development" ? ".ts" : ".js";

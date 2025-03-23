@@ -6,7 +6,7 @@ import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { ExtendedClient } from "../../client.js";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import redisClient from "../../redis.js";
+import cardRoles from "../constants/card-roles.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const updateRepRoles: Finalware = async (postHandleableInteraction, result) => {
@@ -81,23 +81,37 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 			.catch(() => null);
 	}
 }
-async function sendAnnoucement(member: GuildMember, roleId: string, client: ExtendedClient, veterano: boolean) {
+
+const circlePosX = 112; // Coordenada X del centro
+const circlePosY = 119; // Coordenada Y del centro
+const circleRadius = 59; // Radio del círculo
+export async function sendAnnoucement(member: GuildMember, roleId: string, client: ExtendedClient, veterano: boolean) {
 	const imageName = getRoleName(roleId);
 	if (!imageName) return;
 
-	const canvas = createCanvas(1101, 301);
+	const canvas = createCanvas(720, 240);
 	const ctx = canvas.getContext("2d");
 
 	const rankCard = await loadImage(path.join(__dirname, `../../assets/Images/reputationAnnouncement/${imageName}.png`));
 	ctx.drawImage(rankCard, 0, 0, canvas.width, canvas.height);
 
-	const avatar = await loadImage(member.user.displayAvatarURL({ extension: "png", forceStatic: true }));
+	// Después de dibujar el avatar, agrega algo así:
+	ctx.font = "700 22px Poppins";
+	ctx.fillStyle = cardRoles[imageName].announcementColor;
+	ctx.textAlign = "left";
+	ctx.fillText(`¡Felicidades @${member.user.username}!`, 200, 40);
+
+	// Obtené el avatar con la misma resolución
+	const avatar = await loadImage(member.user.displayAvatarURL({ extension: "png", forceStatic: true, size: 128 }));
 
 	ctx.beginPath();
-	ctx.arc(140, 140, 178 / 2, 0, Math.PI * 2);
+	// Usá el radio calculado
+	ctx.arc(circlePosX, circlePosY, circleRadius, 0, Math.PI * 2);
 	ctx.closePath();
 	ctx.clip();
-	ctx.drawImage(avatar, 45, 45, 200, 200);
+
+	// Dibujá la imagen centrada, del tamaño indicado
+	ctx.drawImage(avatar, circlePosX - circleRadius, circlePosY - circleRadius, circleRadius * 2, circleRadius * 2);
 
 	let channelToSend = veterano ? getChannelFromEnv("chatProgramadores") : getChannelFromEnv("casinoPye");
 
