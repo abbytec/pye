@@ -62,18 +62,18 @@ export default {
 					return await replyError(interaction, "Ya posees ese ítem en tu inventario.");
 				}
 
+				if (!itemData.storable) amount = 0;
+				else if (Number.isInteger(itemData.storable)) amount = itemData.storable as number;
+
 				// Calcular el costo total
 				const totalCost = ExtendedClient.getInflatedRate(itemData.price * amount);
 
 				// Verificar si el usuario tiene suficiente dinero
-				if (totalCost > (userData.cash ?? 0))
+				if (totalCost >= (userData.cash ?? 0))
 					return await replyError(interaction, "No tienes suficientes **PyE Coins** para comprar este ítem.");
 
 				// Manejar ítems que otorgan roles temporales
 				if (itemData.role && itemData.timeout > 0) await handleTempRole(interaction, userData.id, itemData);
-
-				// Añadir el ítem al inventario
-				if (!itemData.storable) amount = 0;
 
 				// Guardar los cambios del usuario
 				await Users.updateOne(
@@ -82,8 +82,6 @@ export default {
 				);
 
 				const icon = itemData.icon ? itemData.icon + " " : "";
-
-				// Crear la respuesta de éxito
 
 				let successMessage;
 				if (itemData.message) successMessage = itemData.message;
