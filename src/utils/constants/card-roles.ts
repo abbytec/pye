@@ -50,7 +50,7 @@ export default {
 	},
 	adalovelace: {
 		id: "adalovelace",
-		label: "Ada Lovelace",
+		label: "Top 10",
 		headlineColor: "#a34c2a",
 		contentColor: "#ff6427",
 		announcementColor: "#FF9747",
