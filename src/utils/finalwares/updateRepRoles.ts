@@ -85,7 +85,7 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 const circlePosX = 112; // Coordenada X del centro
 const circlePosY = 119; // Coordenada Y del centro
 const circleRadius = 59; // Radio del círculo
-export async function sendAnnoucement(member: GuildMember, roleId: string, client: ExtendedClient, veterano: boolean) {
+async function sendAnnoucement(member: GuildMember, roleId: string, client: ExtendedClient, veterano: boolean) {
 	const imageName = getRoleName(roleId);
 	if (!imageName) return;
 

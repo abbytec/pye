@@ -31,7 +31,6 @@ import { IGameSession } from "./interfaces/IGameSession.js";
 import { HelperPoint, IHelperPoint } from "./Models/HelperPoint.js";
 import { UserRole } from "./Models/Role.js";
 import { checkFood, checkMood, checkPets, checkShower } from "./commands/items-economy/pet.js";
-import { sendAnnoucement } from "./utils/finalwares/updateRepRoles.js";
 
 interface VoiceFarming {
 	date: Date;
@@ -160,7 +159,6 @@ export class ExtendedClient extends Client {
 		this.borrarRolesTemporales();
 
 		if (firstTime) {
-			sendAnnoucement((await guild?.members.fetch("220683580467052544")) as GuildMember, getRoleFromEnv("avanzado"), this, false);
 			ExtendedClient.guildManager = this.guilds;
 			if (process.env.NODE_ENV !== "development") {
 				process.on("unhandledRejection", (reason, promise) => {
