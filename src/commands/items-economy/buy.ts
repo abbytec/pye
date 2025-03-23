@@ -62,8 +62,13 @@ export default {
 					return await replyError(interaction, "Ya posees ese ítem en tu inventario.");
 				}
 
+				console.log(userData.inventory, itemData._id, itemData.storable, Number.isInteger(itemData.storable));
 				if (!itemData.storable) amount = 0;
-				else if (Number.isInteger(itemData.storable)) amount = itemData.storable as number;
+				else if (Number.isInteger(itemData.storable)) {
+					if (userData.inventory.find((invItemId) => invItemId.toString() === itemData._id.toString()))
+						return await replyError(interaction, "Ya posees ese ítem en tu inventario.");
+					amount = itemData.storable as number;
+				}
 
 				// Calcular el costo total
 				const totalCost = ExtendedClient.getInflatedRate(itemData.price * amount);

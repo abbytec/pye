@@ -6,7 +6,7 @@ export interface IShop {
 	price: number;
 	description: string;
 	message: string;
-	storable: boolean | number;
+	storable: number | boolean;
 	icon: string;
 	role: string;
 	timeout: number;
@@ -41,7 +41,7 @@ const schemaShop = new Schema<IShop>(
 			default: "",
 		},
 		storable: {
-			type: Boolean || Number,
+			type: Number || Boolean,
 			required: true,
 		},
 		icon: {
