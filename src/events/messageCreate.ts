@@ -40,14 +40,11 @@ import { checkMentionSpam, IDeletableContent, spamFilter } from "../security/spa
 import { hashMessage } from "../security/messageHashing.js";
 import { getRecursiveRepliedContext } from "../utils/ai/getRecursiveRepliedContext.js";
 import { checkQuestLevel, IQuest } from "../utils/quest.js";
-import path from "path";
-import { fileURLToPath } from "url";
 import {
 	createChatEmbed,
 	createForumEmbed,
 	ForumAIError,
 	generateChatResponse,
-	generateChatResponseStream,
 	generateForumResponse,
 	sendLongReply,
 } from "../utils/ai/aiResponseService.js";

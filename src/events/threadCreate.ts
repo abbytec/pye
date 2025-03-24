@@ -140,11 +140,16 @@ async function processHelpForumPost(thread: ThreadChannel) {
 	}
 
 	// GEMINI Api para responder threads.
-	thread.fetchStarterMessage().then(async (msg) => {
-		thread.sendTyping();
-		await threadsHelp(thread.name, msg, thread).catch((err) => {
-			console.log(err);
+	thread
+		.fetchStarterMessage()
+		.then(async (msg) => {
+			thread.sendTyping();
+			await threadsHelp(thread.name, msg, thread).catch((err) => {
+				console.log(err);
+			});
+		})
+		.catch((err) => {
+			console.log("Error al obtener el mensaje de inicio del hilo:", err);
 		});
-	});
 	ExtendedClient.trending.add("threadPost", thread.parentId ?? "");
 }
