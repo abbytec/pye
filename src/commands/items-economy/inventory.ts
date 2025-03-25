@@ -214,17 +214,20 @@ export default {
 
 // Función para procesar y agrupar los ítems del inventario
 async function getItems(data: IUserModel): Promise<[IShopDocument, number][]> {
-	const itemsMap: Map<Types.ObjectId, [IShopDocument, number]> = new Map();
+	const itemsMap: Map<string, [IShopDocument, number]> = new Map();
 
 	if (!data?.inventory?.length) return [];
 
 	for (const itemId of data.inventory) {
 		// Asumiendo que `itemId` es una referencia al documento de `Shop`
-		const item: IShopDocument | null = await Shop.findOne({ _id: itemId });
-		if (!item) continue;
-
-		if (itemsMap.has(item._id)) itemsMap.get(item._id)![1]++;
-		else itemsMap.set(item._id, [item, 1]);
+		if (!itemId) continue;
+		if (itemsMap.has(itemId.toString())) {
+			itemsMap.get(itemId.toString())![1]++;
+		} else {
+			const item: IShopDocument | null = await Shop.findOne({ _id: itemId });
+			if (!item) continue;
+			itemsMap.set(item._id.toString(), [item, 1]);
+		}
 	}
 
 	return Array.from(itemsMap.values());
