@@ -127,7 +127,6 @@ async function handleToggle(interaction: IPrefixChatInputCommand, member: GuildM
 						moderator: interaction.user.tag,
 						date: new Date(),
 						reason: "Desconocida",
-						reasonUnpenalized: reason,
 					},
 				},
 				{ upsert: true, new: true }
