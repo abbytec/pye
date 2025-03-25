@@ -289,7 +289,7 @@ async function activityProcessor(client: ExtendedClient) {
 		);
 		setTimeout(
 			() =>
-				client.user?.setActivity(`a ${client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0)}`, {
+				client.user?.setActivity(`a ${client.guilds.cache.get(process.env.GUILD_ID ?? "")?.memberCount ?? "👀"}`, {
 					type: ActivityType.Watching,
 					state: URL_State,
 				}),
