@@ -49,6 +49,7 @@ import {
 	sendLongReply,
 } from "../utils/ai/aiResponseService.js";
 import fs from "fs";
+import { ParameterError } from "../interfaces/IPrefixChatInputCommand.js";
 
 export default {
 	name: Events.MessageCreate,
@@ -165,7 +166,9 @@ async function processPrefixCommand(message: Message, client: ExtendedClient) {
 			message.reply({ content: "Hubo un error ejecutando ese comando.", ephemeral: true } as any);
 		}
 	} catch (error: any) {
-		console.error(`Error ejecutando el comando ${commandName}:`, error);
+		if (!(error instanceof ParameterError)) {
+			console.error(`Error ejecutando el comando ${commandName}:`, error);
+		}
 		message.reply({ content: "Hubo un error ejecutando ese comando.\n" + error.message, ephemeral: true } as any);
 	}
 }
