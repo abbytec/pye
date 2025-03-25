@@ -106,7 +106,8 @@ export async function generateChatResponse(
 		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
 			return {
 				response: {
-					text: () => "En este momento, comí demasiado sushi como para procesar esta respuesta! 🍣\nIntente denuevo mas tarde.",
+					text: () =>
+						"En este momento, woowle no tiene stock de sushi como para procesar esta respuesta! 🍣\nIntente denuevo mas tarde.",
 					candidates: [],
 				},
 			};
@@ -151,7 +152,7 @@ export async function generateChatResponseStream(
 		result = await modelPyeChanReasoningAnswer.generateContentStream(request, { timeout: 10000 });
 	} catch (e: any) {
 		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
-			return { text: "En este momento, comí demasiado sushi como para procesar esta respuesta! 🍣\nIntente denuevo mas tarde." };
+			return { text: "En este momento, woowle no tiene stock de sushi como para procesar esta respuesta! 🍣\nIntente denuevo mas tarde." };
 		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
 		return { text: "Mejor comamos un poco de sushi! 🍣" };
 	}
