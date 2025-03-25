@@ -4,7 +4,6 @@ import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputComman
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
-import { replyInfo } from "../../utils/messages/replyInfo.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { createChatEmbed, generateChatResponseStream } from "../../utils/ai/aiResponseService.js";
@@ -47,7 +46,7 @@ export default {
 					infinite: true,
 				},
 			],
-			["pye"]
+			["pye", "iask"]
 		);
 	},
 } as Command;

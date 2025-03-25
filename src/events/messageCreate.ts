@@ -442,9 +442,10 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 		} else {
 			const response = await generateChatResponse(contexto, message.author.id, attachmentData);
 			const embed = createChatEmbed(response.text);
-			const fileName = "generated_image.png";
+			let fileName;
 			let responseToReply: MessagePayload | MessageReplyOptions = {};
 			if (response.image) {
+				fileName = `generated_image${Date.now()}.png`;
 				fs.writeFileSync(fileName, new Uint8Array(response.image));
 
 				const attachment = new AttachmentBuilder(fileName, { name: fileName });
@@ -459,7 +460,7 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 			responseToReply.embeds = [embed];
 
 			await message.reply(responseToReply).catch(() => null);
-			if (response.image) fs.unlinkSync(fileName);
+			if (fileName && response.image) fs.unlinkSync(fileName);
 		}
 	}
 }

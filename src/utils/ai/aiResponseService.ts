@@ -11,6 +11,8 @@ import {
 	pyeChanReasoningPrompt,
 	pyeBotPrompt,
 	modelPyeBotAnswer,
+	modelPyeChanImageAnswer,
+	modelPyeChanAudioAnswer,
 } from "./gemini.js";
 import { ExtendedClient } from "../../client.js";
 import { findEmojis, splitMessage } from "../generic.js";
@@ -23,6 +25,7 @@ import {
 } from "@google/generative-ai";
 import { saveUserPreferences, UserMemoryResponse } from "./userMemory.js";
 import { Reminder, scheduleDMReminder } from "./dmReminders.js";
+import { COLORS } from "../constants.js";
 
 export async function generateForumResponse(
 	context: string,
@@ -162,13 +165,59 @@ export async function generateChatResponseStream(
 	return await processResponse(response, authorId, pyeChanReasoningPrompt);
 }
 
+export async function generateImageResponse(
+	context: string,
+	authorId: string,
+	image?: { mimeType: string; base64: string }
+): Promise<{ text: string; image?: Buffer }> {
+	let userParts: Part[] = [{ text: context }];
+
+	if (image) {
+		userParts.push({
+			inlineData: {
+				mimeType: image.mimeType,
+				data: image.base64,
+			},
+		});
+	}
+
+	let request: GenerateContentRequest = {
+		contents: [
+			{
+				role: "user",
+				parts: userParts,
+			},
+		],
+	};
+
+	const result = await modelPyeChanImageAnswer.generateContent(request, { timeout: 10000 }).catch((e) => {
+		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
+			return {
+				response: {
+					text: () =>
+						"En este momento, woowle no tiene stock de sushi como para procesar esta respuesta! 🍣\nIntente denuevo mas tarde.",
+					candidates: [],
+				},
+			};
+		ExtendedClient.logError("Error al generar la respuesta de PyEChan Image:" + e.message, e.stack, authorId);
+		return {
+			response: {
+				text: () => "Mejor comamos un poco de sushi! 🍣",
+				candidates: [],
+			},
+		};
+	});
+	return processResponse(result.response, authorId, pyeChanPrompt);
+}
 async function processResponse(
 	response: EnhancedGenerateContentResponse | { text: () => string; candidates: GenerateContentCandidate[] },
 	authorId: string,
 	prompt: string
-): Promise<{ text: string; image?: Buffer }> {
+): Promise<{ text: string; image?: Buffer; audio?: Buffer }> {
 	let text = "";
 	let image: Buffer | undefined;
+	let audio: Buffer | undefined;
+
 	if (response.candidates && response.candidates.length > 0) {
 		const candidate = response.candidates[0];
 		if (candidate.content?.parts) {
@@ -184,8 +233,12 @@ async function processResponse(
 						const args = functionArgs as Reminder;
 						await scheduleDMReminder(args.reminderTime, args.message, authorId);
 					}
-				} else if (part.inlineData?.mimeType.startsWith("image")) {
-					image = Buffer.from(part.inlineData.data, "base64");
+				} else if (part.inlineData) {
+					if (part.inlineData.mimeType.startsWith("image")) {
+						image = Buffer.from(part.inlineData.data, "base64");
+					} else if (part.inlineData.mimeType.startsWith("audio")) {
+						audio = Buffer.from(part.inlineData.data, "base64");
+					}
 				}
 			}
 		}
@@ -195,7 +248,8 @@ async function processResponse(
 
 	if (text?.length === 0) text = "Mejor comamos un poco de sushi! 🍣";
 	if (natural.JaroWinklerDistance(text, prompt) > 0.8) text = ANTI_DUMBS_RESPONSES[Math.floor(Math.random() * ANTI_DUMBS_RESPONSES.length)];
-	return { text, image };
+
+	return { text, image, audio };
 }
 
 export class ForumAIError extends Error {
@@ -233,6 +287,21 @@ export function createChatEmbed(text: string): EmbedBuilder {
 		.setDescription(text)
 		.setThumbnail("https://cdn.discordapp.com/attachments/1282932921203818509/1332238415676047430/pyechan.png")
 		.setImage(getCachedImage(emojiFile))
+		.setTimestamp()
+		.setFooter({ text: "♥" });
+}
+
+export function createImageEmbed(image: string): EmbedBuilder {
+	return new EmbedBuilder()
+		.setColor(COLORS.pyeCutePink)
+		.setAuthor({
+			name: "PyE Chan",
+			iconURL:
+				"https://cdn.discordapp.com/attachments/1115058778736431104/1282790824744321167/vecteezy_heart_1187438.png?ex=66e0a38d&is=66df520d",
+			url: "https://cdn.discordapp.com/attachments/1115058778736431104/1282780704979292190/image_2.png",
+		})
+		.setDescription("Aquí tienes tu imagen 🧡")
+		.setImage(image)
 		.setTimestamp()
 		.setFooter({ text: "♥" });
 }
