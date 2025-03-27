@@ -165,6 +165,51 @@ export async function generateChatResponseStream(
 	return await processResponse(response, authorId, pyeChanReasoningPrompt);
 }
 
+export async function generateAudioResponse(
+	context: string,
+	authorId: string,
+	audio?: { mimeType: string; base64: string }
+): Promise<{ text: string; audio?: Buffer }> {
+	let userParts: Part[] = [{ text: context }];
+
+	if (audio) {
+		userParts.push({
+			inlineData: {
+				mimeType: audio.mimeType,
+				data: audio.base64,
+			},
+		});
+	}
+
+	let request: GenerateContentRequest = {
+		contents: [
+			{
+				role: "user",
+				parts: userParts,
+			},
+		],
+	};
+
+	const result = await modelPyeChanAudioAnswer.generateContent(request, { timeout: 10000 }).catch((e) => {
+		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
+			return {
+				response: {
+					text: () =>
+						"En este momento, woowle no tiene stock de sushi como para procesar esta respuesta! 🍣\nIntente denuevo mas tarde.",
+					candidates: [],
+				},
+			};
+		ExtendedClient.logError("Error al generar la respuesta de PyEChan Audio:" + e.message, e.stack, authorId);
+		return {
+			response: {
+				text: () => "Mejor comamos un poco de sushi! 🍣",
+				candidates: [],
+			},
+		};
+	});
+	return processResponse(result.response, authorId, pyeChanPrompt);
+}
+
 export async function generateImageResponse(
 	context: string,
 	authorId: string,
@@ -303,6 +348,18 @@ export function createImageEmbed(image: string): EmbedBuilder {
 		.setDescription("Aquí tienes tu imagen 🧡")
 		.setImage(image)
 		.setTimestamp()
+		.setFooter({ text: "♥" });
+}
+export function createAudioErrorEmbed(): EmbedBuilder {
+	return new EmbedBuilder()
+		.setColor(COLORS.warnOrange)
+		.setAuthor({
+			name: "PyE Chan",
+			iconURL:
+				"https://cdn.discordapp.com/attachments/1115058778736431104/1282790824744321167/vecteezy_heart_1187438.png?ex=66e0a38d&is=66df520d",
+			url: "https://cdn.discordapp.com/attachments/1115058778736431104/1282780704979292190/image_2.png",
+		})
+		.setDescription("Lo siento, comi demasiadas donas 🍩, no puedo hablar porque tengo la boca llena! Intenta denuevo mas tarde...")
 		.setFooter({ text: "♥" });
 }
 

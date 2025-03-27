@@ -42,9 +42,10 @@ export const composeMiddlewares = (
 									process.env.NODE_ENV === "development"
 										? `<@${interaction.user.id}>`
 										: "<@220683580467052544> <@602240617862660096>"
-								}Error "${e.name}" en el comando: \`${interaction.commandName}\`\nMensaje: **${e.message}**\n\`\`\`js\n${
-									e.stack
-								}\`\`\``,
+								}Error "${e.name}" en el comando: \`${interaction.commandName}\`\nMensaje: **${(e.message as string).slice(
+									0,
+									3000
+								)}**\n\`\`\`js\n${e.stack}\`\`\``,
 								flags: MessageFlags.SuppressNotifications,
 							});
 						}

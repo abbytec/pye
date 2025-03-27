@@ -57,7 +57,7 @@ export const pyeChanPrompt = `
 
 export const pyeChanAudioPrompt = `
 	${pyeChanPromptBase}
-	Proporciona una respuesta en audio.
+	Proporciona una respuesta breve como si la dijieras en audio.
 `;
 
 export const pyeChanImagePrompt = `
@@ -139,7 +139,7 @@ export const modelPyeChanAudioAnswer = genAI.getGenerativeModel({
 	safetySettings: safetySettingszzz,
 	systemInstruction: pyeChanAudioPrompt,
 	generationConfig: {
-		responseModalities: ["Audio"],
+		responseModalities: ["Text"],
 		candidateCount: 1,
 		maxOutputTokens: 800,
 		temperature: 0.68,
