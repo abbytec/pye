@@ -356,13 +356,31 @@ export async function saveTranscript(channel: TextChannel | AnyThreadChannel, ti
 
 	sortedMessages.forEach((msg) => {
 		const time = new Date(msg.createdTimestamp).toLocaleString();
-		const content = msg.content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-		htmlContent += `
+		if (msg.content) {
+			const content = msg.content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+			htmlContent += `
 	  <div class="message">
 		<div class="author">${msg.author.tag} <span class="time">[${time}]</span></div>
 		<div class="content">${content}</div>
 	  </div>
 	`;
+		}
+		if (msg.embeds.length > 0) {
+			htmlContent += `
+	  <div class="message">
+		<div class="author">${msg.author.tag} <span class="time">[${time}]</span></div>
+		<div class="content">${msg.embeds.map((e) => e.description + e.fields.map((f) => f.name + "\n" + f.value).join(" "))}</div>
+	  </div>
+	`;
+		}
+		if (msg.attachments.size > 0) {
+			htmlContent += `
+	  <div class="message">
+		<div class="author">${msg.author.tag} <span class="time">[${time}]</span></div>
+		<div class="content">${msg.attachments.map((a) => `<a href="${a.url}">${a.name}</a>`).join(" ")}</div>
+	  </div>
+	`;
+		}
 	});
 
 	htmlContent += `
