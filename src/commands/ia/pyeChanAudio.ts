@@ -33,9 +33,10 @@ export default {
 					.editReply({
 						files: [attachment],
 					})
-					.catch(null);
-
-				fs.unlinkSync(fileName);
+					.catch(null)
+					.finally(() => {
+						fs.unlinkSync(fileName);
+					});
 			} else {
 				const fileName = `generated_audio${Date.now()}.wav`;
 				const audioResponse = await synthesizeTextToAudio(response.text).catch(() => null);
@@ -55,9 +56,10 @@ export default {
 					.editReply({
 						files: [attachment],
 					})
-					.catch(null);
-
-				fs.unlinkSync(fileName);
+					.catch(null)
+					.finally(() => {
+						fs.unlinkSync(fileName);
+					});
 			}
 		}
 	),

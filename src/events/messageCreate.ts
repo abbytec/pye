@@ -163,13 +163,13 @@ async function processPrefixCommand(message: Message, client: ExtendedClient) {
 				ExtendedClient.logError("Comando no encontrado: " + command.commandName, undefined, message.author.id);
 			}
 		} else {
-			message.reply({ content: "Hubo un error ejecutando ese comando.", ephemeral: true } as any);
+			message.reply({ content: "Hubo un error ejecutando ese comando.", ephemeral: true } as any).catch(() => null);
 		}
 	} catch (error: any) {
 		if (!(error instanceof ParameterError)) {
 			console.error(`Error ejecutando el comando ${commandName}:`, error);
 		}
-		message.reply({ content: "Hubo un error ejecutando ese comando.\n" + error.message, ephemeral: true } as any);
+		message.reply({ content: "Hubo un error ejecutando ese comando.\n" + error.message, ephemeral: true } as any).catch(() => null);
 	}
 }
 
@@ -442,7 +442,7 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 		} else {
 			const response = await generateChatResponse(contexto, message.author.id, attachmentData);
 			const embed = createChatEmbed(response.text);
-			let fileName;
+			let fileName: string | undefined;
 			let responseToReply: MessagePayload | MessageReplyOptions = {};
 			if (response.image) {
 				fileName = `generated_image${Date.now()}.png`;
@@ -459,8 +459,12 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 
 			responseToReply.embeds = [embed];
 
-			await message.reply(responseToReply).catch(() => null);
-			if (fileName && response.image) fs.unlinkSync(fileName);
+			await message
+				.reply(responseToReply)
+				.catch(() => null)
+				.finally(() => {
+					if (fileName && response.image) fs.unlinkSync(fileName);
+				});
 		}
 	}
 }

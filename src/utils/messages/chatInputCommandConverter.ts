@@ -1,4 +1,4 @@
-import { Message, User, TextChannel, Role, Channel, Attachment } from "discord.js";
+import { Message, User, TextChannel, Role, Channel, Attachment, MessageFlags } from "discord.js";
 import { PREFIX } from "../constants.js";
 import { ExtendedClient } from "../../client.js";
 import { IOptions, IPrefixChatInputCommand, MessageToSend, ParameterError } from "../../interfaces/IPrefixChatInputCommand.js";
@@ -307,7 +307,9 @@ export class PrefixChatInputCommand {
 		if (content instanceof Object && "ephemeral" in content) {
 			sentMessage = this.message.reply({
 				...content,
-				options: { ephemeral: content.ephemeral },
+				options: {
+					flags: MessageFlags.Ephemeral,
+				},
 			} as any);
 		} else {
 			sentMessage = this.message.reply(content as any);
@@ -318,15 +320,23 @@ export class PrefixChatInputCommand {
 	}
 
 	private async editReply(content: MessageToSend): Promise<Message> {
-		if (this._isDeferred && !this._reply) return await this.reply(content);
-		if (!this._reply) throw new ParameterError("No hay una respuesta previa para editar.");
-		if (content instanceof Object && "ephemeral" in content) {
-			return (await this._reply).edit({
-				...content,
-				options: { ephemeral: content.ephemeral },
-			} as any);
-		} else {
-			return (await this._reply).edit(content as any);
+		try {
+			if (this._isDeferred && !this._reply) {
+				return await this.reply(content);
+			}
+			if (!this._reply) {
+				throw new ParameterError("No hay una respuesta previa para editar.");
+			}
+			const reply = await this._reply;
+			if (content instanceof Object && "ephemeral" in content) {
+				return await reply.edit({
+					...content,
+					options: { ephemeral: content.ephemeral },
+				} as any);
+			}
+			return await reply.edit(content as any);
+		} catch (error) {
+			throw new ParameterError("No hay una respuesta previa para editar.");
 		}
 	}
 

@@ -29,8 +29,12 @@ export default {
 				let fileName = `generated_image${Date.now()}.png`;
 				fs.writeFileSync(fileName, new Uint8Array(response.image));
 				const attachment = new AttachmentBuilder(fileName, { name: fileName });
-				await interaction.editReply({ embeds: [createImageEmbed(`attachment://${fileName}`)], files: [attachment] }).catch(null);
-				fs.unlinkSync(fileName);
+				await interaction
+					.editReply({ embeds: [createImageEmbed(`attachment://${fileName}`)], files: [attachment] })
+					.catch(null)
+					.finally(() => {
+						fs.unlinkSync(fileName);
+					});
 			} else {
 				await interaction.editReply({ embeds: [createChatEmbed(response.text)] }).catch(null);
 			}

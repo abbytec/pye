@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "cross-env NODE_ENV=development node --loader ts-node/esm src/index.ts --transpile-only",
-		"build": "tsc && cp -R src/assets dist",
+		"build": "rimraf dist && tsc && cp -R src/assets dist",
 		"start": "node dist/index.js",
 		"deploy-slash-commands-dev": "cross-env NODE_ENV=development node --loader ts-node/esm src/deploy-commands.ts",
 		"deploy-slash-commands": "node --loader ts-node/esm src/deploy-commands.ts"

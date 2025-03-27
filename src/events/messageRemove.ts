@@ -50,8 +50,8 @@ export default {
 									.delete()
 									.then(() => console.log(`Hilo ${thread?.name} eliminado porque su mensaje principal fue borrado.`))
 						)
-						.catch(null);
-					fs.unlinkSync(filePath);
+						.catch(null)
+						.finally(() => fs.unlinkSync(filePath));
 				} catch (error) {
 					console.error("Error al guardar la transcripción:", error);
 				}

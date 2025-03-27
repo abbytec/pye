@@ -171,8 +171,8 @@ export async function handleTicketButtonInteraction(interaction: Interaction, ac
 							content: "Transcripción guardada y enviada. Borrando el canal en 5 segundos.",
 							ephemeral: true,
 						})
-						.catch(() => null);
-					fs.unlinkSync(filePath);
+						.catch(() => null)
+						.finally(() => fs.unlinkSync(filePath));
 					setTimeout(() => channel.delete().catch(() => null), 5000);
 				}
 			);
