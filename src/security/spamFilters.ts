@@ -123,7 +123,7 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 					// Limpia las entradas viejas para este usuario
 					cleanUserEntries(author.id);
 					if (userSpamMap.get(author.id)!.length >= 3) {
-						await deletable.delete("Spam Filter");
+						await deletable.delete("Spam Filter").catch(() => null);
 						shouldStopAlgorithm = true;
 						applyTimeout(
 							10000,
