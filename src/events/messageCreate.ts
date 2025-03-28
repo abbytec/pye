@@ -183,7 +183,7 @@ const employmentsDescription =
 
 const repoRegex =
 	/(?:https?:\/\/)?(?:www\.)?(?:(?:(?:github\.com|gitlab\.com|bitbucket\.org|codecommit\.amazonaws\.com)[^\s]*)|(?:git\.[^\s]+)|(?:[^\s]+\.git))/i;
-const linkedinRegex = /https?:\/\/(?:www\.)?linkedin\.com\/[^\s]+/gim;
+const redesRegex = /https:\/\/[^\s]+\//gim;
 async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 	switch (msg.channel.id) {
 		case getChannelFromEnv("recursos"):
@@ -294,11 +294,11 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 			msg.startThread({ name: `Grupo de ${msg.author.username}` });
 			break;
 		case getChannelFromEnv("linkedin"):
-			if (msg.content.match(linkedinRegex)) {
-				msg.startThread({ name: `Comentarios sobre mi LinkedIn` });
+			if (msg.content.match(redesRegex)) {
+				msg.startThread({ name: `Comentarios sobre mi página` });
 			} else {
 				let warn = await (msg.channel as TextChannel).send({
-					content: `🚫 <@${msg.author.id}>Por favor, incluye un enlace a tu perfil de LinkedIn en el mensaje.`,
+					content: `🚫 <@${msg.author.id}>Por favor, incluye un enlace a tu perfil/portafolio en el mensaje.`,
 				});
 				await msg.delete().catch(() => null);
 				setTimeout(async () => await warn.delete().catch(() => null), 10000);
