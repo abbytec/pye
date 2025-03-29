@@ -6,7 +6,7 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { createChatEmbed, generateChatResponseStream } from "../../utils/ai/aiResponseService.js";
+import { createChatEmbed, generateChatResponseSearch, generateChatResponseStream } from "../../utils/ai/aiResponseService.js";
 import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import { getRecursiveRepliedContext } from "../../utils/ai/getRecursiveRepliedContext.js";
@@ -31,7 +31,7 @@ export default {
 				contextForAI = mensajeInput + aiSecurityConstraint;
 			}
 
-			const resultText = (await generateChatResponseStream(contextForAI, interaction.user.id)).text;
+			const resultText = (await generateChatResponseSearch(contextForAI, interaction.user.id)).text;
 
 			await interaction.editReply({ embeds: [createChatEmbed(resultText)] }).catch(null);
 		}
