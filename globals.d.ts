@@ -15,4 +15,9 @@ declare module "@google/generative-ai" {
 	interface GenerationConfig {
 		responseModalities?: string[];
 	}
+
+	interface GoogleSearchRetrievalTool {
+		googleSearchRetrieval?: {};
+		googleSearch;
+	}
 }

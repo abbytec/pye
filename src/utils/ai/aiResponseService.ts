@@ -13,6 +13,7 @@ import {
 	modelPyeBotAnswer,
 	modelPyeChanImageAnswer,
 	modelPyeChanAudioAnswer,
+	modelPyeChanSearchAnswer,
 } from "./gemini.js";
 import { ExtendedClient } from "../../client.js";
 import { findEmojis, splitMessage } from "../generic.js";
@@ -114,6 +115,53 @@ export async function generateChatResponse(
 					candidates: [],
 				},
 			};
+		console.error(e);
+		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
+		return {
+			response: {
+				text: () => "Mejor comamos un poco de sushi! 🍣",
+				candidates: [],
+			},
+		};
+	});
+	return processResponse(result.response, authorId, pyeChanPrompt);
+}
+
+export async function generateChatResponseSearch(
+	context: string,
+	authorId: string,
+	image?: { mimeType: string; base64: string }
+): Promise<{ text: string; image?: Buffer }> {
+	let userParts: Part[] = [{ text: context }];
+
+	if (image) {
+		userParts.push({
+			inlineData: {
+				mimeType: image.mimeType,
+				data: image.base64,
+			},
+		});
+	}
+
+	let request: GenerateContentRequest = {
+		contents: [
+			{
+				role: "user",
+				parts: userParts,
+			},
+		],
+	};
+
+	const result = await modelPyeChanSearchAnswer.generateContent(request, { timeout: 10000 }).catch((e) => {
+		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
+			return {
+				response: {
+					text: () =>
+						"En este momento, woowle no tiene stock de sushi como para procesar esta respuesta! 🍣\nIntente denuevo mas tarde.",
+					candidates: [],
+				},
+			};
+		console.error(e);
 		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
 		return {
 			response: {

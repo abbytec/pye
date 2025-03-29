@@ -17,8 +17,8 @@ loadEnvVariables();
 export default {
 	group: "🤖 - Inteligencia Artificial",
 	data: new SlashCommandBuilder()
-		.setName("pyechan")
-		.setDescription("Preguntale algo complejo a PyE Chan para que razone")
+		.setName("pyechan-search")
+		.setDescription("Preguntale algo a PyE Chan para que googlee")
 		.addStringOption((option) => option.setName("mensaje").setDescription("Qué quieres decirme").setRequired(true).setMaxLength(200)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false), verifyCooldown("pyechan", 1000)],
@@ -39,7 +39,7 @@ export default {
 	prefixResolver: (client: ExtendedClient) => {
 		return new PrefixChatInputCommand(
 			client,
-			"pyechan",
+			"pyechan-search",
 			[
 				{
 					name: "mensaje",
@@ -47,7 +47,7 @@ export default {
 					infinite: true,
 				},
 			],
-			["pye", "iask"]
+			["pye-search", "iasks"]
 		);
 	},
 } as Command;

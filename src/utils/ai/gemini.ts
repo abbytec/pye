@@ -55,6 +55,11 @@ export const pyeChanPrompt = `
 	Proporciona una respuesta en texto y realiza la llamada a la función saveUserPreferences. En el caso de que el usuario desee crear un recordatorio, realiza la llamada a la función createReminder con fecha y hora en formato ISO (con un máximo de 7 dias).
 `;
 
+export const pyeChanSearchPrompt = `
+	${pyeChanPromptBase}
+	Evita usar muchos emojis, de ser necesario, usa alguno al inicio del texto para expresar como te sientes.
+`;
+
 export const pyeChanAudioPrompt = `
 	${pyeChanPromptBase}
 	Proporciona una respuesta breve como si la dijieras en audio.
@@ -119,6 +124,25 @@ export const modelPyeChanAnswer = genAI.getGenerativeModel({
 			mode: FunctionCallingMode.AUTO,
 		},
 	},
+});
+
+export const modelPyeChanSearchAnswer = genAI.getGenerativeModel({
+	model: "gemini-2.0-flash",
+	safetySettings: safetySettingszzz,
+	systemInstruction: pyeChanSearchPrompt,
+	generationConfig: {
+		//responseModalities: ["Text", "Image"],
+		candidateCount: 1,
+		maxOutputTokens: 800,
+		temperature: 0.68,
+		topK: 35,
+		topP: 0.77,
+	},
+	tools: [
+		{
+			googleSearch: {},
+		},
+	],
 });
 
 export const modelPyeChanImageAnswer = genAI.getGenerativeModel({

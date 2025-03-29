@@ -14,6 +14,7 @@ import fs from "fs";
 loadEnvVariables();
 
 export default {
+	group: "🤖 - Inteligencia Artificial",
 	data: new SlashCommandBuilder()
 		.setName("pyechan-audio")
 		.setDescription("Habla con PyE Chan y responderá por audio")
