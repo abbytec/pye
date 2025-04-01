@@ -17,10 +17,11 @@ export const verifyCooldown = (
 	commandName: string,
 	cooldownDuration: number,
 	adjustCooldownDuration?: (interaction: IPrefixChatInputCommand) => Promise<number> | number,
-	autoSetter: boolean = true
+	autoSetter: boolean = true,
+	customUID?: string
 ): Middleware => {
 	return async (interaction, next) => {
-		const userId = interaction.user.id;
+		const userId = customUID ?? interaction.user.id;
 
 		// Ajustar la duración del cooldown si se proporciona una función para ello
 		let finalCooldownDuration = cooldownDuration;

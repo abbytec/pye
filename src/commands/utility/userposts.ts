@@ -7,6 +7,7 @@ import { PostHandleable } from "../../types/middleware.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { replyInfo } from "../../utils/messages/replyInfo.js";
+import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 
 export const data = new SlashCommandBuilder()
 	.setName("userposts")
@@ -14,7 +15,11 @@ export const data = new SlashCommandBuilder()
 	.addUserOption((option) => option.setName("usuario").setDescription("El usuario del que querés ver los posts").setRequired(false));
 
 export const execute = composeMiddlewares(
-	[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false)],
+	[
+		verifyIsGuild(process.env.GUILD_ID ?? ""),
+		verifyCooldown("userposts", 20000, undefined, true, process.env.CLIENT_ID),
+		deferInteraction(false),
+	],
 	async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 		const user = (await interaction.options.getUser("usuario", false)) ?? interaction.user;
 		const forumIds = getHelpForumsIdsFromEnv();
