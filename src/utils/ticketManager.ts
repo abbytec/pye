@@ -176,9 +176,9 @@ export async function handleTicketButtonInteraction(interaction: Interaction, ac
 					setTimeout(() => channel.delete().catch(() => null), 5000);
 				}
 			);
-		} catch (error) {
-			console.error("Error al guardar la transcripción:", error);
-			await interaction.reply({
+		} catch (error: any) {
+			ExtendedClient.logError("Error al guardar la transcripción:", error.stack, interaction.user.id);
+			await interaction.followUp({
 				content: "Error al guardar la transcripción.",
 				ephemeral: true,
 			});
