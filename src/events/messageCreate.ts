@@ -440,8 +440,9 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 				}
 			}
 		} else {
-			const response = await generateChatResponse(contexto, message.author.id, attachmentData);
-			const embed = createChatEmbed(response.text);
+			const expertAILevelmode = checkExpertAIMode(message);
+			const response = await generateChatResponse(contexto, message.author.id, attachmentData, expertAILevelmode);
+			const embed = createChatEmbed(response.text, expertAILevelmode);
 			let fileName: string | undefined;
 			let responseToReply: MessagePayload | MessageReplyOptions = {};
 			if (response.image) {
@@ -467,4 +468,32 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 				});
 		}
 	}
+}
+
+export function checkExpertAIMode(message: Message<boolean>) {
+	if (message.channel.isThread()) {
+		const thread = message.channel;
+		if (thread.parent?.nsfw) {
+			if (
+				message.member?.roles.cache.has(getRoleFromEnv("experto")) ||
+				message.member?.roles.cache.has(getRoleFromEnv("adalovelace")) ||
+				message.member?.roles.cache.has(getRoleFromEnv("nitroBooster")) ||
+				message.member?.roles.cache.has(getRoleFromEnv("staff")) ||
+				message.member?.roles.cache.has(getRoleFromEnv("moderadorChats")) ||
+				message.member?.roles.cache.has(getRoleFromEnv("moderadorVoz"))
+			)
+				return thread.type == ChannelType.PrivateThread ? 2 : 1;
+		}
+	} else if (
+		(message.channel as TextChannel).nsfw &&
+		(message.member?.roles.cache.has(getRoleFromEnv("experto")) ||
+			message.member?.roles.cache.has(getRoleFromEnv("adalovelace")) ||
+			message.member?.roles.cache.has(getRoleFromEnv("nitroBooster")) ||
+			message.member?.roles.cache.has(getRoleFromEnv("staff")) ||
+			message.member?.roles.cache.has(getRoleFromEnv("moderadorChats")) ||
+			message.member?.roles.cache.has(getRoleFromEnv("moderadorVoz")))
+	) {
+		return 1;
+	}
+	return 0;
 }

@@ -20,4 +20,18 @@ declare module "@google/generative-ai" {
 		googleSearchRetrieval?: {};
 		googleSearch;
 	}
+
+	enum HarmBlockThreshold {
+		/** Threshold is unspecified. */
+		HARM_BLOCK_THRESHOLD_UNSPECIFIED = "HARM_BLOCK_THRESHOLD_UNSPECIFIED",
+		/** Content with NEGLIGIBLE will be allowed. */
+		BLOCK_LOW_AND_ABOVE = "BLOCK_LOW_AND_ABOVE",
+		/** Content with NEGLIGIBLE and LOW will be allowed. */
+		BLOCK_MEDIUM_AND_ABOVE = "BLOCK_MEDIUM_AND_ABOVE",
+		/** Content with NEGLIGIBLE, LOW, and MEDIUM will be allowed. */
+		BLOCK_ONLY_HIGH = "BLOCK_ONLY_HIGH",
+		/** All content will be allowed. */
+		BLOCK_NONE = "BLOCK_NONE",
+		OFF = "OFF",
+	}
 }

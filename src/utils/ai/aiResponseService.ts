@@ -14,6 +14,8 @@ import {
 	modelPyeChanImageAnswer,
 	modelPyeChanAudioAnswer,
 	modelPyeChanSearchAnswer,
+	modelPyeChanAnswerNSFW,
+	modelPyeChanAnswerPoliticallyUnrestricted,
 } from "./gemini.js";
 import { ExtendedClient } from "../../client.js";
 import { findEmojis, splitMessage } from "../generic.js";
@@ -84,7 +86,8 @@ export async function generateForumResponse(
 export async function generateChatResponse(
 	context: string,
 	authorId: string,
-	image?: { mimeType: string; base64: string }
+	image?: { mimeType: string; base64: string },
+	expertAILevel?: number
 ): Promise<{ text: string; image?: Buffer }> {
 	let userParts: Part[] = [{ text: context }];
 
@@ -106,7 +109,13 @@ export async function generateChatResponse(
 		],
 	};
 
-	const result = await modelPyeChanAnswer.generateContent(request, { timeout: 10000 }).catch((e) => {
+	let model = modelPyeChanAnswer;
+	if (expertAILevel == 1) model = modelPyeChanAnswerPoliticallyUnrestricted;
+	if (expertAILevel == 2) model = modelPyeChanAnswerNSFW;
+
+	console.log(expertAILevel);
+
+	const result = await model.generateContent(request, { timeout: 10000 }).catch((e) => {
 		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
 			return {
 				response: {
@@ -124,6 +133,7 @@ export async function generateChatResponse(
 			},
 		};
 	});
+	console.log(JSON.stringify(result));
 	return processResponse(result.response, authorId, pyeChanPrompt);
 }
 
@@ -367,7 +377,7 @@ export function createForumEmbed(responseText: string, helloUsername?: string): 
 	return embedBuilder;
 }
 
-export function createChatEmbed(text: string): EmbedBuilder {
+export function createChatEmbed(text: string, expertLevelAI: number = 0): EmbedBuilder {
 	const emojiFile = emojiMapper(findEmojis(text)[0] ?? "");
 	return new EmbedBuilder()
 		.setColor(getColorFromEmojiFile(emojiFile))
@@ -381,7 +391,7 @@ export function createChatEmbed(text: string): EmbedBuilder {
 		.setThumbnail("https://cdn.discordapp.com/attachments/1282932921203818509/1332238415676047430/pyechan.png")
 		.setImage(getCachedImage(emojiFile))
 		.setTimestamp()
-		.setFooter({ text: "♥" });
+		.setFooter({ text: expertLevelAI > 0 ? "✨ Modo Experto habilitado, respuesta generada con IA" : "♥" });
 }
 
 export function createImageEmbed(image: string): EmbedBuilder {
