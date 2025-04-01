@@ -29,7 +29,7 @@ export const spamFilterList: IFilter[] = [
 		filter: /(?!(https?:\/\/)?discord\.com\/invite\/programacion$)(https?:\/\/)?discord\.com\/invite\/.+/i,
 		mute: true,
 	},
-	{ filter: /(https?:\/\/)?steamcommunity\.com\/gift(-card)?\/.+/i, mute: true },
+	{ filter: /\[.*?steamcommunity\.com\/.*\]/i, mute: true },
 	{ filter: /https?:\/\/(www\.)?\w*solara\w*\.\w+\/?/i, mute: true, staffWarn: spamBot },
 	{
 		filter: /(?:solara|wix)(?=.*\broblox\b)(?=.*(?:executor|free)).*/is,
