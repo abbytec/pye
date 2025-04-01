@@ -1,5 +1,5 @@
-import { ChannelType, ChatInputCommandInteraction, SlashCommandBuilder, TextChannel } from "discord.js";
-import { getHelpForumsIdsFromEnv } from "../../utils/constants.js";
+import { ChannelType, SlashCommandBuilder } from "discord.js";
+import { getHelpForumsIdsFromEnv, ChannelKeys } from "../../utils/constants.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
@@ -12,17 +12,41 @@ import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 export const data = new SlashCommandBuilder()
 	.setName("userposts")
 	.setDescription("Lista todos los posts activos creados por un usuario en los foros.")
+	.addStringOption((option) =>
+		option
+			.setName("foro")
+			.setDescription("Selecciona el foro a consultar")
+			.setRequired(true)
+			.addChoices(
+				{ name: "Hardware", value: "hardware" },
+				{ name: "Linux", value: "linux" },
+				{ name: "Go", value: "go" },
+				{ name: "Bases de Datos", value: "bases-de-datos" },
+				{ name: "Redes", value: "redes" },
+				{ name: "Seguridad Informática", value: "seguridad-informática" },
+				{ name: "Windows", value: "windows" },
+				{ name: "Electrónica", value: "electrónica" },
+				{ name: "Game Dev", value: "game-dev" },
+				{ name: "Ayuda General", value: "ayuda-general" },
+				{ name: "JavaScript", value: "javascript" },
+				{ name: "Rust", value: "rust" },
+				{ name: "Python", value: "python" },
+				{ name: "C#/.NET", value: "c-sharp-dotnet" },
+				{ name: "C/C++", value: "c-cpp" },
+				{ name: "HTML/CSS", value: "html-css" },
+				{ name: "PHP", value: "php" },
+				{ name: "Java/Kotlin", value: "java-kotlin" },
+				{ name: "Matemáticas", value: "matemáticas" }
+			)
+	)
 	.addUserOption((option) => option.setName("usuario").setDescription("El usuario del que querés ver los posts").setRequired(false));
 
 export const execute = composeMiddlewares(
-	[
-		verifyIsGuild(process.env.GUILD_ID ?? ""),
-		verifyCooldown("userposts", 20000, undefined, true, process.env.CLIENT_ID),
-		deferInteraction(false),
-	],
+	[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("userposts", 10000, undefined, true), deferInteraction(false)],
 	async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 		const user = (await interaction.options.getUser("usuario", false)) ?? interaction.user;
-		const forumIds = getHelpForumsIdsFromEnv();
+		const forumOption = interaction.options.getString("foro", true);
+		const forumIds = getHelpForumsIdsFromEnv(forumOption as ChannelKeys);
 		const channels = await Promise.all(
 			forumIds.map(
 				async (id) =>

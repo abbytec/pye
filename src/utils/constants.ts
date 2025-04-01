@@ -31,7 +31,7 @@ const CHANNELS = {
 	// foros
 	hardware: "1019727139173576814",
 	linux: "1019789271386837102",
-	"discord-dev": "1019729125310734366",
+	go: "1019729125310734366",
 	"bases-de-datos": "1019771485948227614",
 	redes: "1019773997296123944",
 	"seguridad-informática": "1019776581599768719",
@@ -68,6 +68,8 @@ const CHANNELS = {
 	categoryComunidad: "781678453309177877",
 	categoryForos: "1290372079279145092",
 };
+
+export type ChannelKeys = keyof typeof CHANNELS;
 
 const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	recursos: "1296190631269372055",
@@ -117,7 +119,7 @@ function getChannelsFromEnv() {
 export const helpForums: (keyof typeof CHANNELS)[] = [
 	"hardware",
 	"linux",
-	"discord-dev",
+	"go",
 	"bases-de-datos",
 	"redes",
 	"seguridad-informática",
@@ -138,7 +140,7 @@ export const helpForums: (keyof typeof CHANNELS)[] = [
 ];
 
 const forumTopicDescriptions: Map<Partial<keyof typeof CHANNELS>, string> = new Map([
-	["discord-dev", "Desarrollo de discord, incluyendo bots"],
+	["go", "Go lang"],
 	["game-dev", "Desarrollo de juegos"],
 	["c-sharp-dotnet", "C# y .NET"],
 	["c-cpp", "C y C++"],
@@ -170,9 +172,9 @@ export function getForumTopic(channelId: string): string {
 
 let forumIds: string[] = [];
 
-export function getHelpForumsIdsFromEnv() {
+export function getHelpForumsIdsFromEnv(filter?: keyof typeof CHANNELS) {
 	if (forumIds.length) return forumIds;
-	for (const forum of helpForums) {
+	for (const forum of helpForums.filter((f) => !filter || f === filter)) {
 		forumIds.push(getChannelFromEnv(forum));
 	}
 	return forumIds;
