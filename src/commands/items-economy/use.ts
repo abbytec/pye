@@ -170,7 +170,7 @@ async function handleTempRole(interaction: IPrefixChatInputCommand, userData: IU
 			id: userData.id,
 			rolId: itemData.role,
 			guildId: interaction.guildId!,
-			count: itemData.timeout + Date.now(),
+			count: itemData.timeout * 1000 + Date.now(),
 		});
 	} catch (error) {
 		console.error("Error creando el registro de UserRole:", error);
