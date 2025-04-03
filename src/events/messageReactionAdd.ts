@@ -25,7 +25,7 @@ export default {
 			await checkReactions(fullReaction, data).catch((error: any) => console.error("Error al procesar la reacción:", error));
 		} else if (
 			reaction.emoji.name === "pepedown" &&
-			(fullReaction.count ?? 0) > 5 &&
+			(fullReaction.count ?? 0) > 4 &&
 			!(reaction.message.member as GuildMember).roles.cache.get(getRoleFromEnv("iqNegativo"))
 		) {
 			await (reaction.message.member as GuildMember).roles.add(getRoleFromEnv("iqNegativo")).catch(() => null);
