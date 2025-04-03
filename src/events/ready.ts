@@ -29,7 +29,8 @@ export default {
 		voiceFarmingProcessor(client);
 		activityProcessor(client);
 		setInterval(async () => {
-			sendWelcomeMessageProcessor(client);
+			if (process.env.ENABLE_AUTO_WELCOME_MESSAGE) sendWelcomeMessageProcessor(client);
+			await client.borrarRolesTemporales();
 		}, 36e5);
 	},
 };

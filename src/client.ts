@@ -156,8 +156,6 @@ export class ExtendedClient extends Client {
 
 		this.limpiarCompartePosts();
 
-		this.borrarRolesTemporales();
-
 		if (firstTime) {
 			ExtendedClient.guildManager = this.guilds;
 			if (process.env.NODE_ENV !== "development") {
@@ -384,7 +382,7 @@ export class ExtendedClient extends Client {
 			});
 	}
 
-	private async borrarRolesTemporales() {
+	public async borrarRolesTemporales() {
 		let arr = await UserRole.find().exec();
 		let guild = this.guilds.resolve(process.env.GUILD_ID ?? "");
 		if (arr.length && guild) {

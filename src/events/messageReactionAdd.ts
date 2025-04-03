@@ -5,6 +5,7 @@ import { Evento } from "../types/event.js";
 import { getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
 import { addRep } from "../commands/rep/add-rep.js";
 import { ExtendedClient } from "../client.js";
+import { UserRole } from "../Models/Role.js";
 
 /**
  * Maneja el evento messageReactionAdd
@@ -28,9 +29,22 @@ export default {
 			!(reaction.message.member as GuildMember).roles.cache.get(getRoleFromEnv("iqNegativo"))
 		) {
 			await (reaction.message.member as GuildMember).roles.add(getRoleFromEnv("iqNegativo")).catch(() => null);
-			setTimeout(() => {
-				(reaction.message.member as GuildMember).roles.remove(getRoleFromEnv("iqNegativo")).catch(() => null);
-			}, 1000 * 60 * 60);
+			await UserRole.findOneAndUpdate(
+				{
+					id: (reaction.message.member as GuildMember).id,
+					rolId: getRoleFromEnv("iqNegativo"),
+					guildId: process.env.GUILD_ID ?? "",
+				},
+				{
+					$setOnInsert: {
+						count: 1000 * 60 * 60 * 3 + Date.now(),
+					},
+				},
+				{
+					upsert: true,
+					new: true,
+				}
+			);
 		}
 		if (fullReaction.emoji.id) ExtendedClient.trending.add("emoji", (fullReaction.emoji.name ?? "") + ":" + fullReaction.emoji.id);
 	},
