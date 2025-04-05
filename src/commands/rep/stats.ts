@@ -35,7 +35,7 @@ export default {
 
 			// Obtener datos
 			let data: any = (await HelperPoint.findOne({ _id: member.id })) ?? { points: 0 };
-			let people = await HelperPoint.find().sort({ points: -1 });
+			let people = await HelperPoint.find().sort({ points: -1, _id: -1 });
 
 			const points = data.points.toLocaleString();
 			const userData = await Users.findOne({ id: member.id });
