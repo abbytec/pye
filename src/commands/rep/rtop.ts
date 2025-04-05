@@ -44,7 +44,7 @@ export default {
 					if (page >= totalPages) page = totalPages - 1;
 
 					const users = await HelperPoint.find()
-						.sort({ points: -1 })
+						.sort({ points: -1, _id: -1 })
 						.skip(page * pageSize)
 						.limit(pageSize)
 						.lean();
