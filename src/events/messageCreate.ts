@@ -209,22 +209,24 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 				} else {
 					client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
 
-					msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
-						thread.send({
-							embeds: [
-								new EmbedBuilder()
-									.setTitle("Protege tu dinero y asegurate de que tu trabajo sea finalizado")
-									.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
-									.setDescription(
-										"Por favor te __recordamos__ tomar todas las precauciones posibles al interactuar en estos canales ya que el staff no puede **intervenir** con estafas. **SOLAMENTE TÚ PUEDES EVITAR SER VÍCTIMA DE UNA ESTAFA.**"
-									),
-								new EmbedBuilder()
-									.setTitle("Recomendaciones")
-									.setDescription(employmentsDescription)
-									.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" })),
-							],
-						});
-					});
+					msg.startThread({ name: `${msg.author.username}'s Thread` })
+						.then((thread) => {
+							thread.send({
+								embeds: [
+									new EmbedBuilder()
+										.setTitle("Protege tu dinero y asegurate de que tu trabajo sea finalizado")
+										.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
+										.setDescription(
+											"Por favor te __recordamos__ tomar todas las precauciones posibles al interactuar en estos canales ya que el staff no puede **intervenir** con estafas. **SOLAMENTE TÚ PUEDES EVITAR SER VÍCTIMA DE UNA ESTAFA.**"
+										),
+									new EmbedBuilder()
+										.setTitle("Recomendaciones")
+										.setDescription(employmentsDescription)
+										.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" })),
+								],
+							});
+						})
+						.catch(() => null);
 					await setCooldown(client, msg.author.id, "comparte-post", 1000 * 60 * 60 * 24 * 7);
 				}
 			});
@@ -245,19 +247,21 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 					setTimeout(async () => await warn.delete().catch(() => null), 10000);
 				} else {
 					client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
-					msg.startThread({ name: `${msg.author.username}'s Thread` }).then((thread) => {
-						thread.send({
-							content: `Hey ${msg.author.toString()}!`,
-							embeds: [
-								new EmbedBuilder()
-									.setTitle("¡Evita que te estafen!")
-									.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
-									.setDescription(
-										"Por favor te __recordamos__ tomar todas las precauciones posibles al interactuar en estos canales ya que el staff no puede **intervenir** con estafas. **SOLAMENTE TÚ PUEDES EVITAR SER VÍCTIMA DE UNA ESTAFA.**"
-									),
-							],
-						});
-					});
+					msg.startThread({ name: `${msg.author.username}'s Thread` })
+						.then((thread) => {
+							thread.send({
+								content: `Hey ${msg.author.toString()}!`,
+								embeds: [
+									new EmbedBuilder()
+										.setTitle("¡Evita que te estafen!")
+										.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
+										.setDescription(
+											"Por favor te __recordamos__ tomar todas las precauciones posibles al interactuar en estos canales ya que el staff no puede **intervenir** con estafas. **SOLAMENTE TÚ PUEDES EVITAR SER VÍCTIMA DE UNA ESTAFA.**"
+										),
+								],
+							});
+						})
+						.catch(() => null);
 					await setCooldown(client, msg.author.id, "comparte-post", 1000 * 60 * 60 * 24 * 7);
 				}
 			});
@@ -291,11 +295,11 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 			}
 			break;
 		case getChannelFromEnv("gruposDeEstudio"):
-			msg.startThread({ name: `Grupo de ${msg.author.username}` });
+			msg.startThread({ name: `Grupo de ${msg.author.username}` }).catch(() => null);
 			break;
 		case getChannelFromEnv("linkedin"):
 			if (msg.content.match(redesRegex)) {
-				msg.startThread({ name: `Comentarios sobre mi página` });
+				msg.startThread({ name: `Comentarios sobre mi página` }).catch(() => null);
 			} else {
 				let warn = await (msg.channel as TextChannel).send({
 					content: `🚫 <@${msg.author.id}>Por favor, incluye un enlace a tu perfil/portafolio en el mensaje.`,
