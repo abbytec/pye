@@ -392,3 +392,10 @@ export async function saveTranscript(channel: TextChannel | AnyThreadChannel, ti
 	fs.writeFileSync(filePath, htmlContent, "utf8");
 	return filePath;
 }
+
+export function getYesterdayISO(): string {
+	const now = new Date();
+	now.setDate(now.getDate() - 1);
+	const yesterdayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
+	return yesterdayUTC.toISOString(); // Ej: "2025-04-04T00:00:00.000Z"
+}
