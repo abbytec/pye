@@ -33,6 +33,7 @@ import { UserRole } from "./Models/Role.js";
 import { checkFood, checkMood, checkPets, checkShower } from "./commands/items-economy/pet.js";
 import { getYesterdayISO } from "./utils/generic.js";
 import { createSimpleChatEmbed } from "./utils/ai/aiResponseService.js";
+import { MemeOfTheDay } from "./Models/MemeOfTheDay.js";
 
 interface VoiceFarming {
 	date: Date;
@@ -241,6 +242,7 @@ export class ExtendedClient extends Client {
 			ExtendedClient.trending.load(emojis, stickers, forumChannels);
 		} else {
 			ExtendedClient.trending.dailySave();
+			await this.starboardMemeOfTheDay();
 			await this.saveCompartePosts().catch((error) => console.error(error));
 			await this.sendDailyNews(
 				ExtendedClient.guildManager?.cache
@@ -253,6 +255,18 @@ export class ExtendedClient extends Client {
 		setInterval(() => checkFood(), 28800000);
 		setInterval(() => checkMood(), 14400000);
 		setInterval(() => checkShower(), 18000000);
+	}
+
+	private async starboardMemeOfTheDay(): Promise<void> {
+		const top = await MemeOfTheDay.getTopReaction();
+		if (top && top.count > 4) {
+			(ExtendedClient.guildManager?.cache.get(process.env.GUILD_ID ?? "")?.channels.resolve(getChannelFromEnv("starboard")) as TextChannel)
+				.send({
+					content: `Meme del día, subido por **${top.username}**`,
+					files: [top.url],
+				})
+				.then(() => MemeOfTheDay.resetCount());
+		}
 	}
 
 	private limpiarCompartePosts(): void {

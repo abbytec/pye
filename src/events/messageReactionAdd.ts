@@ -6,6 +6,7 @@ import { getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
 import { addRep } from "../commands/rep/add-rep.js";
 import { ExtendedClient } from "../client.js";
 import { UserRole } from "../Models/Role.js";
+import { MemeOfTheDay } from "../Models/MemeOfTheDay.js";
 
 /**
  * Maneja el evento messageReactionAdd
@@ -44,6 +45,18 @@ export default {
 					upsert: true,
 					new: true,
 				}
+			);
+		}
+		if (reaction.message.channelId === getChannelFromEnv("memes")) {
+			if (reaction.partial) await reaction.fetch();
+			const message = reaction.message;
+			// Obtener imagen adjunta (primer adjunto que sea imagen)
+			const imageAttachment = message.attachments.find((att) => att.contentType?.startsWith("image/"))?.url;
+			if (!imageAttachment) return;
+			await MemeOfTheDay.analyzeMemeOfTheDay(
+				imageAttachment,
+				message.author?.tag ?? "Autor desconocido",
+				message.reactions.cache.reduce((acc, r) => acc + (r.count || 0), 0)
 			);
 		}
 		if (fullReaction.emoji.id) ExtendedClient.trending.add("emoji", (fullReaction.emoji.name ?? "") + ":" + fullReaction.emoji.id);
