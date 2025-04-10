@@ -234,6 +234,7 @@ const ROLES = {
 	iqNegativo: "1302062476266967201",
 	nitroBooster: "790356204001296394",
 	nitroOldBooster: "853401223939751937",
+	colaborador: "1360019846850416821",
 
 	// sanciones
 	restringido: "984278721055830047",
@@ -276,6 +277,7 @@ const DEV_ROLES: Record<Roles, string> = {
 	iqNegativo: "1307563510716432455",
 	nitroBooster: "1296190630665392189",
 	nitroOldBooster: "1296190630665392189",
+	colaborador: "1360020664303489024",
 
 	// sanciones
 	restringido: "1296190630678233109",
