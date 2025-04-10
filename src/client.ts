@@ -405,10 +405,13 @@ export class ExtendedClient extends Client {
 
 	private async sendDailyNews(channel: TextChannel): Promise<void> {
 		const yesterdayISO = getYesterdayISO();
-		const apiKey = process.env.CURRENTS_API_KEY ?? "";
+		const apiKey = process.env.CURRENTS_API_KEY;
+		if (!apiKey) {
+			console.log("No se encontró la API key de CurrentsAPI.");
+			return;
+		}
 		// Formamos la URL usando la fecha en formato RFC3339
 		const url = `https://api.currentsapi.services/v1/search?apiKey=${apiKey}&language=es&category=technology&start_date=${yesterdayISO}`;
-
 		try {
 			const data = await fetch(url)
 				.catch((e) => {
@@ -420,7 +423,7 @@ export class ExtendedClient extends Client {
 				});
 
 			if (!data.news || data.news.length === 0) {
-				console.log("No se encontraron noticias.");
+				console.log("No se encontraron noticias. Data:", data);
 				return;
 			}
 

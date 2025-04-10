@@ -26,7 +26,7 @@ import {
 	GoogleGenerativeAIFetchError,
 	Part,
 } from "@google/generative-ai";
-import { saveUserPreferences, UserMemoryResponse } from "./userMemory.js";
+import { saveUserData, UserMemoryResponse } from "./userMemory.js";
 import { Reminder, scheduleDMReminder } from "./dmReminders.js";
 import { COLORS } from "../constants.js";
 
@@ -89,6 +89,7 @@ export async function generateChatResponse(
 	image?: { mimeType: string; base64: string },
 	expertAILevel?: number
 ): Promise<{ text: string; image?: Buffer }> {
+	console.log("context", context);
 	let userParts: Part[] = [{ text: context }];
 
 	if (image) {
@@ -112,8 +113,6 @@ export async function generateChatResponse(
 	let model = modelPyeChanAnswer;
 	if (expertAILevel == 1) model = modelPyeChanAnswerPoliticallyUnrestricted;
 	if (expertAILevel == 2) model = modelPyeChanAnswerNSFW;
-
-	console.log(expertAILevel);
 
 	const result = await model.generateContent(request, { timeout: 10000 }).catch((e) => {
 		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
@@ -329,9 +328,9 @@ async function processResponse(
 					text += part.text;
 				} else if (part.functionCall) {
 					const { name: functionName, args: functionArgs } = part.functionCall;
-					if (functionName === "saveUserPreferences") {
+					if (functionName === "saveUserLikes" || functionName === "saveUserWants") {
 						const args = functionArgs as UserMemoryResponse;
-						saveUserPreferences(authorId, args.likes, args.wants);
+						saveUserData(authorId, args.likes, args.wants);
 					} else if (functionName === "createReminder") {
 						const args = functionArgs as Reminder;
 						await scheduleDMReminder(args.reminderTime, args.message, authorId);

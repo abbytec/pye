@@ -13,7 +13,7 @@ export async function getRecursiveRepliedContext(
 	let contextLines: string[] = [];
 	let currentMessage: Message<boolean> | null = message;
 	let depth = 0;
-	const botName = pyeChan ? "PyE chan: " : "PyE Bot: ";
+	const botName = pyeChan ? "PyE chan" : "PyE Bot";
 	let finalMessage = "";
 
 	while (currentMessage?.reference?.messageId && depth < maxDepth) {
@@ -23,9 +23,9 @@ export async function getRecursiveRepliedContext(
 		if (!repliedMessage) break;
 		// Determina el nombre del autor, reemplazando el nombre del bot si es necesario
 		if (repliedMessage.author.id === (process.env.CLIENT_ID ?? "")) {
-			contextLines.unshift(`${botName}${repliedMessage.content || repliedMessage.embeds[0]?.description}`);
+			contextLines.unshift(`${botName}: ${replaceBotMentions(botName, repliedMessage.embeds[0]?.description ?? repliedMessage.content)}`);
 		} else {
-			contextLines.unshift(`${repliedMessage.author.username}: ${repliedMessage.content}`);
+			contextLines.unshift(`${repliedMessage.author.username}: ${replaceBotMentions(botName, repliedMessage.content)}`);
 		}
 
 		// Actualiza el mensaje actual para la siguiente iteración
@@ -41,12 +41,20 @@ export async function getRecursiveRepliedContext(
 	}
 
 	// Finalmente, añade el mensaje inicial al contexto
-	const initialAuthorName = message.author.id === (process.env.CLIENT_ID ?? "") ? botName : message.author.username;
+	const initialAuthorName = message.author.id === (process.env.CLIENT_ID ?? "") ? botName + ": " : message.author.username;
 
-	if (initialMessage) contextLines.push(`${initialAuthorName}: ${initialMessage}`);
-	else contextLines.push(`${initialAuthorName}: ${message.content}`);
+	if (initialMessage) contextLines.push(`${initialAuthorName}: ${replaceBotMentions(botName, initialMessage)}`);
+	else contextLines.push(`${initialAuthorName}: ${replaceBotMentions(botName, message.content)}`);
 
 	finalMessage += contextLines.join("\n");
 
-	return finalMessage + "\n" + botName;
+	return finalMessage + "\n" + (botName + ": ");
+}
+
+function replaceBotMentions(botName: string, message: string = ""): string {
+	const botId = process.env.CLIENT_ID;
+	if (!botId) return message;
+
+	const mentionRegex = new RegExp(`<@!?${botId}>`, "g");
+	return message.replace(mentionRegex, botName);
 }

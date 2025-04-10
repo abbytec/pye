@@ -2,7 +2,7 @@ import { FunctionDeclaration, SchemaType } from "@google/generative-ai";
 
 const USER_MEMORY = new Map<string, DatedUserMemoryResponse[]>();
 
-export function saveUserPreferences(uid: string, likes: string[], wants: string[]): void {
+export function saveUserData(uid: string, likes?: string[], wants?: string[]): void {
 	if (!USER_MEMORY.has(uid)) {
 		USER_MEMORY.set(uid, [{ date: new Date(), memory: { likes: likes ?? [], wants: wants ?? [] } }]);
 	} else {
@@ -39,10 +39,10 @@ export function getUserMemories(uid: string): string {
 
 	const resultParts: string[] = [];
 	if (allLikes.length > 0) {
-		resultParts.push(`Me gusta: ${allLikes.join(", ")}`);
+		resultParts.push(`Me gusta ${allLikes.join(", ")}`);
 	}
 	if (allWants.length > 0) {
-		resultParts.push(`Quiero/espero: ${allWants.join(", ")}`);
+		resultParts.push(`Quiero/espero ${allWants.join(", ")}`);
 	}
 
 	return resultParts.length !== 0 ? resultParts.join("\n") + "\n" : "";
@@ -60,9 +60,9 @@ setInterval(() => {
 	});
 }, 60 * 1000);
 
-export const saveUserPreferencesFunctionSchema: FunctionDeclaration = {
-	name: "saveUserPreferences",
-	description: "Guarda información sobre el usuario, incluyendo lo que le gusta, hace y lo que desea hacer.",
+export const saveUserLikesFunctionSchema: FunctionDeclaration = {
+	name: "saveUserLikes",
+	description: "Guarda información sobre lo que le gusta, disfruta o hace el usuario.",
 	parameters: {
 		type: SchemaType.OBJECT,
 		properties: {
@@ -71,13 +71,24 @@ export const saveUserPreferencesFunctionSchema: FunctionDeclaration = {
 				items: { type: SchemaType.STRING },
 				description: "Lo que le gusta, disfruta o hace el usuario (array of strings).",
 			},
+		},
+		required: ["likes"],
+	},
+};
+
+export const saveUserWantsFunctionSchema: FunctionDeclaration = {
+	name: "saveUserWants",
+	description: "Guarda información sobre lo que el usuario quiere o lo que desea (incluido como quiere ser tratad@).",
+	parameters: {
+		type: SchemaType.OBJECT,
+		properties: {
 			wants: {
 				type: SchemaType.ARRAY,
 				items: { type: SchemaType.STRING },
 				description: "Lo que el usuario quiere o desea (array of strings).",
 			},
 		},
-		required: [],
+		required: ["wants"],
 	},
 };
 
