@@ -12,6 +12,7 @@ import {
 	GuildManager,
 	GuildEmoji,
 	GuildMember,
+	EmbedBuilder,
 } from "discord.js";
 import { Command } from "./types/command.js"; // Asegúrate de definir la interfaz Command
 import { ICooldown } from "./Models/Cooldown.js";
@@ -19,7 +20,7 @@ import { Rob } from "./commands/farming/rob.js";
 import { CommandLimits, ICommandLimits } from "./Models/Command.js";
 import { IMoney, Money } from "./Models/Money.js";
 import { Agenda } from "agenda";
-import { getChannelFromEnv, getRoleFromEnv } from "./utils/constants.js";
+import { COLORS, getChannelFromEnv, getRoleFromEnv } from "./utils/constants.js";
 import Trending from "./Models/Trending.js";
 import { ICompartePost, UltimosCompartePosts } from "./Models/CompartePostModel.js";
 import { AnyBulkWriteOperation } from "mongoose";
@@ -260,10 +261,19 @@ export class ExtendedClient extends Client {
 	private async starboardMemeOfTheDay(): Promise<void> {
 		const top = await MemeOfTheDay.getTopReaction();
 		if (top && top.count > 4) {
+			const embed = new EmbedBuilder()
+				.setAuthor({
+					name: "Meme del día",
+					iconURL:
+						"https://cdn.discordapp.com/attachments/1115058778736431104/1282790824744321167/vecteezy_heart_1187438.png?ex=66e0a38d&is=66df520d",
+				})
+				.setDescription(`Subido por **${top.username}** [(ir al meme)](${top.messageUrl})`)
+				.setImage(top.url)
+				.setFooter({ text: `💬 ${top.count} reacciones` })
+				.setColor(COLORS.pyeLightBlue);
 			(ExtendedClient.guildManager?.cache.get(process.env.GUILD_ID ?? "")?.channels.resolve(getChannelFromEnv("starboard")) as TextChannel)
 				.send({
-					content: `Meme del día, subido por **${top.username}**`,
-					files: [top.url],
+					embeds: [embed],
 				})
 				.then(() => MemeOfTheDay.resetCount());
 		}

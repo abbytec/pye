@@ -56,6 +56,7 @@ export default {
 			await MemeOfTheDay.analyzeMemeOfTheDay(
 				imageAttachment,
 				message.author?.tag ?? "Autor desconocido",
+				message.url,
 				message.reactions.cache.reduce((acc, r) => acc + (r.count || 0), 0)
 			);
 		}

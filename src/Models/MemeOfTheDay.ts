@@ -1,7 +1,7 @@
 import client from "../redis.js";
 
 const KEY = "memeOfTheDay";
-const analyzeMemeOfTheDay = async (url: string, username: string, reactions: number): Promise<void> => {
+const analyzeMemeOfTheDay = async (url: string, username: string, messageUrl: string, reactions: number): Promise<void> => {
 	const existing = await client.hGetAll(KEY);
 	const currentCount = Number(existing.count) || 0;
 
@@ -9,6 +9,7 @@ const analyzeMemeOfTheDay = async (url: string, username: string, reactions: num
 		await client.hSet(KEY, {
 			url,
 			username,
+			messageUrl: messageUrl,
 			count: reactions.toString(),
 		});
 	}
@@ -26,6 +27,7 @@ const getTopReaction = async () => {
 	return {
 		url: data.url,
 		username: data.username,
+		messageUrl: data.messageUrl,
 		count: Number(data.count),
 	};
 };
