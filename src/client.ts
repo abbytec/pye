@@ -169,7 +169,7 @@ export class ExtendedClient extends Client {
 							?.channels.resolve(getChannelFromEnv("logs")) as TextChannel
 					).send({
 						content: `${
-							process.env.NODE_ENV === "development" ? `@here` : "<@220683580467052544> <@602240617862660096>"
+							process.env.NODE_ENV === "development" ? `@here` : "<@220683580467052544>"
 						}Error en promesa no capturado, razon: ${reason}. Promesa: \`\`\`js\n${inspect(promise)}\`\`\``,
 						flags: MessageFlags.SuppressNotifications,
 					});
@@ -183,9 +183,9 @@ export class ExtendedClient extends Client {
 							.get(process.env.GUILD_ID ?? "")
 							?.channels.resolve(getChannelFromEnv("logs")) as TextChannel
 					).send({
-						content: `${
-							process.env.NODE_ENV === "development" ? `@here` : "<@220683580467052544> <@602240617862660096>"
-						}Error no capturado (${error.message}):\n \`\`\`js\n${error.stack}\`\`\``,
+						content: `${process.env.NODE_ENV === "development" ? `@here` : "<@220683580467052544>"}Error no capturado (${
+							error.message
+						}):\n \`\`\`js\n${error.stack}\`\`\``,
 						flags: MessageFlags.SuppressNotifications,
 					});
 				});

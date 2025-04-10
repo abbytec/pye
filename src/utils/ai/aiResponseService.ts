@@ -89,7 +89,6 @@ export async function generateChatResponse(
 	image?: { mimeType: string; base64: string },
 	expertAILevel?: number
 ): Promise<{ text: string; image?: Buffer }> {
-	console.log("context", context);
 	let userParts: Part[] = [{ text: context }];
 
 	if (image) {
@@ -123,7 +122,7 @@ export async function generateChatResponse(
 					candidates: [],
 				},
 			};
-		console.error(e);
+		console.error("La prompt que causó el error es:", context, "y el error es:", e);
 		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
 		return {
 			response: {
@@ -132,7 +131,6 @@ export async function generateChatResponse(
 			},
 		};
 	});
-	console.log(JSON.stringify(result));
 	return processResponse(result.response, authorId, pyeChanPrompt);
 }
 
@@ -170,7 +168,7 @@ export async function generateChatResponseSearch(
 					candidates: [],
 				},
 			};
-		console.error(e);
+		console.error("La prompt que causó el error es:", context, "y el error es:", e);
 		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
 		return {
 			response: {
@@ -256,6 +254,7 @@ export async function generateAudioResponse(
 					candidates: [],
 				},
 			};
+		console.error("La prompt que causó el error es:", context, "y el error es:", e);
 		ExtendedClient.logError("Error al generar la respuesta de PyEChan Audio:" + e.message, e.stack, authorId);
 		return {
 			response: {
@@ -301,6 +300,7 @@ export async function generateImageResponse(
 					candidates: [],
 				},
 			};
+		console.error("La prompt que causó el error es:", context, "y el error es:", e);
 		ExtendedClient.logError("Error al generar la respuesta de PyEChan Image:" + e.message, e.stack, authorId);
 		return {
 			response: {
