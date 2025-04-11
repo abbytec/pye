@@ -67,46 +67,59 @@ export default {
 		const client = message.client as ExtendedClient;
 
 		if (!message.inGuild()) {
-			return await (message.channel as DMChannel).send({
-				embeds: [
-					new EmbedBuilder()
-						.setColor(COLORS.pyeLightBlue) // Puedes elegir el color que prefieras
-						.setTitle("¡Hola! 👋")
-						.setDescription(
-							`Actualmente, **no soportamos comandos** a través de **mensajes directos**.\n\n` +
-								`Si te encuentras **baneado** o **silenciado** en nuestro servidor, puedes **apelar** en el siguiente enlace:\n` +
-								`👉 [Apela aquí](https://discord.gg/F8QxEMtJ3B)`
-						)
-						.setThumbnail(client.user?.displayAvatarURL() ?? "")
-						.setTimestamp()
-						.setFooter({ text: "Gracias por entender y por ser parte de nuestra comunidad." }),
-				],
-			});
-		}
-
-		if (
-			!(
-				message.channel.parentId === getChannelFromEnv("categoryStaff") ||
-				message.member?.permissions.has("Administrator") ||
-				client.staffMembers.includes(message.author.id) ||
-				message.member?.roles.cache.has(getRoleFromEnv("instructorDeTaller"))
-			)
-		) {
-			let member: GuildMember | User | null = message.interactionMetadata?.user ?? null;
-			if (member) {
-				member = await message.guild?.members.fetch(member.id).catch(() => message.member);
-			} else {
-				member = message.member;
-			}
-			if ((await spamFilter(member, client, message as IDeletableContent, message.content)) || (await checkMentionSpam(message, client)))
-				return;
-		}
-		if (message.author.bot || message.author.system) return;
-
-		if (!message.content.startsWith(PREFIX)) {
-			messagesProcessingLimiter.schedule(async () => await processCommonMessage(message, client));
+			client.guilds.cache
+				.get(process.env.GUILD_ID ?? "")
+				?.members.fetch(message.author.id)
+				.then(async (member) => {
+					if (member.roles.cache.has(getRoleFromEnv("colaborador"))) {
+						if (ExtendedClient.checkDailyAIUsageDM(message.author.id)) await manageAIResponse(message, undefined, true);
+						else member.user.send("Has alcanzado el límite de uso diario de la IA. Por favor espera hasta mañana 💙");
+					} else
+						await (message.channel as DMChannel).send({
+							embeds: [
+								new EmbedBuilder()
+									.setColor(COLORS.pyeLightBlue) // Puedes elegir el color que prefieras
+									.setTitle("¡Hola! 👋")
+									.setDescription(
+										`Actualmente, **no soportamos comandos** a través de **mensajes directos**.\n\n` +
+											`Si te encuentras **baneado** o **silenciado** en nuestro servidor, puedes **apelar** en el siguiente enlace:\n` +
+											`👉 [Apela aquí](https://discord.gg/F8QxEMtJ3B)\n\n` +
+											`Si deseas chatear con la IA debes tener \`.gg/programación\` en tu estado de discord.`
+									)
+									.setThumbnail(client.user?.displayAvatarURL() ?? "")
+									.setTimestamp()
+									.setFooter({ text: "Gracias por entender y por ser parte de nuestra comunidad." }),
+							],
+						});
+				});
 		} else {
-			commandProcessingLimiter.schedule(async () => await processPrefixCommand(message, client));
+			if (
+				!(
+					message.channel.parentId === getChannelFromEnv("categoryStaff") ||
+					message.member?.permissions.has("Administrator") ||
+					client.staffMembers.includes(message.author.id) ||
+					message.member?.roles.cache.has(getRoleFromEnv("instructorDeTaller"))
+				)
+			) {
+				let member: GuildMember | User | null = message.interactionMetadata?.user ?? null;
+				if (member) {
+					member = await message.guild?.members.fetch(member.id).catch(() => message.member);
+				} else {
+					member = message.member;
+				}
+				if (
+					(await spamFilter(member, client, message as IDeletableContent, message.content)) ||
+					(await checkMentionSpam(message, client))
+				)
+					return;
+			}
+			if (message.author.bot || message.author.system) return;
+
+			if (!message.content.startsWith(PREFIX)) {
+				messagesProcessingLimiter.schedule(async () => await processCommonMessage(message, client));
+			} else {
+				commandProcessingLimiter.schedule(async () => await processPrefixCommand(message, client));
+			}
 		}
 	},
 };
@@ -392,10 +405,10 @@ async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClie
 	return cooldownPost;
 }
 
-export async function manageAIResponse(message: Message<boolean>, isForumPost: string | undefined) {
+export async function manageAIResponse(message: Message<boolean>, isForumPost: string | undefined, isDm: boolean = false) {
 	if (message.mentions.everyone) return;
 
-	let botShouldAnswer = message.mentions.has(process.env.CLIENT_ID ?? "");
+	let botShouldAnswer = message.mentions.has(process.env.CLIENT_ID ?? "") || isDm;
 
 	// Si el mensaje es una respuesta, se verifica si el mensaje original fue enviado por el bot
 	if (message.reference?.messageId) {

@@ -64,6 +64,7 @@ export class ExtendedClient extends Client {
 	public static bankAvgCoins: number = 100000;
 	public static adaLovelaceReps: number = 512;
 	public static adaLovelaceTop10Id: string = "";
+	private static readonly dailyAIUsageDM: Map<string, number> = new Map();
 
 	constructor() {
 		super({
@@ -243,7 +244,8 @@ export class ExtendedClient extends Client {
 			ExtendedClient.trending.load(emojis, stickers, forumChannels);
 		} else {
 			ExtendedClient.trending.dailySave();
-			await this.starboardMemeOfTheDay();
+			ExtendedClient.dailyAIUsageDM.clear();
+			await this.starboardMemeOfTheDay().catch((error) => console.error(error));
 			await this.saveCompartePosts().catch((error) => console.error(error));
 			await this.sendDailyNews(
 				ExtendedClient.guildManager?.cache
@@ -478,5 +480,17 @@ export class ExtendedClient extends Client {
 		} catch (error) {
 			console.error("Error al procesar las noticias:", error);
 		}
+	}
+
+	public static checkDailyAIUsageDM(userId: string) {
+		let usages = ExtendedClient.dailyAIUsageDM.get(userId);
+		if (usages) {
+			usages++;
+			if (usages > 10) return false;
+			ExtendedClient.dailyAIUsageDM.set(userId, usages);
+		} else {
+			ExtendedClient.dailyAIUsageDM.set(userId, 1);
+		}
+		return true;
 	}
 }
