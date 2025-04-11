@@ -32,7 +32,7 @@ import { IGameSession } from "./interfaces/IGameSession.js";
 import { HelperPoint, IHelperPoint } from "./Models/HelperPoint.js";
 import { UserRole } from "./Models/Role.js";
 import { checkFood, checkMood, checkPets, checkShower } from "./commands/items-economy/pet.js";
-import { getYesterdayISO } from "./utils/generic.js";
+import { getYesterdayUTC } from "./utils/generic.js";
 import { createSimpleChatEmbed } from "./utils/ai/aiResponseService.js";
 import { MemeOfTheDay } from "./Models/MemeOfTheDay.js";
 
@@ -428,7 +428,7 @@ export class ExtendedClient extends Client {
 	}
 
 	private async sendDailyNews(channel: TextChannel): Promise<void> {
-		const yesterdayISO = getYesterdayISO();
+		const yesterdayISO = getYesterdayUTC().toISOString();
 		const apiKey = process.env.CURRENTS_API_KEY;
 		if (!apiKey) {
 			console.log("No se encontró la API key de CurrentsAPI.");

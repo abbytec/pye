@@ -7,6 +7,7 @@ import { addRep } from "../commands/rep/add-rep.js";
 import { ExtendedClient } from "../client.js";
 import { UserRole } from "../Models/Role.js";
 import { MemeOfTheDay } from "../Models/MemeOfTheDay.js";
+import { getTodayUTC } from "../utils/generic.js";
 
 /**
  * Maneja el evento messageReactionAdd
@@ -52,13 +53,14 @@ export default {
 			const message = reaction.message;
 			// Obtener imagen adjunta (primer adjunto que sea imagen)
 			const imageAttachment = message.attachments.find((att) => att.contentType?.startsWith("image/"))?.url;
-			if (!imageAttachment) return;
-			await MemeOfTheDay.analyzeMemeOfTheDay(
-				imageAttachment,
-				message.author?.tag ?? "Autor desconocido",
-				message.url,
-				message.reactions.cache.reduce((acc, r) => acc + (r.count || 0), 0)
-			);
+
+			if (imageAttachment && message.createdAt >= getTodayUTC())
+				await MemeOfTheDay.analyzeMemeOfTheDay(
+					imageAttachment,
+					message.author?.tag ?? "Autor desconocido",
+					message.url,
+					message.reactions.cache.reduce((acc, r) => acc + (r.count || 0), 0)
+				);
 		}
 		if (fullReaction.emoji.id) ExtendedClient.trending.add("emoji", (fullReaction.emoji.name ?? "") + ":" + fullReaction.emoji.id);
 	},
