@@ -1,7 +1,9 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, TextChannel, Message } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, TextChannel, GuildMember } from "discord.js";
 import { COLORS, getChannel } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
+import { getTodayUTC } from "../../utils/generic.js";
+import { replyWarning } from "../../utils/messages/replyWarning.js";
 
 const data = new SlashCommandBuilder()
 	.setName("sugerir")
@@ -40,7 +42,11 @@ async function sugerir(sugerencia: string | null, interaction: IPrefixChatInputC
 
 async function execute(interaction: IPrefixChatInputCommand) {
 	const args = interaction.options.getString("sugerencia");
-	await sugerir(args, interaction);
+	const member = interaction.member as GuildMember;
+	const today = getTodayUTC();
+	today.setMonth(today.getMonth() - 1);
+	if ((member.joinedAt ?? new Date()) < today) await sugerir(args, interaction);
+	else await replyWarning(interaction, "Para poder realizar una sugerencia debes haber estado en el servidor por al menos un mes.");
 }
 
 // Exportar el comando implementando la interfaz Command
