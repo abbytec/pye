@@ -43,7 +43,7 @@ export default {
 			const game = [[], [], []].map(() => [Math.random(), Math.random(), Math.random()].map((v) => Math.floor(v * 7)));
 			let loseWinRate;
 			if (["Bombero", "Bombera", "Enfermero", "Enfermera", "Doctor", "Doctora"].includes(userData.profile?.job ?? "")) {
-				loseWinRate = Math.random() < 0.41;
+				loseWinRate = Math.random() < 0.46;
 			} else {
 				loseWinRate = Math.random() < 0.49;
 			}
@@ -56,7 +56,7 @@ export default {
 
 			if (loseWinRate || (game[1][1] == game[1][2] && game[1][1] == game[1][0])) {
 				game[1][1] = game[1][2] = game[1][0];
-				amount += calculateJobMultiplier(userData.profile?.job, amount, userData.couples || []);
+				amount = calculateJobMultiplier(userData.profile?.job, amount, userData.couples || []);
 				embed.setDescription(`Has ganado ${amount}.\n
                     ${game.map((l, i) => l.map((n) => (i === 1 ? pyecoin : emojis[n])).join(" | ") + (i === 1 ? " ⬅" : "")).join("\n")}
                     `);
