@@ -188,7 +188,6 @@ async function processPrefixCommand(message: Message, client: ExtendedClient) {
 
 const employmentsDescription =
 	"• No pagues ni entregues ningún trabajo y/o servicio en su totalidad hasta estar completamente seguro que la otra persona es confiable.\n" +
-	"• No pagues ni entregues ningúno trabajo y/o servicio en su totalidad hasta estar completamente seguro que la otra persona es confiable.\n" +
 	"• Sugerímos realizar pagos pequeños por hitos, es decir, entregables pequeños que muestren un avance real. Asi como pactar previamente comisiones externas como por ejemplo, si el monto a transferir incluye impuestos o estos se contabilizan aparte.\n" +
 	"• Si la publicación no ofrece muchos datos al respecto, debes dudar de la misma o bien puedes reportarla a un moderador.\n" +
 	"• Si tienes pruebas sobre la conducta cuestionable de un usuario, puedes reportarlo para impedirle el acceso a estos canales.\n" +
