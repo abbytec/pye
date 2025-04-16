@@ -43,7 +43,7 @@ export default {
 			const game = [[], [], []].map(() => [Math.random(), Math.random(), Math.random()].map((v) => Math.floor(v * 7)));
 			let loseWinRate;
 			if (["Bombero", "Bombera", "Enfermero", "Enfermera", "Doctor", "Doctora"].includes(userData.profile?.job ?? "")) {
-				loseWinRate = Math.random() < 0.42;
+				loseWinRate = Math.random() < 0.41;
 			} else {
 				loseWinRate = Math.random() < 0.49;
 			}
