@@ -140,11 +140,8 @@ export default {
 						return;
 					}
 
-					const newItems = await Shop.find(
-						{ $or: [{ background: { $exists: false } }, { background: null }] },
-						"name price description itemId icon"
-					)
-						.sort({ price: 1 })
+					const newItems = await Shop.find(filter, "name price description itemId icon")
+						.sort({ price: 1, itemId: 1 })
 						.skip((page - 1) * ITEMS_PER_PAGE)
 						.limit(ITEMS_PER_PAGE)
 						.lean();
