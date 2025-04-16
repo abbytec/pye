@@ -70,7 +70,7 @@ export default {
 				page = Math.min(page, totalPages);
 
 				const items = await Shop.find(filter, "name price description itemId icon")
-					.sort({ price: 1 })
+					.sort({ price: 1, itemId: 1 })
 					.skip((page - 1) * ITEMS_PER_PAGE)
 					.limit(ITEMS_PER_PAGE)
 					.lean();
