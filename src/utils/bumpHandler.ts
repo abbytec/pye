@@ -82,17 +82,15 @@ export async function bumpHandler(message: Message): Promise<void> {
 
 		// Notificar al usuario que puede hacer bump nuevamente después de 2 horas
 		setTimeout(async () => {
-			try {
-				await member.send({
+			await member
+				.send({
 					embeds: [
 						new EmbedBuilder()
 							.setDescription(`¡ Ya puedes hacer bump de nuevo ! 🎉\n<#${getChannelFromEnv("casinoPye")}>`)
 							.setColor(COLORS.okGreen),
 					],
-				});
-			} catch (error) {
-				console.error(`No se pudo enviar el DM al usuario con ID: ${ganadorId}`, error);
-			}
+				})
+				.catch(() => null);
 		}, 7200 * 1000); // 7200 segundos = 2 horas
 	} catch (error) {
 		console.error("Error en bumpHandler:", error);
