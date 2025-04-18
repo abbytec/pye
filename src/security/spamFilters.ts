@@ -29,6 +29,10 @@ export const spamFilterList: IFilter[] = [
 		filter: /(?!(https?:\/\/)?discord\.com\/invite\/programacion$)(https?:\/\/)?discord\.com\/invite\/.+/i,
 		mute: true,
 	},
+	{
+		filter: /(https?:\/\/)?multiigims.netlify.app/i,
+		mute: true,
+	},
 	{ filter: /\[.*?steamcommunity\.com\/.*\]/i, mute: true },
 	{ filter: /https?:\/\/(www\.)?\w*solara\w*\.\w+\/?/i, mute: true, staffWarn: spamBot },
 	{
