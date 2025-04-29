@@ -366,11 +366,11 @@ export function emojiMapper(emoji: string): string {
 export function getCachedImage(emojiFile: string): string {
 	switch (emojiFile) {
 		case "alegre.png":
-			return "https://cdn.discordapp.com/attachments/1282932921203818509/1332219829867905095/alegre.png?ex=679475e6&is=67932466&hm=ed7fd5aaf71da743b940eab0e145db96c19920fa4c6e5c09324580db5d6c1401&";
+			return "https://media.discordapp.net/attachments/1282932921203818509/1332219829867905095/alegre.png?ex=68110ba6&is=680fba26&hm=7a90d50069020293235540df010ca9ba7f23fb66e74d78d272492807420d05e7&=&format=webp&quality=lossless";
 		case "enojada.png":
 			return "https://media.discordapp.net/attachments/1282932921203818509/1332219830421422100/enojada.png?ex=679475e7&is=67932467&hm=9440aadbae06c265d6cba26b3fea020cc459f5822118004c5aa9a8c2e2eb690b&=&format=webp&quality=lossless";
 		case "seria.png":
-			return "https://cdn.discordapp.com/attachments/1282932921203818509/1332219830656569344/seria.png?ex=679475e7&is=67932467&hm=5f4f2bd9ac38672b08525674fdfa074d837357059375a06f04e6dda83201e086&";
+			return "https://media.discordapp.net/attachments/1282932921203818509/1332219830656569344/seria.png?ex=68110ba7&is=680fba27&hm=8002dbb6306d31c6b3332e2cd2364f2b11d80255671c1ef9abca313bd7598831&=&format=webp&quality=lossless";
 		case "sonriente.png":
 			return "https://media.discordapp.net/attachments/1282932921203818509/1332219830891319341/sonriente.png?ex=679475e7&is=67932467&hm=6797d469b2042b71c76cd1a6e10702e512e179ef0b0adff18955da4271cd935f&=&format=webp&quality=lossless";
 		case "sorprendida.png":
@@ -381,7 +381,7 @@ export function getCachedImage(emojiFile: string): string {
 			return "https://media.discordapp.net/attachments/1282932921203818509/1332219831570796554/verguenza_ajena.png?ex=679475e7&is=67932467&hm=397bd7f8436a16d5a5099e2020b9e463685e699f351890854e8017b93c52073b&=&format=webp&quality=lossless";
 		case "curiosa.png":
 		default:
-			return "https://cdn.discordapp.com/attachments/1282932921203818509/1332219830115373087/curiosa.png?ex=679475e6&is=67932466&hm=7b73123331412ce17b8d66cd4604c6e948c927942af2dbfee054d383dcfadd47&";
+			return "https://media.discordapp.net/attachments/1282932921203818509/1332219830115373087/curiosa.png?ex=68110ba6&is=680fba26&hm=c6c0a9d003b07f56a509e0301b8cf0ee0f54a9aa81af50cf76dcf423bcc5a706&=&format=webp&quality=lossless";
 	}
 }
 

@@ -10,6 +10,7 @@ import {
 	Message,
 	MessagePayload,
 	MessageReplyOptions,
+	OmitPartialGroupDMChannel,
 	PublicThreadChannel,
 	Sticker,
 	StickerType,
@@ -404,20 +405,17 @@ async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClie
 	return cooldownPost;
 }
 
+const autoDeleteEmbedImage = async (message: Message<boolean>) => {};
 export async function manageAIResponse(message: Message<boolean>, isForumPost: string | undefined, isDm: boolean = false) {
 	if (message.mentions.everyone) return;
+	const textWithoutMentions = message.content.replace(/<@!?\d+>/g, "").trim();
 
-	let botShouldAnswer = message.mentions.has(process.env.CLIENT_ID ?? "") || isDm;
+	const isOnlyMentionsText = textWithoutMentions.length === 0;
+	let botIsMentioned = message.mentions.has(process.env.CLIENT_ID ?? "");
+	let botShouldAnswer = botIsMentioned || isDm || message.mentions.repliedUser?.id === process.env.CLIENT_ID;
 
-	// Si el mensaje es una respuesta, se verifica si el mensaje original fue enviado por el bot
-	if (message.reference?.messageId) {
-		botShouldAnswer =
-			botShouldAnswer ||
-			(await message.channel.messages
-				.fetch(message.reference.messageId)
-				.then((msg: Message) => msg.author.id)
-				.catch(() => null)) === process.env.CLIENT_ID;
-	}
+	if (((!botIsMentioned && message.mentions.users.size > 0) || (botIsMentioned && message.mentions.users.size > 1)) && isOnlyMentionsText)
+		return;
 
 	if (botShouldAnswer) {
 		let contexto = await getRecursiveRepliedContext(message, !isForumPost);
@@ -478,6 +476,22 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 
 			await message
 				.reply(responseToReply)
+				.then((msg: OmitPartialGroupDMChannel<Message<boolean>>) => {
+					if (!response.image) {
+						const textLength = Math.max(msg.embeds[0]?.data?.description?.length ?? 0, 256);
+						const delayMs = Math.ceil((textLength / 256) * 13000);
+						setTimeout(() => {
+							const embedWithoutImage = msg.embeds.map((embed) => {
+								return {
+									...embed.data,
+									image: undefined,
+								};
+							});
+
+							msg.edit({ embeds: embedWithoutImage });
+						}, delayMs);
+					}
+				})
 				.catch(() => null)
 				.finally(() => {
 					if (fileName && response.image) fs.unlinkSync(fileName);
