@@ -29,6 +29,7 @@ import {
 import { saveUserData, UserMemoryResponse } from "./userMemory.js";
 import { Reminder, scheduleDMReminder } from "./dmReminders.js";
 import { COLORS } from "../constants.js";
+import { AbortError } from "node-fetch";
 
 export async function generateForumResponse(
 	context: string,
@@ -64,7 +65,7 @@ export async function generateForumResponse(
 	};
 
 	const result = await modelPyeBotAnswer.generateContent(request, { timeout: 10000 }).catch((e) => {
-		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
+		if (e instanceof AbortError || (e instanceof GoogleGenerativeAIFetchError && e.status === 503))
 			return {
 				response: {
 					text: () => "En este momento, la IA no puede responder tu pregunta.\nIntente denuevo mas tarde.",
@@ -114,7 +115,7 @@ export async function generateChatResponse(
 	if (expertAILevel == 2) model = modelPyeChanAnswerNSFW;
 
 	const result = await model.generateContent(request, { timeout: 10000 }).catch((e) => {
-		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
+		if (e instanceof AbortError || (e instanceof GoogleGenerativeAIFetchError && e.status === 503))
 			return {
 				response: {
 					text: () =>
@@ -160,7 +161,7 @@ export async function generateChatResponseSearch(
 	};
 
 	const result = await modelPyeChanSearchAnswer.generateContent(request, { timeout: 10000 }).catch((e) => {
-		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
+		if (e instanceof AbortError || (e instanceof GoogleGenerativeAIFetchError && e.status === 503))
 			return {
 				response: {
 					text: () =>
@@ -209,7 +210,7 @@ export async function generateChatResponseStream(
 	try {
 		result = await modelPyeChanReasoningAnswer.generateContentStream(request, { timeout: 10000 });
 	} catch (e: any) {
-		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
+		if (e instanceof AbortError || (e instanceof GoogleGenerativeAIFetchError && e.status === 503))
 			return { text: "En este momento, woowle no tiene stock de sushi como para procesar esta respuesta! 🍣\nIntente denuevo mas tarde." };
 		ExtendedClient.logError("Error al generar la respuesta de PyEChan:" + e.message, e.stack, authorId);
 		return { text: "Mejor comamos un poco de sushi! 🍣" };
@@ -246,7 +247,7 @@ export async function generateAudioResponse(
 	};
 
 	const result = await modelPyeChanAudioAnswer.generateContent(request, { timeout: 10000 }).catch((e) => {
-		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
+		if (e instanceof AbortError || (e instanceof GoogleGenerativeAIFetchError && e.status === 503))
 			return {
 				response: {
 					text: () =>
@@ -292,7 +293,7 @@ export async function generateImageResponse(
 	};
 
 	const result = await modelPyeChanImageAnswer.generateContent(request, { timeout: 10000 }).catch((e) => {
-		if (e instanceof GoogleGenerativeAIFetchError && e.status === 503)
+		if (e instanceof AbortError || (e instanceof GoogleGenerativeAIFetchError && e.status === 503))
 			return {
 				response: {
 					text: () =>
