@@ -135,7 +135,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 
 		const now = new Date();
 		const currentMonthNumber = now.getMonth();
-		const lastMonthName = new Date(2024, -2, 1).toLocaleString("es", { month: "long" }); // Nombre del mes en español
+		const lastMonthName = new Date(2024, currentMonthNumber - 1, 1).toLocaleString("es", { month: "long" }); // Nombre del mes en español
 
 		if (!job.attrs.data) job.attrs.data = {};
 		if (!job.attrs.data.userReps) {
