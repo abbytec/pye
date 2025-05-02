@@ -17,6 +17,7 @@ import redisClient from "../redis.js";
 import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
 import { capitalizeFirstLetter } from "../utils/generic.js";
 import { ticketOptions } from "../utils/constants/ticketOptions.js";
+import { getDailyChallenge } from "../utils/challenges/dailyChallenge.js";
 
 export default {
 	name: Events.ClientReady,
@@ -229,6 +230,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 			}
 		}
 		ExtendedClient.trending.dailySave();
+		await getDailyChallenge(client);
 	});
 
 	await ExtendedClient.agenda.start();

@@ -18,12 +18,13 @@ export default {
 	execute: async function (thread: ThreadChannel) {
 		let member = await thread.guild.members.fetch(thread.ownerId ?? "").catch(() => null);
 		if (
-			await spamFilter(
+			(await spamFilter(
 				member,
 				thread.client as ExtendedClient,
 				{ channel: thread.parent, delete: thread.delete, id: thread.id, guild: thread.guild, url: thread.url },
 				thread.name
-			)
+			)) ||
+			thread.ownerId == process.env.CLIENT_ID
 		)
 			return;
 		if (thread.parent?.type == ChannelType.GuildForum && getHelpForumsIdsFromEnv().includes(thread.parent.id)) {
