@@ -52,6 +52,18 @@ function htmlToMarkdown(html: string): string {
 				return `${items}\n`;
 			}
 
+			case "ol": {
+				let idx = 1;
+				const items = node.childNodes
+					.filter((n) => (n as HTMLElement).tagName?.toLowerCase() === "li")
+					.map((li) => {
+						const content = li.childNodes.map(recurse).join("").trim();
+						return `${idx++}. ${content}\n`;
+					})
+					.join("");
+				return `${items}\n`;
+			}
+
 			case "li":
 				return `- ${node.childNodes.map(recurse).join("").trim()}`;
 

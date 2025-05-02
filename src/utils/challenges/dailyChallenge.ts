@@ -1,7 +1,6 @@
 import { ChannelType, EmbedBuilder, ThreadAutoArchiveDuration } from "discord.js";
 import { ExtendedClient } from "../../client.js";
 import { getChannelFromEnv } from "../constants.js";
-import { decode } from "html-entities";
 import { htmlToMarkdown } from "../html2mdparser.js";
 
 export async function getDailyChallenge(client: ExtendedClient) {
