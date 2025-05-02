@@ -159,6 +159,10 @@ export async function handleTicketButtonInteraction(interaction: Interaction, ac
 		await interaction.reply({ content: "Ticket escalado a Staff.", ephemeral: true });
 	} else if (action === "save") {
 		try {
+			const saveBtn = new ButtonBuilder().setCustomId("save_ticket").setLabel("Guardar").setStyle(ButtonStyle.Primary).setDisabled(true);
+			const reopenBtn = new ButtonBuilder().setCustomId("reopen_ticket").setLabel("Reabrir").setStyle(ButtonStyle.Secondary);
+			const row = { type: 1, components: [saveBtn, reopenBtn] };
+			await interaction.message.edit({ components: [row] });
 			const filePath = await saveTranscript(channel);
 			if (!fs.existsSync(filePath)) {
 				throw new Error("Archivo no encontrado");
