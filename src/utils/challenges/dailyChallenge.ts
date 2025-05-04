@@ -10,9 +10,7 @@ export async function getDailyChallenge(client: ExtendedClient) {
 		const json = (await res.json()) as any;
 		// La estructura suele ser algo como { date, question: { title, titleSlug, difficulty, content } }
 		const { title, titleSlug, difficulty, content } = json.question;
-		console.log(content);
 		const mdContent = htmlToMarkdown(content);
-		console.log(mdContent);
 		// 2. Construir el embed
 		const embed = new EmbedBuilder()
 			.setTitle(`🗓️ LeetCode Daily Challenge — ${title}`)

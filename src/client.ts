@@ -247,11 +247,7 @@ export class ExtendedClient extends Client {
 			ExtendedClient.dailyAIUsageDM.clear();
 			await this.starboardMemeOfTheDay().catch((error) => console.error(error));
 			await this.saveCompartePosts().catch((error) => console.error(error));
-			await this.sendDailyNews(
-				ExtendedClient.guildManager?.cache
-					.get(process.env.GUILD_ID ?? "")
-					?.channels.resolve(getChannelFromEnv("chatProgramadores")) as TextChannel
-			);
+			await this.sendDailyNews(guild?.channels.resolve(getChannelFromEnv("chatProgramadores")) as TextChannel);
 		}
 		await this.updateBankAvgCoins();
 		setInterval(() => checkPets(this), 23400000);
