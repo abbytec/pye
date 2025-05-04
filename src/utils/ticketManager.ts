@@ -84,6 +84,10 @@ export async function handleTicketCreation(interaction: Interaction, ticketType:
 					PermissionsBitField.Flags.ReadMessageHistory,
 				],
 			},
+			{
+				id: getRoleFromEnv("helper"),
+				allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.ReadMessageHistory],
+			},
 		],
 	});
 
