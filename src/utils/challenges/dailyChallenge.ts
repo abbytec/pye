@@ -28,9 +28,10 @@ export async function getDailyChallenge(client: ExtendedClient) {
 			// crear un nuevo hilo (post) en el foro
 			await channel.threads.create({
 				name: `🗓️ Reto — ${title}`,
+				appliedTags: ["1368739710876258344"],
 				autoArchiveDuration: ThreadAutoArchiveDuration.ThreeDays,
 				reason: "Daily LeetCode Challenge",
-				message: { embeds: [embed] },
+				message: { embeds: [embed], content: "Nuevo reto diario!!!" },
 			});
 		}
 	} catch (err) {

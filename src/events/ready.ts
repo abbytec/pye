@@ -230,7 +230,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 			}
 		}
 		ExtendedClient.trending.dailySave();
-		await getDailyChallenge(client);
+		if (process.env.NODE_ENV !== "development") await getDailyChallenge(client);
 	});
 
 	await ExtendedClient.agenda.start();
