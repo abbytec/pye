@@ -59,15 +59,20 @@ export default {
 			let customId = interaction.customId;
 			const userId = interaction.user.id;
 
-			(
-				({
-					close_ticket: await handleTicketButtonInteraction(interaction, "close"),
-					escalate_ticket: await handleTicketButtonInteraction(interaction, "escalate"),
-					save_ticket: await handleTicketButtonInteraction(interaction, "save"),
-					reopen_ticket: await handleTicketButtonInteraction(interaction, "reopen"),
-					finish_enrollments: await handleFinishEnrollmentsButton(interaction),
-				})[customId] ?? (() => null)
-			)();
+			const handlers: Record<string, () => Promise<any>> = {
+				close_ticket: () => handleTicketButtonInteraction(interaction, "close"),
+				escalate_ticket: () => handleTicketButtonInteraction(interaction, "escalate"),
+				save_ticket: () => handleTicketButtonInteraction(interaction, "save"),
+				reopen_ticket: () => handleTicketButtonInteraction(interaction, "reopen"),
+				finish_enrollments: () => handleFinishEnrollmentsButton(interaction),
+				close_warn: () => deleteChannel(interaction),
+				"cancel-point": () => cancelPoint(interaction),
+			};
+
+			if (handlers[customId]) {
+				const result = await handlers[customId]();
+				if (result !== null) return;
+			}
 
 			if (customId.startsWith("create_session_button")) {
 				const parts = customId.split("/");
@@ -79,21 +84,14 @@ export default {
 				return interaction.showModal?.(modal);
 			} else if (customId.startsWith("session_pagination")) {
 				return handleGameSessionPagination(interaction);
-			}
-			// Boton de cerrar el warn cuando el user no tenía md abierto
-			if (customId === "close_warn") return deleteChannel(interaction);
-			// Boton de eliminar el mensaje de #puntos
-			else if (customId === "cancel-point") return cancelPoint(interaction);
-			// Boton de dar puntos en #puntos TODO: sacar el signo de pregunta
-			else if (/^(point-)?\d{17,19}$/.test(customId)) {
+			} else if (/^(point-)\d{17,19}$/.test(customId)) {
 				if (userId === USERS.maby) {
 					await interaction.reply({
 						content: "Tranquila, tenés un equipo hermoso que tambien se podría encargar de esto! :D",
 						ephemeral: true,
 					});
 				}
-				if (customId.startsWith("point-")) customId = customId.slice(6);
-				return helpPoint(interaction, customId);
+				return helpPoint(interaction, customId.slice(6));
 			}
 		}
 		if (interaction.isStringSelectMenu() && interaction.customId === "ticket_select") {
