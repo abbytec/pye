@@ -15,7 +15,7 @@ import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 const emojis = ["🍒", "🍉", "🍑", "🥥", "🍍", "🍇", "🥝", "🍄", "🍓", "🍀"];
 export default {
-	group: "🎮 • Juegos",
+	group: "🎮 - Juegos",
 	data: new SlashCommandBuilder()
 		.setName("slotmachine")
 		.setDescription("Tira del tragaperras y apuesta tu dinero.")

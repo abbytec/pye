@@ -111,7 +111,7 @@ const STATIC_CARDS: Record<string, number | "relatable"> = {
 };
 
 export default {
-	group: "🎮 • Juegos",
+	group: "🎮 - Juegos",
 	data: new SlashCommandBuilder()
 		.setName("blackjack")
 		.setDescription("Juega a las cartas con el bot, quien llegue a estar más cerca sin pasarse u obtenga 21, gana.")

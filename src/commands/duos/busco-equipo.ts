@@ -25,7 +25,7 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 const SESSIONS_PER_PAGE = 5;
 
 export default {
-	group: "🎮 - Teams",
+	group: "🎮 - Juegos",
 	data: new SlashCommandBuilder()
 		.setName("busco-equipo")
 		.setDescription("Busca un compañero o grupo para jugar.")

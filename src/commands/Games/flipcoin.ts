@@ -15,7 +15,7 @@ import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 
 export default {
-	group: "🎮 • Juegos",
+	group: "🎮 - Juegos",
 	data: new SlashCommandBuilder()
 		.setName("flipcoin")
 		.setDescription("Tira la moneda y prueba tu suerte.")

@@ -17,7 +17,7 @@ import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandCon
 const level = new Map();
 
 export default {
-	group: "🎮 • Juegos",
+	group: "🎮 - Juegos",
 	data: new SlashCommandBuilder()
 		.setName("chicken-fight")
 		.setDescription("Apuesta dinero metiendo tu pollo a una pelea 🐔.")

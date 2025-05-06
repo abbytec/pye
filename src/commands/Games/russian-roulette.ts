@@ -27,7 +27,7 @@ let data: {
 };
 
 export default {
-	group: "🎮 • Juegos",
+	group: "🎮 - Juegos",
 	data: new SlashCommandBuilder()
 		.setName("russian-roulette")
 		.setDescription("Inicia un juego de ruleta o coloca tu apuesta en un juego existente.")
