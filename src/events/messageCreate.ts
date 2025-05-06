@@ -1,5 +1,8 @@
 import {
+	ActionRowBuilder,
 	AttachmentBuilder,
+	ButtonBuilder,
+	ButtonStyle,
 	ChannelType,
 	DiscordAPIError,
 	DMChannel,
@@ -197,6 +200,9 @@ const employmentsDescription =
 const repoRegex =
 	/(?:https?:\/\/)?(?:www\.)?(?:(?:(?:github\.com|gitlab\.com|bitbucket\.org|codecommit\.amazonaws\.com)[^\s]*)|(?:git\.[^\s]+)|(?:[^\s]+\.git))/i;
 const redesRegex = /https:\/\/[^\s]+\//gim;
+const finishEnrollmentsBtn = new ActionRowBuilder<ButtonBuilder>().addComponents(
+	new ButtonBuilder().setCustomId("finish_enrollments").setLabel("Cerrar Convocatorias").setStyle(ButtonStyle.Danger)
+);
 async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 	switch (msg.channel.id) {
 		case getChannelFromEnv("recursos"):
@@ -222,7 +228,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 				} else {
 					client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
 
-					msg.startThread({ name: `${msg.author.username}'s Thread` })
+					msg.startThread({ name: `${msg.author.username} - Empleo` })
 						.then((thread) => {
 							thread.send({
 								embeds: [
@@ -237,6 +243,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 										.setDescription(employmentsDescription)
 										.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" })),
 								],
+								components: [finishEnrollmentsBtn],
 							});
 						})
 						.catch(() => null);
@@ -260,7 +267,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 					setTimeout(async () => await warn.delete().catch(() => null), 10000);
 				} else {
 					client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
-					msg.startThread({ name: `${msg.author.username}'s Thread` })
+					msg.startThread({ name: `${msg.author.username} - Proyecto` })
 						.then((thread) => {
 							thread.send({
 								content: `Hey ${msg.author.toString()}!`,
@@ -272,6 +279,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 											"Por favor te __recordamos__ tomar todas las precauciones posibles al interactuar en estos canales ya que el staff no puede **intervenir** con estafas. **SOLAMENTE TÚ PUEDES EVITAR SER VÍCTIMA DE UNA ESTAFA.**"
 										),
 								],
+								components: [finishEnrollmentsBtn],
 							});
 						})
 						.catch(() => null);

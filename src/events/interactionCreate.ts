@@ -3,6 +3,7 @@ import {
 	APIButtonComponent,
 	ButtonBuilder,
 	ButtonInteraction,
+	ChannelType,
 	ChatInputCommandInteraction,
 	ComponentType,
 	EmbedBuilder,
@@ -13,6 +14,7 @@ import {
 	TextChannel,
 	TextInputBuilder,
 	TextInputStyle,
+	ThreadChannel,
 } from "discord.js";
 import { ExtendedClient } from "../client.js";
 import { COLORS, getChannelFromEnv, getRoleFromEnv, USERS } from "../utils/constants.js";
@@ -26,6 +28,7 @@ import { chatInputCommandParser } from "../utils/messages/chatInputCommandParser
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 import { createGameSessionModal, handleCreateSessionModal, handleGameSessionPagination } from "../commands/duos/busco-equipo.js";
 import { handleTicketButtonInteraction, handleTicketCreation } from "../utils/ticketManager.js";
+import { replyError } from "../utils/messages/replyError.js";
 
 const limiter = new Bottleneck({
 	maxConcurrent: 15, // Máximo de comandos en paralelo
@@ -56,15 +59,15 @@ export default {
 			let customId = interaction.customId;
 			const userId = interaction.user.id;
 
-			if (interaction.customId === "close_ticket") {
-				await handleTicketButtonInteraction(interaction, "close");
-			} else if (interaction.customId === "escalate_ticket") {
-				await handleTicketButtonInteraction(interaction, "escalate");
-			} else if (interaction.customId === "save_ticket") {
-				await handleTicketButtonInteraction(interaction, "save");
-			} else if (interaction.customId === "reopen_ticket") {
-				await handleTicketButtonInteraction(interaction, "reopen");
-			}
+			(
+				({
+					close_ticket: await handleTicketButtonInteraction(interaction, "close"),
+					escalate_ticket: await handleTicketButtonInteraction(interaction, "escalate"),
+					save_ticket: await handleTicketButtonInteraction(interaction, "save"),
+					reopen_ticket: await handleTicketButtonInteraction(interaction, "reopen"),
+					finish_enrollments: await handleFinishEnrollmentsButton(interaction),
+				})[customId] ?? (() => null)
+			)();
 
 			if (customId.startsWith("create_session_button")) {
 				const parts = customId.split("/");
@@ -334,5 +337,24 @@ async function handleGameCommands(interaction: IPrefixChatInputCommand) {
 	if (!command?.group) return;
 	if (command.group.toLowerCase().includes("juegos")) {
 		checkRole(interaction, getRoleFromEnv("granApostador"), 75, "apostador");
+	}
+}
+
+async function handleFinishEnrollmentsButton(interaction: ButtonInteraction<"cached" | "raw">) {
+	const channel = interaction.channel;
+	if (!channel || (channel.type !== ChannelType.PublicThread && channel.type !== ChannelType.PrivateThread)) return;
+	const thread = channel as ThreadChannel;
+	await interaction.deferReply({ ephemeral: true });
+	const author = (await thread.fetchStarterMessage())?.author;
+	if (!author) {
+		await interaction.editReply({ content: "⚠ No se puede verificar al autor original de este hilo" });
+		return;
+	}
+	if (interaction.user.id !== author.id) await interaction.editReply({ content: "❌ Este hilo no te pertenece." });
+	else {
+		await thread.setLocked(true);
+		await thread.setName(`🔒 Finalizado`);
+		await thread.send("Esta convocatoria ha sido cerrada por su propietario.");
+		await interaction.editReply({ content: "✅ Hilo cerrado y renombrado exitosamente." });
 	}
 }
