@@ -16,8 +16,9 @@ import {
 	Guild,
 	Message,
 	InteractionResponse,
+	MessageFlags,
 } from "discord.js";
-import { COLORS } from "./constants.js";
+import { COLORS, getChannelFromEnv } from "./constants.js";
 import { fileURLToPath } from "node:url";
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 import { levels, LevelConfig } from "./levelsconfig.js";
@@ -77,6 +78,8 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 
 	// Si existe recompensa interactiva, se activa el proceso correspondiente
 	if (levelConfig.interactiveReward) {
+		if (channelId !== getChannelFromEnv("general") || channelId !== getChannelFromEnv("casinoPye"))
+			channelId = getChannelFromEnv("casinoPye");
 		if (levelConfig.interactiveReward.type === "color") {
 			if (Choose.has(person.id)) return;
 			const casas = readdirSync(path.join(__dirname, "../assets/Pictures/Profiles/Casa"));
@@ -295,7 +298,11 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 		const embed = levelConfig.levelUpEmbed
 			? levelConfig.levelUpEmbed(person.username, currentLevel + 1)
 			: new EmbedBuilder().setDescription(`\`${person.username}\` ha subido al nivel: \`${currentLevel + 1}\``).setTimestamp();
-		(guild.channels.resolve(channelId) as TextChannel)?.send({ embeds: [embed] });
+		(guild.channels.resolve(channelId) as TextChannel)?.send({
+			content: `<@${person.id}>`,
+			embeds: [embed],
+			flags: MessageFlags.SuppressNotifications,
+		});
 	}
 	return await levelUpHome(user, 1);
 }
