@@ -1,8 +1,6 @@
 // Importaciones necesarias
-import { name } from "agenda/dist/agenda/name.js";
 import mongoose, { Schema, Document, Model } from "mongoose";
 import { COLORS } from "../utils/constants.js";
-import { error } from "winston";
 import { ExtendedClient } from "../client.js";
 
 interface TrendingDocument extends Document {

@@ -71,7 +71,7 @@ const loadEvents = async () => {
 	const eventsImportPromises = eventFiles.map(async (file) => {
 		const filePath = join(eventsPath, file);
 		await import(pathToFileURL(filePath).href)
-			.then((module) => module.default || module)
+			.then((module) => module.default ?? module)
 			.then((event: Evento | EventoConClienteForzado) => {
 				console.log(`Cargando evento: ${event.name}`);
 				client[event.once ? "once" : "on"](event.name, (...args: any[]) =>

@@ -43,15 +43,14 @@ helperpointSchema.post(
 	async function (doc: (IHelperPointDocument | null) & { _updateContext: IUpdateOneContext }, next: () => void) {
 		const context: IUpdateOneContext = this._updateContext;
 		const { conditions, update } = context;
-		try {
-			if (update.$inc) await client.zIncrBy("top:rep", update.$inc.points, conditions._id);
-		} catch (error: any) {
-			ExtendedClient.logError(
-				"Error actualizando 'top:rep' para el usuario " + doc._id + ": " + error.message,
-				error.stack,
-				process.env.CLIENT_ID
-			);
-		}
+		if (update.$inc)
+			client.zIncrBy("top:rep", update.$inc.points, conditions._id).catch((error: any) => {
+				ExtendedClient.logError(
+					"Error actualizando 'top:rep' para el usuario " + doc._id + ": " + error.message,
+					error.stack,
+					process.env.CLIENT_ID
+				);
+			});
 		next();
 	}
 );

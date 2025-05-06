@@ -82,9 +82,19 @@ async function ticketProcessor(client: ExtendedClient) {
 }
 
 async function cronEventsProcessor(client: ExtendedClient) {
-	ExtendedClient.agenda = new Agenda({
-		db: { address: process.env.MONGO_URI ?? "", collection: "agenda_jobs" },
-		processEvery: "1 minute",
+	ExtendedClient.agenda = new Agenda(
+		{
+			db: { address: process.env.MONGO_URI ?? "", collection: "agenda_jobs" },
+			processEvery: "1 minute",
+		},
+		(error) => {
+			if (error) ExtendedClient.logError(error.message);
+		}
+	);
+
+	ExtendedClient.agenda.on("error", (error) => {
+		console.error(error);
+		ExtendedClient.logError(error.message);
 	});
 
 	// Define el trabajo para enviar recordatorios
@@ -122,7 +132,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 			const embedObject = embed ? new EmbedBuilder(embed) : null;
 			await channel
 				.send({
-					content: content || undefined,
+					content: content ?? undefined,
 					embeds: embedObject ? [embedObject] : [],
 				})
 				.then(() => console.log(`Mensaje cron enviado al canal ${channelId}`))

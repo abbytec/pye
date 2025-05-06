@@ -10,8 +10,6 @@ import {
 	VoiceChannel,
 	Sticker,
 	GuildManager,
-	GuildEmoji,
-	GuildMember,
 	EmbedBuilder,
 } from "discord.js";
 import { Command } from "./types/command.js"; // Asegúrate de definir la interfaz Command
@@ -130,7 +128,9 @@ export class ExtendedClient extends Client {
 		let textChannel = ExtendedClient.guildManager?.cache
 			.get(process.env.GUILD_ID ?? "")
 			?.channels.resolve(getChannelFromEnv("logs")) as TextChannel;
-		let content = "Log de error. Usuario: <@" + (userId ?? "desconocido") + ">\n" + errorMessage;
+		let content = "Log de error. ";
+		if (userId) content += "Usuario: <@" + (userId ?? "desconocido") + ">\n";
+		content += errorMessage;
 		if (stackTrace) {
 			content += `\n\n\`\`\`js\n${stackTrace}\`\`\``;
 		}
@@ -432,6 +432,7 @@ export class ExtendedClient extends Client {
 			console.log("No se encontró la API key de CurrentsAPI.");
 			return;
 		}
+		console.log(yesterdayISO);
 		// Formamos la URL usando la fecha en formato RFC3339
 		const url = `https://api.currentsapi.services/v1/search?apiKey=${apiKey}&language=es&category=technology&start_date=${yesterdayISO}`;
 		try {
