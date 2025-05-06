@@ -378,9 +378,9 @@ async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClie
 							undefined,
 							process.env.CLIENT_ID
 						);
-					if (cooldownPost === undefined) cooldownPost = post.date.getTime() + 1000 * 60 * 60 * 24 * 7 - Date.now();
+					cooldownPost ??= post.date.getTime() + 1000 * 60 * 60 * 24 * 7 - Date.now();
 					await logMessagesChannel.send({
-						content: `**Advertencia:** Se eliminó un post duplicado: ${oldMessageLink} en canal <#${post.channelId}>`,
+						content: `**Advertencia:** Se eliminó un post duplicado: ${oldMessageLink} en canal <#${msg.channel.id}>`,
 					});
 				} else if (distance > 0.75) {
 					const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("notificaciones")) ??
