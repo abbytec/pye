@@ -18,7 +18,7 @@ export async function replyOk(
 				"reply" | "editReply" | "deleteReply" | "followUp" | "replied" | "deferred" | "channelId" | "guild" | "user"
 		  >,
 	message: string | EmbedBuilder[],
-	author?: string,
+	author?: string | null,
 	components?: (ActionRowBuilder<ButtonBuilder> | ActionRowBuilder<StringSelectMenuBuilder>)[],
 	files?: AttachmentBuilder[],
 	content?: string,
@@ -28,13 +28,10 @@ export async function replyOk(
 	if (Array.isArray(message)) {
 		messageToSend.embeds = message;
 	} else {
-		messageToSend.embeds = [
-			new EmbedBuilder()
-				.setAuthor({ name: author ?? interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
-				.setDescription(message)
-				.setColor(COLORS.okGreen)
-				.setTimestamp(),
-		];
+		let authorMsg;
+		if (author === null) authorMsg = null;
+		else authorMsg = { name: author ?? interaction.user.tag, iconURL: interaction.user.displayAvatarURL() };
+		messageToSend.embeds = [new EmbedBuilder().setAuthor(authorMsg).setDescription(message).setColor(COLORS.okGreen).setTimestamp()];
 	}
 	if (components) messageToSend.components = components;
 	if (files) messageToSend.files = files;

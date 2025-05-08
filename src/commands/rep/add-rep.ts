@@ -1,5 +1,5 @@
-import { Guild, SlashCommandBuilder, User } from "discord.js";
-import { getChannelFromEnv } from "../../utils/constants.js";
+import { Guild, GuildMember, SlashCommandBuilder, User } from "discord.js";
+import { getChannelFromEnv, getRoleFromEnv } from "../../utils/constants.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
@@ -34,7 +34,14 @@ export default {
 					return { member: null, data: null };
 				});
 				if (!member || !data) return;
-				await replyOk(interaction, `se le ha dado **${amount == 1 ? "un" : amount}** rep al usuario: \`${user.tag}\``);
+				let repManager = interaction.member as GuildMember;
+				const author =
+					repManager.roles.cache.has(getRoleFromEnv("helper")) &&
+					!repManager.roles.cache.has(getRoleFromEnv("moderadorChats")) &&
+					!repManager.roles.cache.has(getRoleFromEnv("staff"))
+						? null
+						: undefined;
+				await replyOk(interaction, `se le ha dado **${amount == 1 ? "un" : amount}** rep al usuario: \`${user.tag}\``, author);
 
 				checkQuestLevel({ msg: interaction, userId: user.id, rep: amount } as IQuest);
 				return {
