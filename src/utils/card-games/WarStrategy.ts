@@ -26,10 +26,9 @@ class WarStrategy implements GameStrategy {
 		const card = player.hand.shift();
 		if (card) ctx.table.push(card);
 
-		await sendTable(ctx); // 🔄 refresca embed: turno correcto + mesa actual
-
 		// ¿todos jugaron?
 		if (ctx.table.length === ctx.players.length) {
+			await sendTable(ctx);
 			const winner = WarStrategy.decideWinner(ctx.table, ctx.players);
 			setTimeout(async () => {
 				ctx.nextTurn(); // ↩️ se avanza el turno
@@ -47,6 +46,9 @@ class WarStrategy implements GameStrategy {
 				ctx.table = [];
 				await sendTable(ctx);
 			}, 2500);
+		} else {
+			ctx.nextTurn();
+			await sendTable(ctx);
 		}
 	}
 

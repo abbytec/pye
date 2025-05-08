@@ -99,6 +99,7 @@ export default {
 			{
 				name: "subcommand",
 				required: true,
+				options: ["show", "name", "play", "feed", "clean"],
 			},
 			{
 				name: "usuario",

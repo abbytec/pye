@@ -14,6 +14,8 @@ import {
 	Snowflake,
 	Message,
 	ButtonInteraction,
+	APIButtonComponent,
+	User,
 } from "discord.js";
 import { COLORS, getChannel, getChannelFromEnv } from "../../utils/constants.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
@@ -62,15 +64,17 @@ export default {
 			const strat = getGame(gameName);
 			if (!strat) return replyError(interaction, "Juego desconocido.");
 
-			const opp1 = await interaction.options.getUser("oponente1", true);
-			const opp2 = await interaction.options.getUser("oponente2", false);
-			const opp3 = await interaction.options.getUser("oponente3", false);
-			const opp4 = await interaction.options.getUser("oponente4", false);
-			const opp5 = await interaction.options.getUser("oponente5", false);
+			const opps = [
+				await interaction.options.getUser("oponente1", true),
+				await interaction.options.getUser("oponente2", false),
+				await interaction.options.getUser("oponente3", false),
+				await interaction.options.getUser("oponente4", false),
+				await interaction.options.getUser("oponente5", false),
+			].filter((u): u is User => !!u);
+			if (opps.length === 0) return replyError(interaction, "No se pudo encontrar al oponente 1.");
+			// construís tu set de IDs igual que antes
+			const playerIds = new Set([interaction.user.id, ...opps.map((u) => u.id)]);
 
-			if (!opp1) return replyError(interaction, "No se pudo encontrar al oponente 1.");
-			const playerIds: Set<Snowflake> = new Set([interaction.user.id, opp1.id]);
-			[opp2, opp3, opp4, opp5].forEach((o) => o && playerIds.add(o.id));
 			// validate limits
 			if (
 				(strat.limits.exact && !strat.limits.exact.includes(playerIds.size)) ||
@@ -79,54 +83,101 @@ export default {
 			)
 				return replyError(interaction, "Cantidad de jugadores no permitida para este juego.");
 
-			const comandos = (await getChannel(interaction, "casinoPye", true)) as TextChannel;
-			if (!comandos) return replyError(interaction, "No encuentro el canal #comandos");
+			// 1) Marca al creador como aceptado
+			const accepted = new Set<string>([interaction.user.id]);
 
-			const thread = await comandos.threads.create({
-				name: `${gameName} • ${interaction.user.username}`,
-				type: ChannelType.PrivateThread,
-				invitable: false,
-				autoArchiveDuration: 60,
-			});
+			// 2) Genera botones sólo para los demás jugadores
+			const opponentUsers = opps.filter((u) => u.id !== interaction.user.id);
 
-			// bloquear a todos excepto jugadores
-			for (const id of playerIds) {
-				await thread.members.add(id).catch(() => {});
-			}
-
-			await replyOk(interaction, `Hilo creado: <#${thread.id}>`);
-
-			// runtime boot
-			const runtime = new GameRuntime(
-				interaction,
-				thread,
-				Array.from(playerIds, (id) => ({ id, hand: [] })),
-				strat
+			const acceptButtons = opponentUsers.map((u) =>
+				new ButtonBuilder()
+					.setCustomId(`accept_${u.id}`)
+					.setLabel(u.displayName) // usa displayName directamente
+					.setStyle(ButtonStyle.Secondary)
 			);
 
-			await strat.init(runtime);
+			const row = new ActionRowBuilder<ButtonBuilder>().addComponents(acceptButtons);
 
-			// collectors
-			const collector = thread.createMessageComponentCollector({ componentType: ComponentType.Button, idle: 120_000 });
-			collector.on("collect", async (i) => {
-				if (i.customId === "show-hand") {
-					const player = runtime.players.find((p) => p.id === i.user.id);
-					if (!player) return i.reply({ content: "No formas parte de esta partida.", ephemeral: true });
-					return i.reply({ content: renderCardsAnsi(player.hand, strat.cardSet), ephemeral: true });
-				}
-
-				if (i.user.id !== runtime.current.id) {
-					await i.reply({ content: "⏳ No es tu turno; esperá.", ephemeral: true });
-					setTimeout(() => i.deleteReply().catch(() => {}), 3_000);
-					return;
-				}
-
-				await strat.handleAction(runtime, i.user.id, i);
-				await i.deferUpdate();
+			const msg = await interaction.reply({
+				content: `Confirmen para arrancar el VS:`,
+				components: [row],
+				fetchReply: true,
 			});
-			collector.on("end", (_collected, reason) => {
-				if (reason === "idle") {
-					runtime.finish();
+
+			const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: 60000 });
+
+			collector.on("collect", async (btn) => {
+				const [, uid] = btn.customId.split("_");
+				if (btn.user.id !== uid) {
+					return btn.reply({ content: "⏳ Ese botón no es para ti.", ephemeral: true });
+				}
+
+				if (!accepted.has(uid)) {
+					accepted.add(uid);
+
+					// actualiza el botón a verde y deshabilitado
+					const newButtons = acceptButtons.map((oldBtn) => {
+						const json = oldBtn.toJSON() as any;
+						if (json.custom_id === btn.customId) {
+							return ButtonBuilder.from(oldBtn).setStyle(ButtonStyle.Success).setDisabled(true);
+						}
+						return oldBtn;
+					});
+					await btn.update({ components: [new ActionRowBuilder<ButtonBuilder>().addComponents(newButtons)] });
+
+					// si todos aceptaron, lanzamos automáticamente
+					if (accepted.size === playerIds.size) {
+						collector.stop();
+						// — hilo y juego —
+						const comandos = (await getChannel(interaction, "casinoPye", true)) as TextChannel;
+						const thread = await comandos.threads.create({
+							name: `${gameName} • ${interaction.user.username}`,
+							type: ChannelType.PrivateThread,
+							invitable: false,
+							autoArchiveDuration: 60,
+						});
+						for (const id of playerIds) await thread.members.add(id).catch(() => {});
+						await interaction.editReply({ content: `Hilo creado: <#${thread.id}>`, components: [] });
+
+						const runtime = new GameRuntime(
+							interaction,
+							thread,
+							Array.from(playerIds, (id) => ({ id, hand: [] })),
+							strat
+						);
+						await strat.init(runtime);
+
+						const gameCollector = thread.createMessageComponentCollector({ componentType: ComponentType.Button, idle: 120_000 });
+						gameCollector.on("collect", async (i) => {
+							if (i.customId === "show-hand") {
+								const player = runtime.players.find((p) => p.id === i.user.id);
+								if (!player) return i.reply({ content: "No formas parte de esta partida.", ephemeral: true });
+								return i.reply({ content: renderCardsAnsi(player.hand, strat.cardSet), ephemeral: true });
+							}
+
+							if (i.user.id !== runtime.current.id) {
+								await i.reply({ content: "⏳ No es tu turno; esperá.", ephemeral: true });
+								setTimeout(() => i.deleteReply().catch(() => {}), 3_000);
+								return;
+							}
+
+							await strat.handleAction(runtime, i.user.id, i);
+							await i.deferUpdate();
+						});
+						gameCollector.on("end", (_collected, reason) => {
+							if (reason === "idle") {
+								runtime.finish();
+							}
+						});
+					}
+				}
+			});
+			collector.on("end", async (_collected, reason) => {
+				if (reason === "time" && accepted.size < playerIds.size) {
+					await msg.edit({
+						content: "Tiempo expirado",
+						components: [],
+					});
 				}
 			});
 		}
