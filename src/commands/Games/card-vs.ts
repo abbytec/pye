@@ -49,8 +49,12 @@ export default {
 					// Discord permite hasta 25 choices
 				)
 		)
+		.addIntegerOption((opt) => opt.setName("apuesta").setDescription("Apuesta").setRequired(true))
 		.addUserOption((opt) => opt.setName("oponente1").setDescription("Primer oponente").setRequired(true))
-		.addUserOption((opt) => opt.setName("oponente2").setDescription("Segundo oponente").setRequired(false)),
+		.addUserOption((opt) => opt.setName("oponente2").setDescription("Segundo oponente").setRequired(false))
+		.addUserOption((opt) => opt.setName("oponente3").setDescription("Segundo oponente").setRequired(false))
+		.addUserOption((opt) => opt.setName("oponente4").setDescription("Segundo oponente").setRequired(false))
+		.addUserOption((opt) => opt.setName("oponente5").setDescription("Segundo oponente").setRequired(false)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), verifyCooldown("card-game", 180000)],
 		async function execute(interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> {
@@ -60,16 +64,18 @@ export default {
 
 			const opp1 = await interaction.options.getUser("oponente1", true);
 			const opp2 = await interaction.options.getUser("oponente2", false);
+			const opp3 = await interaction.options.getUser("oponente3", false);
+			const opp4 = await interaction.options.getUser("oponente4", false);
+			const opp5 = await interaction.options.getUser("oponente5", false);
 
 			if (!opp1) return replyError(interaction, "No se pudo encontrar al oponente 1.");
-			const playerIds: Snowflake[] = [interaction.user.id, opp1.id];
-			if (opp2) playerIds.push(opp2.id);
-
+			const playerIds: Set<Snowflake> = new Set([interaction.user.id, opp1.id]);
+			[opp2, opp3, opp4, opp5].forEach((o) => o && playerIds.add(o.id));
 			// validate limits
 			if (
-				(strat.limits.exact && !strat.limits.exact.includes(playerIds.length)) ||
-				playerIds.length < strat.limits.min ||
-				(strat.limits.max && playerIds.length > strat.limits.max)
+				(strat.limits.exact && !strat.limits.exact.includes(playerIds.size)) ||
+				playerIds.size < strat.limits.min ||
+				(strat.limits.max && playerIds.size > strat.limits.max)
 			)
 				return replyError(interaction, "Cantidad de jugadores no permitida para este juego.");
 
@@ -94,7 +100,7 @@ export default {
 			const runtime = new GameRuntime(
 				interaction,
 				thread,
-				playerIds.map((id) => ({ id, hand: [] })),
+				Array.from(playerIds, (id) => ({ id, hand: [] })),
 				strat
 			);
 
