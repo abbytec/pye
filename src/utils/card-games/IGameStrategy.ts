@@ -22,6 +22,7 @@ export interface GameStrategy {
 	readonly name: string;
 	readonly limits: PlayerLimits;
 	readonly cardSet: CardSet;
+	readonly teamBased: boolean;
 
 	/** Called once per game to prepare deck / hands / metadata  */
 	init(ctx: GameRuntime): Promise<void>;

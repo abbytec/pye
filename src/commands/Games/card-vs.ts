@@ -29,7 +29,7 @@ import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import WarStrategy from "../../utils/card-games/WarStrategy.js";
 import { GameStrategy } from "../../utils/card-games/IGameStrategy.js";
 import { renderCardsAnsi } from "../../utils/card-games/CardUtils.js";
-import { GameRuntime } from "../../utils/card-games/GameRuntime.js";
+import { GameRuntime, PlayerState } from "../../utils/card-games/GameRuntime.js";
 
 export const games: GameStrategy[] = [new WarStrategy()];
 export const getGame = (name: string) => games.find((g) => g.name === name);
@@ -139,12 +139,20 @@ export default {
 						for (const id of playerIds) await thread.members.add(id).catch(() => {});
 						await interaction.editReply({ content: `Hilo creado: <#${thread.id}>`, components: [] });
 
-						const runtime = new GameRuntime(
-							interaction,
-							thread,
-							Array.from(playerIds, (id) => ({ id, hand: [] })),
-							strat
-						);
+						const allUsers = [interaction.user, ...opps];
+
+						let runtimePlayers: PlayerState[];
+						if (strat.teamBased) {
+							runtimePlayers = allUsers.map((u, i) => ({
+								id: u.id,
+								hand: [],
+								team: i === 0 || i % 2 === 0 ? 0 : 1, // creador + pares ⇒ equipo 0, impares ⇒ equipo 1
+							}));
+						} else {
+							runtimePlayers = allUsers.map((u) => ({ id: u.id, hand: [] }));
+						}
+
+						const runtime = new GameRuntime(interaction, thread, runtimePlayers, strat);
 						await strat.init(runtime);
 
 						const gameCollector = thread.createMessageComponentCollector({ componentType: ComponentType.Button, idle: 120_000 });

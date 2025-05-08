@@ -11,6 +11,7 @@ class WarStrategy implements GameStrategy {
 	readonly name = "war";
 	readonly limits: PlayerLimits = { min: 2, max: 2 };
 	readonly cardSet: CardSet = "poker";
+	readonly teamBased = false;
 
 	async init(ctx: GameRuntime) {
 		ctx.deck = createDeck(this.cardSet);

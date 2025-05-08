@@ -9,6 +9,7 @@ import { COLORS } from "../constants.js";
 export interface PlayerState {
 	id: Snowflake;
 	hand: Card[];
+	team?: 0 | 1;
 }
 
 export class GameRuntime {
