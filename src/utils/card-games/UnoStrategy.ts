@@ -58,7 +58,7 @@ export default class UnoStrategy implements GameStrategy {
 			const color = i.customId.split("_")[1] as UnoColor;
 			ctx.meta.needColor = color;
 			await i.update({});
-			this.advanceTurn(ctx);
+			await this.advanceTurn(ctx);
 			const next = this.peekNext(ctx);
 			await ctx.refreshHand(next.id);
 			return sendTable(ctx);
@@ -69,7 +69,7 @@ export default class UnoStrategy implements GameStrategy {
 			ctx.players[pid].hand.push(card);
 			await i.deferUpdate();
 			// si robo y NO puede jugar nada, pasa turno
-			if (!this.validPlays(ctx, ctx.players[pid]).length) this.advanceTurn(ctx);
+			if (!this.validPlays(ctx, ctx.players[pid]).length) await this.advanceTurn(ctx);
 			await ctx.refreshHand(uid);
 			return sendTable(ctx);
 		}
@@ -91,14 +91,13 @@ export default class UnoStrategy implements GameStrategy {
 			switch (card.value) {
 				case "REV":
 					if (ctx.players.length > 2) ctx.meta.dir *= -1;
-					else this.skipNext(ctx); // en 2 jugadores REV es SKIP
+					else await this.skipNext(ctx); // en 2 jugadores REV es SKIP
 					break;
 				case "SKIP":
-					this.skipNext(ctx);
+					await this.skipNext(ctx);
 					break;
 				case "+2":
 					ctx.meta.stack += 2;
-					this.skipNext(ctx);
 					break;
 				case "+4":
 					ctx.meta.stack += 4;
@@ -132,7 +131,7 @@ export default class UnoStrategy implements GameStrategy {
 
 			await i.deferUpdate();
 			await ctx.refreshHand(next.id); // el que roba por +2/+4
-			this.advanceTurn(ctx);
+			await this.advanceTurn(ctx);
 			return sendTable(ctx);
 		}
 	}
@@ -186,20 +185,28 @@ export default class UnoStrategy implements GameStrategy {
 	/* ------------------------------------------------------------
 	 * Utilidades privadas
 	 * ---------------------------------------------------------- */
-	private advanceTurn(ctx: GameRuntime) {
+	private async advanceTurn(ctx: GameRuntime) {
 		// si hay stack, el siguiente jugador roba y se limpia
 		if (ctx.meta.stack) {
-			const next = this.peekNext(ctx);
-			const cards = ctx.deck.splice(0, ctx.meta.stack);
-			next.hand.push(...cards);
+			const victim = this.peekNext(ctx);
+			const extra = ctx.deck.splice(0, ctx.meta.stack);
+			victim.hand.push(...extra);
 			ctx.meta.stack = 0;
+
+			// 👈 actualiza la vista del que robó
+			await ctx.refreshHand(victim.id);
 		}
+
+		/* ---- pasa el turno ---- */
 		ctx.nextTurn();
+
+		// 👈 muestra los botones al nuevo jugador activo
+		await ctx.refreshHand(ctx.current.id);
 	}
 
-	private skipNext(ctx: GameRuntime) {
+	private async skipNext(ctx: GameRuntime) {
 		ctx.nextTurn(); // salta uno
-		ctx.nextTurn();
+		await this.advanceTurn(ctx);
 	}
 
 	private peekNext(ctx: GameRuntime) {
