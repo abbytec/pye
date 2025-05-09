@@ -61,8 +61,7 @@ export async function sendTable(ctx: GameRuntime) {
 		);
 
 	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-		new ButtonBuilder().setCustomId("show-hand").setLabel("Mostrar tus cartas").setStyle(ButtonStyle.Secondary),
-		...(ctx.strategy.playerChoices?.(ctx, ctx.current.id) ?? [])
+		new ButtonBuilder().setCustomId("show-hand").setLabel("Mostrar tus cartas").setStyle(ButtonStyle.Secondary)
 	);
 
 	if (ctx.tableMessage) await ctx.tableMessage.edit({ embeds: [embed], components: [row] });

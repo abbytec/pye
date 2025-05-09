@@ -16,6 +16,7 @@ import {
 	ButtonInteraction,
 	APIButtonComponent,
 	User,
+	MessageFlags,
 } from "discord.js";
 import { COLORS, getChannel, getChannelFromEnv } from "../../utils/constants.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
@@ -30,8 +31,9 @@ import WarStrategy from "../../utils/card-games/WarStrategy.js";
 import { GameStrategy } from "../../utils/card-games/IGameStrategy.js";
 import { renderCardsAnsi } from "../../utils/card-games/CardUtils.js";
 import { GameRuntime, PlayerState } from "../../utils/card-games/GameRuntime.js";
+import UnoStrategy from "../../utils/card-games/UnoStrategy.js";
 
-export const games: GameStrategy[] = [new WarStrategy()];
+export const games: GameStrategy[] = [new WarStrategy(), new UnoStrategy()];
 export const getGame = (name: string) => games.find((g) => g.name === name);
 export const listGames = () => games.map((g) => g.name);
 
@@ -159,18 +161,25 @@ export default {
 						gameCollector.on("collect", async (i) => {
 							if (i.customId === "show-hand") {
 								const player = runtime.players.find((p) => p.id === i.user.id);
-								if (!player) return i.reply({ content: "No formas parte de esta partida.", ephemeral: true });
-								return i.reply({ content: renderCardsAnsi(player.hand, strat.cardSet), ephemeral: true });
+								if (!player) return i.reply({ content: "No formas parte…", flags: 1 << 6 });
+
+								const privBtns = strat.playerChoices?.(runtime, i.user.id) ?? [];
+								const rows = privBtns.length ? [new ActionRowBuilder<ButtonBuilder>().addComponents(privBtns)] : [];
+
+								return i.reply({
+									content: renderCardsAnsi(player.hand, strat.cardSet),
+									components: rows,
+									flags: MessageFlags.Ephemeral,
+								});
 							}
 
 							if (i.user.id !== runtime.current.id) {
 								await i.reply({ content: "⏳ No es tu turno; esperá.", ephemeral: true });
-								setTimeout(() => i.deleteReply().catch(() => {}), 3_000);
+								setTimeout(() => i.deleteReply().catch(null), 3_000);
 								return;
 							}
 
 							await strat.handleAction(runtime, i.user.id, i);
-							await i.deferUpdate();
 						});
 						gameCollector.on("end", (_collected, reason) => {
 							if (reason === "idle") {
