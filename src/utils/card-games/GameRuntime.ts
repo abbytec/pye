@@ -3,6 +3,7 @@ import { Card, GameStrategy } from "./IGameStrategy.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { COLORS } from "../constants.js";
 import { renderCardsAnsi } from "./CardUtils.js";
+import { Users } from "../../Models/User.js";
 
 /* ------------------------------------------------------------------
  *  Runtime container passed to every strategy
@@ -26,7 +27,8 @@ export class GameRuntime {
 		public readonly interaction: IPrefixChatInputCommand,
 		public readonly thread: ThreadChannel,
 		public readonly players: PlayerState[],
-		public readonly strategy: GameStrategy
+		public readonly strategy: GameStrategy,
+		public readonly bet: number
 	) {}
 
 	nextTurn() {
@@ -37,9 +39,16 @@ export class GameRuntime {
 		return this.players[this.turnIndex];
 	}
 
-	public finish(winnerName?: string | null) {
+	public async finish(winnerName?: string | null, winnerId?: Snowflake | null, winnerTeam?: number | null) {
 		if (this.tableMessage) {
 			const title = winnerName == null ? "No hay ganador, tiempo de espera finalizado" : `🏆 ¡Ganó ${winnerName}!`; // 👈 usa el displayName
+			if (winnerId) {
+				await Users.updateOne({ id: winnerId }, { $inc: { cash: this.bet * this.players.length } });
+				await Users.updateMany(
+					{ id: { $in: this.players.filter((p) => p.id !== winnerId).map((p) => p.id) } },
+					{ $inc: { cash: -this.bet } }
+				);
+			}
 			const embed = new EmbedBuilder().setColor(COLORS.okGreen).setTitle(title).setFooter({ text: "Este hilo se eliminará en 40 s…" });
 			this.tableMessage.edit({ embeds: [embed], components: [] });
 		}

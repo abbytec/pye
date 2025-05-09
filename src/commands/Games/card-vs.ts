@@ -12,6 +12,7 @@ import { GameStrategy } from "../../utils/card-games/IGameStrategy.js";
 import { renderCardsAnsi } from "../../utils/card-games/CardUtils.js";
 import { GameRuntime, PlayerState } from "../../utils/card-games/GameRuntime.js";
 import UnoStrategy from "../../utils/card-games/UnoStrategy.js";
+import { Users } from "../../Models/User.js";
 
 export const games: GameStrategy[] = [new WarStrategy(), new UnoStrategy()];
 export const getGame = (name: string) => games.find((g) => g.name === name);
@@ -30,10 +31,9 @@ export default {
 					...listGames()
 						.slice(0, 25)
 						.map((g) => ({ name: g, value: g }))
-					// Discord permite hasta 25 choices
 				)
 		)
-		.addIntegerOption((opt) => opt.setName("apuesta").setDescription("Apuesta").setRequired(true))
+		.addIntegerOption((opt) => opt.setName("apuesta").setDescription("Apuesta (aplica a todos los jugadores").setRequired(true))
 		.addUserOption((opt) => opt.setName("oponente1").setDescription("Primer oponente").setRequired(true))
 		.addUserOption((opt) => opt.setName("oponente2").setDescription("Segundo oponente").setRequired(false))
 		.addUserOption((opt) => opt.setName("oponente3").setDescription("Segundo oponente").setRequired(false))
@@ -54,10 +54,18 @@ export default {
 				await interaction.options.getUser("oponente5", false),
 			].filter((u): u is User => !!u);
 			if (opps.length === 0) return replyError(interaction, "No se pudo encontrar al oponente 1.");
-			// construís tu set de IDs igual que antes
+
+			const bet = interaction.options.getInteger("apuesta", true);
+			if (bet <= 0) return replyError(interaction, "La apuesta debe ser mayor a 0");
+
 			const playerIds = new Set([interaction.user.id, ...opps.map((u) => u.id)]);
 
-			// validate limits
+			const players = await Users.find({ id: { $in: [...playerIds] } })
+				.select({ id: 1, cash: 1 })
+				.lean();
+			const noCash = players.filter((u) => (u.cash ?? 0) < bet).map((u) => u.id);
+			if (noCash.length) return replyError(interaction, `Sin saldo suficiente: ${noCash.map((id) => `<@${id}>`).join(", ")}`);
+
 			if (
 				(strat.limits.exact && !strat.limits.exact.includes(playerIds.size)) ||
 				playerIds.size < strat.limits.min ||
@@ -137,7 +145,7 @@ export default {
 							runtimePlayers = allUsers.map((u) => toRuntime(u));
 						}
 
-						const runtime = new GameRuntime(interaction, thread, runtimePlayers, strat);
+						const runtime = new GameRuntime(interaction, thread, runtimePlayers, strat, bet);
 						await strat.init(runtime);
 
 						const gameCollector = thread.createMessageComponentCollector({ componentType: ComponentType.Button, idle: 120_000 });
