@@ -2,6 +2,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Snowflake } from "discord.js";
 import { GameRuntime, PlayerState, sendTable } from "./GameRuntime.js";
 import { Card, GameStrategy } from "./IGameStrategy.js";
+import { ansiCard } from "./CardUtils.js";
 
 type UnoColor = "R" | "G" | "B" | "Y" | "X"; // X = negro (wild)
 type UnoValue = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | "SKIP" | "REV" | "+2" | "COLOR" | "+4";
@@ -143,9 +144,12 @@ export default class UnoStrategy implements GameStrategy {
 	 * ---------------------------------------------------------- */
 	publicState(ctx: GameRuntime) {
 		const top = ctx.table.at(-1) as Card;
-		const col = ctx.meta.needColor && ctx.meta.needColor !== "X" ? ctx.meta.needColor : top.suit;
-		const stack = ctx.meta.stack ? `(+${ctx.meta.stack})` : "";
-		return `**Carta en mesa:** \`${col} ${top.value}\` ${stack}`;
+
+		// si se eligió color tras un wild, mostramos ese color
+		const effSuit = ctx.meta.needColor && ctx.meta.needColor !== "X" ? ctx.meta.needColor : top.suit;
+		const stack = ctx.meta.stack ? ` (+${ctx.meta.stack})` : "";
+
+		return "**Carta en mesa:**\n```ansi\n" + ansiCard({ suit: effSuit, value: top.value }, "uno") + stack + "\n```";
 	}
 
 	playerChoices(ctx: GameRuntime, userId: Snowflake) {

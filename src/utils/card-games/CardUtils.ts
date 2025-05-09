@@ -22,7 +22,7 @@ function shuffle<T>(array: T[]) {
 	}
 }
 
-function ansiCard(card: Card, set: CardSet) {
+export function ansiCard(card: Card, set: CardSet) {
 	const reset = "\u001b[0m";
 	const c = {
 		// poker
