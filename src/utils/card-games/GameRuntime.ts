@@ -9,6 +9,7 @@ import { renderCardsAnsi } from "./CardUtils.js";
  * ----------------------------------------------------------------*/
 export interface PlayerState {
 	id: Snowflake;
+	displayName: string;
 	hand: Card[];
 	team?: 0 | 1;
 }
@@ -36,13 +37,10 @@ export class GameRuntime {
 		return this.players[this.turnIndex];
 	}
 
-	public finish(winner?: string | null) {
+	public finish(winnerName?: string | null) {
 		if (this.tableMessage) {
-			let winnerMsg = "";
-			if (winner) winnerMsg = `🏆 ¡Ganó ${winner}!`;
-			else winnerMsg = winner == null ? "No hay ganador, tiempo de espera finalizado" : `🏆 ¡Ganó ${winner}!`;
-			const embed = new EmbedBuilder().setColor(COLORS.okGreen).setTitle(winnerMsg).setFooter({ text: "Este hilo se eliminará en 40 s…" });
-
+			const title = winnerName == null ? "No hay ganador, tiempo de espera finalizado" : `🏆 ¡Ganó ${winnerName}!`; // 👈 usa el displayName
+			const embed = new EmbedBuilder().setColor(COLORS.okGreen).setTitle(title).setFooter({ text: "Este hilo se eliminará en 40 s…" });
 			this.tableMessage.edit({ embeds: [embed], components: [] });
 		}
 		setTimeout(() => this.thread.delete().catch(() => {}), 40_000);

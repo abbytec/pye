@@ -137,7 +137,7 @@ export default class UnoStrategy implements GameStrategy {
 			// ¿fin de juego?
 			if (!player.hand.length) {
 				await i.deferUpdate();
-				ctx.finish(`<@${player.id}>`);
+				ctx.finish(player.displayName); // 👈
 				return;
 			}
 

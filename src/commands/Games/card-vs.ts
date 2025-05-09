@@ -123,15 +123,18 @@ export default {
 
 						const allUsers = [interaction.user, ...opps];
 
+						const toRuntime = (u: User, team?: 0 | 1): PlayerState => ({
+							id: u.id,
+							displayName: u.displayName, // 👈
+							hand: [],
+							...(team !== undefined && { team }),
+						});
+
 						let runtimePlayers: PlayerState[];
 						if (strat.teamBased) {
-							runtimePlayers = allUsers.map((u, i) => ({
-								id: u.id,
-								hand: [],
-								team: i === 0 || i % 2 === 0 ? 0 : 1, // creador + pares ⇒ equipo 0, impares ⇒ equipo 1
-							}));
+							runtimePlayers = allUsers.map((u, i) => toRuntime(u, i % 2 === 0 ? 0 : 1));
 						} else {
-							runtimePlayers = allUsers.map((u) => ({ id: u.id, hand: [] }));
+							runtimePlayers = allUsers.map((u) => toRuntime(u));
 						}
 
 						const runtime = new GameRuntime(interaction, thread, runtimePlayers, strat);

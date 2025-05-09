@@ -42,7 +42,7 @@ class WarStrategy implements GameStrategy {
 				const scores = (ctx.meta.scores ??= {} as Record<Snowflake, number>);
 				scores[winner.id] = (scores[winner.id] ?? 0) + 1;
 
-				if (scores[winner.id] === 5) return ctx.finish(interaction.guild?.members.cache.get(winner.id)?.displayName ?? "");
+				if (scores[winner.id] === 5) return ctx.finish(winner.displayName);
 
 				ctx.table = [];
 				await sendTable(ctx);
