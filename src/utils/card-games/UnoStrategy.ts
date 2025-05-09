@@ -95,16 +95,31 @@ export default class UnoStrategy implements GameStrategy {
 			player.hand.splice(idx, 1);
 			ctx.table.push(card);
 
+			if (ctx.meta.needColor && ctx.meta.needColor !== "X" && card.suit !== "X") {
+				ctx.meta.needColor = null;
+			}
+
 			// aplica efectos
 			switch (card.value) {
 				case "REV":
 					if (ctx.players.length > 2) ctx.meta.dir *= -1;
 					else {
+						// en 2 jugadores REV es SKIP
+						await i.deferUpdate();
+						if (!player.hand.length) {
+							ctx.finish(`<@${player.id}>`);
+							return;
+						}
 						await this.skipNext(ctx);
 						return sendTable(ctx);
-					} // en 2 jugadores REV es SKIP
+					}
 					break;
 				case "SKIP":
+					await i.deferUpdate();
+					if (!player.hand.length) {
+						ctx.finish(`<@${player.id}>`);
+						return;
+					}
 					await this.skipNext(ctx);
 					return sendTable(ctx);
 				case "+2":
@@ -121,6 +136,7 @@ export default class UnoStrategy implements GameStrategy {
 
 			// ¿fin de juego?
 			if (!player.hand.length) {
+				await i.deferUpdate();
 				ctx.finish(`<@${player.id}>`);
 				return;
 			}
