@@ -186,22 +186,20 @@ export default class UnoStrategy implements GameStrategy {
 	 * Utilidades privadas
 	 * ---------------------------------------------------------- */
 	private async advanceTurn(ctx: GameRuntime) {
-		// si hay stack, el siguiente jugador roba y se limpia
+		const prevId = ctx.current.id; // ← jugador que terminó su turno
+
+		/* — robos acumulados — */
 		if (ctx.meta.stack) {
 			const victim = this.peekNext(ctx);
-			const extra = ctx.deck.splice(0, ctx.meta.stack);
-			victim.hand.push(...extra);
+			victim.hand.push(...ctx.deck.splice(0, ctx.meta.stack));
 			ctx.meta.stack = 0;
-
-			// 👈 actualiza la vista del que robó
-			await ctx.refreshHand(victim.id);
+			await ctx.refreshHand(victim.id); // muestra robo al afectado
 		}
 
-		/* ---- pasa el turno ---- */
-		ctx.nextTurn();
+		ctx.nextTurn(); // avanza el turno
 
-		// 👈 muestra los botones al nuevo jugador activo
-		await ctx.refreshHand(ctx.current.id);
+		await ctx.refreshHand(prevId); // ← oculta botones del que ya jugó
+		await ctx.refreshHand(ctx.current.id); // ← muestra botones al nuevo turno
 	}
 
 	private async skipNext(ctx: GameRuntime) {
