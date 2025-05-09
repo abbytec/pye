@@ -1,8 +1,9 @@
 import { Snowflake, ButtonInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { Card, CardSet, GameStrategy, PlayerLimits } from "./IGameStrategy.js";
-import { createDeck, POKER_RANK, renderCardsAnsi, shuffle } from "./CardUtils.js";
+import { POKER_RANK, renderCardsAnsi, shuffle } from "./CardUtils.js";
 import { GameRuntime, PlayerState } from "./GameRuntime.js";
+import { DeckFactory } from "./DeckFactory.js";
 
 interface WarMeta {
 	scores: Record<Snowflake, number>;
@@ -18,7 +19,7 @@ class WarStrategy implements GameStrategy<WarMeta> {
 	readonly teamBased = false;
 
 	async init(ctx: GameRuntime<WarMeta>) {
-		ctx.deck = createDeck(this.cardSet);
+		ctx.deck = DeckFactory.standard();
 		shuffle(ctx.deck);
 		ctx.players.forEach((p) => (p.hand = ctx.deck.splice(0, 26)));
 		await ctx.sendTable();

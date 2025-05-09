@@ -3,6 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Snowfl
 import { GameRuntime, PlayerState } from "./GameRuntime.js";
 import { Card, GameStrategy } from "./IGameStrategy.js";
 import { ansiCard } from "./CardUtils.js";
+import { DeckFactory } from "./DeckFactory.js";
 
 type UnoColor = "R" | "G" | "B" | "Y" | "X"; // X = negro (wild)
 type UnoValue = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | "SKIP" | "REV" | "+2" | "COLOR" | "+4";
@@ -31,8 +32,7 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 	 * Setup
 	 * ---------------------------------------------------------- */
 	async init(ctx: GameRuntime<UnoMeta>) {
-		ctx.deck = this.createDeck();
-		this.shuffle(ctx.deck);
+		ctx.deck = DeckFactory.uno();
 
 		// 7 cartas a cada jugador
 		ctx.players.forEach((p) => (p.hand = ctx.deck.splice(0, 7)));
@@ -254,24 +254,5 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 		return (
 			card.suit === top.suit || card.value === top.value || card.suit === "X" // wild
 		);
-	}
-
-	private createDeck(): Card[] {
-		const deck: Card[] = [];
-		const colors: UnoColor[] = ["R", "G", "B", "Y"];
-		for (const c of colors) {
-			deck.push(mk(c, 0)); // un 0 por color
-			for (let n = 1; n <= 9; n++) deck.push(mk(c, n), mk(c, n)); // dos 1-9
-			for (const v of ["SKIP", "REV", "+2"] as UnoValue[]) deck.push(mk(c, v), mk(c, v)); // dos de cada acción
-		}
-		for (let i = 0; i < 4; i++) deck.push(mk("X", "COLOR"), mk("X", "+4"));
-		return deck;
-	}
-
-	private shuffle<T>(a: T[]) {
-		for (let i = a.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[a[i], a[j]] = [a[j], a[i]];
-		}
 	}
 }
