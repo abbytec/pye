@@ -39,7 +39,7 @@ function ansiCard(card: Card, set: CardSet) {
 	}[card.suit];
 
 	if (c) {
-		return `${c}${card.value}${set === "poker" ? card.suit : ""}${reset}`;
+		return `${c}${card.value}${card.suit === "X" ? "" : card.suit}${reset}`;
 	} else {
 		return `${reset}${card.value}${reset}`;
 	}

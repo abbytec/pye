@@ -1,4 +1,4 @@
-import { Snowflake, ButtonInteraction, ButtonBuilder, ButtonStyle } from "discord.js";
+import { Snowflake, ButtonInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { Card, CardSet, GameStrategy, PlayerLimits } from "./IGameStrategy.js";
 import { createDeck, POKER_RANK, renderCardsAnsi, shuffle } from "./CardUtils.js";
@@ -58,8 +58,11 @@ class WarStrategy implements GameStrategy {
 	}
 
 	playerChoices(ctx: GameRuntime, userId: Snowflake) {
-		if (userId !== ctx.current.id) return [];
-		return [new ButtonBuilder().setCustomId(`play-${userId}`).setLabel("Jugar carta").setStyle(ButtonStyle.Primary)];
+		return [
+			new ActionRowBuilder<ButtonBuilder>().addComponents([
+				new ButtonBuilder().setCustomId(`play-${userId}`).setLabel("Jugar carta").setStyle(ButtonStyle.Primary),
+			]),
+		];
 	}
 	scoreboard(ctx: GameRuntime) {
 		const scores = (ctx.meta.scores ?? {}) as Record<Snowflake, number>;

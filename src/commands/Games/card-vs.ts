@@ -1,25 +1,5 @@
-import {
-	SlashCommandBuilder,
-	ChatInputCommandInteraction,
-	GuildMember,
-	EmbedBuilder,
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	PermissionFlagsBits,
-	TextChannel,
-	ThreadChannel,
-	ChannelType,
-	ComponentType,
-	Snowflake,
-	Message,
-	ButtonInteraction,
-	APIButtonComponent,
-	User,
-	MessageFlags,
-} from "discord.js";
-import { COLORS, getChannel, getChannelFromEnv } from "../../utils/constants.js";
-import { replyOk } from "../../utils/messages/replyOk.js";
+import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, TextChannel, ChannelType, ComponentType, User } from "discord.js";
+import { getChannel, getChannelFromEnv } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { replyError } from "../../utils/messages/replyError.js";
@@ -161,16 +141,17 @@ export default {
 						gameCollector.on("collect", async (i) => {
 							if (i.customId === "show-hand") {
 								const player = runtime.players.find((p) => p.id === i.user.id);
-								if (!player) return i.reply({ content: "No formas parte…", flags: 1 << 6 });
+								if (!player) return i.reply({ content: "No formas parte del juego", flags: 1 << 6 });
+								await i.deferReply({ ephemeral: true });
 
-								const privBtns = strat.playerChoices?.(runtime, i.user.id) ?? [];
-								const rows = privBtns.length ? [new ActionRowBuilder<ButtonBuilder>().addComponents(privBtns)] : [];
-
-								return i.reply({
+								const btns = strat.playerChoices?.(runtime, i.user.id) ?? [];
+								await i.editReply({
 									content: renderCardsAnsi(player.hand, strat.cardSet),
-									components: rows,
-									flags: MessageFlags.Ephemeral,
+									components: btns.length ? btns : [],
 								});
+
+								runtime.handInts.set(i.user.id, i);
+								return;
 							}
 
 							if (i.user.id !== runtime.current.id) {

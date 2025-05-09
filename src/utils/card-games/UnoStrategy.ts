@@ -1,11 +1,10 @@
 // src/utils/card-games/UnoStrategy.ts
-import { ButtonBuilder, ButtonInteraction, ButtonStyle, MessageFlags } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Snowflake } from "discord.js";
 import { GameRuntime, PlayerState, sendTable } from "./GameRuntime.js";
 import { Card, GameStrategy } from "./IGameStrategy.js";
-import { renderCardsAnsi } from "./CardUtils.js";
 
 type UnoColor = "R" | "G" | "B" | "Y" | "X"; // X = negro (wild)
-type UnoValue = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | "SKIP" | "REV" | "+2" | "W" | "+4";
+type UnoValue = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | "SKIP" | "REV" | "+2" | "COLOR" | "+4";
 
 function mk(color: UnoColor, value: string | number): Card {
 	return { suit: color, value };
@@ -17,7 +16,7 @@ function mk(color: UnoColor, value: string | number): Card {
 export default class UnoStrategy implements GameStrategy {
 	readonly name = "Uno";
 	readonly limits = { min: 2, max: 10 };
-	readonly cardSet = "poker"; // solo para reuse de renderCardsAnsi (no se mira aquí)
+	readonly cardSet = "uno";
 	readonly teamBased = false;
 
 	/* ------------------------------------------------------------
@@ -60,6 +59,8 @@ export default class UnoStrategy implements GameStrategy {
 			ctx.meta.needColor = color;
 			await i.update({});
 			this.advanceTurn(ctx);
+			const next = this.peekNext(ctx);
+			await ctx.refreshHand(next.id);
 			return sendTable(ctx);
 		}
 
@@ -69,6 +70,7 @@ export default class UnoStrategy implements GameStrategy {
 			await i.deferUpdate();
 			// si robo y NO puede jugar nada, pasa turno
 			if (!this.validPlays(ctx, ctx.players[pid]).length) this.advanceTurn(ctx);
+			await ctx.refreshHand(uid);
 			return sendTable(ctx);
 		}
 
@@ -102,7 +104,7 @@ export default class UnoStrategy implements GameStrategy {
 					ctx.meta.stack += 4;
 					ctx.meta.needColor = "X"; // fuerza elegir color
 					break;
-				case "W":
+				case "COLOR":
 					ctx.meta.needColor = "X"; // elegir color
 					break;
 			}
@@ -111,6 +113,12 @@ export default class UnoStrategy implements GameStrategy {
 			if (!player.hand.length) {
 				ctx.finish(`<@${player.id}>`);
 				return;
+			}
+
+			await ctx.refreshHand(uid); // su mano
+			const next = this.peekNext(ctx);
+			if (ctx.meta.stack && player.hand.length) {
+				await ctx.refreshHand(next.id); // el que roba por +2/+4
 			}
 
 			// si hay que elegir color, muestra botones de color
@@ -123,6 +131,7 @@ export default class UnoStrategy implements GameStrategy {
 			}
 
 			await i.deferUpdate();
+			await ctx.refreshHand(next.id); // el que roba por +2/+4
 			this.advanceTurn(ctx);
 			return sendTable(ctx);
 		}
@@ -138,19 +147,36 @@ export default class UnoStrategy implements GameStrategy {
 		return `**Carta en mesa:** \`${col} ${top.value}\` ${stack}`;
 	}
 
-	playerChoices(ctx: GameRuntime, userId: string) {
+	playerChoices(ctx: GameRuntime, userId: Snowflake) {
 		if (ctx.current.id !== userId) return [];
+
 		const player = ctx.current;
-		const btns: ButtonBuilder[] = [];
+		const playable = this.validPlays(ctx, player); // cartas que sí se pueden bajar
+		const rows: ActionRowBuilder<ButtonBuilder>[] = [];
+		const CHUNK = 5; // máx. botones por fila
 
-		// cartas jugables
-		this.validPlays(ctx, player).forEach(({ idx, card }) =>
-			btns.push(new ButtonBuilder().setCustomId(`play_${idx}`).setLabel(`${card.suit} ${card.value}`).setStyle(ButtonStyle.Primary))
-		);
+		/* ---- genera un botón por carta ---- */
+		const buttons = playable
+			.slice(0, 24)
+			.map(({ idx, card }) =>
+				new ButtonBuilder().setCustomId(`play_${idx}`).setLabel(`${card.suit} ${card.value}`).setStyle(ButtonStyle.Primary)
+			);
 
-		// botón de robar
-		btns.push(new ButtonBuilder().setCustomId("draw").setLabel("Robar").setStyle(ButtonStyle.Secondary));
-		return btns.slice(0, 25); // Discord ≤ 25
+		/* ---- corta en trozos de 5 y arma filas ---- */
+		for (let i = 0; i < buttons.length; i += CHUNK) {
+			rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(buttons.slice(i, i + CHUNK)));
+		}
+
+		/* ---- botón “Robar” (si ya hay 5 filas lo agrega a la última) ---- */
+		const drawBtn = new ButtonBuilder().setCustomId("draw").setLabel("Robar").setStyle(ButtonStyle.Secondary);
+
+		if (rows.length < 5) {
+			rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(drawBtn));
+		} else {
+			rows[rows.length - 1].addComponents(drawBtn);
+		}
+
+		return rows;
 	}
 
 	scoreboard(ctx: GameRuntime) {
@@ -188,7 +214,7 @@ export default class UnoStrategy implements GameStrategy {
 	private isPlayable(ctx: GameRuntime, card: Card) {
 		const top = ctx.table.at(-1) as Card;
 		const needColor = ctx.meta.needColor as UnoColor | null;
-		if (needColor && needColor !== "X") return card.suit === needColor || card.value === "W" || card.value === "+4";
+		if (needColor && needColor !== "X") return card.suit === needColor || card.value === "COLOR" || card.value === "+4";
 		return (
 			card.suit === top.suit || card.value === top.value || card.suit === "X" // wild
 		);
@@ -202,7 +228,7 @@ export default class UnoStrategy implements GameStrategy {
 			for (let n = 1; n <= 9; n++) deck.push(mk(c, n), mk(c, n)); // dos 1-9
 			for (const v of ["SKIP", "REV", "+2"] as UnoValue[]) deck.push(mk(c, v), mk(c, v)); // dos de cada acción
 		}
-		for (let i = 0; i < 4; i++) deck.push(mk("X", "W"), mk("X", "+4"));
+		for (let i = 0; i < 4; i++) deck.push(mk("X", "COLOR"), mk("X", "+4"));
 		return deck;
 	}
 

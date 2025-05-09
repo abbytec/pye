@@ -1,7 +1,8 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Message, Snowflake, ThreadChannel } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Message, RepliableInteraction, Snowflake, ThreadChannel } from "discord.js";
 import { Card, GameStrategy } from "./IGameStrategy.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { COLORS } from "../constants.js";
+import { renderCardsAnsi } from "./CardUtils.js";
 
 /* ------------------------------------------------------------------
  *  Runtime container passed to every strategy
@@ -18,6 +19,7 @@ export class GameRuntime {
 	public turnIndex = 0;
 	public meta: Record<string, any> = {};
 	public tableMessage: Message | null = null;
+	public handInts = new Map<Snowflake, RepliableInteraction>();
 
 	constructor(
 		public readonly interaction: IPrefixChatInputCommand,
@@ -44,6 +46,21 @@ export class GameRuntime {
 			this.tableMessage.edit({ embeds: [embed], components: [] });
 		}
 		setTimeout(() => this.thread.delete().catch(() => {}), 40_000);
+	}
+
+	async refreshHand(userId: Snowflake) {
+		const inter = this.handInts.get(userId);
+		if (!inter) return;
+
+		const player = this.players.find((p) => p.id === userId);
+		if (!player) return;
+
+		const btns = this.strategy.playerChoices?.(this, userId) ?? [];
+
+		await inter.editReply({
+			content: renderCardsAnsi(player.hand, this.strategy.cardSet),
+			components: btns.length ? btns : [],
+		});
 	}
 }
 export async function sendTable(ctx: GameRuntime) {

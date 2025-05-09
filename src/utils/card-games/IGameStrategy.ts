@@ -1,4 +1,4 @@
-import { ButtonBuilder, ButtonInteraction, Snowflake } from "discord.js";
+import { ActionRowBuilder, ButtonInteraction, Snowflake } from "discord.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { GameRuntime } from "./GameRuntime.js";
 
@@ -10,7 +10,7 @@ export interface Card {
 	value: string | number; // A-K or 1-12 + figuras
 }
 
-export type CardSet = "poker" | "spanish";
+export type CardSet = "poker" | "spanish" | "uno";
 
 export interface PlayerLimits {
 	min: number;
@@ -31,7 +31,7 @@ export interface GameStrategy {
 	/** ANSI representation of public table state */
 	publicState(ctx: GameRuntime): string;
 	/** Optional extra buttons that only the user can see when it's their turn */
-	playerChoices?(ctx: GameRuntime, userId: Snowflake): ButtonBuilder[];
+	playerChoices?(ctx: GameRuntime, userId: Snowflake): ActionRowBuilder<any>[];
 	/** Texto con el histórico/score actual (opcional) */
 	scoreboard?(ctx: GameRuntime): string;
 }
