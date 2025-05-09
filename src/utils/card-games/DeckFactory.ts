@@ -6,11 +6,11 @@ export type UnoValue = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | "SKIP" | "REV" | 
 
 /* ---------- API pública ---------- */
 export class DeckFactory {
+	public static readonly POKER_RANK: (string | number)[] = [2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K", "A"];
 	/** Mazo estándar de 52 cartas (♠, ♥, ♦, ♣) */
 	static standard(): Card[] {
 		const suits = ["♥", "♦", "♣", "♠"] as const;
-		const values = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"] as const;
-		return DeckFactory.#shuffle(suits.flatMap((s) => values.map((v) => ({ suit: s, value: v }))));
+		return DeckFactory.#shuffle(suits.flatMap((s) => DeckFactory.POKER_RANK.map((v) => ({ suit: s, value: v }))));
 	}
 
 	static spanish(): Card[] {

@@ -1,12 +1,5 @@
 import { CardSet, Card } from "./IGameStrategy.js";
 
-function shuffle<T>(array: T[]) {
-	for (let i = array.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		[array[i], array[j]] = [array[j], array[i]];
-	}
-}
-
 export function ansiCard(card: Card, set: CardSet) {
 	const reset = "\u001b[0m";
 	const c = {
@@ -35,6 +28,4 @@ function renderCardsAnsi(cards: Card[], set: CardSet) {
 	return "```ansi\n" + cards.map((c) => ansiCard(c, set)).join(" ") + "\n```";
 }
 
-const POKER_RANK: (string | number)[] = [2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K", "A"];
-
-export { shuffle, renderCardsAnsi, POKER_RANK };
+export { renderCardsAnsi };

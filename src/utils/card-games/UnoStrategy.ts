@@ -2,7 +2,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Snowflake } from "discord.js";
 import { GameRuntime, PlayerState } from "./GameRuntime.js";
 import { Card, GameStrategy } from "./IGameStrategy.js";
-import { ansiCard } from "./CardUtils.js";
+import { ansiCard } from "./CardRenderUtils.js";
 import { DeckFactory } from "./DeckFactory.js";
 
 type UnoColor = "R" | "G" | "B" | "Y" | "X"; // X = negro (wild)

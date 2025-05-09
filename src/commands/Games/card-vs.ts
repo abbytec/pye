@@ -9,7 +9,7 @@ import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import WarStrategy from "../../utils/card-games/WarStrategy.js";
 import { GameStrategy } from "../../utils/card-games/IGameStrategy.js";
-import { renderCardsAnsi } from "../../utils/card-games/CardUtils.js";
+import { renderCardsAnsi } from "../../utils/card-games/CardRenderUtils.js";
 import { GameRuntime, PlayerState } from "../../utils/card-games/GameRuntime.js";
 import UnoStrategy from "../../utils/card-games/UnoStrategy.js";
 import { Users } from "../../Models/User.js";

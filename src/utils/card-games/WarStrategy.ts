@@ -1,7 +1,6 @@
 import { Snowflake, ButtonInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
-import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { Card, CardSet, GameStrategy, PlayerLimits } from "./IGameStrategy.js";
-import { POKER_RANK, renderCardsAnsi, shuffle } from "./CardUtils.js";
+import { renderCardsAnsi } from "./CardRenderUtils.js";
 import { GameRuntime, PlayerState } from "./GameRuntime.js";
 import { DeckFactory } from "./DeckFactory.js";
 
@@ -20,31 +19,35 @@ class WarStrategy implements GameStrategy<WarMeta> {
 
 	async init(ctx: GameRuntime<WarMeta>) {
 		ctx.deck = DeckFactory.standard();
-		shuffle(ctx.deck);
 		ctx.players.forEach((p) => (p.hand = ctx.deck.splice(0, 26)));
 		await ctx.sendTable();
 	}
 
-	async handleAction(ctx: GameRuntime<WarMeta>, userId: Snowflake, interaction: IPrefixChatInputCommand | ButtonInteraction) {
-		if (userId !== ctx.current.id) return;
+	async handleAction(ctx: GameRuntime<WarMeta>, userId: Snowflake, interaction: ButtonInteraction) {
+		await interaction.deferUpdate();
+		if (userId !== ctx.current.id) {
+			await interaction.followUp({ content: "⏳ No es tu turno.", ephemeral: true });
+			return;
+		}
 
 		const player = ctx.current;
 		const card = player.hand.shift();
 		if (card) ctx.table.push(card);
+		await ctx.refreshHand(userId);
 
 		// ¿todos jugaron?
 		if (ctx.table.length === ctx.players.length) {
 			await ctx.sendTable();
 			const winner = WarStrategy.decideWinner(ctx.table, ctx.players);
+
 			setTimeout(async () => {
-				ctx.nextTurn(); // ↩️ se avanza el turno
+				ctx.nextTurn();
 				if (!winner) {
-					// empate
 					ctx.table = [];
-					return await ctx.sendTable();
+					return ctx.sendTable();
 				}
 
-				const scores = (ctx.meta.scores ??= {} as Record<Snowflake, number>);
+				const scores = (ctx.meta.scores ??= {});
 				scores[winner.id] = (scores[winner.id] ?? 0) + 1;
 
 				if (scores[winner.id] === 5) return ctx.finish(winner.displayName);
@@ -76,7 +79,7 @@ class WarStrategy implements GameStrategy<WarMeta> {
 
 	private static decideWinner(table: Card[], players: PlayerState[]) {
 		// Asumimos que table[0] pertenece a players[0] y table[1] a players[1]
-		const rank = (c: Card) => POKER_RANK.indexOf(c.value);
+		const rank = (c: Card) => DeckFactory.POKER_RANK.indexOf(c.value);
 		const r0 = rank(table[0]);
 		const r1 = rank(table[1]);
 

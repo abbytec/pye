@@ -2,7 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Message, Re
 import { Card, GameStrategy } from "./IGameStrategy.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { COLORS } from "../constants.js";
-import { renderCardsAnsi } from "./CardUtils.js";
+import { renderCardsAnsi } from "./CardRenderUtils.js";
 import { Users } from "../../Models/User.js";
 
 /* ------------------------------------------------------------------
