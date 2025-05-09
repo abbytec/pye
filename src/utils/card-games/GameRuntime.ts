@@ -15,11 +15,11 @@ export interface PlayerState {
 	team?: 0 | 1;
 }
 
-export class GameRuntime {
+export class GameRuntime<M> {
 	public deck: Card[] = [];
 	public table: Card[] = [];
 	public turnIndex = 0;
-	public meta: Record<string, any> = {};
+	public meta: M = {} as M;
 	public tableMessage: Message | null = null;
 	public handInts = new Map<Snowflake, RepliableInteraction>();
 
@@ -27,7 +27,7 @@ export class GameRuntime {
 		public readonly interaction: IPrefixChatInputCommand,
 		public readonly thread: ThreadChannel,
 		public readonly players: PlayerState[],
-		public readonly strategy: GameStrategy,
+		public readonly strategy: GameStrategy<M>,
 		public readonly bet: number
 	) {}
 
@@ -69,25 +69,25 @@ export class GameRuntime {
 			components: btns.length ? btns : [],
 		});
 	}
-}
-export async function sendTable(ctx: GameRuntime) {
-	const embed = new EmbedBuilder()
-		.setColor(COLORS.pyeLightBlue)
-		.setTitle(`Juego: ${ctx.strategy.name}`)
-		.setDescription(
-			[
-				ctx.strategy.publicState(ctx),
-				ctx.strategy.scoreboard?.(ctx), // histórico/puntos
-				`**Turno:** <@${ctx.current.id}>`, // turno actual
-			]
-				.filter(Boolean)
-				.join("\n\n")
+	public async sendTable() {
+		const embed = new EmbedBuilder()
+			.setColor(COLORS.pyeLightBlue)
+			.setTitle(`Juego: ${this.strategy.name}`)
+			.setDescription(
+				[
+					this.strategy.publicState(this),
+					this.strategy.scoreboard?.(this), // histórico/puntos
+					`**Turno:** <@${this.current.id}>`, // turno actual
+				]
+					.filter(Boolean)
+					.join("\n\n")
+			);
+
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setCustomId("show-hand").setLabel("Mostrar tus cartas").setStyle(ButtonStyle.Secondary)
 		);
 
-	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-		new ButtonBuilder().setCustomId("show-hand").setLabel("Mostrar tus cartas").setStyle(ButtonStyle.Secondary)
-	);
-
-	if (ctx.tableMessage) await ctx.tableMessage.edit({ embeds: [embed], components: [row] });
-	else ctx.tableMessage = await ctx.thread.send({ embeds: [embed], components: [row] });
+		if (this.tableMessage) await this.tableMessage.edit({ embeds: [embed], components: [row] });
+		else this.tableMessage = await this.thread.send({ embeds: [embed], components: [row] });
+	}
 }

@@ -14,7 +14,7 @@ import { GameRuntime, PlayerState } from "../../utils/card-games/GameRuntime.js"
 import UnoStrategy from "../../utils/card-games/UnoStrategy.js";
 import { Users } from "../../Models/User.js";
 
-export const games: GameStrategy[] = [new WarStrategy(), new UnoStrategy()];
+export const games: GameStrategy<any>[] = [new WarStrategy(), new UnoStrategy()];
 export const getGame = (name: string) => games.find((g) => g.name === name);
 export const listGames = () => games.map((g) => g.name);
 

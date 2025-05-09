@@ -18,20 +18,20 @@ export interface PlayerLimits {
 	exact?: number[]; // explicit allowed sizes (e.g. UNO = [2,3,4]
 }
 
-export interface GameStrategy {
+export interface GameStrategy<StrategyMeta> {
 	readonly name: string;
 	readonly limits: PlayerLimits;
 	readonly cardSet: CardSet;
 	readonly teamBased: boolean;
 
 	/** Called once per game to prepare deck / hands / metadata  */
-	init(ctx: GameRuntime): Promise<void>;
+	init(ctx: GameRuntime<StrategyMeta>): Promise<void>;
 	/** Any interaction emitted by a player (button, select, etc.)  */
-	handleAction(ctx: GameRuntime, userId: Snowflake, interaction: IPrefixChatInputCommand | ButtonInteraction): Promise<void>;
+	handleAction(ctx: GameRuntime<StrategyMeta>, userId: Snowflake, interaction: IPrefixChatInputCommand | ButtonInteraction): Promise<void>;
 	/** ANSI representation of public table state */
-	publicState(ctx: GameRuntime): string;
+	publicState(ctx: GameRuntime<StrategyMeta>): string;
 	/** Optional extra buttons that only the user can see when it's their turn */
-	playerChoices?(ctx: GameRuntime, userId: Snowflake): ActionRowBuilder<any>[];
+	playerChoices?(ctx: GameRuntime<StrategyMeta>, userId: Snowflake): ActionRowBuilder<any>[];
 	/** Texto con el histórico/score actual (opcional) */
-	scoreboard?(ctx: GameRuntime): string;
+	scoreboard?(ctx: GameRuntime<StrategyMeta>): string;
 }

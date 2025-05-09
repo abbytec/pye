@@ -1,6 +1,6 @@
 // src/utils/card-games/UnoStrategy.ts
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Snowflake } from "discord.js";
-import { GameRuntime, PlayerState, sendTable } from "./GameRuntime.js";
+import { GameRuntime, PlayerState } from "./GameRuntime.js";
 import { Card, GameStrategy } from "./IGameStrategy.js";
 import { ansiCard } from "./CardUtils.js";
 
@@ -11,10 +11,17 @@ function mk(color: UnoColor, value: string | number): Card {
 	return { suit: color, value };
 }
 
+interface UnoMeta {
+	dir: number;
+	stack: number;
+	needColor: UnoColor | null;
+	drew: boolean;
+}
+
 // ──────────────────────────────────────────────────────────────────
 //  Estrategia UNO
 // ──────────────────────────────────────────────────────────────────
-export default class UnoStrategy implements GameStrategy {
+export default class UnoStrategy implements GameStrategy<UnoMeta> {
 	readonly name = "Uno";
 	readonly limits = { min: 2, max: 10 };
 	readonly cardSet = "uno";
@@ -23,7 +30,7 @@ export default class UnoStrategy implements GameStrategy {
 	/* ------------------------------------------------------------
 	 * Setup
 	 * ---------------------------------------------------------- */
-	async init(ctx: GameRuntime) {
+	async init(ctx: GameRuntime<UnoMeta>) {
 		ctx.deck = this.createDeck();
 		this.shuffle(ctx.deck);
 
@@ -40,7 +47,7 @@ export default class UnoStrategy implements GameStrategy {
 			needColor: null as UnoColor | null, // cuando se juega wild/+4
 			drew: false,
 		};
-		await sendTable(ctx);
+		await ctx.sendTable();
 	}
 
 	/* ------------------------------------------------------------
@@ -48,7 +55,7 @@ export default class UnoStrategy implements GameStrategy {
 	 * customId:  play_{idx}   /   draw
 	 *            color_R|G|B|Y  (tras un wild)
 	 * ---------------------------------------------------------- */
-	async handleAction(ctx: GameRuntime, uid: string, i: ButtonInteraction): Promise<void> {
+	async handleAction(ctx: GameRuntime<UnoMeta>, uid: string, i: ButtonInteraction): Promise<void> {
 		const pid = ctx.players.findIndex((p) => p.id === uid);
 		if (pid === -1) {
 			await i.reply({ content: "No juegas en esta partida.", ephemeral: true });
@@ -63,7 +70,7 @@ export default class UnoStrategy implements GameStrategy {
 			await this.advanceTurn(ctx);
 			const next = this.peekNext(ctx);
 			await ctx.refreshHand(next.id);
-			return sendTable(ctx);
+			return ctx.sendTable();
 		}
 
 		if (i.customId === "draw") {
@@ -74,13 +81,13 @@ export default class UnoStrategy implements GameStrategy {
 			// si robo y NO puede jugar nada, pasa turno
 			if (!this.validPlays(ctx, ctx.players[pid]).length) await this.advanceTurn(ctx);
 			await ctx.refreshHand(uid);
-			return sendTable(ctx);
+			return ctx.sendTable();
 		}
 
 		if (i.customId === "pass") {
 			await i.deferUpdate();
 			await this.advanceTurn(ctx);
-			return sendTable(ctx);
+			return ctx.sendTable();
 		}
 
 		if (i.customId.startsWith("play_")) {
@@ -111,7 +118,7 @@ export default class UnoStrategy implements GameStrategy {
 							return;
 						}
 						await this.skipNext(ctx);
-						return sendTable(ctx);
+						return ctx.sendTable();
 					}
 					break;
 				case "SKIP":
@@ -121,7 +128,7 @@ export default class UnoStrategy implements GameStrategy {
 						return;
 					}
 					await this.skipNext(ctx);
-					return sendTable(ctx);
+					return ctx.sendTable();
 				case "+2":
 					ctx.meta.stack += 2;
 					break;
@@ -151,14 +158,14 @@ export default class UnoStrategy implements GameStrategy {
 			}
 			await i.deferUpdate();
 			await this.advanceTurn(ctx);
-			return sendTable(ctx);
+			return ctx.sendTable();
 		}
 	}
 
 	/* ------------------------------------------------------------
 	 * Estado público y choices
 	 * ---------------------------------------------------------- */
-	publicState(ctx: GameRuntime) {
+	publicState(ctx: GameRuntime<UnoMeta>) {
 		const top = ctx.table.at(-1) as Card;
 
 		// si se eligió color tras un wild, mostramos ese color
@@ -168,7 +175,7 @@ export default class UnoStrategy implements GameStrategy {
 		return "**Carta en mesa:**\n```ansi\n" + ansiCard({ suit: effSuit, value: top.value }, "uno") + stack + "\n```";
 	}
 
-	playerChoices(ctx: GameRuntime, userId: Snowflake) {
+	playerChoices(ctx: GameRuntime<UnoMeta>, userId: Snowflake) {
 		if (ctx.current.id !== userId) return [];
 
 		const player = ctx.current;
@@ -202,14 +209,14 @@ export default class UnoStrategy implements GameStrategy {
 		return rows;
 	}
 
-	scoreboard(ctx: GameRuntime) {
+	scoreboard(ctx: GameRuntime<UnoMeta>) {
 		return ctx.players.map((p) => `• <@${p.id}>: ${p.hand.length} carta(s)`).join("\n");
 	}
 
 	/* ------------------------------------------------------------
 	 * Utilidades privadas
 	 * ---------------------------------------------------------- */
-	private async advanceTurn(ctx: GameRuntime) {
+	private async advanceTurn(ctx: GameRuntime<UnoMeta>) {
 		const prevId = ctx.current.id; // ← jugador que terminó su turno
 
 		/* — robos acumulados — */
@@ -226,23 +233,23 @@ export default class UnoStrategy implements GameStrategy {
 		await ctx.refreshHand(ctx.current.id); // ← muestra botones al nuevo turno
 	}
 
-	private async skipNext(ctx: GameRuntime) {
+	private async skipNext(ctx: GameRuntime<UnoMeta>) {
 		ctx.nextTurn(); // salta uno
 		await this.advanceTurn(ctx);
 	}
 
-	private peekNext(ctx: GameRuntime) {
+	private peekNext(ctx: GameRuntime<UnoMeta>) {
 		const i = (ctx.turnIndex + ctx.meta.dir + ctx.players.length) % ctx.players.length;
 		return ctx.players[i];
 	}
 
-	private validPlays(ctx: GameRuntime, player: PlayerState) {
+	private validPlays(ctx: GameRuntime<UnoMeta>, player: PlayerState) {
 		return player.hand.map((card, idx) => ({ card: card, idx })).filter(({ card }) => this.isPlayable(ctx, card));
 	}
 
-	private isPlayable(ctx: GameRuntime, card: Card) {
+	private isPlayable(ctx: GameRuntime<UnoMeta>, card: Card) {
 		const top = ctx.table.at(-1) as Card;
-		const needColor = ctx.meta.needColor as UnoColor | null;
+		const needColor = ctx.meta.needColor;
 		if (needColor && needColor !== "X") return card.suit === needColor || card.value === "COLOR" || card.value === "+4";
 		return (
 			card.suit === top.suit || card.value === top.value || card.suit === "X" // wild
