@@ -37,6 +37,7 @@ export default class UnoStrategy implements GameStrategy {
 			dir: 1, // 1 = horario, -1 = antihorario
 			stack: 0, // para +2 y +4 acumulados
 			needColor: null as UnoColor | null, // cuando se juega wild/+4
+			drew: false,
 		};
 		await sendTable(ctx);
 	}
@@ -65,12 +66,19 @@ export default class UnoStrategy implements GameStrategy {
 		}
 
 		if (i.customId === "draw") {
+			ctx.meta.drew = true;
 			const card = ctx.deck.shift() as Card;
 			ctx.players[pid].hand.push(card);
 			await i.deferUpdate();
 			// si robo y NO puede jugar nada, pasa turno
 			if (!this.validPlays(ctx, ctx.players[pid]).length) await this.advanceTurn(ctx);
 			await ctx.refreshHand(uid);
+			return sendTable(ctx);
+		}
+
+		if (i.customId === "pass") {
+			await i.deferUpdate();
+			await this.advanceTurn(ctx);
 			return sendTable(ctx);
 		}
 
@@ -82,7 +90,6 @@ export default class UnoStrategy implements GameStrategy {
 				await i.reply({ content: "Esa carta no puede jugarse ahora.", ephemeral: true });
 				return;
 			}
-
 			// juega la carta
 			player.hand.splice(idx, 1);
 			ctx.table.push(card);
@@ -91,11 +98,14 @@ export default class UnoStrategy implements GameStrategy {
 			switch (card.value) {
 				case "REV":
 					if (ctx.players.length > 2) ctx.meta.dir *= -1;
-					else await this.skipNext(ctx); // en 2 jugadores REV es SKIP
+					else {
+						await this.skipNext(ctx);
+						return sendTable(ctx);
+					} // en 2 jugadores REV es SKIP
 					break;
 				case "SKIP":
 					await this.skipNext(ctx);
-					break;
+					return sendTable(ctx);
 				case "+2":
 					ctx.meta.stack += 2;
 					break;
@@ -114,12 +124,6 @@ export default class UnoStrategy implements GameStrategy {
 				return;
 			}
 
-			await ctx.refreshHand(uid); // su mano
-			const next = this.peekNext(ctx);
-			if (ctx.meta.stack && player.hand.length) {
-				await ctx.refreshHand(next.id); // el que roba por +2/+4
-			}
-
 			// si hay que elegir color, muestra botones de color
 			if (ctx.meta.needColor === "X") {
 				const row = ["R", "G", "B", "Y"].map((c) =>
@@ -128,9 +132,7 @@ export default class UnoStrategy implements GameStrategy {
 				await i.update({ components: [{ type: 1, components: row } as any] });
 				return; // sendTable se llamará luego de elegir color
 			}
-
 			await i.deferUpdate();
-			await ctx.refreshHand(next.id); // el que roba por +2/+4
 			await this.advanceTurn(ctx);
 			return sendTable(ctx);
 		}
@@ -166,13 +168,15 @@ export default class UnoStrategy implements GameStrategy {
 			rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(buttons.slice(i, i + CHUNK)));
 		}
 
-		/* ---- botón “Robar” (si ya hay 5 filas lo agrega a la última) ---- */
-		const drawBtn = new ButtonBuilder().setCustomId("draw").setLabel("Robar").setStyle(ButtonStyle.Secondary);
+		/* ---- botón "Robar" (si ya hay 5 filas lo agrega a la última) ---- */
+		const drawOrPass = ctx.meta.drew
+			? new ButtonBuilder().setCustomId("pass").setLabel("Paso").setStyle(ButtonStyle.Secondary)
+			: new ButtonBuilder().setCustomId("draw").setLabel("Robar").setStyle(ButtonStyle.Secondary);
 
 		if (rows.length < 5) {
-			rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(drawBtn));
+			rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(drawOrPass));
 		} else {
-			rows[rows.length - 1].addComponents(drawBtn);
+			rows[rows.length - 1].addComponents(drawOrPass);
 		}
 
 		return rows;
@@ -195,7 +199,7 @@ export default class UnoStrategy implements GameStrategy {
 			ctx.meta.stack = 0;
 			await ctx.refreshHand(victim.id); // muestra robo al afectado
 		}
-
+		ctx.meta.drew = false;
 		ctx.nextTurn(); // avanza el turno
 
 		await ctx.refreshHand(prevId); // ← oculta botones del que ya jugó
