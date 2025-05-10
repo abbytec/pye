@@ -3,14 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Snowfl
 import { GameRuntime, PlayerState } from "./GameRuntime.js";
 import { Card, GameStrategy } from "./IGameStrategy.js";
 import { ansiCard } from "./CardRenderUtils.js";
-import { DeckFactory } from "./DeckFactory.js";
-
-type UnoColor = "R" | "G" | "B" | "Y" | "X"; // X = negro (wild)
-type UnoValue = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | "SKIP" | "REV" | "+2" | "COLOR" | "+4";
-
-function mk(color: UnoColor, value: string | number): Card {
-	return { suit: color, value };
-}
+import { DeckFactory, UnoColor } from "./DeckFactory.js";
 
 interface UnoMeta {
 	dir: number;
@@ -150,7 +143,7 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 
 			// si hay que elegir color, muestra botones de color
 			if (ctx.meta.needColor === "X") {
-				const row = ["R", "G", "B", "Y"].map((c) =>
+				const row = ["🟥", "🟩", "🟦", "🟨"].map((c) =>
 					new ButtonBuilder().setCustomId(`color_${c}`).setLabel(c).setStyle(ButtonStyle.Secondary)
 				);
 				await i.update({ components: [{ type: 1, components: row } as any] });
@@ -187,7 +180,7 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 		const buttons = playable
 			.slice(0, 24)
 			.map(({ idx, card }) =>
-				new ButtonBuilder().setCustomId(`play_${idx}`).setLabel(`${card.suit} ${card.value}`).setStyle(ButtonStyle.Primary)
+				new ButtonBuilder().setCustomId(`play_${idx}`).setLabel(`${card.value} ${card.suit}`).setStyle(ButtonStyle.Secondary)
 			);
 
 		/* ---- corta en trozos de 5 y arma filas ---- */
@@ -247,12 +240,12 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 		return player.hand.map((card, idx) => ({ card: card, idx })).filter(({ card }) => this.isPlayable(ctx, card));
 	}
 
-	private isPlayable(ctx: GameRuntime<UnoMeta>, card: Card) {
+	private isPlayable(ctx: GameRuntime<UnoMeta>, card?: Card) {
 		const top = ctx.table.at(-1) as Card;
 		const needColor = ctx.meta.needColor;
-		if (needColor && needColor !== "X") return card.suit === needColor || card.value === "COLOR" || card.value === "+4";
+		if (needColor && needColor !== "X") return card?.suit === needColor || card?.value === "COLOR" || card?.value === "+4";
 		return (
-			card.suit === top.suit || card.value === top.value || card.suit === "X" // wild
+			card?.suit === top.suit || card?.value === top.value || card?.suit === "X" // wild
 		);
 	}
 }

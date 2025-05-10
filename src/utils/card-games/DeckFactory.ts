@@ -1,7 +1,7 @@
 // src/utils/card-games/DeckFactory.ts
 import { Card } from "./IGameStrategy.js";
 
-export type UnoColor = "R" | "G" | "B" | "Y" | "X";
+export type UnoColor = "🟥" | "🟩" | "🟦" | "🟨" | "X";
 export type UnoValue = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | "SKIP" | "REV" | "+2" | "COLOR" | "+4";
 
 /* ---------- API pública ---------- */
@@ -21,7 +21,7 @@ export class DeckFactory {
 
 	/** Mazo UNO (108 cartas) */
 	static uno(): Card[] {
-		const colors: UnoColor[] = ["R", "G", "B", "Y"];
+		const colors: UnoColor[] = ["🟥", "🟩", "🟦", "🟨"];
 		const deck: Card[] = [];
 
 		for (const c of colors) {

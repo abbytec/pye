@@ -9,15 +9,15 @@ export function ansiCard(card: Card, set: CardSet) {
 		"♣": "\u001b[30m", // negro
 		"♠": "\u001b[30m", // negro
 		// uno
-		R: "\u001b[31m", // rojo
-		G: "\u001b[32m", // verde
-		B: "\u001b[34m", // azul
-		Y: "\u001b[33m", // amarillo
+		"🟥": "\u001b[31m", // rojo
+		"🟩": "\u001b[32m", // verde
+		"🟦": "\u001b[34m", // azul
+		"🟨": "\u001b[33m", // amarillo
 		X: "\u001b[30m", // X = comodín (negro)
 	}[card.suit];
 
 	if (c) {
-		return `${c}${card.value}${card.suit === "X" ? "" : card.suit}${reset}`;
+		return `${c}${card.value} ${card.suit === "X" ? "" : card.suit}${reset}`;
 	} else {
 		return `${reset}${card.value}${reset}`;
 	}
