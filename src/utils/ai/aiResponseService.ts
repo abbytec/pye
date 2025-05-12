@@ -16,6 +16,10 @@ import {
 	modelPyeChanSearchAnswer,
 	modelPyeChanAnswerNSFW,
 	modelPyeChanAnswerPoliticallyUnrestricted,
+	pyeChanNSFWPrompt,
+	pyeChanPoliticallyUnrestrictedPrompt,
+	pyeChanAudioPrompt,
+	pyeChanSearchPrompt,
 } from "./gemini.js";
 import { ExtendedClient } from "../../client.js";
 import { findEmojis, splitMessage } from "../generic.js";
@@ -111,8 +115,15 @@ export async function generateChatResponse(
 	};
 
 	let model = modelPyeChanAnswer;
-	if (expertAILevel == 1) model = modelPyeChanAnswerPoliticallyUnrestricted;
-	if (expertAILevel == 2) model = modelPyeChanAnswerNSFW;
+	let prompt = pyeChanPrompt;
+	if (expertAILevel == 1) {
+		model = modelPyeChanAnswerPoliticallyUnrestricted;
+		prompt = pyeChanPoliticallyUnrestrictedPrompt;
+	}
+	if (expertAILevel == 2) {
+		model = modelPyeChanAnswerNSFW;
+		prompt = pyeChanNSFWPrompt;
+	}
 
 	const result = await model.generateContent(request, { timeout: 10000 }).catch((e) => {
 		if (e instanceof AbortError || (e instanceof GoogleGenerativeAIFetchError && e.status === 503))
@@ -132,7 +143,7 @@ export async function generateChatResponse(
 			},
 		};
 	});
-	return processResponse(result.response, authorId, pyeChanPrompt);
+	return processResponse(result.response, authorId, prompt);
 }
 
 export async function generateChatResponseSearch(
@@ -178,7 +189,7 @@ export async function generateChatResponseSearch(
 			},
 		};
 	});
-	return processResponse(result.response, authorId, pyeChanPrompt);
+	return processResponse(result.response, authorId, pyeChanSearchPrompt);
 }
 
 export async function generateChatResponseStream(
@@ -264,7 +275,7 @@ export async function generateAudioResponse(
 			},
 		};
 	});
-	return processResponse(result.response, authorId, pyeChanPrompt);
+	return processResponse(result.response, authorId, pyeChanAudioPrompt);
 }
 
 export async function generateImageResponse(
