@@ -33,6 +33,7 @@ import { checkFood, checkMood, checkPets, checkShower } from "./commands/items-e
 import { getYesterdayUTC } from "./utils/generic.js";
 import { createSimpleChatEmbed } from "./utils/ai/aiResponseService.js";
 import { MemeOfTheDay } from "./Models/MemeOfTheDay.js";
+import { clearAllRedisCounter, getAllDataFromRedisCounter } from "./utils/redisCounters.js";
 
 interface VoiceFarming {
 	date: Date;
@@ -43,26 +44,33 @@ const sieteDiasEnMs = 7 * 24 * 60 * 60 * 1000; // 7 días en milisegundos
 export class ExtendedClient extends Client {
 	public commands: Map<string, Command>;
 	public prefixCommands: Map<string, PrefixChatInputCommand>;
-	private readonly _commandLimits: Map<string, ICommandLimits>;
-	private readonly moneyConfigs: Map<string, IMoney>;
-	public static readonly openTickets: Set<string> = new Set();
 	public cooldowns: Map<string, ICooldown>;
 	public lastRobs: Rob[];
 	public voiceFarmers: Map<string, VoiceFarming>;
-	public static readonly lookingForGame: Map<string, IGameSession> = new Map();
 
 	private static agendaElement: Agenda;
+
+	private readonly _commandLimits: Map<string, ICommandLimits>;
+	private readonly moneyConfigs: Map<string, IMoney>;
+
 	private _staffMembers: string[] = [];
 	private _modMembers: string[] = [];
+
+	private static readonly stickerTypeCache: Map<string, StickerType> = new Map();
+
+	private static readonly dailyAIUsageDM: Map<string, number> = new Map();
+	public static readonly dailyAIUsage: Map<string, number> = new Map();
+
+	public static readonly openTickets: Set<string> = new Set();
 	public static readonly newUsers: Set<string> = new Set();
 	public static readonly ultimosCompartePosts: Map<string, ICompartePost[]> = new Map();
 	public static readonly trending: Trending = new Trending();
-	private static readonly stickerTypeCache: Map<string, StickerType> = new Map();
+	public static readonly lookingForGame: Map<string, IGameSession> = new Map();
+
 	public static guildManager: GuildManager | undefined;
 	public static bankAvgCoins: number = 100000;
 	public static adaLovelaceReps: number = 512;
 	public static adaLovelaceTop10Id: string = "";
-	private static readonly dailyAIUsageDM: Map<string, number> = new Map();
 
 	constructor() {
 		super({
@@ -242,9 +250,19 @@ export class ExtendedClient extends Client {
 					.filter((channel) => channel != null)
 					.map((channel) => channel.id) ?? [];
 			ExtendedClient.trending.load(emojis, stickers, forumChannels);
+			console.log("loading AI usages");
+			await getAllDataFromRedisCounter("dailyAIUsage")
+				.then((data) => {
+					data.forEach((value, key) => {
+						ExtendedClient.dailyAIUsage.set(key, value);
+					});
+				})
+				.catch(() => null);
 		} else {
 			ExtendedClient.trending.dailySave();
 			ExtendedClient.dailyAIUsageDM.clear();
+			ExtendedClient.dailyAIUsage.clear();
+			clearAllRedisCounter("dailyAIUsage").catch(() => null);
 			await this.starboardMemeOfTheDay().catch((error) => console.error(error));
 			await this.saveCompartePosts().catch((error) => console.error(error));
 			await this.sendDailyNews(guild?.channels.resolve(getChannelFromEnv("chatProgramadores")) as TextChannel);

@@ -54,6 +54,7 @@ import {
 } from "../utils/ai/aiResponseService.js";
 import fs from "fs";
 import { ParameterError } from "../interfaces/IPrefixChatInputCommand.js";
+import { incrRedisCounter } from "../utils/redisCounters.js";
 
 export default {
 	name: Events.MessageCreate,
@@ -413,7 +414,6 @@ async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClie
 	return cooldownPost;
 }
 
-const autoDeleteEmbedImage = async (message: Message<boolean>) => {};
 export async function manageAIResponse(message: Message<boolean>, isForumPost: string | undefined, isDm: boolean = false) {
 	if (message.mentions.everyone) return;
 	const textWithoutMentions = message.content.replace(/<@!?\d+>/g, "").trim();
@@ -426,6 +426,8 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 		return;
 
 	if (botShouldAnswer) {
+		if (await checkReachedAIRateLimits(message)) return;
+
 		let contexto = await getRecursiveRepliedContext(message, !isForumPost);
 
 		const textFilesContent = await getTextAttachmentsContent(message.attachments);
@@ -521,12 +523,14 @@ export function checkExpertAIMode(message: Message<boolean>) {
 				message.member?.roles.cache.has(getRoleFromEnv("moderadorVoz"))
 			)
 				return thread.type == ChannelType.PrivateThread ? 2 : 1;
+			if (message.member?.roles.cache.has(getRoleFromEnv("colaborador"))) return 1;
 		}
 	} else if (
 		(message.channel as TextChannel).nsfw &&
 		(message.member?.roles.cache.has(getRoleFromEnv("experto")) ||
 			message.member?.roles.cache.has(getRoleFromEnv("adalovelace")) ||
 			message.member?.roles.cache.has(getRoleFromEnv("nitroBooster")) ||
+			message.member?.roles.cache.has(getRoleFromEnv("colaborador")) ||
 			message.member?.roles.cache.has(getRoleFromEnv("staff")) ||
 			message.member?.roles.cache.has(getRoleFromEnv("moderadorChats")) ||
 			message.member?.roles.cache.has(getRoleFromEnv("moderadorVoz")))
@@ -534,4 +538,44 @@ export function checkExpertAIMode(message: Message<boolean>) {
 		return 1;
 	}
 	return 0;
+}
+
+export async function checkReachedAIRateLimits(message: Message<boolean>) {
+	const member = message.member;
+	const isPrivileged =
+		member?.roles.cache.has(getRoleFromEnv("colaborador")) ||
+		member?.roles.cache.has(getRoleFromEnv("nitroBooster")) ||
+		member?.roles.cache.has(getRoleFromEnv("staff")) ||
+		member?.roles.cache.has(getRoleFromEnv("moderadorChats")) ||
+		member?.roles.cache.has(getRoleFromEnv("moderadorVoz"));
+	const used = ExtendedClient.dailyAIUsage.get(message.author.id) ?? 0;
+	if (!isPrivileged) {
+		if (used >= 30) {
+			const embed = new EmbedBuilder()
+				.setColor(COLORS.warnOrange)
+				.setTitle("Límite diario alcanzado")
+				.setDescription(
+					`Has llegado a tu límite de usos de **30 mensajes diarios**.\n\n` +
+						`Para seguir usando PyE-chan hoy, obtén el rol <@&${getRoleFromEnv("colaborador")}> ` +
+						`añadiendo la vanity **.gg/programacion** a tu estado ` +
+						`o boosteando el servidor.`
+				);
+
+			await message.reply({ embeds: [embed] }).catch(() => null);
+			return true;
+		}
+	} else if (used >= 350) {
+		const embed = new EmbedBuilder()
+			.setColor(COLORS.warnOrange)
+			.setTitle("Límite diario alcanzado")
+			.setDescription(
+				`Has llegado a tu límite diario de **350 mensajes diarios**.\n\n` +
+					`Por favor, permite que otros usuarios también pueden usar la IA.`
+			);
+		await message.reply({ embeds: [embed] }).catch(() => null);
+		return true;
+	}
+	ExtendedClient.dailyAIUsage.set(message.author.id, used + 1);
+	incrRedisCounter("dailyAIUsage", message.author.id, 1).catch(() => null);
+	return false;
 }
