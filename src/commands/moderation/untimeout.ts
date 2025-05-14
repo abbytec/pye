@@ -38,62 +38,59 @@ export default {
 			if (!member.isCommunicationDisabled()) await replyError(interaction, "El usuario no está en timeout.");
 
 			// Remover el timeout
-			try {
-				const latestTimeout = await member
-					.timeout(null, reason)
-					.then(async () => {
-						await ModLogs.findOneAndUpdate(
-							{ id: user.id, type: "Timeout", hiddenCase: { $ne: true } }, // Filtro
-							{
-								$set: { hiddenCase: true, reasonUnpenalized: reason },
-								$setOnInsert: {
-									moderator: interaction.user.tag,
-									date: new Date(),
-								},
-							}, // Actualización
-							{ sort: { date: -1 }, upsert: true, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
-						);
-					})
-					.catch(() => null);
-
-				// Buscar el timeout más reciente que no esté oculto
-				if (!latestTimeout) {
-					return await replyError(interaction, "Este usuario no tiene timeouts recientes.");
-				}
-
-				// Enviar mensaje directo al usuario
-				await member.send({
-					embeds: [
-						new EmbedBuilder()
-							.setAuthor({
-								name: member.user.tag,
-								iconURL: member.user.displayAvatarURL(),
-							})
-							.setDescription("Se te ha removido el timeout en **PyE**.\n¡Recuerda no romper las reglas!")
-							.addFields([{ name: "Razón", value: reason }])
-							.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)
-							.setTimestamp(),
-					],
-				});
-
-				// Responder al comando
-				await replyOk(interaction, `Se ha removido el timeout de **${member.user.tag}**.`);
-				return {
-					logMessages: [
+			return await member
+				.timeout(null, reason)
+				.then(async () => {
+					let latestTimeout = await ModLogs.findOneAndUpdate(
+						{ id: user.id, type: "Timeout", hiddenCase: { $ne: true } }, // Filtro
 						{
-							channel: getChannelFromEnv("bansanciones"),
-							user: user,
-							description: `Se ha removido el timeout a: **${member.user.tag}**`,
-							fields: [
-								{ name: "Razón", value: reason },
-								{ name: "Moderador", value: interaction.user.tag },
-							],
-						},
-					],
-				};
-			} catch {
-				return await replyError(interaction, "No se pudo remover el timeout del usuario.");
-			}
+							$set: { hiddenCase: true, reasonUnpenalized: reason },
+							$setOnInsert: {
+								moderator: interaction.user.tag,
+								date: new Date(),
+							},
+						}, // Actualización
+						{ sort: { date: -1 }, upsert: true, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
+					);
+
+					// Buscar el timeout más reciente que no esté oculto
+					if (!latestTimeout) {
+						return await replyError(
+							interaction,
+							"Este usuario no tiene timeouts recientes en la base de datos. Se ha removido el timeout."
+						);
+					}
+					// Enviar mensaje directo al usuario
+					await member.send({
+						embeds: [
+							new EmbedBuilder()
+								.setAuthor({
+									name: member.user.tag,
+									iconURL: member.user.displayAvatarURL(),
+								})
+								.setDescription("Se te ha removido el timeout en **PyE**.\n¡Recuerda no romper las reglas!")
+								.addFields([{ name: "Razón", value: reason }])
+								.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)
+								.setTimestamp(),
+						],
+					});
+					// Responder al comando
+					await replyOk(interaction, `Se ha removido el timeout de **${member.user.tag}**.`);
+					return {
+						logMessages: [
+							{
+								channel: getChannelFromEnv("bansanciones"),
+								user: user,
+								description: `Se ha removido el timeout a: **${member.user.tag}**`,
+								fields: [
+									{ name: "Razón", value: reason },
+									{ name: "Moderador", value: interaction.user.tag },
+								],
+							},
+						],
+					};
+				})
+				.catch(async () => await replyError(interaction, "No se pudo remover el timeout del usuario."));
 		},
 		[logMessages]
 	),
