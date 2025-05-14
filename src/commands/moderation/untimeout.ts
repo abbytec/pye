@@ -51,14 +51,15 @@ export default {
 							},
 						}, // Actualización
 						{ sort: { date: -1 }, upsert: true, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
-					);
+					).catch(() => null);
 
 					// Buscar el timeout más reciente que no esté oculto
 					if (!latestTimeout) {
-						return await replyError(
+						await replyError(
 							interaction,
 							"Este usuario no tiene timeouts recientes en la base de datos. Se ha removido el timeout."
 						);
+						setTimeout(() => null, 3000);
 					}
 					// Enviar mensaje directo al usuario
 					await member.send({
