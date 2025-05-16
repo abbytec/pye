@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Message, RepliableInteraction, Snowflake, ThreadChannel } from "discord.js";
-import { Card, GameStrategy } from "./IGameStrategy.js";
+import { Card, GameStrategy } from "./strategies/IGameStrategy.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { COLORS } from "../constants.js";
 import { renderCardsAnsi } from "./CardRenderUtils.js";

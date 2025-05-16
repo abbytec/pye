@@ -1,27 +1,34 @@
 // src/utils/card-games/DeckFactory.ts
-import { Card } from "./IGameStrategy.js";
+import { Card } from "./strategies/IGameStrategy.js";
 
-export type UnoColor = "🟥" | "🟩" | "🟦" | "🟨" | "X";
+export type UnoSuit = "🟥" | "🟩" | "🟦" | "🟨" | "X";
 export type UnoValue = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | "SKIP" | "REV" | "+2" | "COLOR" | "+4";
+
+export type SpanishSuit = "⚔️" | "🌳" | "🏆" | "🪙"; // Espada, Basto, Copa, Oro
+export type SpanishValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | "Comodín";
+
+export type PokerSuit = "♥" | "♦" | "♣" | "♠";
+export type PokerValue = 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | "J" | "Q" | "K" | "A";
 
 /* ---------- API pública ---------- */
 export class DeckFactory {
-	public static readonly POKER_RANK: (string | number)[] = [2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K", "A"];
+	public static readonly POKER_RANK: PokerValue[] = [2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K", "A"];
+	public static readonly SPANISH_RANK: SpanishValue[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, "Comodín"];
 	/** Mazo estándar de 52 cartas (♠, ♥, ♦, ♣) */
 	static standard(): Card[] {
-		const suits = ["♥", "♦", "♣", "♠"] as const;
+		const suits: PokerSuit[] = ["♥", "♦", "♣", "♠"] as const;
 		return DeckFactory.#shuffle(suits.flatMap((s) => DeckFactory.POKER_RANK.map((v) => ({ suit: s, value: v }))));
 	}
 
-	static spanish(): Card[] {
-		const suits = ["A", "B", "C", "D"] as const;
-		const values: (number | string)[] = [1, 2, 3, 4, 5, 6, 7, "S", "C", "R"] as const;
+	static spanish(removed: SpanishValue[] = []): Card[] {
+		const suits: SpanishSuit[] = ["⚔️", "🌳", "🏆", "🪙"] as const;
+		const values: SpanishValue[] = DeckFactory.SPANISH_RANK.filter((v: SpanishValue) => !removed.includes(v));
 		return DeckFactory.#shuffle(suits.flatMap((s) => values.map((v) => ({ suit: s, value: v }))));
 	}
 
 	/** Mazo UNO (108 cartas) */
 	static uno(): Card[] {
-		const colors: UnoColor[] = ["🟥", "🟩", "🟦", "🟨"];
+		const colors: UnoSuit[] = ["🟥", "🟩", "🟦", "🟨"];
 		const deck: Card[] = [];
 
 		for (const c of colors) {
@@ -31,7 +38,7 @@ export class DeckFactory {
 				n <= 9;
 				n++ // dos 1-9
 			)
-				deck.push({ suit: c, value: n }, { suit: c, value: n });
+				deck.push({ suit: c, value: n as UnoValue }, { suit: c, value: n as UnoValue });
 
 			for (const v of ["SKIP", "REV", "+2"] as UnoValue[]) deck.push({ suit: c, value: v }, { suit: c, value: v });
 		}

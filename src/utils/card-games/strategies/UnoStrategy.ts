@@ -1,14 +1,14 @@
 // src/utils/card-games/UnoStrategy.ts
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Snowflake } from "discord.js";
-import { GameRuntime, PlayerState } from "./GameRuntime.js";
+import { GameRuntime, PlayerState } from "../GameRuntime.js";
 import { Card, GameStrategy } from "./IGameStrategy.js";
-import { ansiCard } from "./CardRenderUtils.js";
-import { DeckFactory, UnoColor } from "./DeckFactory.js";
+import { ansiCard } from "../CardRenderUtils.js";
+import { DeckFactory, UnoSuit } from "../DeckFactory.js";
 
 interface UnoMeta {
 	dir: number;
 	stack: number;
-	needColor: UnoColor | null;
+	needColor: UnoSuit | null;
 	drew: boolean;
 }
 
@@ -32,12 +32,12 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 		// primera carta válida para la mesa
 		let first: Card;
 		do first = ctx.deck.shift() as Card;
-		while (first.value === "W" || first.value === "+4"); // evita wild como primera
+		while (first.value === "COLOR" || first.value === "+4"); // evita wild como primera
 		ctx.table = [first];
 		ctx.meta = {
 			dir: 1, // 1 = horario, -1 = antihorario
 			stack: 0, // para +2 y +4 acumulados
-			needColor: null as UnoColor | null, // cuando se juega wild/+4
+			needColor: null as UnoSuit | null, // cuando se juega wild/+4
 			drew: false,
 		};
 		await ctx.sendTable();
@@ -57,7 +57,7 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 
 		// elegir color tras wild
 		if (i.customId.startsWith("color_")) {
-			const color = i.customId.split("_")[1] as UnoColor;
+			const color = i.customId.split("_")[1] as UnoSuit;
 			ctx.meta.needColor = color;
 			await i.update({});
 			await this.advanceTurn(ctx);

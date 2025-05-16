@@ -7,14 +7,13 @@ import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
-import WarStrategy from "../../utils/card-games/WarStrategy.js";
-import { GameStrategy } from "../../utils/card-games/IGameStrategy.js";
+import { WarStrategy, UnoStrategy, TrucoStrategy } from "../../utils/card-games/strategies/index.js";
+import { GameStrategy } from "../../utils/card-games/strategies/IGameStrategy.js";
 import { renderCardsAnsi } from "../../utils/card-games/CardRenderUtils.js";
 import { GameRuntime, PlayerState } from "../../utils/card-games/GameRuntime.js";
-import UnoStrategy from "../../utils/card-games/UnoStrategy.js";
 import { Users } from "../../Models/User.js";
 
-export const games: GameStrategy<any>[] = [new WarStrategy(), new UnoStrategy()];
+export const games: GameStrategy<any>[] = [new WarStrategy(), new UnoStrategy(), new TrucoStrategy()];
 export const getGame = (name: string) => games.find((g) => g.name === name);
 export const listGames = () => games.map((g) => g.name);
 
@@ -64,7 +63,10 @@ export default {
 				.select({ id: 1, cash: 1 })
 				.lean();
 			const noCash = players.filter((u) => (u.cash ?? 0) < bet).map((u) => u.id);
-			if (noCash.length) return replyError(interaction, `Sin saldo suficiente: ${noCash.map((id) => `<@${id}>`).join(", ")}`);
+			if (noCash.length) {
+				const noCashMentions = noCash.map((id) => `<@${id}>`).join(", ");
+				return replyError(interaction, `Sin saldo suficiente: ${noCashMentions}`);
+			}
 
 			if (
 				(strat.limits.exact && !strat.limits.exact.includes(playerIds.size)) ||

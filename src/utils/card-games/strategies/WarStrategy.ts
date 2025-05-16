@@ -1,8 +1,8 @@
 import { Snowflake, ButtonInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 import { Card, CardSet, GameStrategy, PlayerLimits } from "./IGameStrategy.js";
-import { renderCardsAnsi } from "./CardRenderUtils.js";
-import { GameRuntime, PlayerState } from "./GameRuntime.js";
-import { DeckFactory } from "./DeckFactory.js";
+import { renderCardsAnsi } from "../CardRenderUtils.js";
+import { GameRuntime, PlayerState } from "../GameRuntime.js";
+import { DeckFactory, PokerValue } from "../DeckFactory.js";
 
 interface WarMeta {
 	scores: Record<Snowflake, number>;
@@ -12,7 +12,7 @@ interface WarMeta {
  * "war" (carta más alta gana)
  * ----------------------------------------------------------------*/
 class WarStrategy implements GameStrategy<WarMeta> {
-	readonly name = "war";
+	readonly name = "War";
 	readonly limits: PlayerLimits = { min: 2, max: 2 };
 	readonly cardSet: CardSet = "poker";
 	readonly teamBased = false;
@@ -79,7 +79,7 @@ class WarStrategy implements GameStrategy<WarMeta> {
 
 	private static decideWinner(table: Card[], players: PlayerState[]) {
 		// Asumimos que table[0] pertenece a players[0] y table[1] a players[1]
-		const rank = (c: Card) => DeckFactory.POKER_RANK.indexOf(c.value);
+		const rank = (c: Card) => DeckFactory.POKER_RANK.indexOf(c.value as PokerValue);
 		const r0 = rank(table[0]);
 		const r1 = rank(table[1]);
 

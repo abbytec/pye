@@ -1,13 +1,14 @@
 import { ActionRowBuilder, ButtonInteraction, Snowflake } from "discord.js";
-import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
-import { GameRuntime } from "./GameRuntime.js";
+import { IPrefixChatInputCommand } from "../../../interfaces/IPrefixChatInputCommand.js";
+import { GameRuntime } from "../GameRuntime.js";
+import { PokerSuit, PokerValue, SpanishSuit, SpanishValue, UnoSuit, UnoValue } from "../DeckFactory.js";
 
 /* ------------------------------------------------------------------
  *  Generic card & game domain types
  * ----------------------------------------------------------------*/
 export interface Card {
-	suit: string; // ♥ ♦ ♣ ♠ or spanish equivalents
-	value: string | number; // A-K or 1-12 + figuras
+	suit: PokerSuit | SpanishSuit | UnoSuit; // ♥ ♦ ♣ ♠ or spanish equivalents
+	value: PokerValue | SpanishValue | UnoValue; // A-K or 1-12 + figuras
 }
 
 export type CardSet = "poker" | "spanish" | "uno";
