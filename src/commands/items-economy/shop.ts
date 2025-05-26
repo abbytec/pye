@@ -192,7 +192,7 @@ export default {
 			// ----------------------------
 			// Rama para mostrar FONDOS (subcomando fondos)
 			// ----------------------------
-			if (subcommand === "fondos") {
+			else if (subcommand === "fondos") {
 				// Buscar únicamente los items que tienen la propiedad "background"
 				const fondos = await Shop.find({ background: { $exists: true, $ne: null } }, "name price description itemId icon background")
 					.sort({ price: 1 })
@@ -308,5 +308,17 @@ export default {
 			}
 		}
 	),
-	prefixResolver: (client: ExtendedClient) => new PrefixChatInputCommand(client, "shop", [], ["tienda"]),
+	prefixResolver: (client: ExtendedClient) =>
+		new PrefixChatInputCommand(
+			client,
+			"shop",
+			[
+				{
+					name: "subcommand",
+					required: true,
+					options: ["items", "fondos"],
+				},
+			],
+			["tienda"]
+		),
 } as Command;
