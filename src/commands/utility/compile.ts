@@ -43,7 +43,7 @@ let cachedRuntimes: ExecutionRuntimes | null = null;
 export default {
 	data: new SlashCommandBuilder()
 		.setName("compile")
-		.setDescription("Analiza en búsqueda de virus")
+		.setDescription("Compila, realiza code review y ejecuta un código.")
 		.addStringOption((option) => option.setName("lenguaje").setDescription("Lenguaje utilizado"))
 		.addStringOption((option) => option.setName("codigo").setDescription("Código para analizar"))
 		.addAttachmentOption((option) => option.setName("archivo").setDescription("Archivo para analizar")),
