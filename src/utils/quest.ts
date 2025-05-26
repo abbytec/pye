@@ -272,7 +272,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 					new EmbedBuilder()
 						.setTitle("Mini tutorial de mascotas !")
 						.setDescription(
-							`❥ \`!pet\` - Muestra a tu mascota.\n❥ \`!pet play\` - Juega con tu mascota.\n❥ \`!pet clean\` - Limpia a tu mascota.\n❥ \`!pet feed\` - Alimenta a tu mascota.\n❥ \`!pet name\` - Cambia el nombre de tu mascota.\nTodos estos ítems puedes conseguirlos en la tienda.`
+							`❥ \`!pet show\` - Muestra a tu mascota.\n❥ \`!pet play\` - Juega con tu mascota.\n❥ \`!pet clean\` - Limpia a tu mascota.\n❥ \`!pet feed\` - Alimenta a tu mascota.\n❥ \`!pet name\` - Cambia el nombre de tu mascota.\nTodos estos ítems puedes conseguirlos en la tienda.`
 						)
 						.addFields([{ name: "¡No olvides!", value: "Si tu mascota se escapa, vuelves al nivel 12." }])
 						.setThumbnail("https://cdn.discordapp.com/emojis/1008539448637665300.png?size=96")
