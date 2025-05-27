@@ -28,12 +28,13 @@ export default {
 		} else if (
 			reaction.emoji.name === "pepedown" &&
 			(fullReaction.count ?? 0) > 4 &&
-			!(reaction.message.member as GuildMember).roles.cache.get(getRoleFromEnv("iqNegativo"))
+			reaction.message.member &&
+			!reaction.message.member.roles.cache.get(getRoleFromEnv("iqNegativo"))
 		) {
-			await (reaction.message.member as GuildMember).roles.add(getRoleFromEnv("iqNegativo")).catch(() => null);
+			await reaction.message.member.roles.add(getRoleFromEnv("iqNegativo")).catch(() => null);
 			await UserRole.findOneAndUpdate(
 				{
-					id: (reaction.message.member as GuildMember).id,
+					id: reaction.message.member.id,
 					rolId: getRoleFromEnv("iqNegativo"),
 					guildId: process.env.GUILD_ID ?? "",
 				},
