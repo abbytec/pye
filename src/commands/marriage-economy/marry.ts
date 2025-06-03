@@ -1,5 +1,5 @@
 // src/commands/Currency/marry.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, User, AttachmentBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, User, AttachmentBuilder, Guild } from "discord.js";
 import { getOrCreateUser } from "../../Models/User.js";
 import { Shop } from "../../Models/Shop.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
@@ -24,9 +24,7 @@ export default {
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction(false)],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
-			const guild = interaction.guild;
-
-			if (!guild) return await replyError(interaction, "Este comando solo puede usarse dentro de un servidor.");
+			const guild = interaction.guild as Guild;
 
 			const member = guild.members.cache.get(user.id);
 			if (!member) return await replyError(interaction, "No se pudo obtener la información de tu usuario en este servidor.");
@@ -34,7 +32,7 @@ export default {
 			// Obtener el usuario objetivo
 			const targetUser = await interaction.options.getUser("usuario", true);
 			if (!targetUser) return await replyWarning(interaction, "No se pudo encontrar al usuario especificado.");
-			if (targetUser.createdAt.getTime() ?? 0 > new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).getTime())
+			if ((targetUser.createdAt.getTime() ?? 0) > new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).getTime())
 				return await replyError(interaction, "No puedes casarte con una cuenta recientemente creada.");
 			const targetMember: GuildMember | undefined = guild.members.cache.get(targetUser.id);
 
