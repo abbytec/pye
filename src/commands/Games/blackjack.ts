@@ -451,7 +451,7 @@ async function checkGame(
 		iconURL: user?.displayAvatarURL(),
 	});
 	if (playerValue >= 21 || dealerValue >= 21) {
-		if (playerValue > 21 && dealerValue > 21) {
+		if ((playerValue > 21 && dealerValue > 21) || (playerValue === 21 && dealerValue === 21)) {
 			endGame.setColor(0xff8d01).setDescription("Resultado: Empate. Devolviendo dinero.");
 		} else if (playerValue > 21) {
 			await betDone(msg, userId, amount, -amount);
