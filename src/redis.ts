@@ -1,6 +1,7 @@
 import redis from "redis";
 import { ExtendedClient } from "./client.js";
-
+import loadEnvVariables from "./utils/environment.js";
+loadEnvVariables();
 const client = redis.createClient({
 	socket: {
 		host: process.env.REDIS_HOST,

@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { Evento, EventoConClienteForzado } from "./types/event.js";
 import {} from "../globals.js";
 import { CommandService } from "./core/CommandService.js";
-
+loadEnvVariables();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/bold-font.ttf"), "Manrope");
@@ -86,8 +86,6 @@ const loadEvents = async () => {
 };
 
 const main = async () => {
-	loadEnvVariables();
-
 	await connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/", {
 		connectTimeoutMS: 20000,
 	})

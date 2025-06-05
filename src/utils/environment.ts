@@ -1,10 +1,8 @@
 import dotenv from "dotenv";
+import path from "node:path";
 const isDevelopment = process.env.NODE_ENV === "development";
 
 export default function loadEnvVariables() {
-	if (isDevelopment) {
-		dotenv.config({ path: "./.env.development" });
-	} else {
-		dotenv.config({ path: "./.env" });
-	}
+	const envPath = isDevelopment ? path.resolve(process.cwd(), ".env.development") : path.resolve(process.cwd(), ".env");
+	dotenv.config({ path: envPath });
 }
