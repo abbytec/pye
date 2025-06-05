@@ -1,6 +1,6 @@
 // src/commands/Currency/cap.ts
 
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, Guild } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, GuildMember, Guild } from "discord.js";
 import { getOrCreateUser, IUserModel, Users } from "../../Models/User.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
@@ -16,6 +16,7 @@ import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { Rob } from "./rob.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
+import { CommandService } from "../../core/CommandService.js";
 
 const cooldownDuration = 1 * 60 * 60 * 1000;
 
@@ -46,7 +47,8 @@ export default {
 			let entries: Rob[] = [];
 			if (reactionTime > 0) {
 				entries =
-					client.lastRobs.filter((rob) => rob.lastTime > Date.now() - reactionTime).sort((a, b) => b.lastTime - a.lastTime) ?? [];
+					CommandService.lastRobs.filter((rob) => rob.lastTime > Date.now() - reactionTime).sort((a, b) => b.lastTime - a.lastTime) ??
+					[];
 				if (entries.length === 0) return await replyError(interaction, "No ha habido ningún robo reciente.");
 			} else {
 				return await replyError(interaction, "No estás autorizado para usar este comando.");
@@ -72,7 +74,7 @@ export default {
 			}
 
 			// Eliminar al usuario que robó de la lista
-			if (reactionTime > 0) client.lastRobs = entries.filter((rob) => rob.userId !== robberId);
+			if (reactionTime > 0) CommandService.lastRobs = entries.filter((rob) => rob.userId !== robberId);
 
 			// Actualizar quest
 			try {

@@ -20,6 +20,7 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
+import { EconomyService } from "../../core/EconomyService.js";
 import { ExtendedClient } from "../../client.js";
 
 const game = new Set();
@@ -123,8 +124,8 @@ export default {
 			let data = await getOrCreateUser(interaction.user.id);
 			if (amount < 0) return replyError(interaction, "Debe ser mayor a 0 claro.");
 			if (data.cash < amount) return replyError(interaction, "No tienes suficiente para apostar.");
-			if (amount > ExtendedClient.getGamexMaxCoins())
-				return replyError(interaction, `No puedes apostar más de ${ExtendedClient.getGamexMaxCoins()} PyE Coins.`);
+			if (amount > EconomyService.getGameMaxCoins())
+				return replyError(interaction, `No puedes apostar más de ${EconomyService.getGameMaxCoins()} PyE Coins.`);
 			if (game.has(interaction.user.id)) return replyError(interaction, "Ya te encuentras jugando.");
 			game.add(interaction.user.id);
 

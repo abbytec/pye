@@ -11,8 +11,9 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 import { calculateJobMultiplier } from "../../utils/generic.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
-import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
+import { EconomyService } from "../../core/EconomyService.js";
+import { ExtendedClient } from "../../client.js";
 
 export default {
 	group: "🎮 - Juegos",
@@ -43,11 +44,11 @@ export default {
 			let side: string = interaction.options.getString("lado") ?? ["cara", "cruz"][Math.floor(Math.random() * 2)];
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 
-			if (amount < 100 || amount > ExtendedClient.getGamexMaxCoins(2.5) || amount > userData.cash)
+			if (amount < 100 || amount > EconomyService.getGameMaxCoins(2.5) || amount > userData.cash)
 				return await replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "mayor que 100" : `menor que ${ExtendedClient.getGamexMaxCoins(2.5)}`
+						amount < 100 ? "mayor que 100" : `menor que ${EconomyService.getGameMaxCoins(2.5)}`
 					} o no tienes suficiente dinero`
 				);
 

@@ -28,7 +28,7 @@ import { chatInputCommandParser } from "../utils/messages/chatInputCommandParser
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 import { createGameSessionModal, handleCreateSessionModal, handleGameSessionPagination } from "../commands/duos/busco-equipo.js";
 import { handleTicketButtonInteraction, handleTicketCreation } from "../utils/ticketManager.js";
-import { replyError } from "../utils/messages/replyError.js";
+import { CommandService } from "../core/CommandService.js";
 
 const limiter = new Bottleneck({
 	maxConcurrent: 15, // Máximo de comandos en paralelo
@@ -39,7 +39,7 @@ export default {
 	name: Events.InteractionCreate,
 	async execute(interaction: Interaction) {
 		if (interaction.isChatInputCommand()) {
-			const command = (interaction.client as ExtendedClient).commands.get(interaction.commandName);
+			const command = CommandService.commands.get(interaction.commandName);
 
 			if (!command) {
 				console.error(`No existe un comando llamado ${interaction.commandName}.`);
@@ -327,11 +327,10 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 // Función para otorgar rol granApostador
 async function handleGameCommands(interaction: IPrefixChatInputCommand) {
 	const channelId = interaction.channel?.id;
-	const client = interaction.client;
 	if (channelId !== getChannelFromEnv("casinoPye")) return;
 
 	// Verificar si el comando ejecutado tiene el grupo "juegos"
-	const command = client.commands.get(interaction.commandName);
+	const command = CommandService.commands.get(interaction.commandName);
 	if (!command?.group) return;
 	if (command.group.toLowerCase().includes("juegos")) {
 		checkRole(interaction, getRoleFromEnv("granApostador"), 75, "apostador");

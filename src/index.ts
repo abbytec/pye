@@ -8,6 +8,7 @@ import { Command } from "./types/command.js";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { Evento, EventoConClienteForzado } from "./types/event.js";
 import {} from "../globals.js";
+import { CommandService } from "./core/CommandService.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -44,12 +45,12 @@ const loadCommands = async () => {
 				.then((command: Command) => {
 					if (command.data) {
 						console.log(`Cargando comando: ${command.data.name}`);
-						client.commands.set(command.data.name, command);
+						CommandService.commands.set(command.data.name, command);
 						if (command.prefixResolver) {
 							let instance = command.prefixResolver(client);
 							command.prefixResolverInstance = instance;
-							client.prefixCommands.set(instance.commandName, instance);
-							command.prefixResolverInstance.aliases.forEach((alias) => client.prefixCommands.set(alias, instance));
+							CommandService.prefixCommands.set(instance.commandName, instance);
+							command.prefixResolverInstance.aliases.forEach((alias) => CommandService.prefixCommands.set(alias, instance));
 						}
 					} else {
 						console.log(`[ADVERTENCIA] El comando en ${filePath} carece de la propiedad "data".`);

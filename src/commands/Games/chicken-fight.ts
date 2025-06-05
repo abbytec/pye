@@ -12,8 +12,9 @@ import { calculateJobMultiplier } from "../../utils/generic.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
-import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
+import { EconomyService } from "../../core/EconomyService.js";
+import { ExtendedClient } from "../../client.js";
 const level = new Map();
 
 export default {
@@ -35,11 +36,11 @@ export default {
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 
 			// Verificar que el monto sea válido
-			if (amount < 100 || amount > ExtendedClient.getGamexMaxCoins() || amount > userData.cash)
+			if (amount < 100 || amount > EconomyService.getGameMaxCoins() || amount > userData.cash)
 				return await replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "como minimo 100" : `menor que ${ExtendedClient.getGamexMaxCoins()}`
+						amount < 100 ? "como minimo 100" : `menor que ${EconomyService.getGameMaxCoins()}`
 					} o no tienes suficiente dinero.`
 				);
 

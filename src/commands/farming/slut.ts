@@ -1,5 +1,5 @@
 // src/commands/Currency/slut.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { getOrCreateUser, Users } from "../../Models/User.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
@@ -19,6 +19,8 @@ import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import { logMessages } from "../../utils/finalwares/logMessages.js";
+import { EconomyService } from "../../core/EconomyService.js";
+import { CommandService } from "../../core/CommandService.js";
 
 // Definición de los textos de respuesta para éxito
 const successTexts: Array<(profit: string) => string> = [
@@ -56,7 +58,7 @@ export default {
 
 			const negativeCash = (userData.cash ?? 0) < 0;
 
-			let command = interaction.client.getCommandLimit("slut") ?? {
+			let command = CommandService.getCommandLimit("slut") ?? {
 				lowestMoney: 500,
 				highestMoney: 1000,
 				failRate: 55,
@@ -64,8 +66,8 @@ export default {
 
 			// Generar ganancia aleatoria
 			let profit = getRandomNumber(
-				ExtendedClient.getInflatedRate(command.lowestMoney, 3),
-				ExtendedClient.getInflatedRate(command.highestMoney, 3)
+				EconomyService.getInflatedRate(command.lowestMoney, 3),
+				EconomyService.getInflatedRate(command.highestMoney, 3)
 			);
 
 			// Determinar si el usuario pierde

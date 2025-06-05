@@ -11,8 +11,8 @@ import { replyError } from "../../utils/messages/replyError.js";
 import { getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import ms from "ms"; // Importación de la librería ms
-import { ExtendedClient } from "../../client.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { CommandService } from "../../core/CommandService.js";
 
 const payoutCommands = [
 	{ name: "Work", value: "work" },
@@ -156,7 +156,7 @@ async function handlePayout(
 			},
 		},
 		{ new: true, upsert: true }
-	).then((res: ICommandLimits) => interaction.client.setCommandLimit(res));
+	).then((res: ICommandLimits) => CommandService.setCommandLimit(res));
 
 	await replyOk(
 		interaction,
@@ -189,7 +189,7 @@ async function handleFailrate(
 
 	// Actualizar la base de datos
 	await CommandLimits.findOneAndUpdate({ name: commandName }, { $set: { failRate } }, { new: true, upsert: true }).then(
-		(res: ICommandLimits) => interaction.client.setCommandLimit(res)
+		(res: ICommandLimits) => CommandService.setCommandLimit(res)
 	);
 
 	await replyOk(interaction, `Se ha establecido el porcentaje de fallo del comando \`${commandName}\` a **${failRate}%**.`);
@@ -239,7 +239,7 @@ async function handleCooldown(
 
 	// Actualizar el cooldown en la base de datos
 	await CommandLimits.findOneAndUpdate({ name: commandName }, { $set: { cooldown: cooldownHours } }, { new: true, upsert: true }).then(
-		(res: ICommandLimits) => (interaction.client as ExtendedClient).setCommandLimit(res)
+		(res: ICommandLimits) => CommandService.setCommandLimit(res)
 	);
 
 	await replyOk(

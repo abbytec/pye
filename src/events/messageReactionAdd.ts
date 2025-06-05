@@ -1,13 +1,13 @@
-import { MessageReaction, User, TextChannel, EmbedBuilder, Events, GuildMember } from "discord.js";
+import { MessageReaction, User, TextChannel, EmbedBuilder, Events } from "discord.js";
 import { IStarBoardDocument, StarBoard } from "../Models/StarBoard.js";
 import { StarMessage } from "../Models/StarMessage.js";
 import { Evento } from "../types/event.js";
 import { getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
 import { addRep } from "../commands/rep/add-rep.js";
-import { ExtendedClient } from "../client.js";
 import { UserRole } from "../Models/Role.js";
 import { MemeOfTheDay } from "../Models/MemeOfTheDay.js";
 import { getTodayUTC } from "../utils/generic.js";
+import { TrendingService } from "../core/TrendingService.js";
 
 /**
  * Maneja el evento messageReactionAdd
@@ -63,7 +63,7 @@ export default {
 					message.reactions.cache.reduce((acc, r) => acc + (r.count || 0), 0)
 				);
 		}
-		if (fullReaction.emoji.id) ExtendedClient.trending.add("emoji", (fullReaction.emoji.name ?? "") + ":" + fullReaction.emoji.id);
+		if (fullReaction.emoji.id) TrendingService.trending.add("emoji", (fullReaction.emoji.name ?? "") + ":" + fullReaction.emoji.id);
 	},
 } as Evento;
 

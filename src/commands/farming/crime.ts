@@ -19,6 +19,8 @@ import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import { logMessages } from "../../utils/finalwares/logMessages.js";
+import { CommandService } from "../../core/CommandService.js";
+import { EconomyService } from "../../core/EconomyService.js";
 
 // Definición de los textos de éxito
 const texts: Array<(profit: string) => string> = [
@@ -58,7 +60,7 @@ export default {
 			// Obtener datos del usuario
 			let userData: Partial<IUser> | null = await getOrCreateUser(user.id);
 
-			let command = interaction.client.getCommandLimit("crime") ?? {
+			let command = CommandService.getCommandLimit("crime") ?? {
 				lowestMoney: 500,
 				highestMoney: 1000,
 				failRate: 55,
@@ -66,8 +68,8 @@ export default {
 
 			// Generar ganancia aleatoria
 			let profit = getRandomNumber(
-				ExtendedClient.getInflatedRate(command.lowestMoney, 3),
-				ExtendedClient.getInflatedRate(command.highestMoney, 3)
+				EconomyService.getInflatedRate(command.lowestMoney, 3),
+				EconomyService.getInflatedRate(command.highestMoney, 3)
 			);
 
 			// Determinar si el usuario pierde

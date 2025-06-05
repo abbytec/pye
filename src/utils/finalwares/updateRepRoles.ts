@@ -7,6 +7,7 @@ import { ExtendedClient } from "../../client.js";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import cardRoles from "../constants/card-roles.js";
+import { AutoRoleService } from "../../core/AutoRoleService.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const updateRepRoles: Finalware = async (postHandleableInteraction, result) => {
@@ -34,10 +35,10 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 	// Determinamos el rol más alto que el miembro debe tener
 	let maxRoleId: string | null = null;
 	let maxRoleMinPoints = 0;
-	const lastAdaLovelaceTop10 = ExtendedClient.adaLovelaceTop10Id;
+	const lastAdaLovelaceTop10 = AutoRoleService.adaLovelaceTop10Id;
 	const adaLovelaceId = getRepRolesByOrder().adalovelace;
 
-	if (points >= ExtendedClient.adaLovelaceReps) {
+	if (points >= AutoRoleService.adaLovelaceReps) {
 		if (member.roles.cache.has(adaLovelaceId)) return;
 		else {
 			maxRoleId = adaLovelaceId;
@@ -67,8 +68,8 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 		await member.roles.add(maxRoleId).catch((error) => console.error(`Error al añadir el rol ${maxRoleId} a ${member.user.tag}:`, error));
 		await sendAnnoucement(member, maxRoleId, client, maxRoleMinPoints >= ROLES_REP_RANGE.veterano);
 	}
-	if (maxRoleId === adaLovelaceId) await client.updateAdaLovelace();
-	if (lastAdaLovelaceTop10 !== ExtendedClient.adaLovelaceTop10Id) {
+	if (maxRoleId === adaLovelaceId) await AutoRoleService.updateAdaLovelace();
+	if (lastAdaLovelaceTop10 !== AutoRoleService.adaLovelaceTop10Id) {
 		client.guilds.cache
 			.get(process.env.GUILD_ID ?? "")
 			?.members.fetch(lastAdaLovelaceTop10)

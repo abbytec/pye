@@ -17,6 +17,7 @@ import { ExtendedClient } from "../../client.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import { logMessages } from "../../utils/finalwares/logMessages.js";
+import { CommandService } from "../../core/CommandService.js";
 
 const cooldownDuration = 30 * 60 * 1000;
 
@@ -127,7 +128,7 @@ export default {
 					await Users.updateOne({ id: userData.id }, { $inc: { cash: profit, rob: profit } });
 					await Users.updateOne({ id: targetUserData.id }, { $inc: { cash: -profit } });
 
-					interaction.client.lastRobs.push({
+					CommandService.lastRobs.push({
 						userId: user.id,
 						lastTime: Date.now(),
 						amount: profit,

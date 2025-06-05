@@ -1,5 +1,5 @@
 // src/commands/Currency/work.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { getOrCreateUser, Users } from "../../Models/User.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
@@ -19,6 +19,8 @@ import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import { logMessages } from "../../utils/finalwares/logMessages.js";
+import { EconomyService } from "../../core/EconomyService.js";
+import { CommandService } from "../../core/CommandService.js";
 
 // Definición de los textos de respuesta
 const texts: Array<(profit: string) => string> = [
@@ -51,7 +53,7 @@ export default {
 			const negativeCash = (userData.cash ?? 0) < 0;
 
 			// Definir rangos de ganancia
-			let command = interaction.client.getCommandLimit("work") ?? {
+			let command = CommandService.getCommandLimit("work") ?? {
 				lowestMoney: 500,
 				highestMoney: 1000,
 				failRate: 55,
@@ -59,8 +61,8 @@ export default {
 
 			// Generar ganancia aleatoria
 			let profit = getRandomNumber(
-				ExtendedClient.getInflatedRate(command.lowestMoney),
-				ExtendedClient.getInflatedRate(command.highestMoney)
+				EconomyService.getInflatedRate(command.lowestMoney),
+				EconomyService.getInflatedRate(command.highestMoney)
 			);
 
 			// Ajustar ganancia según el trabajo del usuario y su pareja

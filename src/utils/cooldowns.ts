@@ -15,8 +15,7 @@ export async function getCooldown(client: ExtendedClient, userId: string, comman
 	const key = `${userId}:${commandName}`;
 
 	if (expectedCooldown < thirtyMinutes) {
-		// Use client.cooldowns Map
-		const cooldownEntry = client.cooldowns.get(key);
+		const cooldownEntry = client.commands.cooldowns.get(key);
 		if (!cooldownEntry) {
 			return 0;
 		}
@@ -25,7 +24,7 @@ export async function getCooldown(client: ExtendedClient, userId: string, comman
 
 		if (remaining <= 0) {
 			// Cooldown has expired, remove from map
-			client.cooldowns.delete(key);
+			client.commands.cooldowns.delete(key);
 			return 0;
 		} else {
 			return remaining;
@@ -66,7 +65,7 @@ export async function setCooldown(client: ExtendedClient, userId: string, comman
 			command: commandName,
 			date: newDate,
 		};
-		client.cooldowns.set(`${userId}:${commandName}`, cooldownEntry);
+		client.commands.cooldowns.set(`${userId}:${commandName}`, cooldownEntry);
 	} else {
 		// Use database
 		let cooldownEntry = await Cooldowns.findOneAndUpdate(

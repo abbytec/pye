@@ -1,19 +1,14 @@
 import {
 	ActionRowBuilder,
-	AttachmentBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	ChannelType,
-	DiscordAPIError,
 	DMChannel,
 	EmbedBuilder,
 	Events,
 	Guild,
 	GuildMember,
 	Message,
-	MessagePayload,
-	MessageReplyOptions,
-	OmitPartialGroupDMChannel,
 	PublicThreadChannel,
 	Sticker,
 	StickerType,
@@ -28,7 +23,6 @@ import {
 	DISBOARD_UID,
 	EMOJIS,
 	getChannelFromEnv,
-	getForumTopic,
 	getHelpForumsIdsFromEnv,
 	getRoleFromEnv,
 	messagesProcessingLimiter,
@@ -36,25 +30,20 @@ import {
 } from "../utils/constants.js";
 import { Users } from "../Models/User.js";
 import { getCooldown, setCooldown } from "../utils/cooldowns.js";
-import { checkRole, convertMsToUnixTimestamp, getFirstValidAttachment, getTextAttachmentsContent } from "../utils/generic.js";
+import { checkRole, convertMsToUnixTimestamp } from "../utils/generic.js";
 import { checkHelp } from "../utils/checkhelp.js";
 import { bumpHandler } from "../utils/bumpHandler.js";
-import natural from "natural";
+
 import { checkMentionSpam, IDeletableContent, spamFilter } from "../security/spamFilters.js";
 import { hashMessage } from "../security/messageHashing.js";
-import { getRecursiveRepliedContext } from "../utils/ai/getRecursiveRepliedContext.js";
 import { checkQuestLevel, IQuest } from "../utils/quest.js";
-import {
-	createChatEmbed,
-	createForumEmbed,
-	ForumAIError,
-	generateChatResponse,
-	generateForumResponse,
-	sendLongReply,
-} from "../utils/ai/aiResponseService.js";
-import fs from "fs";
 import { ParameterError } from "../interfaces/IPrefixChatInputCommand.js";
-import { incrRedisCounter } from "../utils/redisCounters.js";
+import { manageAIResponse } from "../utils/ai/aiRequestHandler.js";
+import { checkCooldownComparte } from "../security/checkCooldownComparte.js";
+import { AIUsageControlService } from "../core/AIUsageControlService.js";
+import { CommandService } from "../core/CommandService.js";
+import { ForumPostControlService } from "../core/ForumPostControlService.js";
+import { TrendingService } from "../core/TrendingService.js";
 
 export default {
 	name: Events.MessageCreate,
@@ -77,7 +66,7 @@ export default {
 				?.members.fetch(message.author.id)
 				.then(async (member) => {
 					if (member.roles.cache.has(getRoleFromEnv("colaborador"))) {
-						if (ExtendedClient.checkDailyAIUsageDM(message.author.id)) await manageAIResponse(message, undefined, true);
+						if (AIUsageControlService.checkDailyAIUsageDM(message.author.id)) await manageAIResponse(message, undefined, true);
 						else member.user.send("Has alcanzado el límite de uso diario de la IA. Por favor espera hasta mañana 💙");
 					} else
 						await (message.channel as DMChannel).send({
@@ -132,7 +121,7 @@ export default {
 async function processCommonMessage(message: Message, client: ExtendedClient) {
 	let checkingChanel;
 	if (![getChannelFromEnv("mudae"), getChannelFromEnv("casinoPye")].includes(message.channel.id)) {
-		const moneyConfig = client.getMoneyConfig(process.env.CLIENT_ID ?? "");
+		const moneyConfig = client.economy.getConfig(process.env.CLIENT_ID ?? "");
 		getCooldown(client, message.author.id, "farm-text", moneyConfig.text.time).then(async (time) => {
 			if (time > 0) {
 				Users.findOneAndUpdate({ id: message.author.id }, { $inc: { cash: moneyConfig.text.coins } }, { upsert: true })
@@ -160,7 +149,7 @@ async function processPrefixCommand(message: Message, client: ExtendedClient) {
 	const commandName = commandBody.split(/ +/, 1).shift()?.toLowerCase() ?? "";
 
 	// Verifica si el comando existe en la colección de comandos
-	const command = client.prefixCommands.get(commandName);
+	const command = CommandService.prefixCommands.get(commandName);
 
 	if (!command) {
 		message.reply("Ese comando no existe, quizá se actualizó a Slash Command :point_right: /.\n Prueba escribiendo /help.");
@@ -170,7 +159,7 @@ async function processPrefixCommand(message: Message, client: ExtendedClient) {
 	try {
 		const parsedMessage = await command.parseMessage(message);
 		if (parsedMessage) {
-			let commandFunction = client.commands.get(command.commandName);
+			let commandFunction = CommandService.commands.get(command.commandName);
 			if (commandFunction) {
 				commandFunction.execute(parsedMessage);
 				if (!commandFunction?.group) return;
@@ -227,7 +216,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 					await msg.delete().catch(() => null);
 					setTimeout(async () => await warn.delete().catch(() => null), 10000);
 				} else {
-					client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
+					ForumPostControlService.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
 
 					msg.startThread({ name: `${msg.author.username} - Empleo` })
 						.then((thread) => {
@@ -267,7 +256,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 
 					setTimeout(async () => await warn.delete().catch(() => null), 10000);
 				} else {
-					client.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
+					ForumPostControlService.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
 					msg.startThread({ name: `${msg.author.username} - Proyecto` })
 						.then((thread) => {
 							thread.send({
@@ -353,229 +342,12 @@ function checkThanksChannel(msg: Message<boolean>) {
 }
 
 async function registerNewTrends(message: Message<boolean>, client: ExtendedClient) {
-	message.stickers.forEach((sticker: Sticker) => {
-		if (client.getStickerTypeCache(sticker) === StickerType.Guild) ExtendedClient.trending.add("sticker", sticker.id);
+	message.stickers.forEach(async (sticker: Sticker) => {
+		if ((await TrendingService.getStickerType(sticker)) === StickerType.Guild) TrendingService.trending.add("sticker", sticker.id);
 	});
 	const emojiIds =
 		[...message.content.matchAll(/<(a?:\w+:\d+)>/g)].map((match) => (match[1].startsWith(":") ? match[1].slice(1) : match[1])) || [];
 	emojiIds.forEach((emojiId: string) => {
-		ExtendedClient.trending.add("emoji", emojiId);
+		TrendingService.trending.add("emoji", emojiId);
 	});
-}
-
-async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClient): Promise<number | undefined> {
-	let lastPosts = ExtendedClient.ultimosCompartePosts
-		.get(msg.author.id)
-		?.filter((post) => post.date.getTime() + 1000 * 60 * 60 * 24 * 7 >= Date.now());
-
-	if (!lastPosts) return;
-	let cooldownPost: number | undefined = undefined;
-	for (const post of lastPosts) {
-		const channel = (client.channels.cache.get(post.channelId) ?? client.channels.resolve(post.channelId)) as TextChannel;
-		await channel.messages
-			.fetch(post.messageId)
-			.then(async (message) => {
-				let distance = natural.JaroWinklerDistance(message.content, msg.content, { ignoreCase: true });
-
-				const oldMessageLink = `https://discord.com/channels/${process.env.GUILD_ID}/${post.channelId}/${post.messageId}`;
-				if (distance > 0.9) {
-					const logMessagesChannel = (client.channels.cache.get(getChannelFromEnv("logMessages")) ??
-						client.channels.resolve(getChannelFromEnv("logMessages"))) as TextChannel;
-					if (!logMessagesChannel)
-						ExtendedClient.logError(
-							"checkCooldownComparte: No se encontró el canal de log de Mensajes.",
-							undefined,
-							process.env.CLIENT_ID
-						);
-					cooldownPost ??= post.date.getTime() + 1000 * 60 * 60 * 24 * 7 - Date.now();
-					await logMessagesChannel.send({
-						content: `**Advertencia:** Se eliminó un post duplicado: ${oldMessageLink} en canal <#${msg.channel.id}>`,
-					});
-				} else if (distance > 0.75) {
-					const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("notificaciones")) ??
-						client.channels.resolve(getChannelFromEnv("notificaciones"))) as TextChannel;
-					if (!moderatorChannel)
-						ExtendedClient.logError(
-							"checkCooldownComparte: No se encontró el canal de notificaciones.",
-							undefined,
-							process.env.CLIENT_ID
-						);
-					const newMessageLink = `https://discord.com/channels/${process.env.GUILD_ID}/${msg.channel.id}/${msg.id}`;
-					await moderatorChannel.send({
-						content: `**Advertencia:** Posible post duplicado: #1 {${oldMessageLink}} #2 {${newMessageLink}}`,
-					});
-				}
-			})
-			.catch(() => {
-				if (cooldownPost === undefined && hashMessage(msg.content) === post.hash)
-					cooldownPost = post.date.getTime() + 1000 * 60 * 60 * 24 * 7 - Date.now();
-			});
-	}
-	return cooldownPost;
-}
-
-export async function manageAIResponse(message: Message<boolean>, isForumPost: string | undefined, isDm: boolean = false) {
-	if (message.mentions.everyone) return;
-	const textWithoutMentions = message.content.replace(/<@!?\d+>/g, "").trim();
-
-	const isOnlyMentionsText = textWithoutMentions.length === 0;
-	let botIsMentioned = message.mentions.has(process.env.CLIENT_ID ?? "");
-	let botShouldAnswer = botIsMentioned || isDm || message.mentions.repliedUser?.id === process.env.CLIENT_ID;
-
-	if (((!botIsMentioned && message.mentions.users.size > 0) || (botIsMentioned && message.mentions.users.size > 1)) && isOnlyMentionsText)
-		return;
-
-	if (botShouldAnswer) {
-		if (await checkReachedAIRateLimits(message)) return;
-
-		let contexto = await getRecursiveRepliedContext(message, !isForumPost);
-
-		const textFilesContent = await getTextAttachmentsContent(message.attachments);
-
-		if (textFilesContent) {
-			contexto = contexto + textFilesContent;
-		}
-
-		const attachmentData = await getFirstValidAttachment(message.attachments).catch(async (e) => {
-			message.reply(e.message);
-			return undefined;
-		});
-
-		if (isForumPost) {
-			const threadName = (message.channel as PublicThreadChannel).name;
-			const forumTopic = getForumTopic(isForumPost ?? "");
-			try {
-				const fullMessage = await generateForumResponse(contexto, threadName, forumTopic, attachmentData);
-				const embed = createForumEmbed(fullMessage);
-				await sendLongReply(message, embed, fullMessage);
-			} catch (err: any) {
-				let errorEmbed;
-				let desc = "Error al generar la respuesta. ";
-				errorEmbed = new EmbedBuilder().setColor(0xff0000).setTitle("Error").setFooter({ text: "Por favor, intenta más tarde." });
-				if (err instanceof DiscordAPIError && err.message == "Unknown message") {
-					errorEmbed.setDescription(desc + "No se encontró el mensaje original.");
-					if (message.channel.isSendable()) await message.channel.send({ embeds: [errorEmbed] }).catch(() => null);
-				} else if (err instanceof ForumAIError) {
-					errorEmbed.setDescription(desc + err.message);
-					if (message.channel.isSendable()) await message.channel.send({ embeds: [errorEmbed] }).catch(() => null);
-				} else {
-					ExtendedClient.logError("Error al generar la respuesta de IA en foro:" + err.message, err.stack, message.author.id);
-					await message.reply({ embeds: [errorEmbed] }).catch(() => null);
-				}
-			}
-		} else {
-			const expertAILevelmode = checkExpertAIMode(message);
-			const response = await generateChatResponse(contexto, message.author.id, attachmentData, expertAILevelmode);
-			const embed = createChatEmbed(response.text, expertAILevelmode);
-			let fileName: string | undefined;
-			let responseToReply: MessagePayload | MessageReplyOptions = {};
-			if (response.image) {
-				fileName = `generated_image${Date.now()}.png`;
-				fs.writeFileSync(fileName, new Uint8Array(response.image));
-
-				const attachment = new AttachmentBuilder(fileName, { name: fileName });
-
-				embed.setImage(`attachment://${fileName}`);
-
-				responseToReply = {
-					files: [attachment],
-				};
-			}
-
-			responseToReply.embeds = [embed];
-
-			await message
-				.reply(responseToReply)
-				.then((msg: OmitPartialGroupDMChannel<Message<boolean>>) => {
-					if (!response.image) {
-						const textLength = Math.max(msg.embeds[0]?.data?.description?.length ?? 0, 256);
-						const delayMs = Math.ceil((textLength / 256) * 13000);
-						setTimeout(() => {
-							const embedWithoutImage = msg.embeds.map((embed) => {
-								return {
-									...embed.data,
-									image: undefined,
-								};
-							});
-
-							msg.edit({ embeds: embedWithoutImage });
-						}, delayMs);
-					}
-				})
-				.catch(() => null)
-				.finally(() => {
-					if (fileName && response.image) fs.unlinkSync(fileName);
-				});
-		}
-	}
-}
-
-export function checkExpertAIMode(message: Message<boolean>) {
-	if (message.channel.isThread()) {
-		const thread = message.channel;
-		if (thread.parent?.nsfw) {
-			if (
-				message.member?.roles.cache.has(getRoleFromEnv("experto")) ||
-				message.member?.roles.cache.has(getRoleFromEnv("adalovelace")) ||
-				message.member?.roles.cache.has(getRoleFromEnv("nitroBooster")) ||
-				message.member?.roles.cache.has(getRoleFromEnv("staff")) ||
-				message.member?.roles.cache.has(getRoleFromEnv("moderadorChats")) ||
-				message.member?.roles.cache.has(getRoleFromEnv("moderadorVoz"))
-			)
-				return thread.type == ChannelType.PrivateThread ? 2 : 1;
-			if (message.member?.roles.cache.has(getRoleFromEnv("colaborador"))) return 1;
-		}
-	} else if (
-		(message.channel as TextChannel).nsfw &&
-		(message.member?.roles.cache.has(getRoleFromEnv("experto")) ||
-			message.member?.roles.cache.has(getRoleFromEnv("adalovelace")) ||
-			message.member?.roles.cache.has(getRoleFromEnv("nitroBooster")) ||
-			message.member?.roles.cache.has(getRoleFromEnv("colaborador")) ||
-			message.member?.roles.cache.has(getRoleFromEnv("staff")) ||
-			message.member?.roles.cache.has(getRoleFromEnv("moderadorChats")) ||
-			message.member?.roles.cache.has(getRoleFromEnv("moderadorVoz")))
-	) {
-		return 1;
-	}
-	return 0;
-}
-
-export async function checkReachedAIRateLimits(message: Message<boolean>) {
-	const member = message.member;
-	const isPrivileged =
-		member?.roles.cache.has(getRoleFromEnv("colaborador")) ||
-		member?.roles.cache.has(getRoleFromEnv("nitroBooster")) ||
-		member?.roles.cache.has(getRoleFromEnv("staff")) ||
-		member?.roles.cache.has(getRoleFromEnv("moderadorChats")) ||
-		member?.roles.cache.has(getRoleFromEnv("moderadorVoz"));
-	const used = ExtendedClient.dailyAIUsage.get(message.author.id) ?? 0;
-	if (!isPrivileged) {
-		if (used >= 30) {
-			const embed = new EmbedBuilder()
-				.setColor(COLORS.warnOrange)
-				.setTitle("Límite diario alcanzado")
-				.setDescription(
-					`Has llegado a tu límite de usos de **30 mensajes diarios**.\n\n` +
-						`Para seguir usando PyE-chan hoy, obtén el rol <@&${getRoleFromEnv("colaborador")}> ` +
-						`añadiendo la vanity **.gg/programacion** a tu estado ` +
-						`o boosteando el servidor.`
-				);
-
-			await message.reply({ embeds: [embed] }).catch(() => null);
-			return true;
-		}
-	} else if (used >= 350) {
-		const embed = new EmbedBuilder()
-			.setColor(COLORS.warnOrange)
-			.setTitle("Límite diario alcanzado")
-			.setDescription(
-				`Has llegado a tu límite diario de **350 mensajes diarios**.\n\n` +
-					`Por favor, permite que otros usuarios también pueden usar la IA.`
-			);
-		await message.reply({ embeds: [embed] }).catch(() => null);
-		return true;
-	}
-	ExtendedClient.dailyAIUsage.set(message.author.id, used + 1);
-	incrRedisCounter("dailyAIUsage", message.author.id, 1).catch(() => null);
-	return false;
 }

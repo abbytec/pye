@@ -11,8 +11,10 @@ import { IUserModel, betDone, getOrCreateUser } from "../../Models/User.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
-import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
+import { EconomyService } from "../../core/EconomyService.js";
+import { ExtendedClient } from "../../client.js";
+
 const emojis = ["🍒", "🍉", "🍑", "🥥", "🍍", "🍇", "🥝", "🍄", "🍓", "🍀"];
 export default {
 	group: "🎮 - Juegos",
@@ -32,11 +34,11 @@ export default {
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			let initialAmount = amount;
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
-			if (amount <= 100 || amount > ExtendedClient.getGamexMaxCoins(2.3) || amount > userData.cash)
+			if (amount <= 100 || amount > EconomyService.getGameMaxCoins(2.3) || amount > userData.cash)
 				return replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "mayor que 100" : `menor que ${ExtendedClient.getGamexMaxCoins(2.3)}`
+						amount < 100 ? "mayor que 100" : `menor que ${EconomyService.getGameMaxCoins(2.3)}`
 					} o no tienes suficiente dinero`
 				);
 

@@ -1,6 +1,6 @@
 // src/utils/levelsConfig.ts
 import { EmbedBuilder } from "discord.js";
-import { ExtendedClient } from "../client.js";
+import { EconomyService } from "../core/EconomyService.js";
 
 export interface LevelRequirements {
 	money?: () => number;
@@ -138,5 +138,5 @@ export const levels: LevelConfig[] = [
 ];
 export const MAX_LEVEL = levels.length;
 function inflatedMoney(money: number) {
-	return ExtendedClient.getInflatedRate(money);
+	return EconomyService.getInflatedRate(money);
 }

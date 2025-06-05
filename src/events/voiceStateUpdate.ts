@@ -33,7 +33,7 @@ export default {
 				{ name: "Channel", value: newState.channel?.name ?? "Unknown", inline: true },
 				{ name: "Member Count", value: `${newState.channel?.members.size ?? 0}`, inline: true }
 			);
-			client.voiceFarmers.set(userId, { date: new Date(), count: 0 });
+			client.economy.voiceFarmers.set(userId, { date: new Date(), count: 0 });
 		}
 		// Member leaves all voice channels
 		else if (oldState.channelId && !newState.channelId) {
@@ -44,7 +44,7 @@ export default {
 				{ name: "Channel", value: oldState.channel?.name ?? "Unknown", inline: true },
 				{ name: "Member Count", value: `${oldState.channel?.members.size ?? 0}`, inline: true }
 			);
-			client.voiceFarmers.delete(userId);
+			client.economy.voiceFarmers.delete(userId);
 		} else if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
 			embed.setColor(COLORS.warnOrange);
 			embed.setAuthor({ name: oldState.member?.user.tag ?? "Usuario", iconURL: oldState.member?.user.displayAvatarURL() });

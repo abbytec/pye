@@ -8,10 +8,10 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { COLORS, getRoles } from "../../utils/constants.js";
-import { ExtendedClient } from "../../client.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
+import { CommandService } from "../../core/CommandService.js";
 
 export default {
 	group: "📜 - Ayuda",
@@ -32,7 +32,7 @@ export default {
 			// Agrupar los comandos por grupo
 			const groups: Record<string, Array<{ name: string; description: string }>> = {};
 
-			client.commands.forEach((command) => {
+			CommandService.commands.forEach((command) => {
 				// Si el grupo contiene 'admin' y el usuario no es staff, omitir este grupo
 				if (command.group) {
 					if (command.group.toLowerCase().includes("admin") && !staffStatus) return;

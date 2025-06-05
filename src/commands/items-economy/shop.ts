@@ -28,6 +28,7 @@ import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandCon
 import { getRender } from "../../utils/canvas/card-render.js";
 import { fileURLToPath } from "url";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { EconomyService } from "../../core/EconomyService.js";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -88,7 +89,7 @@ export default {
 					)
 					.addFields(
 						items.map((item, index) => {
-							item.price = ExtendedClient.getInflatedRate(item.price || 0);
+							item.price = EconomyService.getInflatedRate(item.price || 0);
 							return {
 								name: `\`${(page - 1) * ITEMS_PER_PAGE + index + 1}\`. ${item.icon ? item.icon + " " : ""}${
 									item.name
@@ -156,7 +157,7 @@ export default {
 						)
 						.addFields(
 							newItems.map((item, index) => {
-								item.price = ExtendedClient.getInflatedRate(item.price || 0);
+								item.price = EconomyService.getInflatedRate(item.price || 0);
 								return {
 									name: `\`${(page - 1) * ITEMS_PER_PAGE + index + 1}\`. ${item.icon ? item.icon + " " : ""}${
 										item.name
@@ -234,7 +235,7 @@ export default {
 				const embed = new EmbedBuilder()
 					.setTitle(`Fondo: ${fondo.name}`)
 					.setDescription(
-						(fondo.description || "") + "\n\n" + `💰 Precio: ${ExtendedClient.getInflatedRate(fondo.price).toLocaleString()}`
+						(fondo.description || "") + "\n\n" + `💰 Precio: ${EconomyService.getInflatedRate(fondo.price).toLocaleString()}`
 					)
 					.setImage("attachment://preview.png")
 					.setFooter({ text: `Fondo ${index + 1} de ${totalFondos}. ID: ${fondo.itemId}` })
@@ -289,7 +290,7 @@ export default {
 					const newEmbed = EmbedBuilder.from(embed)
 						.setTitle(`Fondo: ${fondo.name}`)
 						.setDescription(
-							(fondo.description || "") + "\n\n" + `💰 Precio: ${ExtendedClient.getInflatedRate(fondo.price).toLocaleString()}`
+							(fondo.description || "") + "\n\n" + `💰 Precio: ${EconomyService.getInflatedRate(fondo.price).toLocaleString()}`
 						)
 						.setImage("attachment://preview.png")
 						.setFooter({ text: `Fondo ${index + 1} de ${totalFondos}` })

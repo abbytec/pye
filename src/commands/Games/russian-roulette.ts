@@ -11,8 +11,9 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { replyInfo } from "../../utils/messages/replyInfo.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
-import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
+import { EconomyService } from "../../core/EconomyService.js";
+import { ExtendedClient } from "../../client.js";
 
 let data: {
 	fin: number;
@@ -44,11 +45,11 @@ export default {
 			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			// Validar datos
-			if (amount <= 100 || amount > ExtendedClient.getGamexMaxCoins() || amount > userData.cash)
+			if (amount <= 100 || amount > EconomyService.getGameMaxCoins() || amount > userData.cash)
 				return replyError(
 					interaction,
 					`Se ingresó una cantidad inválida, debe ser ${
-						amount < 100 ? "como minimo 100" : `menor que ${ExtendedClient.getGamexMaxCoins()}`
+						amount < 100 ? "como minimo 100" : `menor que ${EconomyService.getGameMaxCoins()}`
 					} o no tienes suficiente dinero`
 				);
 			// Comenzar el juego

@@ -14,6 +14,7 @@ import { getChannelFromEnv } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import { ExtendedClient } from "../../client.js";
+import { EconomyService } from "../../core/EconomyService.js";
 
 export default {
 	group: "📚 - Inventario (Casino)",
@@ -70,7 +71,7 @@ export default {
 				}
 
 				// Calcular el costo total
-				const totalCost = ExtendedClient.getInflatedRate(itemData.price * (amount == 0 ? 1 : amount));
+				const totalCost = EconomyService.getInflatedRate(itemData.price * (amount == 0 ? 1 : amount));
 
 				// Verificar si el usuario tiene suficiente dinero
 				if (totalCost >= (userData.cash ?? 0))
