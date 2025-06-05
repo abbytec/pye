@@ -343,11 +343,11 @@ function checkThanksChannel(msg: Message<boolean>) {
 
 async function registerNewTrends(message: Message<boolean>, client: ExtendedClient) {
 	message.stickers.forEach(async (sticker: Sticker) => {
-		if ((await TrendingService.getStickerType(sticker)) === StickerType.Guild) TrendingService.trending.add("sticker", sticker.id);
+		if ((await TrendingService.getStickerType(sticker)) === StickerType.Guild) client.trending.add("sticker", sticker.id);
 	});
 	const emojiIds =
 		[...message.content.matchAll(/<(a?:\w+:\d+)>/g)].map((match) => (match[1].startsWith(":") ? match[1].slice(1) : match[1])) || [];
 	emojiIds.forEach((emojiId: string) => {
-		TrendingService.trending.add("emoji", emojiId);
+		client.trending.add("emoji", emojiId);
 	});
 }

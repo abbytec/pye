@@ -151,5 +151,5 @@ async function processHelpForumPost(thread: ThreadChannel) {
 				console.error("Error al obtener el mensaje de inicio del hilo:", err);
 			});
 	}, 500);
-	TrendingService.trending.add("threadPost", thread.parentId ?? "");
+	(thread.client as ExtendedClient).trending.add("threadPost", thread.parentId ?? "");
 }

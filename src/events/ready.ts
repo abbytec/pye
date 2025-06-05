@@ -159,7 +159,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 		if (job.attrs.data.userReps.month !== currentMonthNumber) {
 			// Actualiza el mes en los datos del trabajo
 
-			let stats = await TrendingService.trending.getStats(client);
+			let stats = await client.trending.getStats(client);
 			(client.channels.resolve(getChannelFromEnv("moderadores")) as TextChannel | null)
 				?.send({
 					embeds: [stats],
@@ -242,7 +242,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 				console.error("Error al procesar el top de reputación mensual:", error);
 			}
 		}
-		TrendingService.trending.dailySave();
+		client.trending.dailySave();
 		if (process.env.NODE_ENV !== "development") await getDailyChallenge(client);
 	});
 

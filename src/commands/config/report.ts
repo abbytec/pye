@@ -10,6 +10,6 @@ export default {
 		.setDescription("Reporte de top3 (emojis, stickers y foros) en tendencia, en decadencia y no utilizados!"),
 
 	async execute(interaction: IPrefixChatInputCommand) {
-		await interaction.reply({ embeds: [await TrendingService.trending.getStats(interaction.client)] });
+		await interaction.reply({ embeds: [await interaction.client.trending.getStats(interaction.client)] });
 	},
 } as Command;
