@@ -30,8 +30,9 @@ export async function checkCooldownComparte(msg: Message<boolean>, client: Exten
 							process.env.CLIENT_ID
 						);
 					cooldownPost ??= post.date.getTime() + 1000 * 60 * 60 * 24 * 7 - Date.now();
+					const msgExtension = msg.channel.id == post.messageId ? "" : `, en el canal <#${msg.channel.id}>`;
 					await logMessagesChannel.send({
-						content: `**Advertencia:** Se eliminó un post duplicado: ${oldMessageLink} en canal <#${msg.channel.id}>`,
+						content: `Se eliminó un post duplicado, copia de ${oldMessageLink}${msgExtension}`,
 					});
 				} else if (distance > 0.75) {
 					const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("notificaciones")) ??
