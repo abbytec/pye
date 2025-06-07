@@ -12,6 +12,7 @@ import {
 	BooleanCache,
 	CacheType,
 	Attachment,
+	InteractionEditReplyOptions,
 } from "discord.js";
 import { ExtendedClient } from "../client.js";
 
@@ -29,6 +30,7 @@ export interface IOptions {
 }
 
 export type MessageToSend = string | MessagePayload | MessageReplyOptions | InteractionReplyOptions;
+export type MessageToEdit = string | MessagePayload | InteractionEditReplyOptions;
 export interface IPrefixChatInputCommand {
 	client: ExtendedClient;
 	commandName: string;
@@ -40,7 +42,7 @@ export interface IPrefixChatInputCommand {
 	channel: Channel;
 	channelId: string;
 	reply: (options: MessageToSend) => Promise<Message>;
-	editReply: (options: MessageToSend) => Promise<Message>;
+	editReply: (options: MessageToEdit) => Promise<Message>;
 	deleteReply: () => Promise<void>;
 	deferReply: (options: any) => Promise<void>;
 	fetchReply: () => Promise<Message>;
