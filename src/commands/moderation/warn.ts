@@ -96,8 +96,9 @@ export default {
 									allow: [PermissionFlagsBits.ViewChannel],
 								},
 								{
-									id: getRoleFromEnv("staff"),
+									id: getRoleFromEnv("moderadorChats"),
 									allow: [PermissionFlagsBits.ViewChannel],
+									deny: [PermissionFlagsBits.SendMessages],
 								},
 								{
 									id: member.id,
@@ -112,7 +113,7 @@ export default {
 						})
 						.then((canal) => {
 							canal.send({
-								content: `<@${member.id}> has recibido una advertencia pero tenias MD cerrado.\n<@&994980515335643267>`,
+								content: `<@${member.id}> has recibido una advertencia pero tenias MD cerrado.`,
 								embeds: [
 									new EmbedBuilder()
 										.setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
