@@ -7,7 +7,7 @@ import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 
-import { img } from "../../utils/petpet.js";
+import { img } from "../../utils/canvas/petpet.js";
 import parser from "twemoji-parser";
 import isSvg from "is-svg";
 import fetch from "node-fetch";

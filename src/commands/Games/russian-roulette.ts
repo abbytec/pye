@@ -55,8 +55,6 @@ export default {
 			// Comenzar el juego
 			if (data.fin == -1) {
 				data.fin = Date.now() + 30e3;
-				let apuestas: { jugador: string; cantidad: number }[] = [];
-				data.apuestas = apuestas;
 				let intervalo: NodeJS.Timeout = setTimeout(() => {
 					russianRoulette(interaction);
 				}, 30e3);
@@ -105,6 +103,7 @@ export default {
 } as Command;
 
 async function russianRoulette(interaction: IPrefixChatInputCommand) {
+	if (!data.apuestas || !Array.isArray(data.apuestas) || data.apuestas.length === 0) return;
 	data.fin = -1;
 	if (data.apuestas.length == 1) {
 		data.apuestas.push({ jugador: process.env.CLIENT_ID ?? "", cantidad: data.apuestas[0].cantidad });
@@ -185,4 +184,8 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 			});
 		}
 	}
+	data.apuestas = [];
+	data.fin = -1;
+	clearTimeout(data.intervalo);
+	data.intervalo = undefined;
 }

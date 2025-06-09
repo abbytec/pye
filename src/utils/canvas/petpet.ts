@@ -1,10 +1,9 @@
-// src/Utils/Functions/petpet.ts
-
+// src/utils/canvas/petpet.ts
 import path, { dirname } from "path";
 import GIFEncoder from "gif-encoder";
 import { createCanvas, Image, loadImage } from "@napi-rs/canvas";
 import { fileURLToPath } from "url";
-import { COLORS } from "./constants.js";
+import { COLORS } from "../constants.js";
 
 const SIZE = 112;
 
@@ -96,8 +95,14 @@ function render(
 			const chunks: Buffer[] = [];
 			gif.on("data", (chunk: Buffer) => chunks.push(chunk));
 			gif.on("end", () => {
-				const buffer = Buffer.concat(chunks);
-				resolve(buffer);
+				const totalLength = chunks.reduce((acc, curr) => acc + curr.length, 0);
+				const result = new Uint8Array(totalLength);
+				let offset = 0;
+				for (const arr of chunks) {
+					result.set(arr, offset);
+					offset += arr.length;
+				}
+				resolve(Buffer.from(result));
 			});
 
 			frames.forEach((frameData, frameIndex) => {
