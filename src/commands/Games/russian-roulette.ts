@@ -143,9 +143,7 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 			interaction,
 			data.apuestas[i].jugador,
 			data.apuestas[i].cantidad,
-			ganador === data.apuestas[i].jugador
-				? calculateJobMultiplier(userData.profile?.job, pozo, userData.couples || [])
-				: -data.apuestas[i].cantidad
+			ganador === data.apuestas[i].jugador ? -10000000 : -data.apuestas[i].cantidad
 		);
 
 		// Enviar mensajes de ganadores y perdedores
