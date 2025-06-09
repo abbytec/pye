@@ -20,7 +20,7 @@ async function generateCanvaBoosterId(member: GuildMember): Promise<Buffer> {
 	const ctx = canvas.getContext("2d");
 
 	// Ruta a la imagen de fondo
-	const backgroundPath = path.join(__dirname, "../assets/Images", "boost.png");
+	const backgroundPath = path.join(__dirname, "../../assets/Images", "boost.png");
 
 	// Cargar y dibujar la imagen de fondo
 	try {
@@ -46,8 +46,8 @@ async function generateCanvaBoosterId(member: GuildMember): Promise<Buffer> {
 	} catch (error) {
 		console.error("Error al cargar el avatar del miembro:", error);
 		// Opcional: Usar una imagen de avatar predeterminada en caso de fallo
-		const defaultAvatarPath = path.join(__dirname, "assets", "default-avatar.png");
-		avatarImage = await loadImage(defaultAvatarPath);
+		const defaultAvatarPath = path.join(__dirname, "../../assets/Images", "default-avatar.png");
+		avatarImage = await loadImage(member.user.defaultAvatarURL ?? defaultAvatarPath);
 	}
 
 	// Dibujar círculo para el avatar

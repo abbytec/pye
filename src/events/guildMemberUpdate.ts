@@ -2,9 +2,9 @@
 
 import { AttachmentBuilder, EmbedBuilder, Events, GuildMember, PartialGuildMember, TextChannel } from "discord.js";
 import { ExtendedClient } from "../client.js";
-import { Evento, EventoConClienteForzado } from "../types/event.js";
+import { EventoConClienteForzado } from "../types/event.js";
 import { COLORS, getChannelFromEnv, getInitialRoles, getRoleFromEnv } from "../utils/constants.js";
-import generateCanvaBoosterId from "../utils/canvas.js";
+import generateCanvaBoosterId from "../utils/canvas/boostNotice.js";
 
 // Expresión regular para detectar URLs en el apodo
 const urlRegex = /(https?:\/\/[^\s]+)/i;
