@@ -78,13 +78,10 @@ export default {
 				return await replyError(interaction, "Ya te encuentras dentro del juego");
 			}
 
-			// Mensaje de respuesta del comando
-
+			const remaining = Math.max(0, Math.round((data.fin - Date.now()) / 1000));
 			return await replyInfo(
 				interaction,
-				`Tu apuesta (${amount}${pyecoin}) se realizó con éxito. Aún faltan ${Math.round(
-					(data.fin - Date.now()) / 1000
-				)} segundos para comenzar.`
+				`Tu apuesta (${amount}${pyecoin}) se realizó con éxito. Aún faltan ${remaining} segundos para comenzar.`
 			);
 		}
 	),
@@ -185,6 +182,7 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 		}
 	}
 	data.apuestas = [];
+	data.apuestaMin = 0;
 	clearTimeout(data.intervalo);
 	data.intervalo = undefined;
 }
