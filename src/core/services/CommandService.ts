@@ -6,7 +6,8 @@ import { Rob } from "../../commands/farming/rob.js";
 import { CoreClient } from "../CoreClient.js";
 import { IService } from "../IService.js";
 
-export class CommandService implements IService {
+export default class CommandService implements IService {
+	public readonly serviceName = "commands";
 	public static readonly commands = new Map<string, Command>();
 	public static readonly prefixCommands = new Map<string, PrefixChatInputCommand>();
 	public readonly cooldowns = new Map<string, ICooldown>();

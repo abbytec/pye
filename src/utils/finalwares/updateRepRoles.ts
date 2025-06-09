@@ -7,7 +7,7 @@ import { ExtendedClient } from "../../client.js";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import cardRoles from "../constants/card-roles.js";
-import { AutoRoleService } from "../../core/services/AutoRoleService.js";
+import AutoRoleService from "../../core/services/AutoRoleService.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const updateRepRoles: Finalware = async (postHandleableInteraction, result) => {
@@ -68,7 +68,7 @@ export async function updateMemberReputationRoles(member: GuildMember, points: n
 		await member.roles.add(maxRoleId).catch((error) => console.error(`Error al añadir el rol ${maxRoleId} a ${member.user.tag}:`, error));
 		await sendAnnoucement(member, maxRoleId, client, maxRoleMinPoints >= ROLES_REP_RANGE.veterano);
 	}
-	if (maxRoleId === adaLovelaceId) await client.autoRole.updateAdaLovelace();
+	if (maxRoleId === adaLovelaceId) await client.services.autoRole.updateAdaLovelace();
 	if (lastAdaLovelaceTop10 !== AutoRoleService.adaLovelaceTop10Id) {
 		client.guilds.cache
 			.get(process.env.GUILD_ID ?? "")

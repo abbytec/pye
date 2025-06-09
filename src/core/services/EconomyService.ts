@@ -10,7 +10,8 @@ interface VoiceFarming {
 	count: number;
 }
 
-export class EconomyService implements IService {
+export default class EconomyService implements IService {
+	public readonly serviceName = "economy";
 	public readonly moneyConfigs = new Map<string, IMoney>();
 	public readonly voiceFarmers = new Map<string, VoiceFarming>();
 	public static bankAvgCoins = 100_000;

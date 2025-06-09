@@ -16,7 +16,7 @@ import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { Rob } from "./rob.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
-import { CommandService } from "../../core/services/CommandService.js";
+import CommandService from "../../core/services/CommandService.js";
 
 const cooldownDuration = 1 * 60 * 60 * 1000;
 

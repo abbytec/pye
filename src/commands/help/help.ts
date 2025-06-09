@@ -11,7 +11,7 @@ import { COLORS, getRoles } from "../../utils/constants.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
-import { CommandService } from "../../core/services/CommandService.js";
+import CommandService from "../../core/services/CommandService.js";
 
 export default {
 	group: "📜 - Ayuda",

@@ -1,19 +1,17 @@
 import { CoreClient } from "./core/CoreClient.js";
-import { CommandService } from "./core/services/CommandService.js";
-import { EconomyService } from "./core/services/EconomyService.js";
-import { PetService } from "./core/services/PetService.js";
-import { TrendingService } from "./core/services/TrendingService.js";
-import { NewsService } from "./core/services/NewsService.js";
 import { getChannelFromEnv, getRoleFromEnv } from "./utils/constants.js";
-import { Guild, GuildManager, MessageFlags, TextChannel } from "discord.js";
-import { AIUsageControlService } from "./core/services/AIUsageControlService.js";
-import { ForumPostControlService } from "./core/services/ForumPostControlService.js";
+import { Guild, MessageFlags, TextChannel } from "discord.js";
 import {} from "../globals.js";
 import { IGameSession } from "./interfaces/IGameSession.js";
 import { Agenda } from "agenda";
-import { AutoRoleService } from "./core/services/AutoRoleService.js";
 import { inspect } from "util";
-
+import fs from "node:fs";
+import path, { dirname } from "node:path";
+import { ServiceInstanceMap, ServiceName } from "./core/services.config.js";
+import { fileURLToPath, pathToFileURL } from "node:url";
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const extension = process.env.NODE_ENV === "development" ? ".ts" : ".js";
+const servicesDir = path.resolve(__dirname, "core/services");
 export class ExtendedClient extends CoreClient {
 	private static agendaElement: Agenda;
 
@@ -23,28 +21,33 @@ export class ExtendedClient extends CoreClient {
 
 	public static guild: Guild | undefined;
 
-	readonly commands;
-	readonly economy;
-	readonly pets;
-	readonly trending;
-	readonly news;
-	readonly aiUsage;
-	readonly forumPostControl;
-	readonly autoRole;
+	readonly services = {} as ServiceInstanceMap;
 
 	private _staffMembers: string[] = [];
 	private _modMembers: string[] = [];
 
 	constructor() {
 		super();
-		this.commands = new CommandService(this);
-		this.economy = new EconomyService(this);
-		this.pets = new PetService(this);
-		this.trending = new TrendingService(this);
-		this.news = new NewsService(this);
-		this.aiUsage = new AIUsageControlService(this);
-		this.forumPostControl = new ForumPostControlService(this);
-		this.autoRole = new AutoRoleService(this);
+	}
+
+	public async loadServices() {
+		const files = fs.readdirSync(servicesDir).filter((f) => f.endsWith(extension));
+
+		for (const file of files) {
+			const url = pathToFileURL(path.join(servicesDir, file)).href;
+
+			try {
+				console.log(`Cargando servicio ${file}`);
+				const mod = await import(url); // <- si esto falla, el catch lo muestra
+				const Ctor = mod.default ?? mod;
+				if (typeof Ctor !== "function") throw new Error(`${file} no exporta una clase por default`);
+				const instance = new Ctor(this);
+				this.services[instance.serviceName as ServiceName] = instance;
+			} catch (err) {
+				ExtendedClient.logError(`Fallo cargando servicio ${file}`, (err as any).stack);
+				console.error(`❌  ${file}:`, err); // ahora verás la traza real
+			}
+		}
 	}
 
 	async updateClientData(firstTime = false) {
@@ -59,23 +62,12 @@ export class ExtendedClient extends CoreClient {
 			(await ExtendedClient.guild?.members.fetch().catch(() => undefined))
 				?.filter((member) => member.roles.cache.some((role) => [getRoleFromEnv("moderadorChats")].includes(role.id)))
 				.map((member) => member.user.id) || this._modMembers;
-		if (firstTime) {
-			if (process.env.NODE_ENV !== "development") {
-				this.globalErrorHandlerInitializer();
-			}
-			await this.commands.start();
-			await this.economy.start();
-			await this.trending.start();
-			this.pets.start();
-			await this.forumPostControl.start();
-			await this.autoRole.start();
-			await this.aiUsage.start();
-		} else {
-			await this.trending.dailyRepeat();
-			await this.forumPostControl.dailyRepeat();
-			this.aiUsage.dailyRepeat();
-			await this.news.dailyRepeat();
-			await this.economy.dailyRepeat();
+		if (firstTime && process.env.NODE_ENV !== "development") {
+			this.globalErrorHandlerInitializer();
+		}
+		for (const srv of Object.values(this.services)) {
+			if (firstTime) await srv.start?.();
+			else await srv.dailyRepeat?.();
 		}
 	}
 

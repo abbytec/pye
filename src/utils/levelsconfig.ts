@@ -1,6 +1,6 @@
 // src/utils/levelsConfig.ts
 import { EmbedBuilder } from "discord.js";
-import { EconomyService } from "../core/services/EconomyService.js";
+import EconomyService from "../core/services/EconomyService.js";
 
 export interface LevelRequirements {
 	money?: () => number;

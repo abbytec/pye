@@ -8,7 +8,7 @@ import { Command } from "./types/command.js";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { Evento, EventoConClienteForzado } from "./types/event.js";
 import {} from "../globals.js";
-import { CommandService } from "./core/services/CommandService.js";
+import CommandService from "./core/services/CommandService.js";
 loadEnvVariables();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -30,6 +30,7 @@ GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/poppins/Poppin
 GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/poppins/Poppins-SemiBold.ttf"), "Poppins");
 
 const client = new ExtendedClient();
+await client.loadServices();
 const extension = process.env.NODE_ENV === "development" ? ".ts" : ".js";
 
 const loadCommands = async () => {

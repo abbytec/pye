@@ -3,7 +3,8 @@ import { CoreClient } from "../CoreClient.js";
 import { IService } from "../IService.js";
 
 /** Controla los contadores de uso de IA (DM y global) */
-export class AIUsageControlService implements IService {
+export default class AIUsageControlService implements IService {
+	public readonly serviceName = "aiUsage";
 	static readonly dailyAIUsageDM = new Map<string, number>();
 	public static readonly dailyAIUsage = new Map<string, number>();
 

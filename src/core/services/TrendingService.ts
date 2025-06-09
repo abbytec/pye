@@ -6,7 +6,8 @@ import { TrendingModel } from "../../Models/Trending.js";
 import { ExtendedClient } from "../../client.js";
 import { IService } from "../IService.js";
 type TrendingType = "emoji" | "threadPost" | "sticker";
-export class TrendingService implements IService {
+export default class TrendingService implements IService {
+	public readonly serviceName = "trending";
 	emojis: Map<string, number>;
 	forumChannels: Map<string, number>;
 	stickers: Map<string, number>;

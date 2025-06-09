@@ -12,7 +12,7 @@ import { ExtendedClient } from "../client.js";
 import { spamFilter } from "../security/spamFilters.js";
 import { getFirstValidAttachment } from "../utils/generic.js";
 import { createForumEmbed, generateForumResponse, sendLongReply } from "../utils/ai/aiResponseService.js";
-import { TrendingService } from "../core/services/TrendingService.js";
+import TrendingService from "../core/services/TrendingService.js";
 
 export default {
 	name: Events.ThreadCreate,
@@ -151,5 +151,5 @@ async function processHelpForumPost(thread: ThreadChannel) {
 				console.error("Error al obtener el mensaje de inicio del hilo:", err);
 			});
 	}, 500);
-	(thread.client as ExtendedClient).trending.add("threadPost", thread.parentId ?? "");
+	(thread.client as ExtendedClient).services.trending.add("threadPost", thread.parentId ?? "");
 }

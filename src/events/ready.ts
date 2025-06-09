@@ -18,9 +18,9 @@ import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js
 import { capitalizeFirstLetter } from "../utils/generic.js";
 import { ticketOptions } from "../utils/constants/ticketOptions.js";
 import { getDailyChallenge } from "../utils/challenges/dailyChallenge.js";
-import { AutoRoleService } from "../core/services/AutoRoleService.js";
-import { TrendingService } from "../core/services/TrendingService.js";
-import { EconomyService } from "../core/services/EconomyService.js";
+import AutoRoleService from "../core/services/AutoRoleService.js";
+import TrendingService from "../core/services/TrendingService.js";
+import EconomyService from "../core/services/EconomyService.js";
 
 export default {
 	name: Events.ClientReady,
@@ -159,7 +159,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 		if (job.attrs.data.userReps.month !== currentMonthNumber) {
 			// Actualiza el mes en los datos del trabajo
 
-			let stats = await client.trending.getStats(client);
+			let stats = await client.services.trending.getStats(client);
 			(client.channels.resolve(getChannelFromEnv("moderadores")) as TextChannel | null)
 				?.send({
 					embeds: [stats],
@@ -242,7 +242,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 				console.error("Error al procesar el top de reputación mensual:", error);
 			}
 		}
-		client.trending.dailySave();
+		client.services.trending.dailySave();
 		if (process.env.NODE_ENV !== "development") await getDailyChallenge(client);
 	});
 
@@ -267,16 +267,16 @@ async function cronEventsProcessor(client: ExtendedClient) {
 async function voiceFarmingProcessor(client: ExtendedClient) {
 	setInterval(() => {
 		const now = new Date();
-		const moneyConfig = client.economy.getConfig(process.env.CLIENT_ID ?? "");
+		const moneyConfig = client.services.economy.getConfig(process.env.CLIENT_ID ?? "");
 		const timeInterval = moneyConfig.voice.time;
 
-		client.economy.voiceFarmers.forEach(async (value, userId) => {
+		client.services.economy.voiceFarmers.forEach(async (value, userId) => {
 			const timePassed = now.getTime() - value.date.getTime();
 			const cyclesPassed = Math.floor(timePassed / timeInterval);
 
 			let voice = client.guilds.cache.get(process.env.GUILD_ID ?? "")?.members.cache.get(userId)?.voice;
 			if (!voice) {
-				client.economy.voiceFarmers.delete(userId);
+				client.services.economy.voiceFarmers.delete(userId);
 				return;
 			}
 
@@ -288,7 +288,7 @@ async function voiceFarmingProcessor(client: ExtendedClient) {
 					{ $inc: { cash: moneyConfig.voice.coins * cyclesToIncrement } },
 					{ upsert: true }
 				).exec();
-				client.economy.voiceFarmers.set(userId, value);
+				client.services.economy.voiceFarmers.set(userId, value);
 			}
 		});
 	}, 6e4);

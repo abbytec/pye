@@ -4,9 +4,10 @@ import { UserRole } from "../../Models/Role.js";
 import { CoreClient } from "../CoreClient.js";
 import { IService } from "../IService.js";
 
-export class AutoRoleService implements IService {
+export default class AutoRoleService implements IService {
 	public static adaLovelaceReps: number = 512;
 	public static adaLovelaceTop10Id: string = "";
+	public readonly serviceName = "autoRole";
 
 	constructor(private readonly client: CoreClient) {}
 

@@ -20,7 +20,7 @@ import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
-import { EconomyService } from "../../core/services/EconomyService.js";
+import EconomyService from "../../core/services/EconomyService.js";
 import { ExtendedClient } from "../../client.js";
 
 const game = new Set();

@@ -40,10 +40,10 @@ import { checkQuestLevel, IQuest } from "../utils/quest.js";
 import { ParameterError } from "../interfaces/IPrefixChatInputCommand.js";
 import { manageAIResponse } from "../utils/ai/aiRequestHandler.js";
 import { checkCooldownComparte } from "../security/checkCooldownComparte.js";
-import { AIUsageControlService } from "../core/services/AIUsageControlService.js";
-import { CommandService } from "../core/services/CommandService.js";
-import { ForumPostControlService } from "../core/services/ForumPostControlService.js";
-import { TrendingService } from "../core/services/TrendingService.js";
+import AIUsageControlService from "../core/services/AIUsageControlService.js";
+import CommandService from "../core/services/CommandService.js";
+import ForumPostControlService from "../core/services/ForumPostControlService.js";
+import TrendingService from "../core/services/TrendingService.js";
 
 export default {
 	name: Events.MessageCreate,
@@ -121,7 +121,7 @@ export default {
 async function processCommonMessage(message: Message, client: ExtendedClient) {
 	let checkingChanel;
 	if (![getChannelFromEnv("mudae"), getChannelFromEnv("casinoPye")].includes(message.channel.id)) {
-		const moneyConfig = client.economy.getConfig(process.env.CLIENT_ID ?? "");
+		const moneyConfig = client.services.economy.getConfig(process.env.CLIENT_ID ?? "");
 		getCooldown(client, message.author.id, "farm-text", moneyConfig.text.time).then(async (time) => {
 			if (time > 0) {
 				Users.findOneAndUpdate({ id: message.author.id }, { $inc: { cash: moneyConfig.text.coins } }, { upsert: true })
@@ -343,11 +343,11 @@ function checkThanksChannel(msg: Message<boolean>) {
 
 async function registerNewTrends(message: Message<boolean>, client: ExtendedClient) {
 	message.stickers.forEach(async (sticker: Sticker) => {
-		if ((await TrendingService.getStickerType(sticker)) === StickerType.Guild) client.trending.add("sticker", sticker.id);
+		if ((await TrendingService.getStickerType(sticker)) === StickerType.Guild) client.services.trending.add("sticker", sticker.id);
 	});
 	const emojiIds =
 		[...message.content.matchAll(/<(a?:\w+:\d+)>/g)].map((match) => (match[1].startsWith(":") ? match[1].slice(1) : match[1])) || [];
 	emojiIds.forEach((emojiId: string) => {
-		client.trending.add("emoji", emojiId);
+		client.services.trending.add("emoji", emojiId);
 	});
 }

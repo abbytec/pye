@@ -7,7 +7,7 @@ import { addRep } from "../commands/rep/add-rep.js";
 import { UserRole } from "../Models/Role.js";
 import { MemeOfTheDay } from "../Models/MemeOfTheDay.js";
 import { getTodayUTC } from "../utils/generic.js";
-import { TrendingService } from "../core/services/TrendingService.js";
+import TrendingService from "../core/services/TrendingService.js";
 import { ExtendedClient } from "../client.js";
 
 /**
@@ -65,7 +65,7 @@ export default {
 				);
 		}
 		if (fullReaction.emoji.id)
-			(reaction.client as ExtendedClient).trending.add("emoji", (fullReaction.emoji.name ?? "") + ":" + fullReaction.emoji.id);
+			(reaction.client as ExtendedClient).services.trending.add("emoji", (fullReaction.emoji.name ?? "") + ":" + fullReaction.emoji.id);
 	},
 } as Evento;
 

@@ -7,7 +7,8 @@ import { IService } from "../IService.js";
 const sieteDiasEnMs = 7 * 24 * 60 * 60 * 1000; // 7 días
 
 /** Administra el historial de posts comparte-post. */
-export class ForumPostControlService implements IService {
+export default class ForumPostControlService implements IService {
+	public readonly serviceName = "forumPostControl";
 	/** <userId, lista de posts últimos 7 días> */
 	static readonly ultimosCompartePosts = new Map<string, ICompartePost[]>();
 

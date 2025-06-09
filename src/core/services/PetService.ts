@@ -6,7 +6,8 @@ import { TextChannel } from "discord.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
 import { IService } from "../IService.js";
 
-export class PetService implements IService {
+export default class PetService implements IService {
+	public readonly serviceName = "pets";
 	constructor(private readonly client: CoreClient) {}
 
 	start() {

@@ -6,7 +6,8 @@ import { IService } from "../IService.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
 import { ExtendedClient } from "../../client.js";
 
-export class NewsService implements IService {
+export default class NewsService implements IService {
+	public readonly serviceName = "news";
 	constructor(private readonly client: CoreClient) {}
 
 	async dailyRepeat() {

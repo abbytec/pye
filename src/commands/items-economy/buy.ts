@@ -14,7 +14,7 @@ import { getChannelFromEnv } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import { ExtendedClient } from "../../client.js";
-import { EconomyService } from "../../core/services/EconomyService.js";
+import EconomyService from "../../core/services/EconomyService.js";
 
 export default {
 	group: "📚 - Inventario (Casino)",

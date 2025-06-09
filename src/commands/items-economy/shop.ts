@@ -28,7 +28,7 @@ import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandCon
 import { getRender } from "../../utils/canvas/card-render.js";
 import { fileURLToPath } from "url";
 import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
-import { EconomyService } from "../../core/services/EconomyService.js";
+import EconomyService from "../../core/services/EconomyService.js";
 
 const ITEMS_PER_PAGE = 10;
 

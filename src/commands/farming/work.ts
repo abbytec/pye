@@ -19,8 +19,8 @@ import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import { logMessages } from "../../utils/finalwares/logMessages.js";
-import { EconomyService } from "../../core/services/EconomyService.js";
-import { CommandService } from "../../core/services/CommandService.js";
+import EconomyService from "../../core/services/EconomyService.js";
+import CommandService from "../../core/services/CommandService.js";
 
 // Definición de los textos de respuesta
 const texts: Array<(profit: string) => string> = [

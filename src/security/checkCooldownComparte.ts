@@ -3,7 +3,7 @@ import { ExtendedClient } from "../client.js";
 import { getChannelFromEnv } from "../utils/constants.js";
 import { hashMessage } from "./messageHashing.js";
 import natural from "natural";
-import { ForumPostControlService } from "../core/services/ForumPostControlService.js";
+import ForumPostControlService from "../core/services/ForumPostControlService.js";
 
 export async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClient): Promise<number | undefined> {
 	let lastPosts = ForumPostControlService.ultimosCompartePosts
