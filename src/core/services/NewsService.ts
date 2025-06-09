@@ -1,12 +1,16 @@
 import { TextChannel } from "discord.js";
-import { CoreClient } from "./CoreClient.js";
-import { getYesterdayUTC } from "../utils/generic.js";
-import { createSimpleChatEmbed } from "../utils/ai/aiResponseService.js";
+import { CoreClient } from "../CoreClient.js";
+import { getYesterdayUTC } from "../../utils/generic.js";
+import { createSimpleChatEmbed } from "../../utils/ai/aiResponseService.js";
+import { IService } from "../IService.js";
+import { getChannelFromEnv } from "../../utils/constants.js";
+import { ExtendedClient } from "../../client.js";
 
-export class NewsService {
+export class NewsService implements IService {
 	constructor(private readonly client: CoreClient) {}
 
-	async sendDailyNews(channel: TextChannel) {
+	async dailyRepeat() {
+		const channel = ExtendedClient.guild?.channels.resolve(getChannelFromEnv("chatProgramadores")) as TextChannel;
 		const start = getYesterdayUTC().toISOString();
 		const apiKey = process.env.CURRENTS_API_KEY;
 		if (!apiKey) {

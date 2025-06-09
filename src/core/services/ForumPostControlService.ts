@@ -1,12 +1,13 @@
 import { AnyBulkWriteOperation } from "mongoose";
-import { CoreClient } from "./CoreClient.js";
-import { UltimosCompartePosts, ICompartePost } from "../Models/CompartePostModel.js";
-import { ExtendedClient } from "../client.js";
+import { CoreClient } from "../CoreClient.js";
+import { UltimosCompartePosts, ICompartePost } from "../../Models/CompartePostModel.js";
+import { ExtendedClient } from "../../client.js";
+import { IService } from "../IService.js";
 
 const sieteDiasEnMs = 7 * 24 * 60 * 60 * 1000; // 7 días
 
 /** Administra el historial de posts comparte-post. */
-export class ForumPostControlService {
+export class ForumPostControlService implements IService {
 	/** <userId, lista de posts últimos 7 días> */
 	static readonly ultimosCompartePosts = new Map<string, ICompartePost[]>();
 
@@ -34,7 +35,8 @@ export class ForumPostControlService {
 	}
 
 	/** Carga desde MongoDB. */
-	async loadCompartePosts() {
+	async start() {
+		this.limpiarCompartePosts();
 		console.log("Cargando los ultimos CompartePosts");
 		try {
 			const docs = await UltimosCompartePosts.find().sort({ date: -1 }).exec();
@@ -56,7 +58,8 @@ export class ForumPostControlService {
 	}
 
 	/** Persiste el mapa actual en MongoDB. */
-	async saveCompartePosts() {
+	async dailyRepeat() {
+		this.limpiarCompartePosts();
 		try {
 			const bulk: AnyBulkWriteOperation<ICompartePost>[] = [
 				{ deleteMany: { filter: {} } }, // vacía colección

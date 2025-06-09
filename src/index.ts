@@ -8,7 +8,7 @@ import { Command } from "./types/command.js";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { Evento, EventoConClienteForzado } from "./types/event.js";
 import {} from "../globals.js";
-import { CommandService } from "./core/CommandService.js";
+import { CommandService } from "./core/services/CommandService.js";
 loadEnvVariables();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

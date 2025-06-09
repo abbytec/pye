@@ -1,22 +1,23 @@
-import { clearAllRedisCounter, getAllDataFromRedisCounter } from "../utils/redisCounters.js";
-import { CoreClient } from "./CoreClient.js";
+import { clearAllRedisCounter, getAllDataFromRedisCounter } from "../../utils/redisCounters.js";
+import { CoreClient } from "../CoreClient.js";
+import { IService } from "../IService.js";
 
 /** Controla los contadores de uso de IA (DM y global) */
-export class AIUsageControlService {
+export class AIUsageControlService implements IService {
 	static readonly dailyAIUsageDM = new Map<string, number>();
 	public static readonly dailyAIUsage = new Map<string, number>();
 
 	constructor(private readonly client: CoreClient) {}
 
 	/** Recupera los contadores desde Redis (se usa al boot). */
-	async loadDailyUsage() {
+	async start() {
 		console.log("loading AI usages");
 		const data = await getAllDataFromRedisCounter("dailyAIUsage").catch(() => new Map());
 		data.forEach((value, key) => AIUsageControlService.dailyAIUsage.set(key, value));
 	}
 
 	/** Vacía los contadores (llámalo cada 24 h). */
-	resetDaily() {
+	async dailyRepeat() {
 		AIUsageControlService.dailyAIUsage.clear();
 		AIUsageControlService.dailyAIUsageDM.clear();
 		clearAllRedisCounter("dailyAIUsage").catch(() => null);

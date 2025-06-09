@@ -1,11 +1,12 @@
 import { Sticker, StickerType, TextChannel, ChannelType, EmbedBuilder } from "discord.js";
-import { CoreClient } from "./CoreClient.js";
-import { MemeOfTheDay } from "../Models/MemeOfTheDay.js";
-import { COLORS, getChannelFromEnv } from "../utils/constants.js";
-import { TrendingModel } from "../Models/Trending.js";
-import { ExtendedClient } from "../client.js";
+import { CoreClient } from "../CoreClient.js";
+import { MemeOfTheDay } from "../../Models/MemeOfTheDay.js";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
+import { TrendingModel } from "../../Models/Trending.js";
+import { ExtendedClient } from "../../client.js";
+import { IService } from "../IService.js";
 type TrendingType = "emoji" | "threadPost" | "sticker";
-export class TrendingService {
+export class TrendingService implements IService {
 	emojis: Map<string, number>;
 	forumChannels: Map<string, number>;
 	stickers: Map<string, number>;
@@ -27,7 +28,7 @@ export class TrendingService {
 		this.month = new Date().getMonth();
 	}
 
-	async loadGuildData() {
+	async start() {
 		const guild = await this.client.guilds.fetch(process.env.GUILD_ID!);
 		/* emojis */
 		console.log("loading emojis");
@@ -156,6 +157,11 @@ export class TrendingService {
 		}
 
 		this.decay();
+	}
+
+	public async dailyRepeat(): Promise<void> {
+		await this.dailySave();
+		await this.starboardMemeOfTheDay().catch((error) => console.error(error));
 	}
 
 	// Método para agregar uso a un emoji, canal o sticker

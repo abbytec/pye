@@ -12,7 +12,7 @@ import { getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import ms from "ms"; // Importación de la librería ms
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
-import { CommandService } from "../../core/CommandService.js";
+import { CommandService } from "../../core/services/CommandService.js";
 
 const payoutCommands = [
 	{ name: "Work", value: "work" },

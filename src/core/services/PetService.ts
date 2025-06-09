@@ -1,14 +1,15 @@
-import { CoreClient } from "./CoreClient.js";
-import { getRandomNumber } from "../utils/generic.js";
-import { IPetDocument, Pets } from "../Models/Pets.js";
-import { Home } from "../Models/Home.js";
+import { CoreClient } from "../CoreClient.js";
+import { getRandomNumber } from "../../utils/generic.js";
+import { IPetDocument, Pets } from "../../Models/Pets.js";
+import { Home } from "../../Models/Home.js";
 import { TextChannel } from "discord.js";
-import { getChannelFromEnv } from "../utils/constants.js";
+import { getChannelFromEnv } from "../../utils/constants.js";
+import { IService } from "../IService.js";
 
-export class PetService {
+export class PetService implements IService {
 	constructor(private readonly client: CoreClient) {}
 
-	startIntervals() {
+	start() {
 		/* 6h30m */ setInterval(() => this.checkPets(this.client), 23400000);
 		/* 8 h  */ setInterval(() => this.checkFood(), 28800000);
 		/* 4 h  */ setInterval(() => this.checkMood(), 14400000);

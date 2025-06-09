@@ -18,9 +18,9 @@ import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js
 import { capitalizeFirstLetter } from "../utils/generic.js";
 import { ticketOptions } from "../utils/constants/ticketOptions.js";
 import { getDailyChallenge } from "../utils/challenges/dailyChallenge.js";
-import { AutoRoleService } from "../core/AutoRoleService.js";
-import { TrendingService } from "../core/TrendingService.js";
-import { EconomyService } from "../core/EconomyService.js";
+import { AutoRoleService } from "../core/services/AutoRoleService.js";
+import { TrendingService } from "../core/services/TrendingService.js";
+import { EconomyService } from "../core/services/EconomyService.js";
 
 export default {
 	name: Events.ClientReady,

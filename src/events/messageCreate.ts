@@ -40,10 +40,10 @@ import { checkQuestLevel, IQuest } from "../utils/quest.js";
 import { ParameterError } from "../interfaces/IPrefixChatInputCommand.js";
 import { manageAIResponse } from "../utils/ai/aiRequestHandler.js";
 import { checkCooldownComparte } from "../security/checkCooldownComparte.js";
-import { AIUsageControlService } from "../core/AIUsageControlService.js";
-import { CommandService } from "../core/CommandService.js";
-import { ForumPostControlService } from "../core/ForumPostControlService.js";
-import { TrendingService } from "../core/TrendingService.js";
+import { AIUsageControlService } from "../core/services/AIUsageControlService.js";
+import { CommandService } from "../core/services/CommandService.js";
+import { ForumPostControlService } from "../core/services/ForumPostControlService.js";
+import { TrendingService } from "../core/services/TrendingService.js";
 
 export default {
 	name: Events.MessageCreate,

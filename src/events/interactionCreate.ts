@@ -28,7 +28,7 @@ import { chatInputCommandParser } from "../utils/messages/chatInputCommandParser
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 import { createGameSessionModal, handleCreateSessionModal, handleGameSessionPagination } from "../commands/duos/busco-equipo.js";
 import { handleTicketButtonInteraction, handleTicketCreation } from "../utils/ticketManager.js";
-import { CommandService } from "../core/CommandService.js";
+import { CommandService } from "../core/services/CommandService.js";
 
 const limiter = new Bottleneck({
 	maxConcurrent: 15, // Máximo de comandos en paralelo

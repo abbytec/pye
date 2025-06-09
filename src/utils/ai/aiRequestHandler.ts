@@ -24,7 +24,7 @@ import {
 } from "./aiResponseService.js";
 import { getRecursiveRepliedContext } from "./getRecursiveRepliedContext.js";
 import fs from "fs";
-import { AIUsageControlService } from "../../core/AIUsageControlService.js";
+import { AIUsageControlService } from "../../core/services/AIUsageControlService.js";
 
 export async function manageAIResponse(message: Message<boolean>, isForumPost: string | undefined, isDm: boolean = false) {
 	if (message.mentions.everyone) return;

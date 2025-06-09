@@ -1,15 +1,20 @@
-import { ExtendedClient } from "../client.js";
-import { HelperPoint, IHelperPoint } from "../Models/HelperPoint.js";
-import { UserRole } from "../Models/Role.js";
-import { CoreClient } from "./CoreClient.js";
+import { ExtendedClient } from "../../client.js";
+import { HelperPoint, IHelperPoint } from "../../Models/HelperPoint.js";
+import { UserRole } from "../../Models/Role.js";
+import { CoreClient } from "../CoreClient.js";
+import { IService } from "../IService.js";
 
-export class AutoRoleService {
+export class AutoRoleService implements IService {
 	public static adaLovelaceReps: number = 512;
 	public static adaLovelaceTop10Id: string = "";
 
 	constructor(private readonly client: CoreClient) {}
 
-	public static async updateAdaLovelace() {
+	async start() {
+		await this.updateAdaLovelace();
+	}
+
+	async updateAdaLovelace() {
 		await HelperPoint.find()
 			.sort({ points: -1 })
 			.skip(9)
@@ -23,7 +28,7 @@ export class AutoRoleService {
 
 	public static async borrarRolesTemporales() {
 		let arr = await UserRole.find().exec();
-		let guild = ExtendedClient.guildManager?.resolve(process.env.GUILD_ID ?? "");
+		let guild = ExtendedClient.guild;
 		if (arr.length && guild) {
 			for (const data of arr) {
 				if (data.count < Date.now()) {

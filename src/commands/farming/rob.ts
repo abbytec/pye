@@ -17,7 +17,7 @@ import { ExtendedClient } from "../../client.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import { logMessages } from "../../utils/finalwares/logMessages.js";
-import { CommandService } from "../../core/CommandService.js";
+import { CommandService } from "../../core/services/CommandService.js";
 
 const cooldownDuration = 30 * 60 * 1000;
 

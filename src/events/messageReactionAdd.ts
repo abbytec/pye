@@ -7,7 +7,7 @@ import { addRep } from "../commands/rep/add-rep.js";
 import { UserRole } from "../Models/Role.js";
 import { MemeOfTheDay } from "../Models/MemeOfTheDay.js";
 import { getTodayUTC } from "../utils/generic.js";
-import { TrendingService } from "../core/TrendingService.js";
+import { TrendingService } from "../core/services/TrendingService.js";
 import { ExtendedClient } from "../client.js";
 
 /**
