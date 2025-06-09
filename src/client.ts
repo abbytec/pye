@@ -54,11 +54,11 @@ export class ExtendedClient extends CoreClient {
 				?.filter((member) => member.roles.cache.some((role) => [getRoleFromEnv("moderadorChats")].includes(role.id)))
 				.map((member) => member.user.id) || this._modMembers;
 
-		await this.commands.loadLimits();
-		await this.economy.loadMoneyConfigs();
-		await this.trending.loadGuildData();
 		this.forumPostControl.limpiarCompartePosts();
 		if (firstTime) {
+			await this.commands.loadLimits();
+			await this.economy.loadMoneyConfigs();
+			await this.trending.loadGuildData();
 			this.pets.startIntervals();
 			await this.forumPostControl.loadCompartePosts();
 			if (process.env.NODE_ENV !== "development") {

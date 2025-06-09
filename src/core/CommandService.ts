@@ -24,7 +24,7 @@ export class CommandService {
 
 	/* carga inicial */
 	async loadLimits() {
-		console.log("loading commands");
+		console.log("loading commands limits");
 		const limits = await CommandLimits.find().catch(() => []);
 		limits.forEach((l) => CommandService.commandLimits.set(l.name, l));
 	}
