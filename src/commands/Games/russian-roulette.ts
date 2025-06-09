@@ -185,7 +185,6 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 		}
 	}
 	data.apuestas = [];
-	data.fin = -1;
 	clearTimeout(data.intervalo);
 	data.intervalo = undefined;
 }
