@@ -147,7 +147,9 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 			interaction,
 			data.apuestas[i].jugador,
 			data.apuestas[i].cantidad,
-			ganador === data.apuestas[i].jugador ? calculateJobMultiplier(userData.profile?.job, pozo, userData.couples || []) : -pozo
+			ganador === data.apuestas[i].jugador
+				? calculateJobMultiplier(userData.profile?.job, pozo, userData.couples || [])
+				: -data.apuestas[i].cantidad
 		);
 
 		// Enviar mensajes de ganadores y perdedores
@@ -169,7 +171,7 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 				embeds: [
 					new EmbedBuilder()
 						.setAuthor({
-							name: interaction.guild?.members.resolve(data.apuestas[i].jugador)?.user.tag || "Anónimo",
+							name: interaction.guild?.members.resolve(data.apuestas[i].jugador)?.user.tag ?? "Anónimo",
 							iconURL: interaction.guild?.members.resolve(data.apuestas[i].jugador)?.user.displayAvatarURL(),
 						})
 						.setDescription(
