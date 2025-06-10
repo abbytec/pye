@@ -7,13 +7,11 @@ import {
 	EmbedBuilder,
 	Events,
 	Guild,
-	GuildMember,
 	Message,
 	PublicThreadChannel,
 	Sticker,
 	StickerType,
 	TextChannel,
-	User,
 } from "discord.js";
 import { ExtendedClient } from "../client.js";
 import {
@@ -32,9 +30,9 @@ import { Users } from "../Models/User.js";
 import { getCooldown, setCooldown } from "../utils/cooldowns.js";
 import { checkRole, convertMsToUnixTimestamp } from "../utils/generic.js";
 import { checkHelp } from "../utils/checkhelp.js";
-import { bumpHandler } from "../utils/bumpHandler.js";
+import { bumpHandler } from "../utils/messages/handlers/bumpHandler.js";
 
-import { checkMentionSpam, IDeletableContent, spamFilter } from "../security/spamFilters.js";
+import { messageGuard } from "../security/spamFilters.js";
 import { hashMessage } from "../security/messageHashing.js";
 import { checkQuestLevel, IQuest } from "../utils/quest.js";
 import { ParameterError } from "../interfaces/IPrefixChatInputCommand.js";
@@ -49,14 +47,7 @@ export default {
 	name: Events.MessageCreate,
 	async execute(message: Message) {
 		if (AUTHORIZED_BOTS.includes(message.author.id)) return;
-		if (
-			message.author.id === DISBOARD_UID &&
-			message.embeds.length &&
-			message.embeds[0].data.color == COLORS.lightSeaGreen &&
-			message.embeds[0].data.description?.includes(EMOJIS.thumbsUp)
-		) {
-			return bumpHandler(message);
-		}
+		if (bumpHandler(message)) return;
 
 		const client = message.client as ExtendedClient;
 
@@ -87,26 +78,7 @@ export default {
 						});
 				});
 		} else {
-			if (
-				!(
-					message.channel.parentId === getChannelFromEnv("categoryStaff") ||
-					message.member?.permissions.has("Administrator") ||
-					client.staffMembers.includes(message.author.id) ||
-					message.member?.roles.cache.has(getRoleFromEnv("instructorDeTaller"))
-				)
-			) {
-				let member: GuildMember | User | null = message.interactionMetadata?.user ?? null;
-				if (member) {
-					member = await message.guild?.members.fetch(member.id).catch(() => message.member);
-				} else {
-					member = message.member;
-				}
-				if (
-					(await spamFilter(member, client, message as IDeletableContent, message.content)) ||
-					(await checkMentionSpam(message, client))
-				)
-					return;
-			}
+			if (await messageGuard(message, client)) return;
 			if (message.author.bot || message.author.system) return;
 
 			if (!message.content.startsWith(PREFIX)) {

@@ -38,14 +38,14 @@ export class ExtendedClient extends CoreClient {
 
 			try {
 				console.log(`Cargando servicio ${file}`);
-				const mod = await import(url); // <- si esto falla, el catch lo muestra
+				const mod = await import(url);
 				const Ctor = mod.default ?? mod;
 				if (typeof Ctor !== "function") throw new Error(`${file} no exporta una clase por default`);
 				const instance = new Ctor(this);
 				this.services[instance.serviceName as ServiceName] = instance;
 			} catch (err) {
 				ExtendedClient.logError(`Fallo cargando servicio ${file}`, (err as any).stack);
-				console.error(`❌  ${file}:`, err); // ahora verás la traza real
+				console.error(`❌  ${file}:`, err);
 			}
 		}
 	}

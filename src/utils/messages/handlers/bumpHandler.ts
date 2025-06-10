@@ -1,13 +1,26 @@
 // src/utils/bumpHandler.ts
 
-import { GuildMember, EmbedBuilder, Message, Guild, TextChannel } from "discord.js";
-import { Money } from "../Models/Money.js";
-import { Users } from "../Models/User.js";
-import { Bumps } from "../Models/Bump.js";
-import { COLORS, getChannelFromEnv, pyecoin } from "./constants.js";
-import { ExtendedClient } from "../client.js";
-import { checkQuestLevel, IQuest } from "./quest.js";
-import { increaseHomeMonthlyIncome } from "../Models/Home.js";
+import { EmbedBuilder, Message, Guild, TextChannel } from "discord.js";
+import { Money } from "../../../Models/Money.js";
+import { Users } from "../../../Models/User.js";
+import { Bumps } from "../../../Models/Bump.js";
+import { COLORS, DISBOARD_UID, EMOJIS, getChannelFromEnv, pyecoin } from "../../constants.js";
+import { ExtendedClient } from "../../../client.js";
+import { checkQuestLevel, IQuest } from "../../quest.js";
+import { increaseHomeMonthlyIncome } from "../../../Models/Home.js";
+
+export function bumpHandler(message: Message) {
+	if (
+		message.author.id === DISBOARD_UID &&
+		message.embeds.length &&
+		message.embeds[0].data.color == COLORS.lightSeaGreen &&
+		message.embeds[0].data.description?.includes(EMOJIS.thumbsUp)
+	) {
+		bumpEmitter(message);
+		return true;
+	}
+	return false;
+}
 
 /**
  * Maneja el evento de bump de un usuario.
@@ -15,7 +28,7 @@ import { increaseHomeMonthlyIncome } from "../Models/Home.js";
  * @param client - El cliente de Discord.
  * @param message - El mensaje de interacción que desencadenó el bump.
  */
-export async function bumpHandler(message: Message): Promise<void> {
+export async function bumpEmitter(message: Message): Promise<void> {
 	try {
 		if (!message.interactionMetadata) return;
 
@@ -92,8 +105,8 @@ export async function bumpHandler(message: Message): Promise<void> {
 				})
 				.catch(() => null);
 		}, 7200 * 1000); // 7200 segundos = 2 horas
-	} catch (error) {
-		console.error("Error en bumpHandler:", error);
-		// Aquí puedes agregar lógica adicional para manejar errores, como notificar a un canal de logs
+	} catch (error: any) {
+		console.error("Error al manejar el bump:", error);
+		ExtendedClient.logError("Error al manejar el bump: " + error.message, error.stack, process.env.CLIENT_ID);
 	}
 }
