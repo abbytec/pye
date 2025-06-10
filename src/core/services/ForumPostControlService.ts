@@ -4,12 +4,11 @@ import { UltimosCompartePosts, ICompartePost } from "../../Models/CompartePostMo
 import { ExtendedClient } from "../../client.js";
 import { IService } from "../IService.js";
 
-const sieteDiasEnMs = 7 * 24 * 60 * 60 * 1000; // 7 días
+const DAYS_TO_KEEP = 6 * 24 * 60 * 60 * 1000; // pongo 6 días porque hay gente que no sabe contar
 
 /** Administra el historial de posts comparte-post. */
 export default class ForumPostControlService implements IService {
 	public readonly serviceName = "forumPostControl";
-	/** <userId, lista de posts últimos 7 días> */
 	static readonly ultimosCompartePosts = new Map<string, ICompartePost[]>();
 
 	constructor(private readonly client: CoreClient) {}
@@ -29,7 +28,7 @@ export default class ForumPostControlService implements IService {
 	limpiarCompartePosts() {
 		const now = Date.now();
 		for (const [user, posts] of ForumPostControlService.ultimosCompartePosts) {
-			const recientes = posts.filter((p) => now - p.date.getTime() <= sieteDiasEnMs);
+			const recientes = posts.filter((p) => now - p.date.getTime() <= DAYS_TO_KEEP);
 			if (recientes.length) ForumPostControlService.ultimosCompartePosts.set(user, recientes);
 			else ForumPostControlService.ultimosCompartePosts.delete(user);
 		}
