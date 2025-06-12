@@ -7,7 +7,6 @@ import { addRep } from "../commands/rep/add-rep.js";
 import { UserRole } from "../Models/Role.js";
 import { MemeOfTheDay } from "../Models/MemeOfTheDay.js";
 import { getTodayUTC } from "../utils/generic.js";
-import TrendingService from "../core/services/TrendingService.js";
 import { ExtendedClient } from "../client.js";
 
 /**
@@ -153,7 +152,7 @@ async function checkReactions(reaction: MessageReaction, starboard: IStarBoardDo
 				async () =>
 					await addRep(reaction.message.author, reaction.message.guild).then(({ member }) =>
 						(reaction.message.guild?.channels.resolve(getChannelFromEnv("logPuntos")) as TextChannel | null)?.send(
-							`${member.user.username} ha obtenido 1 punto porque su mensaje ${msg.url} llegó a la starboard`
+							`\`${member.user.username}\` ha obtenido 1 punto porque su mensaje ${msg.url} llegó a la starboard`
 						)
 					)
 			)
