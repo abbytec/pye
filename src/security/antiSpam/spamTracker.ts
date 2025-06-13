@@ -4,6 +4,7 @@ import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 
 /* spamTracker.ts */
 export type SpamType = "message" | "url" | "attachment" | "mention";
+const punishingUser = new Set<string>();
 export class SpamTracker {
 	private readonly map = new Map<string, { count: number; timeout: NodeJS.Timeout }>();
 
@@ -37,6 +38,8 @@ export class SpamTracker {
 		await message.delete().catch(() => null);
 		setTimeout(() => warnMsg.delete().catch(() => null), 10_000);
 		if (type === "url") {
+			if (punishingUser.has(message.author.id)) return;
+			punishingUser.add(message.author.id);
 			if (!!message.member?.joinedAt && Date.now() - message.member.joinedAt.getTime() < 60_000) {
 				deleteAllMessagesFromAndKickUser(message, guild);
 				return;
@@ -45,6 +48,7 @@ export class SpamTracker {
 					`<@${message.author.id}> spameó urls, por favor revisar!`
 				);
 			}
+			setTimeout(() => punishingUser.delete(message.author.id), 10_000);
 		}
 	}
 }
@@ -62,11 +66,7 @@ function getTimeoutReason(type: SpamType): string {
 	}
 }
 
-const deletingMessageMembers = new Set<string>();
-
 export async function deleteAllMessagesFromAndKickUser(message: Message<boolean>, guild: Guild | null) {
-	if (deletingMessageMembers.has(message.author.id)) return;
-	deletingMessageMembers.add(message.author.id);
 	// 1 — borra mensajes recientes del user en **todos** los canales de texto
 	for (const [, ch] of guild?.channels.cache ?? []) {
 		if (!ch.isTextBased()) continue;
