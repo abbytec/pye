@@ -9,7 +9,7 @@ import {
 } from "../utils/constants.js";
 import { addRep } from "../commands/rep/add-rep.js";
 import { ExtendedClient } from "../client.js";
-import { spamFilter } from "../security/spamFilters.js";
+import { spamFilter } from "../security/messageGuard.js";
 import { getFirstValidAttachment } from "../utils/generic.js";
 import { createForumEmbed, generateForumResponse, sendLongReply } from "../utils/ai/aiResponseService.js";
 import TrendingService from "../core/services/TrendingService.js";

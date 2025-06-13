@@ -32,7 +32,7 @@ import { checkRole, convertMsToUnixTimestamp } from "../utils/generic.js";
 import { checkHelp } from "../utils/checkhelp.js";
 import { bumpHandler } from "../utils/messages/handlers/bumpHandler.js";
 
-import { messageGuard } from "../security/spamFilters.js";
+import { messageGuard } from "../security/messageGuard.js";
 import { hashMessage } from "../security/messageHashing.js";
 import { checkQuestLevel, IQuest } from "../utils/quest.js";
 import { ParameterError } from "../interfaces/IPrefixChatInputCommand.js";
