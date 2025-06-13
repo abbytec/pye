@@ -165,7 +165,7 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 					await floodTracker.punish(
 						deletable as Message<boolean>, // o adaptá el tipo
 						client,
-						"Spam Filter – flood",
+						"message",
 						"Evita enviar enlaces repetidos"
 					);
 					blocked = true;

@@ -15,7 +15,7 @@ export async function checkMentionSpam(message: Message<boolean>, client: Extend
 			await mentionTracker.punish(
 				message,
 				client,
-				"Spam de menciones",
+				"mention",
 				"Mencionar tanto a una misma persona/bot puede traerte problemas. No seas bot, que para eso estoy yo!"
 			);
 			return true;

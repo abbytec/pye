@@ -28,7 +28,7 @@ export async function checkUrlSpam(message: Message<boolean>, client: ExtendedCl
 
 		const key = `${message.author.id}-${norm}`;
 		if (urlTracker.increment(key)) {
-			await urlTracker.punish(message, client, "Spam de URLs", "Enviar el mismo enlace repetidamente se considera spam.");
+			await urlTracker.punish(message, client, "url", "Enviar el mismo enlace repetidamente se considera spam.");
 			return true; // early exit on spam
 		}
 	}
