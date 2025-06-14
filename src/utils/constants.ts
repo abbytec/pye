@@ -367,6 +367,8 @@ export const AUTHORIZED_BOTS = [
 	"926516578315563008",
 	// Mudae
 	"432610292342587392",
+	// InviteTracker
+	"720351927581278219",
 ];
 
 export const messagesProcessingLimiter = new Bottleneck({
