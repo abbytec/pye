@@ -177,7 +177,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 			});
 
 			try {
-				// Obtener todos los usuarios y sus puntos de 'top:rep'
+				// Obtener todos los usuarios y sus puntos del top de reputacion
 				const rawData = await redisClient.sendCommand<string[]>(["ZREVRANGE", "top:rep", "0", "3", "WITHSCORES"]);
 
 				// Luego parseas el resultado:
@@ -236,7 +236,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 				const channel = (await client.channels.fetch(anunciosChannelId).catch(() => undefined)) as TextChannel;
 				if (channel?.isTextBased()) await channel.send(message);
 
-				// Reiniciar el ranking 'top:rep' para el próximo mes
+				// Reiniciar el ranking top - reputación para el próximo mes
 				await redisClient.del("top:rep");
 			} catch (error) {
 				console.error("Error al procesar el top de reputación mensual:", error);
@@ -244,6 +244,17 @@ async function cronEventsProcessor(client: ExtendedClient) {
 		}
 		client.services.trending.dailySave();
 		if (process.env.NODE_ENV !== "development") await getDailyChallenge(client);
+
+		// Actualiza el top de bumps
+		const top = await redisClient.zRange("top:bump", 0, 0, { REV: true });
+		const topId = top[0];
+
+		if (topId) {
+			await Users.updateOne({ id: topId }, { $inc: { dailyBumpTops: 1 } });
+		}
+
+		// Limpia el ranking
+		await redisClient.del("top:bump");
 	});
 
 	await ExtendedClient.agenda.start();

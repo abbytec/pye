@@ -61,6 +61,7 @@ export default {
 					redis.sendCommand(["ZREM", "top:cash", memberId]),
 					redis.sendCommand(["ZREM", "top:rob", memberId]),
 					redis.sendCommand(["ZREM", "top:rep", memberId]),
+					redis.sendCommand(["ZREM", "top:bump", memberId]),
 				]);
 
 				const embed = new EmbedBuilder()

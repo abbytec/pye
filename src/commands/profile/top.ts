@@ -50,10 +50,6 @@ const key = {
 		title: "Dinero total",
 		url: "https://cdn.discordapp.com/attachments/916353103534632960/1017138053283852338/money.png",
 	},
-	bumps: {
-		title: "Bumps",
-		url: "https://cdn.discordapp.com/attachments/916353103534632960/1017138053283852338/money.png",
-	},
 };
 
 type LeaderboardType = keyof typeof key;
@@ -74,8 +70,7 @@ export default {
 					{ name: "Apuestas", value: "apuestas" },
 					{ name: "Caps", value: "caps" },
 					{ name: "Casas", value: "house" },
-					{ name: "Dinero Total", value: "all" },
-					{ name: "Bumps", value: "bumps" }
+					{ name: "Dinero Total", value: "all" }
 				)
 		)
 		.addIntegerOption((option) => option.setName("pagina").setDescription("Número de página").setRequired(false)),
@@ -134,7 +129,7 @@ export default {
 				{
 					name: "tipo",
 					required: true,
-					options: ["cash", "rob", "apuestas", "caps", "house", "all", "bumps"],
+					options: ["cash", "rob", "apuestas", "caps", "house", "all"],
 				},
 				{
 					name: "pagina",
@@ -153,9 +148,6 @@ async function generateContent(type: LeaderboardType, page: number, user: any, i
 		case "house":
 			({ embed, actionRow } = await generateHouseLeaderboard(page, user, interaction, disable));
 			break;
-		case "bumps":
-			({ embed, actionRow } = await generateBumpsLeaderboard(page, user, interaction, disable));
-			break;
 		case "cash":
 		case "rob":
 		case "apuestas":
@@ -171,31 +163,6 @@ async function generateContent(type: LeaderboardType, page: number, user: any, i
 		embeds: [embed],
 		components: [actionRow],
 	};
-}
-
-// Función para generar el leaderboard de bumps
-async function generateBumpsLeaderboard(page: number, user: any, interaction: IPrefixChatInputCommand, disable: boolean) {
-	return generateLeaderboard(page, user, disable, {
-		title: `🎉 Bump Leaderboard`,
-		dataFetch: async () => {
-			return await Bumps.aggregate([
-				{
-					$group: {
-						_id: "$user",
-						count: { $sum: 1 },
-					},
-				},
-			]);
-		},
-		sortFunction: (a, b) => b.count - a.count,
-		positionFinder: (data, userId) => data.findIndex((u) => u._id === userId),
-		descriptionBuilder: async (item, index, start) => {
-			let member = await interaction.guild?.members.fetch(item._id).catch(() => undefined);
-			return `**${start + index + 1}.** [${member?.user.username ?? "Usuario Desconocido"}](https://discord.com/users/${item._id}) • ${
-				item.count
-			} bumps`;
-		},
-	});
 }
 
 // Función para generar el leaderboard de casas

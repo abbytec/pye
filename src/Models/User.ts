@@ -4,9 +4,11 @@ import client from "../redis.js";
 import { IUser } from "../interfaces/IUser.js";
 import { increaseHomeMonthlyIncome } from "./Home.js";
 import { checkQuestLevel, IQuest } from "../utils/quest.js";
-import { Message, InteractionResponse } from "discord.js";
+import { Message, InteractionResponse, TextChannel } from "discord.js";
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 import { ExtendedClient } from "../client.js";
+import { addRep } from "../commands/rep/add-rep.js";
+import { getChannelFromEnv } from "../utils/constants.js";
 
 export interface IUserModel extends IUser, Document {
 	id: string;
@@ -75,6 +77,7 @@ const userSchema = new Schema<IUserModel>(
 			type: String,
 			required: false,
 		},
+		dailyBumpTops: { type: Number, default: 0 },
 	},
 	{ versionKey: false }
 );
@@ -102,7 +105,27 @@ userSchema.post(["save", "findOneAndUpdate"], async function (doc: IUserModel | 
 		console.error("Error actualizando Redis en 'save'/'findOneAndUpdate':", error);
 	});
 });
+userSchema.post("updateOne", async function (result) {
+	const filter = this.getFilter();
+	const update = this.getUpdate() as Record<string, any>;
 
+	// Si el update NO incrementa dailyBumpTops, ignorar.
+	if (!update?.$inc?.dailyBumpTops) return;
+
+	try {
+		const user = await Users.findOne(filter).exec();
+		if (!user) return;
+
+		await addRep(user.id, ExtendedClient.guild ?? null).then(async ({ member }) => {
+			const channelId = getChannelFromEnv("logPuntos");
+			const channel = ExtendedClient.guild?.channels.resolve(channelId) as TextChannel | null;
+			const username = member?.user.username ?? user.id;
+			await channel?.send(`\`${username}\` ha obtenido 1 punto por haber llegado al top diario de bumps`);
+		});
+	} catch (error) {
+		console.error("Error en addRep/log diario de bumps:", error);
+	}
+});
 userSchema.post(["updateOne", "updateMany"], async function (result) {
 	// 'this' se refiere a la consulta
 	const filter = this.getFilter();

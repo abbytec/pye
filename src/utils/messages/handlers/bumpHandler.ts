@@ -59,7 +59,6 @@ export async function bumpEmitter(message: Message): Promise<void> {
 		}
 
 		bumpAmount = Math.floor(bumpAmount);
-		money.bump = bumpAmount;
 		user.cash += bumpAmount;
 
 		await user.save();

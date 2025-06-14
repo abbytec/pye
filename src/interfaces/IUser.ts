@@ -25,4 +25,5 @@ export interface IUser {
 	total: number;
 	customBackground?: string;
 	customDecoration?: string;
+	dailyBumpTops?: number;
 }
