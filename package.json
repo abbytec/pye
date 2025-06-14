@@ -4,6 +4,7 @@
 	"main": "src/index.ts",
 	"type": "module",
 	"scripts": {
+		"prepare": "husky install",
 		"dev": "cross-env NODE_ENV=development node --loader ts-node/esm src/index.ts --transpile-only",
 		"build": "rimraf dist && tsc && cp -R src/assets dist",
 		"start": "node dist/index.js",
@@ -42,6 +43,7 @@
 		"@types/sharp": "^0.32.0",
 		"@types/twemoji-parser": "^13.1.4",
 		"cross-env": "^7.0.3",
+		"husky": "^9.1.7",
 		"ts-node": "^10.9.2",
 		"ts-node-dev": "^2.0.0"
 	}
