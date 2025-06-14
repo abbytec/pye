@@ -105,30 +105,13 @@ userSchema.post(["save", "findOneAndUpdate"], async function (doc: IUserModel | 
 		console.error("Error actualizando Redis en 'save'/'findOneAndUpdate':", error);
 	});
 });
-userSchema.post("updateOne", async function (result) {
-	const filter = this.getFilter();
-	const update = this.getUpdate() as Record<string, any>;
 
-	// Si el update NO incrementa dailyBumpTops, ignorar.
-	if (!update?.$inc?.dailyBumpTops) return;
-
-	try {
-		const user = await Users.findOne(filter).exec();
-		if (!user) return;
-
-		await addRep(user.id, ExtendedClient.guild ?? null).then(async ({ member }) => {
-			const channelId = getChannelFromEnv("logPuntos");
-			const channel = ExtendedClient.guild?.channels.resolve(channelId) as TextChannel | null;
-			const username = member?.user.username ?? user.id;
-			await channel?.send(`\`${username}\` ha obtenido 1 punto por haber llegado al top diario de bumps`);
-		});
-	} catch (error) {
-		console.error("Error en addRep/log diario de bumps:", error);
-	}
-});
 userSchema.post(["updateOne", "updateMany"], async function (result) {
 	// 'this' se refiere a la consulta
 	const filter = this.getFilter();
+	const update = this.getUpdate?.() as Record<string, any>;
+
+	// Si el update NO incrementa dailyBumpTops, ignorar.
 
 	try {
 		// Recupera los documentos actualizados
@@ -139,7 +122,7 @@ userSchema.post(["updateOne", "updateMany"], async function (result) {
 		// Prepara todas las operaciones ZADD para Redis
 		const pipeline = client.multi();
 
-		updatedDocs.forEach((doc) => {
+		for (const doc of updatedDocs) {
 			// Verificar que todas las propiedades necesarias existen
 			if (!doc.id) return console.warn(`El documento del usuario ${doc.id} está erroneo. No se actualizará Redis.`);
 
@@ -148,7 +131,23 @@ userSchema.post(["updateOne", "updateMany"], async function (result) {
 			pipeline.zAdd("top:rob", { score: doc.rob || 0, value: doc.id });
 			pipeline.zAdd("top:apostador", { score: doc.earnings || 0, value: doc.id });
 			pipeline.zAdd("top:caps", { score: doc.caps || 0, value: doc.id });
-		});
+			if (!update?.$inc?.dailyBumpTops && update.$inc.dailyBumpTops % 10 === 0) continue;
+
+			await addRep(doc.id, ExtendedClient.guild ?? null)
+				.then(async ({ member }) => {
+					const channelId = getChannelFromEnv("logPuntos");
+					const channel = ExtendedClient.guild?.channels.resolve(channelId) as TextChannel | null;
+					const username = member?.user.username ?? doc.id;
+					await channel?.send(`\`${username}\` ha obtenido 1 punto por haber llegado 10 veces al top diario de bumps`);
+				})
+				.catch((error) =>
+					ExtendedClient.logError(
+						`Error agregando +1 rep por llegar 10 veces al top diario de bumps ${error}` + error.message,
+						error.stack,
+						doc.id
+					)
+				);
+		}
 
 		const results = await pipeline.exec();
 		results.forEach((result, index) => {
