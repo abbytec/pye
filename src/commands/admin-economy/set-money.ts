@@ -1,9 +1,9 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
-import { logMessages } from "../../utils/finalwares/logMessages.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
+import { verifyHasRoles } from "../../composables/middlewares/verifyHasRoles.js";
+import { logMessages } from "../../composables/finalwares/logMessages.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import ms from "ms";
 import { Money } from "../../Models/Money.js";
 import { replyError } from "../../utils/messages/replyError.js";

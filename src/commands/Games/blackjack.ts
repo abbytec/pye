@@ -9,15 +9,15 @@ import {
 	InteractionResponse,
 	Message,
 } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { IUserModel, betDone, getOrCreateUser } from "../../Models/User.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { calculateJobMultiplier, getRandomNumber } from "../../utils/generic.js";
 import { replyError } from "../../utils/messages/replyError.js";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { verifyChannel } from "../../composables/middlewares/verifyIsChannel.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
+import { verifyCooldown } from "../../composables/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import EconomyService from "../../core/services/EconomyService.js";

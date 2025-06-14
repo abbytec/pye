@@ -12,9 +12,9 @@ import {
 	GuildMember,
 	EmbedField,
 } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { IModLogsDocument, ModLogs } from "../../Models/ModLogs.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { COLORS, getRoleFromEnv } from "../../utils/constants.js";

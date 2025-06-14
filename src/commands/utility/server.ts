@@ -1,9 +1,9 @@
 // src/commands/General/server.ts
 
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildFeature, Guild, User } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
@@ -135,7 +135,7 @@ export default {
 						},
 						{
 							name: "Descripción",
-							value: guild.description ? guild.description : "No tiene.",
+							value: guild.description ?? "No tiene.",
 						},
 						{
 							name: "• Emojis y Stickers",

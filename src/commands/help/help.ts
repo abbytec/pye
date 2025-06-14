@@ -2,14 +2,14 @@
 
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember } from "discord.js";
 
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { COLORS, getRoles } from "../../utils/constants.js";
 import { replyError } from "../../utils/messages/replyError.js";
-import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { verifyCooldown } from "../../composables/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import CommandService from "../../core/services/CommandService.js";
 

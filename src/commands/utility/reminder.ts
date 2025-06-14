@@ -1,11 +1,11 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, GuildMember } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import ms from "ms";
 import { replyOk } from "../../utils/messages/replyOk.js";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
+import { verifyChannel } from "../../composables/middlewares/verifyIsChannel.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
 import { ExtendedClient } from "../../client.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";

@@ -49,7 +49,7 @@ export const composeMiddlewares = (
 								flags: MessageFlags.SuppressNotifications,
 							});
 						}
-					})) || {};
+					})) ?? {};
 				// Después de ejecutar el handler final, ejecutamos los postHandlers si existen
 				if (postHandlers) {
 					for (const postHandler of postHandlers) {

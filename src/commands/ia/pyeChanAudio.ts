@@ -1,11 +1,11 @@
 import { AttachmentBuilder, SlashCommandBuilder } from "discord.js";
 import loadEnvVariables from "../../utils/environment.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
-import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { verifyCooldown } from "../../composables/middlewares/verifyCooldown.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { createAudioErrorEmbed, generateAudioResponse } from "../../utils/ai/aiResponseService.js";
 import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";

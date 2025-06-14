@@ -1,8 +1,8 @@
 import { SlashCommandBuilder } from "discord.js";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { verifyHasRoles } from "../../composables/middlewares/verifyHasRoles.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { HelperPoint } from "../../Models/HelperPoint.js";
 import { Users } from "../../Models/User.js";
 import redis from "../../redis.js";

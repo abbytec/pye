@@ -1,13 +1,13 @@
 import { ChannelType, SlashCommandBuilder } from "discord.js";
 import { getHelpForumsIdsFromEnv, ChannelKeys } from "../../utils/constants.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { replyInfo } from "../../utils/messages/replyInfo.js";
-import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { verifyCooldown } from "../../composables/middlewares/verifyCooldown.js";
 
 export const data = new SlashCommandBuilder()
 	.setName("userposts")

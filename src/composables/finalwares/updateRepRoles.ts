@@ -1,12 +1,12 @@
 // middlewares/updateRepRoles.ts
 import { Finalware } from "../../types/middleware.js";
 import { AttachmentBuilder, GuildMember, TextChannel } from "discord.js";
-import { getChannelFromEnv, getRepRolesByOrder, getRoleFromEnv, getRoleName, ROLES_REP_RANGE } from "../constants.js";
+import { getChannelFromEnv, getRepRolesByOrder, getRoleFromEnv, getRoleName, ROLES_REP_RANGE } from "../../utils/constants.js";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { ExtendedClient } from "../../client.js";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import cardRoles from "../constants/card-roles.js";
+import cardRoles from "../../utils/constants/card-roles.js";
 import AutoRoleService from "../../core/services/AutoRoleService.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

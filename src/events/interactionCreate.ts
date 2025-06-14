@@ -20,7 +20,7 @@ import { ExtendedClient } from "../client.js";
 import { COLORS, getChannelFromEnv, getRoleFromEnv, USERS } from "../utils/constants.js";
 import { checkQuestLevel, IQuest } from "../utils/quest.js";
 import { HelperPoint } from "../Models/HelperPoint.js";
-import { updateMemberReputationRoles } from "../utils/finalwares/updateRepRoles.js";
+import { updateMemberReputationRoles } from "../composables/finalwares/updateRepRoles.js";
 import Bottleneck from "bottleneck";
 import { checkRole } from "../utils/generic.js";
 import { Command } from "../types/command.js";

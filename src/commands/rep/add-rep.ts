@@ -1,12 +1,12 @@
 import { Guild, GuildMember, SlashCommandBuilder, User } from "discord.js";
 import { getChannelFromEnv, getRoleFromEnv } from "../../utils/constants.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
-import { updateRepRoles } from "../../utils/finalwares/updateRepRoles.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
+import { verifyHasRoles } from "../../composables/middlewares/verifyHasRoles.js";
+import { updateRepRoles } from "../../composables/finalwares/updateRepRoles.js";
 import { HelperPoint } from "../../Models/HelperPoint.js";
-import { logMessages } from "../../utils/finalwares/logMessages.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { logMessages } from "../../composables/finalwares/logMessages.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";

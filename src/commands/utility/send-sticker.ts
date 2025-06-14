@@ -1,8 +1,8 @@
 import { Guild, SlashCommandBuilder } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 
 export default {
 	data: new SlashCommandBuilder()

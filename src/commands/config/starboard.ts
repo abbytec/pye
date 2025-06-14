@@ -1,10 +1,10 @@
 import { PermissionFlagsBits, SlashCommandBuilder, TextChannel } from "discord.js";
 import { StarBoard } from "../../Models/StarBoard.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
+import { verifyHasRoles } from "../../composables/middlewares/verifyHasRoles.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 // Export command

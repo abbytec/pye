@@ -1,7 +1,7 @@
 // middlewares/verifyHasRoles.ts
 import { Middleware } from "../../types/middleware.js";
 import { GuildMemberRoleManager } from "discord.js";
-import { getRoles, Roles } from "../constants.js";
+import { getRoles, Roles } from "../../utils/constants.js";
 
 /**
  * Crea un middleware para verificar si el usuario tiene al menos uno de los roles permitidos.

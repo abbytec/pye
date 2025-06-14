@@ -3,9 +3,9 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } from "discord.js";
 import { getOrCreateUser } from "../../Models/User.js";
 import { HelperPoint, IHelperPointDocument } from "../../Models/HelperPoint.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.js";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
@@ -14,7 +14,7 @@ import fs from "fs/promises"; // Usar promesas para operaciones de archivos
 import redisClient from "../../redis.js"; // Asegúrate de exportar correctamente tu cliente redis
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
+import { verifyChannel } from "../../composables/middlewares/verifyIsChannel.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";

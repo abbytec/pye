@@ -1,9 +1,9 @@
 import { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } from "discord.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { COLORS } from "../../utils/constants.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { verifyHasRoles } from "../../composables/middlewares/verifyHasRoles.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import { PostHandleable } from "../../types/middleware.js";

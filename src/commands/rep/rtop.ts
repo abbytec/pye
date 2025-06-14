@@ -3,9 +3,9 @@ import { SlashCommandBuilder, User, Interaction, ButtonInteraction, Message } fr
 import { HelperPoint } from "../../Models/HelperPoint.js";
 import client from "../../redis.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { replyInfo } from "../../utils/messages/replyInfo.js";
 import { generateLeaderboard } from "../../utils/generic.js";
 

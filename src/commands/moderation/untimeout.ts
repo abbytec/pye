@@ -1,13 +1,13 @@
 // src/commands/Staff/untimeout.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { getChannelFromEnv, getRoleFromEnv, USERS } from "../../utils/constants.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { verifyHasRoles } from "../../utils/middlewares/verifyHasRoles.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
+import { verifyHasRoles } from "../../composables/middlewares/verifyHasRoles.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { ModLogs } from "../../Models/ModLogs.js";
-import { logMessages } from "../../utils/finalwares/logMessages.js";
+import { logMessages } from "../../composables/finalwares/logMessages.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 

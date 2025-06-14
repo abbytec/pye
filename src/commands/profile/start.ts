@@ -14,14 +14,14 @@ import {
 } from "discord.js";
 import { Users } from "../../Models/User.js";
 import { Home } from "../../Models/Home.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import path from "path";
 import fs from "fs";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
+import { verifyChannel } from "../../composables/middlewares/verifyIsChannel.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";

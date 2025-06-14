@@ -2,7 +2,7 @@
 
 import { Middleware } from "../../types/middleware.js";
 import { getCooldown, setCooldown } from "../../utils/cooldowns.js";
-import { formatTime } from "../generic.js";
+import { formatTime } from "../../utils/generic.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 /**

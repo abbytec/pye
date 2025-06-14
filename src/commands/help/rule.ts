@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, TextChannel } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { PostHandleable } from "../../types/middleware.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { ICustomCommand } from "../../interfaces/ICustomCommand.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";

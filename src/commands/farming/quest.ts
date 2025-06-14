@@ -1,9 +1,9 @@
 // src/commands/Currency/quests.ts
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, User, Guild } from "discord.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
+import { verifyChannel } from "../../composables/middlewares/verifyIsChannel.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { Home, IHomeDocument } from "../../Models/Home.js";

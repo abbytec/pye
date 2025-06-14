@@ -1,9 +1,9 @@
 // src/commands/Currency/slut.ts
 import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { getOrCreateUser, Users } from "../../Models/User.js";
-import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
-import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
-import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
+import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
+import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
+import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
@@ -13,12 +13,12 @@ import { increaseHomeMonthlyIncome } from "../../Models/Home.js";
 import { checkQuestLevel, IQuest } from "../../utils/quest.js";
 import { calculateJobMultiplier, getRandomNumber } from "../../utils/generic.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
-import { verifyChannel } from "../../utils/middlewares/verifyIsChannel.js";
+import { verifyChannel } from "../../composables/middlewares/verifyIsChannel.js";
 import { ExtendedClient } from "../../client.js";
-import { verifyCooldown } from "../../utils/middlewares/verifyCooldown.js";
+import { verifyCooldown } from "../../composables/middlewares/verifyCooldown.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
-import { logMessages } from "../../utils/finalwares/logMessages.js";
+import { logMessages } from "../../composables/finalwares/logMessages.js";
 import EconomyService from "../../core/services/EconomyService.js";
 import CommandService from "../../core/services/CommandService.js";
 
