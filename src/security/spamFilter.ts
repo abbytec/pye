@@ -178,7 +178,12 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 		}
 
 		if (rule.staffWarn) {
-			await warnModerators(client, rule.staffWarn, loggedUrl);
+			await warnModerators(
+				client,
+				rule.staffWarn,
+				loggedUrl ??
+					(deletable.channel ? `https://discord.com/channels/${process.env.GUILD_ID}/${deletable.channel.id}/${deletable.id}` : "")
+			);
 		}
 	}
 
