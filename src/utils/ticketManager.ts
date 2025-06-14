@@ -123,15 +123,25 @@ export async function handleTicketButtonInteraction(interaction: Interaction, ac
 	const channel = interaction.channel as TextChannel;
 	if (action === "close") {
 		// Remueve el acceso del usuario al canal
+		let hasBeenClosed = false;
 		channel.permissionOverwrites.cache.forEach(async (overwrite) => {
 			if (overwrite.type === 1) {
-				await channel.permissionOverwrites.edit(overwrite.id, {
-					ViewChannel: false,
-					SendMessages: false,
-					ReadMessageHistory: false,
-				});
+				const deniedView = overwrite.deny.has("ViewChannel");
+				const deniedSend = overwrite.deny.has("SendMessages");
+				const deniedHistory = overwrite.deny.has("ReadMessageHistory");
+
+				if (deniedView && deniedSend && deniedHistory) {
+					hasBeenClosed = true;
+				} else {
+					await channel.permissionOverwrites.edit(overwrite.id, {
+						ViewChannel: false,
+						SendMessages: false,
+						ReadMessageHistory: false,
+					});
+				}
 			}
 		});
+		if (hasBeenClosed) return;
 		// Embed para opciones de transcripción o reapertura
 		const embed = new EmbedBuilder()
 			.setTitle("Ticket Cerrado")
@@ -151,12 +161,24 @@ export async function handleTicketButtonInteraction(interaction: Interaction, ac
 		ExtendedClient.openTickets.delete(channel.name);
 	} else if (action === "escalate") {
 		// Eleva el ticket: solo rol staff lo verá
-		await interaction.channel.permissionOverwrites.edit(getRoleFromEnv("moderadorChats"), {
-			ViewChannel: false,
-			SendMessages: false,
-			ReadMessageHistory: false,
-		});
-		await interaction.reply({ content: "Ticket escalado a Staff.", ephemeral: true });
+		const closeButton = new ButtonBuilder().setCustomId("close_ticket").setLabel("Cerrar Ticket").setStyle(ButtonStyle.Danger);
+		const escalateButton = new ButtonBuilder()
+			.setCustomId("escalate_ticket")
+			.setLabel("Elevar Ticket")
+			.setStyle(ButtonStyle.Primary)
+			.setDisabled(true);
+		const firstMessageRow = { type: 1, components: [closeButton, escalateButton] };
+		await interaction.update({ components: [firstMessageRow] });
+		await interaction.followUp({ content: "Escalando el ticket al Staff.", ephemeral: true });
+		setTimeout(async () => {
+			await (interaction.channel as TextChannel)?.permissionOverwrites
+				.edit(getRoleFromEnv("moderadorChats"), {
+					ViewChannel: false,
+					SendMessages: false,
+					ReadMessageHistory: false,
+				})
+				.catch(() => null);
+		}, 5000);
 	} else if (action === "save") {
 		try {
 			const saveBtn = new ButtonBuilder().setCustomId("save_ticket").setLabel("Guardar").setStyle(ButtonStyle.Primary).setDisabled(true);
