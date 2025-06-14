@@ -1,4 +1,5 @@
-import { SlashCommandBuilder, ActionRowBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+// src/commands/Reputation/rtop.ts
+import { SlashCommandBuilder, User, Interaction, ButtonInteraction, Message } from "discord.js";
 import { HelperPoint } from "../../Models/HelperPoint.js";
 import client from "../../redis.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
@@ -6,6 +7,10 @@ import { deferInteraction } from "../../utils/middlewares/deferInteraction.js";
 import { composeMiddlewares } from "../../helpers/composeMiddlewares.js";
 import { verifyIsGuild } from "../../utils/middlewares/verifyIsGuild.js";
 import { replyInfo } from "../../utils/messages/replyInfo.js";
+import { generateLeaderboard } from "../../utils/generic.js";
+
+const ITEMS_PER_PAGE = 10;
+type Scope = "global" | "monthly";
 
 export default {
 	group: "🥳 - Puntos de reputación",
@@ -22,188 +27,101 @@ export default {
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false)],
 		async (interaction: IPrefixChatInputCommand) => {
-			// Obtener el valor del argumento 'scope'
-			const scope = interaction.options.getString("scope") ?? "global";
+			let scope: Scope = (interaction.options.getString("scope") ?? "global") as Scope;
+			let page = 1;
 
-			// Definir el tamaño de la página
-			const pageSize = 10;
-			let page = 0;
-
-			// Definir el total de páginas según el scope
-			let totalPages = 0;
-
-			// Función para obtener los datos según el scope
-			const getTopData = async () => {
-				if (scope === "global") {
-					// Top global desde MongoDB
-					const totalUsers = await HelperPoint.countDocuments();
-					totalPages = Math.ceil(totalUsers / pageSize) || 1;
-
-					// Asegurarse de que la página solicitada está dentro de los límites
-					if (page < 0) page = 0;
-					if (page >= totalPages) page = totalPages - 1;
-
-					const users = await HelperPoint.find()
-						.sort({ points: -1, _id: -1 })
-						.skip(page * pageSize)
-						.limit(pageSize)
-						.lean();
-
-					return users;
-				} else {
-					// Top mensual desde Redis
-					const totalUsers = await client.zCard("top:rep");
-					totalPages = Math.ceil(totalUsers / pageSize) || 1;
-
-					// Asegurarse de que la página solicitada está dentro de los límites
-					if (page < 0) page = 0;
-					if (page >= totalPages) page = totalPages - 1;
-
-					const rawData = await client.sendCommand<string[]>([
-						"ZREVRANGE",
-						"top:rep",
-						(page * pageSize).toString(),
-						((page + 1) * pageSize - 1).toString(),
-						"WITHSCORES",
-					]);
-
-					// Luego parseas el resultado:
-					const usersWithScores: Array<{ value: string; score: number }> = [];
-					for (let i = 0; i < rawData.length; i += 2) {
-						usersWithScores.push({
-							value: rawData[i],
-							score: Number(rawData[i + 1]),
-						});
-					}
-
-					// Formatear los datos para consistencia
-					const users = await Promise.all(
-						usersWithScores.map(async (u) => {
-							try {
-								const member = await interaction.guild?.members.fetch(u.value).catch(() => null);
-								return {
-									_id: u.value,
-									points: u.score,
-									username: member?.user.username ?? "Usuario Desconocido",
-								};
-							} catch {
-								return {
-									_id: u.value,
-									points: u.score,
-									username: "Usuario Desconocido",
-								};
-							}
-						})
-					);
-
-					return users;
-				}
+			const makeContent = async (disable = false) => {
+				const { embed, actionRow, totalPages } = await buildLeaderboard(scope, page, interaction.user, interaction, disable);
+				return { embeds: [embed], components: [actionRow], totalPages };
 			};
 
-			// Función para obtener la posición del usuario
-			const getUserPosition = async () => {
-				if (scope === "global") {
-					const allDocs = await HelperPoint.find().sort({ points: -1 }).lean();
-					const position = allDocs.findIndex((u) => u._id === interaction.user.id);
-					return position !== -1 ? `#${position + 1}` : "No te encontré en el top.";
-				} else {
-					const rank = await client.zRevRank("top:rep", interaction.user.id);
-					return rank !== null ? `#${rank + 1}` : "No te encontré en el top.";
-				}
-			};
+			const initial = await makeContent();
+			await replyInfo(interaction, initial.embeds, undefined, initial.components);
 
-			// Función para generar el contenido del embed y botones
-			const generateContent = async (disableButtons = false) => {
-				const users = await getTopData();
-				const userPosition = await getUserPosition();
+			const message = await interaction.fetchReply();
+			if (!(message instanceof Message)) return;
 
-				// Construir los campos del embed
-				const fields = [
-					{
-						name: scope === "global" ? "Top Global de Puntos de Reputación." : "Top Mensual de Puntos de Reputación.",
-						value:
-							users.length > 0
-								? await Promise.all(
-										users.map(async (u, i) => {
-											try {
-												const member = await interaction.guild?.members
-													.fetch(u._id)
-													.catch(() => ({ user: { username: u._id } }));
-												return `**${page * pageSize + i + 1}.** [${member?.user.username}](https://discord.com/users/${
-													u._id
-												}) • ${u.points.toLocaleString()} puntos.`;
-											} catch {
-												return `**${
-													page * pageSize + i + 1
-												}.** Usuario Desconocido • ${u.points.toLocaleString()} puntos.`;
-											}
-										})
-								  ).then((res) => res.join("\n"))
-								: "No hay usuarios en el top.",
-					},
-					{
-						name: "Tu posición",
-						value: userPosition,
-					},
-				];
+			let totalPages = initial.totalPages;
 
-				// Crear el embed
-				const embed = new EmbedBuilder()
-					.setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
-					.setThumbnail("https://cdn.discordapp.com/attachments/916353103534632960/1035714342722752603/unknown.png")
-					.addFields(fields)
-					.setFooter({ text: `Página ${page + 1}/${totalPages}` })
-					.setTimestamp();
-
-				// Crear los botones
-				const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents([
-					new ButtonBuilder()
-						.setStyle(ButtonStyle.Primary)
-						.setLabel("«")
-						.setCustomId("hp-topBack")
-						.setDisabled(page <= 0 || disableButtons),
-					new ButtonBuilder()
-						.setStyle(ButtonStyle.Primary)
-						.setLabel("»")
-						.setCustomId("hp-topNext")
-						.setDisabled(page + 1 >= totalPages || disableButtons),
-				]);
-
-				return { embeds: [embed], components: [buttons] };
-			};
-
-			// Enviar el mensaje inicial
-			const initialContent = await generateContent();
-			await replyInfo(interaction, initialContent.embeds, undefined, initialContent.components).catch((e) => console.error(e));
-
-			// Obtener el mensaje enviado
-			const sentMessage = await interaction.fetchReply();
-
-			// Crear el collector para los botones
-			const collector = sentMessage?.createMessageComponentCollector({
-				filter: (i) => i.user.id === interaction.user.id && ["hp-topBack", "hp-topNext"].includes(i.customId),
-				time: 60 * 1000, // 60 segundos
+			const collector = message.createMessageComponentCollector({
+				filter: (i: Interaction) => i.isButton() && i.user.id === interaction.user.id && ["topBack", "topNext"].includes(i.customId),
+				time: 60_000, // 60 segundos
 			});
 
-			collector?.on("collect", async (i) => {
-				if (i.customId === "hp-topBack" && page > 0) {
-					page--;
-				} else if (i.customId === "hp-topNext" && page + 1 < totalPages) {
-					page++;
-				} else {
+			collector.on("collect", async (i: ButtonInteraction) => {
+				if (i.customId === "topBack" && page > 1) page--;
+				else if (i.customId === "topNext" && page < totalPages) page++;
+				else {
 					await i.deferUpdate();
 					return;
 				}
 
-				const newContent = await generateContent();
-				await i.update(newContent).catch((e) => console.error(e));
+				const updated = await makeContent();
+				totalPages = updated.totalPages;
+				await i.update(updated);
 			});
 
-			collector?.on("end", async () => {
-				const disabledContent = await generateContent(true);
-				await sentMessage?.edit(disabledContent).catch((e) => console.error(e));
+			collector.on("end", async () => {
+				const disabled = await makeContent(true);
+				await message.edit(disabled).catch(() => null);
 			});
 		},
 		[]
 	),
 };
+
+/**
+ * Construye el leaderboard reutilizando generateLeaderboard.
+ */
+async function buildLeaderboard(scope: Scope, page: number, user: User, interaction: IPrefixChatInputCommand, disable = false) {
+	let totalPages = 1;
+
+	if (scope === "global") {
+		const totalUsers = await HelperPoint.countDocuments();
+		totalPages = Math.ceil(totalUsers / ITEMS_PER_PAGE) || 1;
+		page = Math.min(Math.max(page, 1), totalPages);
+
+		const { embed, actionRow } = await generateLeaderboard(page, user, disable, {
+			title: "🏆 Top global de reputación",
+			dataFetch: async () => HelperPoint.find().lean(),
+			sortFunction: (a: any, b: any) => b.points - a.points,
+			positionFinder: (data: any[], id: string) => data.findIndex((u) => u._id === id),
+			descriptionBuilder: async (item: any, index: number, start: number) => {
+				const member = await interaction.guild?.members.fetch(item._id).catch(() => undefined);
+				return `**${start + index + 1}.** [${member?.user.username ?? "Usuario Desconocido"}](https://discord.com/users/${
+					item._id
+				}) • ${item.points.toLocaleString()} pts`;
+			},
+		});
+
+		return { embed, actionRow, totalPages };
+	}
+
+	// Top mensual (Redis)
+	const totalUsers = await client.zCard("top:rep");
+	totalPages = Math.ceil(Number(totalUsers) / ITEMS_PER_PAGE) || 1;
+	page = Math.min(Math.max(page, 1), totalPages);
+
+	const { embed, actionRow } = await generateLeaderboard(page, user, disable, {
+		title: "📅 Top mensual de reputación",
+		dataFetch: async () => {
+			const raw = await client.sendCommand<string[]>(["ZREVRANGE", "top:rep", "0", "-1", "WITHSCORES"]);
+			const parsed: { _id: string; points: number }[] = [];
+			for (let i = 0; i < raw.length; i += 2) parsed.push({ _id: raw[i], points: Number(raw[i + 1]) });
+			return parsed;
+		},
+		sortFunction: (a: any, b: any) => b.points - a.points,
+		positionFinder: async (_d: any, id: string) => {
+			const rank = await client.zRevRank("top:rep", id);
+			return rank ?? -1;
+		},
+		descriptionBuilder: async (item: any, index: number, start: number) => {
+			const member = await interaction.guild?.members.fetch(item._id).catch(() => undefined);
+			return `**${start + index + 1}.** [${member?.user.username ?? "Usuario Desconocido"}](https://discord.com/users/${
+				item._id
+			}) • ${item.points.toLocaleString()} pts`;
+		},
+	});
+
+	return { embed, actionRow, totalPages };
+}
