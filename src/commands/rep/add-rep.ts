@@ -66,7 +66,9 @@ export default {
 
 export async function addRep(user: User | null, guild: Guild | null, points: number = 1) {
 	if (user?.bot) throw new Error("No puedo darle puntos a los bots.");
-	const member = await guild?.members.fetch(user?.id ?? "").catch(() => null);
+	const member = await guild?.members
+		.fetch(user?.id ?? "")
+		.catch((e) => console.error("No se pudo encontrar al usuario en el servidor. Error:" + e));
 	if (!member) throw new Error("No se pudo encontrar al usuario en el servidor.");
 
 	let data = await HelperPoint.findOneAndUpdate({ _id: user?.id }, { $inc: { points } }, { new: true, upsert: true });

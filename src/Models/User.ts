@@ -131,22 +131,22 @@ userSchema.post(["updateOne", "updateMany"], async function (result) {
 			pipeline.zAdd("top:rob", { score: doc.rob || 0, value: doc.id });
 			pipeline.zAdd("top:apostador", { score: doc.earnings || 0, value: doc.id });
 			pipeline.zAdd("top:caps", { score: doc.caps || 0, value: doc.id });
-			if (!update?.$inc?.dailyBumpTops && doc.dailyBumpTops && (doc.dailyBumpTops + update.$inc?.dailyBumpTops) % 10 === 0) continue;
-
-			await addRep(doc.id, ExtendedClient.guild ?? null)
-				.then(async ({ member }) => {
-					const channelId = getChannelFromEnv("logPuntos");
-					const channel = ExtendedClient.guild?.channels.resolve(channelId) as TextChannel | null;
-					const username = member?.user.username ?? doc.id;
-					await channel?.send(`\`${username}\` ha obtenido 1 punto por haber llegado 10 veces al top diario de bumps`);
-				})
-				.catch((error) =>
-					ExtendedClient.logError(
-						`Error agregando +1 rep por llegar 10 veces al top diario de bumps ${error}` + error.message,
-						error.stack,
-						doc.id
-					)
-				);
+			if (update?.$inc?.dailyBumpTops && doc.dailyBumpTops && (doc.dailyBumpTops + update.$inc?.dailyBumpTops) % 10 === 0)
+				await addRep(doc.id, ExtendedClient.guild ?? null)
+					.then(async ({ member }) => {
+						const channelId = getChannelFromEnv("logPuntos");
+						const channel = ExtendedClient.guild?.channels.resolve(channelId) as TextChannel | null;
+						const username = member?.user.username ?? doc.id;
+						await channel?.send(`\`${username}\` ha obtenido 1 punto por haber llegado 10 veces al top diario de bumps`);
+						await doc.updateOne({ $inc: { bank: 1_000_000 } });
+					})
+					.catch((error) =>
+						ExtendedClient.logError(
+							`Error agregando +1 rep por llegar 10 veces al top diario de bumps ${error}` + error.message,
+							error.stack,
+							doc.id
+						)
+					);
 		}
 
 		const results = await pipeline.exec();
