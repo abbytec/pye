@@ -64,16 +64,16 @@ export default {
 	),
 } as Command;
 
-export async function addRep(user: User | null, guild: Guild | null, points: number = 1) {
-	if (user?.bot) throw new Error("No puedo darle puntos a los bots.");
-	const member = await guild?.members
-		.fetch(user?.id ?? "")
-		.catch((e) => console.error("No se pudo encontrar al usuario en el servidor. Error:" + e));
+export async function addRep(user: User | string | null, guild: Guild | null, points: number = 1) {
+	const userId = typeof user === "string" ? user : user?.id;
+	if (!userId) throw new Error("No se proporcionó user ni id válido.");
+	if (typeof user !== "string" && user?.bot) throw new Error("No puedo darle puntos a los bots.");
+	const member = await guild?.members.fetch(userId ?? "").catch(() => null);
 	if (!member) throw new Error("No se pudo encontrar al usuario en el servidor.");
 
-	let data = await HelperPoint.findOneAndUpdate({ _id: user?.id }, { $inc: { points } }, { new: true, upsert: true });
+	let data = await HelperPoint.findOneAndUpdate({ _id: userId }, { $inc: { points } }, { new: true, upsert: true });
 
-	if (!data) data = await HelperPoint.create({ _id: user?.id, points });
+	if (!data) data = await HelperPoint.create({ _id: userId, points });
 
 	return { member, data };
 }
