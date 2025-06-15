@@ -131,7 +131,7 @@ userSchema.post(["updateOne", "updateMany"], async function (result) {
 			pipeline.zAdd("top:rob", { score: doc.rob || 0, value: doc.id });
 			pipeline.zAdd("top:apostador", { score: doc.earnings || 0, value: doc.id });
 			pipeline.zAdd("top:caps", { score: doc.caps || 0, value: doc.id });
-			if (!update?.$inc?.dailyBumpTops && update.$inc.dailyBumpTops % 10 === 0) continue;
+			if (!update?.$inc?.dailyBumpTops && ((doc.dailyBumpTops ?? 0) + update.$inc?.dailyBumpTops) % 10 === 0) continue;
 
 			await addRep(doc.id, ExtendedClient.guild ?? null)
 				.then(async ({ member }) => {
