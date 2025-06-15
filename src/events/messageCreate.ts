@@ -177,19 +177,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 		case getChannelFromEnv("ofreceServicios"):
 		case getChannelFromEnv("ofertasDeEmpleos"): {
 			checkCooldownComparte(msg, client).then(async (cooldown) => {
-				if (cooldown) {
-					let warn = await (msg.channel as TextChannel).send({
-						content: `🚫 <@${
-							msg.author.id
-						}>Por favor, espera 1 semana entre publicaciónes similares en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
-							cooldown
-						)}:R>)`,
-					});
-					await msg.delete().catch(() => null);
-					setTimeout(async () => await warn.delete().catch(() => null), 10000);
-				} else {
-					ForumPostControlService.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
-
+				if (!cooldown) {
 					msg.startThread({ name: `${msg.author.username} - Empleo` })
 						.then((thread) => {
 							thread.send({
@@ -216,19 +204,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 		}
 		case getChannelFromEnv("proyectosNoPagos"): {
 			checkCooldownComparte(msg, client).then(async (cooldown) => {
-				if (cooldown) {
-					let warn = await (msg.channel as TextChannel).send({
-						content: `🚫 <@${
-							msg.author.id
-						}>Por favor, espera 1 semana entre publicaciónes similares en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
-							cooldown
-						)}:R>)`,
-					});
-					await msg.delete().catch(() => null);
-
-					setTimeout(async () => await warn.delete().catch(() => null), 10000);
-				} else {
-					ForumPostControlService.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
+				if (!cooldown) {
 					msg.startThread({ name: `${msg.author.username} - Proyecto` })
 						.then((thread) => {
 							thread.send({

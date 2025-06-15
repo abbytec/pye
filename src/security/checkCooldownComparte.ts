@@ -4,6 +4,7 @@ import { getChannelFromEnv } from "../utils/constants.js";
 import { hashMessage } from "./messageHashing.js";
 import natural from "natural";
 import ForumPostControlService from "../core/services/ForumPostControlService.js";
+import { convertMsToUnixTimestamp } from "../utils/generic.js";
 
 export async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClient): Promise<number | undefined> {
 	let lastPosts = ForumPostControlService.ultimosCompartePosts
@@ -54,5 +55,19 @@ export async function checkCooldownComparte(msg: Message<boolean>, client: Exten
 					cooldownPost = post.date.getTime() + 1000 * 60 * 60 * 24 * 7 - Date.now();
 			});
 	}
+	if (cooldownPost === undefined) {
+		ForumPostControlService.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
+		return;
+	}
+	let warn = await (msg.channel as TextChannel).send({
+		content: `🚫 <@${
+			msg.author.id
+		}>Por favor, espera 1 semana entre publicaciónes similares en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(
+			cooldownPost
+		)}:R>)`,
+	});
+	await msg.delete().catch(() => null);
+
+	setTimeout(async () => await warn.delete().catch(() => null), 10000);
 	return cooldownPost;
 }
