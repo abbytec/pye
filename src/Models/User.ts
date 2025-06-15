@@ -111,8 +111,6 @@ userSchema.post(["updateOne", "updateMany"], async function (result) {
 	const filter = this.getFilter();
 	const update = this.getUpdate?.() as Record<string, any>;
 
-	// Si el update NO incrementa dailyBumpTops, ignorar.
-
 	try {
 		// Recupera los documentos actualizados
 		const updatedDocs = await Users.find(filter).exec();
