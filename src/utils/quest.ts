@@ -160,7 +160,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 					files: [],
 				}).catch(() => null);
 				Choose.delete(person.id);
-				return await user.updateOne({ money: 0, activate: false });
+				return await user.updateOne({ money: 0, active: false });
 			}
 			res.update({
 				embeds: [
@@ -254,7 +254,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 					files: [],
 				}).catch(() => null);
 				Choose.delete(person.id);
-				return await user.updateOne({ text: 0, activate: false });
+				return await user.updateOne({ text: 0, active: false });
 			}
 			const pet = res.values[0];
 			res.update({
