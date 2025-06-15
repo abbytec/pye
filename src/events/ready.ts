@@ -250,7 +250,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 		const topId = top[0];
 
 		if (topId) {
-			await Users.updateOne({ id: topId }, { $inc: { dailyBumpTops: 1 } });
+			await Users.updateOne({ id: topId }, { $inc: { dailyBumpTops: 1, bank: 1_000_000 } });
 		}
 
 		// Limpia el ranking
