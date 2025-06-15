@@ -20,7 +20,7 @@
 		"@napi-rs/canvas": "^0.1.55",
 		"agenda": "^5.0.0",
 		"bottleneck": "^2.19.5",
-		"discord.js": "^14.17.2",
+		"discord.js": "^14.19.3",
 		"dotenv": "^16.4.7",
 		"gif-encoder": "^0.7.2",
 		"html-entities": "^2.6.0",

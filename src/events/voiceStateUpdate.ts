@@ -19,7 +19,7 @@ export default {
 
 		// Member joins a voice channel
 		if (!oldState.channelId && newState.channelId) {
-			if ((newState.member?.joinedAt?.getTime() ?? 0) > Date.now() - 60000) {
+			if ((newState.member?.joinedAt?.getTime() ?? 0) > Date.now() - 600000) {
 				let userMuted = await ModLogs.findOne({ id: userId, type: "Voice-mute", reasonUnpenalized: { $exists: false } });
 				if (userMuted) {
 					await newState.member?.voice.setMute(true).catch(() => null);

@@ -228,6 +228,7 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 		embed.setColor(COLORS.warnOrange);
 
 		const components = interaction.message.components.map((row) => {
+			if (!("components" in row)) return row;
 			const newComponents = (row.components as APIButtonComponent[])
 				.map((component) => {
 					if (component.type === ComponentType.Button && "customId" in component && component.customId === "point-" + customId) {

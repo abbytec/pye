@@ -96,7 +96,7 @@ async function processCommonMessage(message: Message, client: ExtendedClient) {
 		const moneyConfig = client.services.economy.getConfig(process.env.CLIENT_ID ?? "");
 		getCooldown(client, message.author.id, "farm-text", moneyConfig.text.time).then(async (time) => {
 			if (time > 0) {
-				Users.findOneAndUpdate({ id: message.author.id }, { $inc: { cash: moneyConfig.text.coins } }, { upsert: true })
+				Users.findOneAndUpdate({ id: message.author.id }, { $inc: { cash: moneyConfig.text.coins } }, { upsert: true, new: true })
 					.exec()
 					.then(() => {
 						setCooldown(client, message.author.id, "farm-text", moneyConfig.text.time);

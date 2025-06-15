@@ -297,7 +297,7 @@ async function voiceFarmingProcessor(client: ExtendedClient) {
 				Users.findOneAndUpdate(
 					{ id: userId.toString() },
 					{ $inc: { cash: moneyConfig.voice.coins * cyclesToIncrement } },
-					{ upsert: true }
+					{ upsert: true, new: true }
 				).exec();
 				client.services.economy.voiceFarmers.set(userId, value);
 			}
