@@ -110,7 +110,7 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 								};
 							});
 
-							msg.edit({ embeds: embedWithoutImage });
+							msg.edit({ embeds: embedWithoutImage }).catch(() => null);
 						}, delayMs);
 					}
 				})
