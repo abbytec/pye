@@ -20,13 +20,10 @@ export default {
 	async execute(entry: GuildAuditLogsEntry, guild: Guild) {
 		try {
 			switch (entry.action as number) {
+				// --- CHANNEL ---
 				case AuditLogEvent.ChannelCreate:
 					if (entry.target && "name" in entry.target && "type" in entry.target && entry.target.type !== ChannelType.GuildVoice)
 						ExtendedClient.auditLog("Canal creado : " + entry.target.name, "success", entry.executor?.username ?? undefined);
-					break;
-				case AuditLogEvent.ChannelDelete:
-					if (entry.target && "name" in entry.target && "type" in entry.target && entry.target.type !== ChannelType.GuildVoice)
-						ExtendedClient.auditLog("Canal eliminado: " + entry.target.name, "error", entry.executor?.username ?? undefined);
 					break;
 				case AuditLogEvent.ChannelUpdate:
 					ExtendedClient.auditLog(
@@ -35,9 +32,31 @@ export default {
 						entry.executor?.username ?? undefined
 					);
 					break;
+				case AuditLogEvent.ChannelDelete:
+					if (entry.target && "name" in entry.target && "type" in entry.target && entry.target.type !== ChannelType.GuildVoice)
+						ExtendedClient.auditLog("Canal eliminado: " + entry.target.name, "error", entry.executor?.username ?? undefined);
+					break;
 				case AuditLogEvent.ChannelOverwriteCreate:
 					if (entry.executorId !== process.env.CLIENT_ID) {
 						console.log("Permisos cambiados en el canal <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					}
+					break;
+
+				// --- MEMBER ---
+				case AuditLogEvent.MemberBanAdd:
+					await handleBanAdd(entry, guild);
+					break;
+				case AuditLogEvent.MemberBanRemove:
+					await handleBanRemove(entry, guild);
+					break;
+				case AuditLogEvent.MemberUpdate:
+					console.log("Miembro actualizado: <@" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					break;
+				case AuditLogEvent.MemberRoleUpdate:
+					if (entry.executorId !== process.env.CLIENT_ID) {
+						console.log(
+							"Roles de <@" + entry.targetId + "> actualizados por <@" + entry.executorId + ">:\n" + diffConsole(entry.changes)
+						);
 					}
 					break;
 				case AuditLogEvent.MemberMove:
@@ -46,20 +65,38 @@ export default {
 				case AuditLogEvent.MemberDisconnect:
 					console.log("Miembro desconectado de <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
 					break;
-				case AuditLogEvent.MemberRoleUpdate:
-					if (entry.executorId !== process.env.CLIENT_ID) {
-						console.log("Roles de <@" + entry.targetId + "> actualizados:\n" + diffConsole(entry.changes));
-					}
+
+				// --- ROLE ---
+				case AuditLogEvent.RoleUpdate:
+					ExtendedClient.auditLog(
+						"Rol actualizado: " + entry.changes.find((c) => c.key === "name")?.new + "\n" + diff(entry.changes),
+						"info",
+						entry.executor?.username ?? undefined
+					);
 					break;
-				case AuditLogEvent.MemberUpdate:
-					console.log("Miembro actualizado: <@" + entry.targetId + ">\n" + diffConsole(entry.changes));
-					break;
+
+				// --- INVITE ---
 				case AuditLogEvent.InviteCreate:
 					console.log("Invitación creada: " + entry.changes.find((c) => c.key === "code")?.new);
 					break;
+
+				// --- MESSAGE ---
 				case AuditLogEvent.MessageDelete:
 					console.log("Mensaje borrado: <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
 					break;
+
+				// --- SCHEDULED EVENT ---
+				case AuditLogEvent.GuildScheduledEventCreate:
+					await logEventCreated(entry, guild);
+					break;
+				case AuditLogEvent.GuildScheduledEventUpdate:
+					await logEventUpdated(entry, guild);
+					break;
+				case AuditLogEvent.GuildScheduledEventDelete:
+					await logEventDeleted(entry, guild);
+					break;
+
+				// --- THREAD ---
 				case AuditLogEvent.ThreadCreate:
 					if (entry.executorId !== process.env.CLIENT_ID) {
 						console.log(
@@ -81,26 +118,14 @@ export default {
 						);
 					}
 					break;
-				case AuditLogEvent.GuildScheduledEventCreate:
-					// Lógica para creación de evento
-					await logEventCreated(entry, guild);
+
+				// --- VOICE STATUS ---
+				case 192:
+				case 193:
+					console.log("Estado de voz cambiado: " + diffConsole(entry.changes));
 					break;
-				case AuditLogEvent.GuildScheduledEventUpdate:
-					// Lógica para modificación de evento
-					await logEventUpdated(entry, guild);
-					break;
-				case AuditLogEvent.GuildScheduledEventDelete:
-					// Lógica para borrado de evento
-					await logEventDeleted(entry, guild);
-					break;
-				case AuditLogEvent.MemberBanAdd:
-					// Lógica para baneo de miembro
-					await handleBanAdd(entry, guild);
-					break;
-				case AuditLogEvent.MemberBanRemove:
-					// Lógica para desbaneo de miembro
-					await handleBanRemove(entry, guild);
-					break;
+
+				// --- SCHEDULED EVENT INSTANCE ---
 				case 200:
 					await logSeriesInstanceCreate(entry, guild);
 					break;
@@ -110,6 +135,8 @@ export default {
 				case 202:
 					await logSeriesInstanceReset(entry, guild);
 					break;
+
+				// --- UNKNOWN ---
 				case 211:
 					ExtendedClient.auditLog(
 						"Server Tag (¿actualizado?):\n" + diff(entry.changes) + ")",
