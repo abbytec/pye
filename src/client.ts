@@ -1,5 +1,5 @@
 import { CoreClient } from "./core/CoreClient.js";
-import { COLORS, getChannelFromEnv, getRoleFromEnv } from "./utils/constants.js";
+import { COLORS, ANSI_COLOR, getChannelFromEnv, getRoleFromEnv } from "./utils/constants.js";
 import { Guild, MessageFlags, TextChannel } from "discord.js";
 import {} from "../globals.js";
 import { IGameSession } from "./interfaces/IGameSession.js";
@@ -109,16 +109,16 @@ export class ExtendedClient extends CoreClient {
 		let color;
 		if (type === "error") {
 			color = COLORS.errRed;
-			console.error(action);
+			console.log(ANSI_COLOR.RED + action + ANSI_COLOR.RESET);
 		} else if (type === "warning") {
 			color = COLORS.warnOrange;
-			console.warn(action);
+			console.log(ANSI_COLOR.YELLOW + action + ANSI_COLOR.RESET);
 		} else if (type === "success") {
 			color = COLORS.okGreen;
-			console.log(action);
+			console.log(ANSI_COLOR.GREEN + action + ANSI_COLOR.RESET);
 		} else {
 			color = COLORS.pyeLightBlue;
-			console.log(action);
+			console.log(ANSI_COLOR.BLUE + action + ANSI_COLOR.RESET);
 		}
 
 		let fields = [

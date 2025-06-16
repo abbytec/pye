@@ -1,5 +1,5 @@
 // src/events/guildAuditLogEntryCreate.ts
-import { AuditLogEvent, Channel, Events, Guild, GuildAuditLogsEntry, GuildChannel } from "discord.js";
+import { AuditLogEvent, Channel, ChannelType, Events, Guild, GuildAuditLogsEntry, GuildChannel } from "discord.js";
 import { Evento } from "../types/event.js";
 import { ExtendedClient } from "../client.js";
 import { handleBanAdd } from "./guildAuditLogEntryCreate/handleBanAdd.js";
@@ -21,11 +21,12 @@ export default {
 		try {
 			switch (entry.action as number) {
 				case AuditLogEvent.ChannelCreate:
-					ExtendedClient.auditLog("Canal creado <#" + entry.targetId + ">", "success", entry.executor?.username ?? undefined);
+					if (entry.target && "name" in entry.target && "type" in entry.target && entry.target.type !== ChannelType.GuildVoice)
+						ExtendedClient.auditLog("Canal creado : " + entry.target.name, "success", entry.executor?.username ?? undefined);
 					break;
 				case AuditLogEvent.ChannelDelete:
-					if (entry.target && "name" in entry.target)
-						ExtendedClient.auditLog("Canal eliminado <#" + entry.target.name + ">", "error", entry.executor?.username ?? undefined);
+					if (entry.target && "name" in entry.target && "type" in entry.target && entry.target.type !== ChannelType.GuildVoice)
+						ExtendedClient.auditLog("Canal eliminado: " + entry.target.name, "error", entry.executor?.username ?? undefined);
 					break;
 				case AuditLogEvent.ChannelUpdate:
 					ExtendedClient.auditLog(
