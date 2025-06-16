@@ -1,108 +1,68 @@
 // src/events/guildAuditLogEntryCreate.ts
-import { AuditLogEvent, EmbedBuilder, Events, Guild, GuildAuditLogsEntry, TextChannel, User } from "discord.js";
-import { HelperPoint } from "../Models/HelperPoint.js";
-import { Home } from "../Models/Home.js";
-import { Pets } from "../Models/Pets.js";
-import { Users } from "../Models/User.js";
-import redis from "../redis.js";
-import { COLORS, getChannelFromEnv } from "../utils/constants.js";
+import { AuditLogEvent, Events, Guild, GuildAuditLogsEntry } from "discord.js";
 import { Evento } from "../types/event.js";
 import { ExtendedClient } from "../client.js";
-import { ModLogs } from "../Models/ModLogs.js";
+import { handleBanAdd } from "./guildAuditLogEntryCreate/handleBanAdd.js";
+import { handleBanRemove } from "./guildAuditLogEntryCreate/handleBanRemove.js";
+import {
+	logEventCreated,
+	logEventDeleted,
+	logEventUpdated,
+	logSeriesInstanceCreate,
+	logSeriesInstanceReset,
+	logSeriesInstanceUpdate,
+} from "./guildAuditLogEntryCreate/handleEventChange.js";
 
 export default {
 	name: Events.GuildAuditLogEntryCreate,
 	once: false,
 	async execute(entry: GuildAuditLogsEntry, guild: Guild) {
 		try {
-			const { target, executor, createdTimestamp } = entry;
-			// Filtrar solo los eventos de baneo
-			if (entry.action === AuditLogEvent.MemberBanAdd) {
-				// Verificar que el objetivo sea un miembro válido
-				if (!target || entry.targetType !== "User" || !executor) return;
-				let targetUser = target as User;
-				const memberId = targetUser.id;
-
-				const channel = guild.channels.resolve(getChannelFromEnv("bansanciones")) as TextChannel | null;
-
-				// Verificar si el baneo fue realizado por un bot
-				if (!executor.bot) {
-					await channel
-						?.send({
-							content: `El miembro **${targetUser.username} (${memberId})** fue baneado __manualmente__ por **${
-								executor.tag
-							}**. Razon: ${entry.reason ?? "No se proporciono una razon."}`,
-						})
-						.catch((error) => {
-							console.error(`Error al enviar el mensaje: ${error}`);
-						});
-					await ModLogs.create({
-						id: memberId,
-						moderator: executor.tag,
-						reason: entry.reason ?? "No se proporciono una razon.",
-						date: Date.now(),
-						type: "Ban",
-					}).catch((error) => {
-						console.error(`Error al crear el log: ${error}`);
-					});
-				}
-
-				// Buscar y eliminar documentos en paralelo
-				const [user, helperPoint, home, pet] = await Promise.all([
-					Users.findOneAndDelete({ id: memberId }).lean().exec(),
-					HelperPoint.findOneAndDelete({ _id: memberId }).lean().exec(),
-					Home.findOneAndDelete({ id: memberId }).lean().exec(),
-					Pets.findOneAndDelete({ id: memberId }).lean().exec(),
-				]);
-
-				// Borrar los rankings
-				await Promise.all([
-					redis.sendCommand(["ZREM", "top:all", memberId]),
-					redis.sendCommand(["ZREM", "top:cash", memberId]),
-					redis.sendCommand(["ZREM", "top:rob", memberId]),
-					redis.sendCommand(["ZREM", "top:rep", memberId]),
-					redis.sendCommand(["ZREM", "top:bump", memberId]),
-				]);
-
-				const embed = new EmbedBuilder()
-					.setTitle("Datos del usuario Baneado")
-					.setColor(COLORS.errRed)
-					.setThumbnail(targetUser.displayAvatarURL() ?? "")
-					.addFields(
-						{ name: "Usuario", value: `${targetUser.username} (${memberId})`, inline: true },
-						{ name: "Baneado por", value: `${executor.username} (${executor.id})`, inline: true },
-						{ name: "Fecha de Baneo", value: `<t:${Math.floor(createdTimestamp / 1000)}:F>`, inline: false },
-						{ name: "Datos del Usuario", value: JSON.stringify(user) ?? "No se encontraron datos.", inline: false },
-						{ name: "Helper Points", value: JSON.stringify(helperPoint) ?? "No se encontraron puntos.", inline: false },
-						{ name: "Casa", value: JSON.stringify(home) ?? "No se encontró información.", inline: false },
-						{ name: "Mascotas", value: JSON.stringify(pet) ?? "No se encontraron mascotas.", inline: false }
-					)
-					.setTimestamp();
-
-				channel?.send({ embeds: [embed] });
-
-				console.log(`Datos de ${targetUser.username} eliminados y removidos de Redis.`);
-			} else if (entry.action === AuditLogEvent.MemberBanRemove) {
-				if (!target || entry.targetType !== "User" || !executor) return;
-				let targetUser = target as User;
-				const memberId = targetUser.id;
-
-				const channel = guild.channels.resolve(getChannelFromEnv("bansanciones")) as TextChannel | null;
-
-				// Verificar si el baneo fue realizado por un bot
-				if (!executor.bot) {
-					await channel?.send({
-						content: `El miembro **${targetUser.username} (${memberId})** fue desbaneado manualmente por **${executor.tag}**.`,
-					});
-					await ModLogs.findOneAndUpdate(
-						{ id: memberId, type: "Ban", hiddenCase: { $ne: true } }, // Filtro
-						{
-							$set: { hiddenCase: true, reasonUnpenalized: entry.reason ?? "No se proporciono una razon." },
-						}, // Actualización
-						{ sort: { date: -1 }, new: true } // Opciones: ordena por fecha descendente y devuelve el documento actualizado
-					).catch(() => null);
-					return;
-				}
+			switch (entry.action as number) {
+				case AuditLogEvent.ChannelCreate:
+					// Lógica para creación de canal
+					console.log("Canal creado:", entry.targetId, entry.executorId);
+					break;
+				case AuditLogEvent.ChannelDelete:
+					// Lógica para borrado de canal
+					console.log("Canal borrado:", entry.targetId, entry.executorId);
+					break;
+				case AuditLogEvent.ChannelUpdate:
+					// Lógica para actualización de canal
+					console.log("Canal modificado:", entry.targetId, entry.executorId, entry.changes);
+					break;
+				case AuditLogEvent.GuildScheduledEventCreate:
+					// Lógica para creación de evento
+					await logEventCreated(entry, guild);
+					break;
+				case AuditLogEvent.GuildScheduledEventUpdate:
+					// Lógica para modificación de evento
+					await logEventUpdated(entry, guild);
+					break;
+				case AuditLogEvent.GuildScheduledEventDelete:
+					// Lógica para borrado de evento
+					await logEventDeleted(entry, guild);
+					break;
+				case AuditLogEvent.MemberBanAdd:
+					// Lógica para baneo de miembro
+					await handleBanAdd(entry, guild);
+					break;
+				case AuditLogEvent.MemberBanRemove:
+					// Lógica para desbaneo de miembro
+					await handleBanRemove(entry, guild);
+					break;
+				case 200:
+					await logSeriesInstanceCreate(entry, guild);
+					break;
+				case 201:
+					await logSeriesInstanceUpdate(entry, guild);
+					break;
+				case 202:
+					await logSeriesInstanceReset(entry, guild);
+					break;
+				default:
+					console.log("Evento desconocido:", entry.action, JSON.stringify(entry));
+					break;
 			}
 		} catch (error: any) {
 			console.error(`Error en el handler de GuildAuditLogEntryCreate:`, error);
