@@ -242,8 +242,10 @@ async function cronEventsProcessor(client: ExtendedClient) {
 				console.error("Error al procesar el top de reputación mensual:", error);
 			}
 		}
-		client.services.trending.dailySave();
-		if (process.env.NODE_ENV !== "development") await getDailyChallenge(client);
+		client.services.trending.dailySave().catch((error) => {
+			console.error("Error al guardar el top de tendencias:", error);
+		});
+		if (process.env.NODE_ENV !== "development") await getDailyChallenge(client).catch((error) => console.error(error));
 
 		// Actualiza el top de bumps
 		const top = await redisClient.zRange("top:bump", 0, 0, { REV: true });

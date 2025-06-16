@@ -115,17 +115,23 @@ export function fmt(key: string, v: any) {
 		}
 		if (!Number.isNaN(ms)) return `<t:${Math.floor(ms / 1000)}:F>`;
 	}
-	if (typeof v === "string" || typeof v === "boolean" || typeof v === "number") return `${v}`;
+	if (typeof v === "string" || typeof v === "number") return `${v}`;
 	else if (typeof v === "object")
 		try {
 			return JSON.stringify(v);
 		} catch (error) {
 			console.error("Error formateando el valor clave de auditoria:", v, error);
 		}
+	else if (typeof v === "boolean") return getColor(v ? "$add" : "$remove") + `${v}` + ANSI_COLOR.RESET;
 	return "`null`"; // resto de claves
 }
 export function diff(changes: GuildAuditLogsEntry["changes"] | undefined): string {
-	return changes?.map((c) => `• **${c.key}**: ${fmt(c.key, c.old)} → ${fmt(c.key, c.new)}`).join("\n") ?? "Sin detalles";
+	return (
+		changes
+			?.filter((c) => c.old !== c.new)
+			.map((c) => `• **${c.key}**: ${fmt(c.key, c.old)} → ${fmt(c.key, c.new)}`)
+			.join("\n") ?? "Sin detalles"
+	);
 }
 
 // Selector de color por clave
