@@ -67,13 +67,17 @@ export default {
 					break;
 
 				// --- ROLE ---
-				case AuditLogEvent.RoleUpdate:
+				case AuditLogEvent.RoleUpdate: {
+					let newName = entry.changes.find((c) => c.key === "name")?.new;
+					if (!newName && entry.target && "name" in entry.target) newName = entry.target?.name as string;
+					newName ??= "<nombre desconocido>";
 					ExtendedClient.auditLog(
-						"Rol actualizado: " + entry.changes.find((c) => c.key === "name")?.new + "\n" + diff(entry.changes),
+						"Rol actualizado: " + newName + "\n" + diff(entry.changes),
 						"info",
 						entry.executor?.username ?? undefined
 					);
 					break;
+				}
 
 				// --- INVITE ---
 				case AuditLogEvent.InviteCreate:
