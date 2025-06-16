@@ -1,5 +1,5 @@
 import { CoreClient } from "./core/CoreClient.js";
-import { COLORS, ANSI_COLOR, getChannelFromEnv, getRoleFromEnv } from "./utils/constants.js";
+import { COLORS, ANSI_COLOR, getChannelFromEnv, getRoleFromEnv, ChannelKeys } from "./utils/constants.js";
 import { Guild, MessageFlags, TextChannel } from "discord.js";
 import {} from "../globals.js";
 import { IGameSession } from "./interfaces/IGameSession.js";
@@ -104,8 +104,13 @@ export class ExtendedClient extends CoreClient {
 				console.error(errorMessage);
 			});
 	}
-	public static auditLog(action: string, type: "error" | "warning" | "info" | "success" = "error", executor = "Desconocido") {
-		let textChannel = ExtendedClient.guild?.channels.resolve(getChannelFromEnv("logs")) as TextChannel;
+	public static auditLog(
+		action: string,
+		type: "error" | "warning" | "info" | "success" = "error",
+		executor = "Desconocido",
+		logChannel: ChannelKeys = "logs"
+	) {
+		let textChannel = ExtendedClient.guild?.channels.resolve(getChannelFromEnv(logChannel)) as TextChannel;
 		let color;
 		if (type === "error") {
 			color = COLORS.errRed;

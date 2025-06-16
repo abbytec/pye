@@ -22,19 +22,31 @@ export default {
 			switch (entry.action as number) {
 				// --- CHANNEL ---
 				case AuditLogEvent.ChannelCreate:
-					if (entry.target && "name" in entry.target && "type" in entry.target && entry.target.type !== ChannelType.GuildVoice)
-						ExtendedClient.auditLog("Canal creado : " + entry.target.name, "success", entry.executor?.username ?? undefined);
+					if (entry.target && "name" in entry.target && "type" in entry.target)
+						ExtendedClient.auditLog(
+							"Canal creado : " + entry.target.name,
+							"success",
+							entry.executor?.username ?? undefined,
+							entry.target.type === ChannelType.GuildVoice ? "voiceLogs" : "logs"
+						);
 					break;
 				case AuditLogEvent.ChannelUpdate:
-					ExtendedClient.auditLog(
-						"Canal Actualizado <#" + entry.targetId + ">\n Cambios:\n" + diff(entry.changes),
-						"info",
-						entry.executor?.username ?? undefined
-					);
+					if (entry.target && "type" in entry.target)
+						ExtendedClient.auditLog(
+							"Canal Actualizado <#" + entry.targetId + ">\n Cambios:\n" + diff(entry.changes),
+							"info",
+							entry.executor?.username ?? undefined,
+							entry.target.type === ChannelType.GuildVoice ? "voiceLogs" : "logs"
+						);
 					break;
 				case AuditLogEvent.ChannelDelete:
-					if (entry.target && "name" in entry.target && "type" in entry.target && entry.target.type !== ChannelType.GuildVoice)
-						ExtendedClient.auditLog("Canal eliminado: " + entry.target.name, "error", entry.executor?.username ?? undefined);
+					if (entry.target && "name" in entry.target && "type" in entry.target)
+						ExtendedClient.auditLog(
+							"Canal eliminado: " + entry.target.name,
+							"error",
+							entry.executor?.username ?? undefined,
+							entry.target.type === ChannelType.GuildVoice ? "voiceLogs" : "logs"
+						);
 					break;
 				case AuditLogEvent.ChannelOverwriteCreate:
 					if (entry.executorId !== process.env.CLIENT_ID) {
