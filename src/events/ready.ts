@@ -24,18 +24,6 @@ export default {
 	once: true,
 	async execute(client: ExtendedClient) {
 		console.log(`Bot Listo como: ${client.user?.tag} ! `);
-		// Actualiza el top de bumps
-		await redisClient
-			.sendCommand<string[]>(["ZREVRANGE", "top:bump", "0", "0"])
-			.then(async (top) => {
-				if (!top || top.length === 0) return;
-				console.log("Actualizando top de bumps");
-				const topId = top[0];
-				await Users.updateOne({ id: topId }, { $inc: { dailyBumpTops: 1 } });
-				// Limpia el ranking
-				await redisClient.del("top:bump");
-			})
-			.catch((error) => console.error(error));
 		await client.updateClientData(true);
 		ticketProcessor(client);
 		cronEventsProcessor(client);
