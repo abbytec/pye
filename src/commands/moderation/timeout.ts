@@ -49,7 +49,7 @@ export default {
 					if ("logMessages" in result) {
 						await replyWarning(
 							interaction,
-							`**${user.username}** ha recibido un timeout.`,
+							`**${user.username}** ha recibido un timeout durante \`${ms(duration)}\`.`,
 							undefined,
 							undefined,
 							undefined,
