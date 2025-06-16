@@ -70,7 +70,7 @@ export default {
 				case AuditLogEvent.ThreadUpdate:
 					if (entry.executorId !== process.env.CLIENT_ID) {
 						console.log(
-							ANSI_COLOR.BLUE + "Hilo actualizado: <#" + entry.targetId + ">\n" + ANSI_COLOR.RESET + diffConsole(entry.changes)
+							ANSI_COLOR.YELLOW + "Hilo actualizado: <#" + entry.targetId + ">\n" + ANSI_COLOR.RESET + diffConsole(entry.changes)
 						);
 					}
 					break;
