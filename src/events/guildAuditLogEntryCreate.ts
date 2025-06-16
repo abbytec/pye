@@ -4,7 +4,7 @@ import { Evento } from "../types/event.js";
 import { ExtendedClient } from "../client.js";
 import { handleBanAdd } from "./guildAuditLogEntryCreate/handleBanAdd.js";
 import { handleBanRemove } from "./guildAuditLogEntryCreate/handleBanRemove.js";
-import { ANSI_COLOR, SLASHBOT_UID } from "../utils/constants.js";
+import { ANSI_COLOR, SLASHBOT_UID, VOICEMASTER_UID } from "../utils/constants.js";
 import {
 	logEventCreated,
 	logEventDeleted,
@@ -79,7 +79,7 @@ export default {
 					}
 					break;
 				case AuditLogEvent.MemberMove:
-					if (entry.extra && "channel" in entry.extra)
+					if (entry.extra && "channel" in entry.extra && entry.executorId !== VOICEMASTER_UID)
 						console.log(
 							ANSI_COLOR.YELLOW +
 								"Miembro desconocido movido al canal <#" +
