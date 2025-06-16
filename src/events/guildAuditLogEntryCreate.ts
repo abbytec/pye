@@ -1,5 +1,5 @@
 // src/events/guildAuditLogEntryCreate.ts
-import { AuditLogEvent, Events, Guild, GuildAuditLogsEntry } from "discord.js";
+import { AuditLogEvent, Channel, Events, Guild, GuildAuditLogsEntry, GuildChannel } from "discord.js";
 import { Evento } from "../types/event.js";
 import { ExtendedClient } from "../client.js";
 import { handleBanAdd } from "./guildAuditLogEntryCreate/handleBanAdd.js";
@@ -20,16 +20,48 @@ export default {
 		try {
 			switch (entry.action as number) {
 				case AuditLogEvent.ChannelCreate:
-					// Lógica para creación de canal
-					console.log("Canal creado:", entry.targetId, entry.executorId);
+					ExtendedClient.auditLog("Canal creado <#" + entry.targetId + ">", "success", entry.executor?.username ?? undefined);
 					break;
 				case AuditLogEvent.ChannelDelete:
-					// Lógica para borrado de canal
-					console.log("Canal borrado:", entry.targetId, entry.executorId);
+					if (entry.target && "name" in entry.target)
+						ExtendedClient.auditLog("Canal eliminado <#" + entry.target.name + ">", "error", entry.executor?.username ?? undefined);
 					break;
 				case AuditLogEvent.ChannelUpdate:
-					// Lógica para actualización de canal
-					console.log("Canal modificado:", entry.targetId, entry.executorId, entry.changes);
+					ExtendedClient.auditLog(
+						"Canal Actualizado <#" + entry.targetId + ">\n Cambios:\n" + diff(entry.changes),
+						"info",
+						entry.executor?.username ?? undefined
+					);
+					break;
+				case AuditLogEvent.ChannelOverwriteCreate:
+					if (entry.executorId !== process.env.CLIENT_ID) {
+						console.log("Permisos cambiados en el canal <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					}
+					break;
+				case AuditLogEvent.MemberMove:
+					console.log("Miembro movido de <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					break;
+				case AuditLogEvent.MemberDisconnect:
+					console.log("Miembro desconectado de <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					break;
+				case AuditLogEvent.MemberRoleUpdate:
+					if (entry.executorId !== process.env.CLIENT_ID) {
+						console.log("Roles de <@" + entry.targetId + "> actualizados:\n" + diffConsole(entry.changes));
+					}
+					break;
+				case AuditLogEvent.MemberUpdate:
+					console.log("Miembro actualizado: <@" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					break;
+				case AuditLogEvent.InviteCreate:
+					console.log("Invitación creada: <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					break;
+				case AuditLogEvent.MessageDelete:
+					console.log("Mensaje borrado: <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					break;
+				case AuditLogEvent.ThreadCreate:
+					if (entry.executorId !== process.env.CLIENT_ID) {
+						console.log("Hilo creado: <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					}
 					break;
 				case AuditLogEvent.GuildScheduledEventCreate:
 					// Lógica para creación de evento
@@ -70,3 +102,41 @@ export default {
 		}
 	},
 } as Evento;
+export function fmt(key: string, v: any) {
+	if (key === "scheduled_start_time" || key === "scheduled_end_time" || key === "scheduledStartTimestamp") {
+		let ms: number;
+		if (typeof v === "string") {
+			ms = Date.parse(v);
+		} else if (typeof v === "number") {
+			ms = v;
+		} else {
+			ms = NaN;
+		}
+		if (!Number.isNaN(ms)) return `<t:${Math.floor(ms / 1000)}:F>`;
+	}
+	if (typeof v === "string") return `${v}`;
+	else if (typeof v === "object")
+		try {
+			return JSON.stringify(v);
+		} catch (error) {
+			console.error("Error formateando el valor clave de auditoria:", v, error);
+		}
+	return "`null`"; // resto de claves
+}
+export function diff(changes: GuildAuditLogsEntry["changes"] | undefined): string {
+	return changes?.map((c) => `• **${c.key}**: ${fmt(c.key, c.old)} → ${fmt(c.key, c.new)}`).join("\n") ?? "Sin detalles";
+}
+
+const YELLOW = "\x1b[33m";
+const RESET = "\x1b[0m";
+const GRAY = "\x1b[90m";
+function diffConsole(changes: GuildAuditLogsEntry["changes"] | undefined): string {
+	if (!changes?.length) return "Sin detalles";
+	return changes
+		.map((c, i) => {
+			const isLast = i === changes.length - 1;
+			const bullet = isLast ? "└" : "├";
+			return `${GRAY}${bullet}${RESET} ${YELLOW}${c.key}${RESET}: ${fmt(c.key, c.old)} → ${fmt(c.key, c.new)}`;
+		})
+		.join("\n");
+}

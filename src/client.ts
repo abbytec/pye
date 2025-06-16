@@ -1,5 +1,5 @@
 import { CoreClient } from "./core/CoreClient.js";
-import { getChannelFromEnv, getRoleFromEnv } from "./utils/constants.js";
+import { COLORS, getChannelFromEnv, getRoleFromEnv } from "./utils/constants.js";
 import { Guild, MessageFlags, TextChannel } from "discord.js";
 import {} from "../globals.js";
 import { IGameSession } from "./interfaces/IGameSession.js";
@@ -99,10 +99,53 @@ export class ExtendedClient extends CoreClient {
 				content,
 				flags: MessageFlags.SuppressNotifications,
 			})
-			.catch((e) => console.error(e))
+			.catch(() => null)
 			.finally(() => {
 				console.error(errorMessage);
 			});
+	}
+	public static auditLog(action: string, type: "error" | "warning" | "info" | "success" = "error", executor = "Desconocido") {
+		let textChannel = ExtendedClient.guild?.channels.resolve(getChannelFromEnv("logs")) as TextChannel;
+		let color;
+		if (type === "error") {
+			color = COLORS.errRed;
+			console.error(action);
+		} else if (type === "warning") {
+			color = COLORS.warnOrange;
+			console.warn(action);
+		} else if (type === "success") {
+			color = COLORS.okGreen;
+			console.log(action);
+		} else {
+			color = COLORS.pyeLightBlue;
+			console.log(action);
+		}
+
+		let fields = [
+			{
+				name: "Acción",
+				value: action,
+			},
+		];
+
+		if (executor) {
+			fields.push({
+				name: "Ejecutor",
+				value: executor,
+			});
+		}
+
+		textChannel
+			?.send({
+				embeds: [
+					{
+						color,
+						fields,
+					},
+				],
+				flags: MessageFlags.SuppressNotifications,
+			})
+			.catch((e) => console.error(e));
 	}
 	private globalErrorHandlerInitializer() {
 		process.on("unhandledRejection", (reason, promise) => {

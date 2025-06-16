@@ -1,25 +1,11 @@
 // src/handlers/audit/handleEventChange.ts
 import { AuditLogEvent, EmbedBuilder, Guild, GuildAuditLogsEntry, GuildScheduledEvent, TextChannel } from "discord.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
+import { diff, fmt } from "../guildAuditLogEntryCreate.js";
 
 /** Devuelve el canal #logs o null si no existe/está mal configurado */
 function getLogChannel(guild: Guild): TextChannel | null {
 	return guild.channels.resolve(getChannelFromEnv("logs")) as TextChannel | null;
-}
-
-function fmt(key: string, v: any) {
-	if (key === "scheduled_start_time" || key === "scheduled_end_time" || key === "scheduledStartTimestamp") {
-		let ms: number;
-		if (typeof v === "string") {
-			ms = Date.parse(v);
-		} else if (typeof v === "number") {
-			ms = v;
-		} else {
-			ms = NaN;
-		}
-		if (!Number.isNaN(ms)) return `<t:${Math.floor(ms / 1000)}:F>`;
-	}
-	return `\`${v ?? "null"}\``; // resto de claves
 }
 
 type AuditChange = { key: string; old?: unknown; new?: unknown };
@@ -46,10 +32,6 @@ async function formatEventFromEntry(entry: GuildAuditLogsEntry, guild: Guild): P
 	const id = evt?.id ?? entry.targetId ?? "¿sin ID?";
 
 	return `**${name ?? "Evento desconocido"}**\nID: ${id})\n${start ? "Inicio: " + start : ""}`;
-}
-
-function diff(changes: GuildAuditLogsEntry["changes"] | undefined): string {
-	return changes?.map((c) => `• **${c.key}**: ${fmt(c.key, c.old)} → ${fmt(c.key, c.new)}`).join("\n") ?? "Sin detalles";
 }
 
 /** Crea un embed común para los tres casos */

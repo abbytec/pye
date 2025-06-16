@@ -29,7 +29,7 @@ export default {
 			reaction.emoji.name === "pepedown" &&
 			(fullReaction.count ?? 0) > 4 &&
 			reaction.message.member &&
-			!reaction.message.member.roles.cache.get(getRoleFromEnv("iqNegativo"))
+			!reaction.message.member.roles.resolve(getRoleFromEnv("iqNegativo"))
 		) {
 			await reaction.message.member.roles.add(getRoleFromEnv("iqNegativo")).catch(() => null);
 			await UserRole.findOneAndUpdate(
