@@ -73,4 +73,16 @@ export const ticketOptions: TicketOption[] = [
 			color: COLORS.pyeLightBlue,
 		},
 	},
+	{
+		button: "Experto",
+		type: "experto",
+		emoji: "⭐",
+		description: "¿Quieres obtener el rol de experto?",
+		embedData: {
+			title: "Bienvenido a tu ticket",
+			description:
+				"Si quieres obtener el rol de experto, puedes empezar enviando info como:\n• cuales son tus conocimientos\n• redes de trabajo\n• certificaciones\n• repositorios publicos en donde podamos validar tus conocimientos",
+			color: COLORS.pyeLightBlue,
+		},
+	},
 ];

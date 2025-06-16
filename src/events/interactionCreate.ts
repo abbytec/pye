@@ -98,19 +98,23 @@ export default {
 			// No usamos deferUpdate porque vamos a mostrar un modal
 			const selected = interaction.values[0];
 
-			// Crea el modal. En el customId se inyecta el tipo de ticket.
-			const modal = new ModalBuilder().setCustomId(`ticket_reason_modal-${selected}`).setTitle("Razón del ticket");
+			if (selected === "experto") {
+				await handleTicketCreation(interaction, selected, null);
+			} else {
+				// Crea el modal. En el customId se inyecta el tipo de ticket.
+				const modal = new ModalBuilder().setCustomId(`ticket_reason_modal-${selected}`).setTitle("Razón del ticket");
 
-			const reasonInput = new TextInputBuilder()
-				.setCustomId("ticket_reason_input")
-				.setLabel("Especifica la razón del ticket")
-				.setStyle(TextInputStyle.Paragraph)
-				.setRequired(true);
+				const reasonInput = new TextInputBuilder()
+					.setCustomId("ticket_reason_input")
+					.setLabel("Especifica la razón del ticket")
+					.setStyle(TextInputStyle.Paragraph)
+					.setRequired(true);
 
-			const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(reasonInput);
-			modal.addComponents(actionRow);
+				const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(reasonInput);
+				modal.addComponents(actionRow);
 
-			await interaction.showModal(modal);
+				await interaction.showModal(modal);
+			}
 			return;
 		}
 		if (interaction.isModalSubmit()) {

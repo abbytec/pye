@@ -19,7 +19,7 @@ import { saveTranscript } from "./generic.js";
 
 let lastTicketDate: Date = new Date();
 
-export async function handleTicketCreation(interaction: Interaction, ticketType: string, reason: string) {
+export async function handleTicketCreation(interaction: Interaction, ticketType: string, reason: string | null) {
 	if (!interaction.guild || !interaction.isRepliable()) return;
 	const guild = interaction.guild;
 	const member = interaction.member as GuildMember;
@@ -89,21 +89,27 @@ export async function handleTicketCreation(interaction: Interaction, ticketType:
 
 	const embedTicket = new EmbedBuilder(option.embedData).setTimestamp().setFooter({ text: `Creado por ${member.user.tag}` });
 
-	const embedReason = new EmbedBuilder()
-		.setTitle("Razón del Ticket")
-		.setDescription(`Ticket abierto por ${member}:\n${reason}`)
-		.setColor(COLORS.warnOrange)
-		.setTimestamp();
-
 	const closeButton = new ButtonBuilder().setCustomId("close_ticket").setLabel("Cerrar Ticket").setStyle(ButtonStyle.Danger);
 
 	const escalateButton = new ButtonBuilder().setCustomId("escalate_ticket").setLabel("Elevar Ticket").setStyle(ButtonStyle.Primary);
 
 	const row = { type: 1, components: [closeButton, escalateButton] };
 
+	let embeds = [embedTicket];
+
+	if (reason) {
+		const embedReason = new EmbedBuilder()
+			.setTitle("Razón del Ticket")
+			.setDescription(`Ticket abierto por ${member}:\n${reason}`)
+			.setColor(COLORS.warnOrange)
+			.setTimestamp();
+
+		embeds.push(embedReason);
+	}
+
 	await ticketChannel.send({
 		content: `<@&${getRoleFromEnv("staff")}>, <@&${getRoleFromEnv("moderadorChats")}>`,
-		embeds: [embedTicket, embedReason],
+		embeds,
 		components: [row],
 	});
 	ExtendedClient.openTickets.add(ticketKey);

@@ -72,7 +72,7 @@ async function ticketProcessor(client: ExtendedClient) {
 		.setTimestamp();
 
 	if (ticketMessage) {
-		if (process.env.UPDATE_TICKET_MESSAGE === "true")
+		if (process.env.UPDATE_TICKET_MESSAGE === "true" || true)
 			await ticketChannel.send({ embeds: [embed], components: [row] }).then(async () => {
 				await ticketMessage.delete().catch(() => null);
 			});
