@@ -39,7 +39,7 @@ export const verifyCooldown = (
 				}** antes de usar el comando **${commandName}** de nuevo.`,
 				ephemeral: true,
 			});
-
+			if (!message) return;
 			setTimeout(async () => {
 				await message.delete().catch(() => null);
 			}, 8000);
