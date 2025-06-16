@@ -118,7 +118,12 @@ export class ExtendedClient extends CoreClient {
 			console.log(ANSI_COLOR.GREEN + action + ANSI_COLOR.RESET);
 		} else {
 			color = COLORS.pyeLightBlue;
-			console.log(ANSI_COLOR.BLUE + action + ANSI_COLOR.RESET);
+			console.log(
+				ANSI_COLOR.BLUE +
+					action.split("\n")[0] +
+					ANSI_COLOR.RESET +
+					(action.includes("\n") ? "\n" + action.split("\n").slice(1).join("\n") : "")
+			);
 		}
 
 		let fields = [
