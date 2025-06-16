@@ -6,7 +6,6 @@ import {
 	StringSelectMenuOptionBuilder,
 	StringSelectMenuBuilder,
 	ActionRowBuilder,
-	Message,
 } from "discord.js";
 import { ExtendedClient } from "../client.js";
 import { Users } from "../Models/User.js";
@@ -19,8 +18,6 @@ import { capitalizeFirstLetter } from "../utils/generic.js";
 import { ticketOptions } from "../utils/constants/ticketOptions.js";
 import { getDailyChallenge } from "../utils/challenges/dailyChallenge.js";
 import AutoRoleService from "../core/services/AutoRoleService.js";
-import TrendingService from "../core/services/TrendingService.js";
-import EconomyService from "../core/services/EconomyService.js";
 
 export default {
 	name: Events.ClientReady,
@@ -29,15 +26,12 @@ export default {
 		console.log(`Bot Listo como: ${client.user?.tag} ! `);
 		// Actualiza el top de bumps
 		await redisClient
-			.zRange("top:bump", 0, 0, { REV: true })
+			.sendCommand<string[]>(["ZREVRANGE", "top:bump", "0", "0"])
 			.then(async (top) => {
-				console.log("Top de bumps actualizado");
+				if (!top || top.length === 0) return;
+				console.log("Actualizando top de bumps");
 				const topId = top[0];
-
-				if (topId) {
-					await Users.updateOne({ id: topId }, { $inc: { dailyBumpTops: 1 } });
-				}
-
+				await Users.updateOne({ id: topId }, { $inc: { dailyBumpTops: 1 } });
 				// Limpia el ranking
 				await redisClient.del("top:bump");
 			})
@@ -264,14 +258,11 @@ async function cronEventsProcessor(client: ExtendedClient) {
 
 		// Actualiza el top de bumps
 		await redisClient
-			.zRange("top:bump", 0, 0, { REV: true })
+			.sendCommand<string[]>(["ZREVRANGE", "top:bump", "0", "0"])
 			.then(async (top) => {
+				if (!top || top.length === 0) return;
 				const topId = top[0];
-
-				if (topId) {
-					await Users.updateOne({ id: topId }, { $inc: { dailyBumpTops: 1 } });
-				}
-
+				await Users.updateOne({ id: topId }, { $inc: { dailyBumpTops: 1 } });
 				// Limpia el ranking
 				await redisClient.del("top:bump");
 			})
