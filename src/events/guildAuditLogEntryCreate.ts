@@ -105,7 +105,7 @@ export default {
 
 				// --- MESSAGE ---
 				case AuditLogEvent.MessageDelete:
-					console.log("Mensaje borrado: <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					console.log("Mensaje borrado: <#" + entry.targetId + ">");
 					break;
 
 				// --- SCHEDULED EVENT ---
