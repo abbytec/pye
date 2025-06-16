@@ -210,6 +210,7 @@ export function fmt(key: string, v: any) {
 		}
 		if (!Number.isNaN(ms)) return `<t:${Math.floor(ms / 1000)}:F>`;
 	}
+	if (key === "color" && typeof v === "number") return `0x${v.toString(16).padStart(6, "0")}`;
 	if (typeof v === "string" || typeof v === "number") return `${v}`;
 	else if (typeof v === "object")
 		try {
