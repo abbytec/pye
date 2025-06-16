@@ -38,7 +38,26 @@ export default {
 					break;
 				case AuditLogEvent.ChannelOverwriteCreate:
 					if (entry.executorId !== process.env.CLIENT_ID) {
-						console.log("Permisos cambiados en el canal <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
+						console.log(
+							ANSI_COLOR.GREEN +
+								"Permisos especificos agregados en el canal <#" +
+								entry.targetId +
+								">\n" +
+								ANSI_COLOR.RESET +
+								diffConsole(entry.changes)
+						);
+					}
+					break;
+				case AuditLogEvent.ChannelOverwriteUpdate:
+					if (entry.executorId !== process.env.CLIENT_ID) {
+						console.log(
+							ANSI_COLOR.YELLOW +
+								"Permisos especificos modificados en el canal <#" +
+								entry.targetId +
+								">\n" +
+								ANSI_COLOR.RESET +
+								diffConsole(entry.changes)
+						);
 					}
 					break;
 
