@@ -18,7 +18,7 @@ export default {
 	group: "🤖 - Inteligencia Artificial",
 	data: new SlashCommandBuilder()
 		.setName("pyechan-img")
-		.setDescription("Pidele PyE Chan que genere una imagen")
+		.setDescription("Pídeme que genere una imagen")
 		.addStringOption((option) => option.setName("mensaje").setDescription("Qué quieres decirme").setRequired(true).setMaxLength(200)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false), verifyCooldown("pyechan", 1000)],

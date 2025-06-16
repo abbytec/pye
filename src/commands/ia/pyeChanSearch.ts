@@ -18,7 +18,7 @@ export default {
 	group: "🤖 - Inteligencia Artificial",
 	data: new SlashCommandBuilder()
 		.setName("pyechan-search")
-		.setDescription("Preguntale algo a PyE Chan para que googlee")
+		.setDescription("Pregúntame algo para que lo busque en Google")
 		.addStringOption((option) => option.setName("mensaje").setDescription("Qué quieres decirme").setRequired(true).setMaxLength(200)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false), verifyCooldown("pyechan", 1000)],

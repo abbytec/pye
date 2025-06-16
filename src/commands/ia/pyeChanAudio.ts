@@ -17,7 +17,7 @@ export default {
 	group: "🤖 - Inteligencia Artificial",
 	data: new SlashCommandBuilder()
 		.setName("pyechan-audio")
-		.setDescription("Habla con PyE Chan y responderá por audio")
+		.setDescription("Habla conmigo y responderé por audio")
 		.addStringOption((option) => option.setName("mensaje").setDescription("Qué quieres decirme").setRequired(true).setMaxLength(200)),
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false), verifyCooldown("pyechan", 1000)],
