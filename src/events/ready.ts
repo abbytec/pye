@@ -27,6 +27,21 @@ export default {
 	once: true,
 	async execute(client: ExtendedClient) {
 		console.log(`Bot Listo como: ${client.user?.tag} ! `);
+		// Actualiza el top de bumps
+		await redisClient
+			.zRange("top:bump", 0, 0, { REV: true })
+			.then(async (top) => {
+				console.log("Top de bumps actualizado");
+				const topId = top[0];
+
+				if (topId) {
+					await Users.updateOne({ id: topId }, { $inc: { dailyBumpTops: 1 } });
+				}
+
+				// Limpia el ranking
+				await redisClient.del("top:bump");
+			})
+			.catch((error) => console.error(error));
 		await client.updateClientData(true);
 		ticketProcessor(client);
 		cronEventsProcessor(client);
@@ -145,7 +160,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 	});
 
 	ExtendedClient.agenda.define("daily update client data", async (job: Job) => {
-		await client.updateClientData();
+		await client.updateClientData().catch((error) => console.error(error));
 
 		const now = new Date();
 		const currentMonthNumber = now.getMonth();
@@ -154,7 +169,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 		if (!job.attrs.data) job.attrs.data = {};
 		if (!job.attrs.data.userReps) {
 			job.attrs.data.userReps = { month: currentMonthNumber };
-			await job.save();
+			await job.save().catch((error) => console.error(error));
 		}
 		if (job.attrs.data.userReps.month !== currentMonthNumber) {
 			// Actualiza el mes en los datos del trabajo
@@ -248,15 +263,19 @@ async function cronEventsProcessor(client: ExtendedClient) {
 		if (process.env.NODE_ENV !== "development") await getDailyChallenge(client).catch((error) => console.error(error));
 
 		// Actualiza el top de bumps
-		const top = await redisClient.zRange("top:bump", 0, 0, { REV: true });
-		const topId = top[0];
+		await redisClient
+			.zRange("top:bump", 0, 0, { REV: true })
+			.then(async (top) => {
+				const topId = top[0];
 
-		if (topId) {
-			await Users.updateOne({ id: topId }, { $inc: { dailyBumpTops: 1 } });
-		}
+				if (topId) {
+					await Users.updateOne({ id: topId }, { $inc: { dailyBumpTops: 1 } });
+				}
 
-		// Limpia el ranking
-		await redisClient.del("top:bump");
+				// Limpia el ranking
+				await redisClient.del("top:bump");
+			})
+			.catch((error) => console.error(error));
 	});
 
 	await ExtendedClient.agenda.start();
