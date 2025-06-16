@@ -110,6 +110,13 @@ export default {
 				case 202:
 					await logSeriesInstanceReset(entry, guild);
 					break;
+				case 211:
+					ExtendedClient.auditLog(
+						"Server Tag (¿actualizado?):\n" + diff(entry.changes) + ")",
+						"info",
+						entry.executor?.username ?? undefined
+					);
+					break;
 				default:
 					console.log("Evento desconocido:", entry.action, JSON.stringify(entry));
 					break;
