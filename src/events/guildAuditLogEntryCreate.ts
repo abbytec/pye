@@ -62,7 +62,23 @@ export default {
 					break;
 				case AuditLogEvent.ThreadCreate:
 					if (entry.executorId !== process.env.CLIENT_ID) {
-						console.log("Hilo creado: <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
+						console.log(
+							ANSI_COLOR.GREEN + "Hilo creado: <#" + entry.targetId + ">\n" + ANSI_COLOR.RESET + diffConsole(entry.changes)
+						);
+					}
+					break;
+				case AuditLogEvent.ThreadUpdate:
+					if (entry.executorId !== process.env.CLIENT_ID) {
+						console.log(
+							ANSI_COLOR.BLUE + "Hilo actualizado: <#" + entry.targetId + ">\n" + ANSI_COLOR.RESET + diffConsole(entry.changes)
+						);
+					}
+					break;
+				case AuditLogEvent.ThreadDelete:
+					if (entry.executorId !== process.env.CLIENT_ID) {
+						console.log(
+							ANSI_COLOR.RED + "Hilo borrado: <#" + entry.targetId + ">\n" + ANSI_COLOR.RESET + diffConsole(entry.changes)
+						);
 					}
 					break;
 				case AuditLogEvent.GuildScheduledEventCreate:
