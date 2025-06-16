@@ -4,6 +4,7 @@ import { Evento } from "../types/event.js";
 import { ExtendedClient } from "../client.js";
 import { handleBanAdd } from "./guildAuditLogEntryCreate/handleBanAdd.js";
 import { handleBanRemove } from "./guildAuditLogEntryCreate/handleBanRemove.js";
+import { ANSI_COLOR } from "../utils/constants.js";
 import {
 	logEventCreated,
 	logEventDeleted,
@@ -114,7 +115,7 @@ export function fmt(key: string, v: any) {
 		}
 		if (!Number.isNaN(ms)) return `<t:${Math.floor(ms / 1000)}:F>`;
 	}
-	if (typeof v === "string") return `${v}`;
+	if (typeof v === "string" || typeof v === "boolean" || typeof v === "number") return `${v}`;
 	else if (typeof v === "object")
 		try {
 			return JSON.stringify(v);
@@ -127,16 +128,32 @@ export function diff(changes: GuildAuditLogsEntry["changes"] | undefined): strin
 	return changes?.map((c) => `• **${c.key}**: ${fmt(c.key, c.old)} → ${fmt(c.key, c.new)}`).join("\n") ?? "Sin detalles";
 }
 
-const YELLOW = "\x1b[33m";
-const RESET = "\x1b[0m";
-const GRAY = "\x1b[90m";
+// Selector de color por clave
+function getColor(key: string): string {
+	switch (key) {
+		case "$add":
+			return ANSI_COLOR.GREEN;
+		case "$remove":
+		case "communication_disabled_until":
+		case "deaf":
+		case "mute":
+			return ANSI_COLOR.ORANGE;
+		default:
+			return ANSI_COLOR.BLUE;
+	}
+}
+
 function diffConsole(changes: GuildAuditLogsEntry["changes"] | undefined): string {
 	if (!changes?.length) return "Sin detalles";
 	return changes
 		.map((c, i) => {
 			const isLast = i === changes.length - 1;
 			const bullet = isLast ? "└" : "├";
-			return `${GRAY}${bullet}${RESET} ${YELLOW}${c.key}${RESET}: ${fmt(c.key, c.old)} → ${fmt(c.key, c.new)}`;
+			const color = getColor(c.key);
+			return `${ANSI_COLOR.GRAY}${bullet}${ANSI_COLOR.RESET} ${color}${c.key}${ANSI_COLOR.RESET}: ${fmt(c.key, c.old)} → ${fmt(
+				c.key,
+				c.new
+			)}`;
 		})
 		.join("\n");
 }
