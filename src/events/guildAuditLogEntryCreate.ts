@@ -79,7 +79,16 @@ export default {
 					}
 					break;
 				case AuditLogEvent.MemberMove:
-					console.log("Miembro movido de <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					if (entry.extra && "channel" in entry.extra)
+						console.log(
+							ANSI_COLOR.YELLOW +
+								"Miembro desconocido movido al canal <#" +
+								(entry.extra.channel as GuildChannel).id +
+								"> Por <@" +
+								entry.executorId +
+								">" +
+								ANSI_COLOR.RESET
+						);
 					break;
 				case AuditLogEvent.MemberDisconnect:
 					console.log("Miembro desconectado de <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
@@ -168,7 +177,7 @@ export default {
 					);
 					break;
 				default:
-					console.log("Evento desconocido:", entry.action, JSON.stringify(entry));
+					console.error("Evento desconocido:", entry.action, JSON.stringify(entry));
 					break;
 			}
 		} catch (error: any) {
