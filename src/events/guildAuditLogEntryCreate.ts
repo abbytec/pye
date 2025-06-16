@@ -54,7 +54,7 @@ export default {
 					console.log("Miembro actualizado: <@" + entry.targetId + ">\n" + diffConsole(entry.changes));
 					break;
 				case AuditLogEvent.InviteCreate:
-					console.log("Invitación creada: <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					console.log("Invitación creada: " + entry.changes.find((c) => c.key === "code")?.new);
 					break;
 				case AuditLogEvent.MessageDelete:
 					console.log("Mensaje borrado: <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
