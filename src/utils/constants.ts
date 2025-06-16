@@ -355,6 +355,8 @@ export const EMOJIS = {
 };
 
 export const DISBOARD_UID = "302050872383242240";
+// El que pone los roles
+export const SLASHBOT_UID = "788814313930096662";
 
 export const pyecoin = "<a:PyEcoin:908088648245850142>";
 

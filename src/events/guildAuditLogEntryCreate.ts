@@ -4,7 +4,7 @@ import { Evento } from "../types/event.js";
 import { ExtendedClient } from "../client.js";
 import { handleBanAdd } from "./guildAuditLogEntryCreate/handleBanAdd.js";
 import { handleBanRemove } from "./guildAuditLogEntryCreate/handleBanRemove.js";
-import { ANSI_COLOR } from "../utils/constants.js";
+import { ANSI_COLOR, SLASHBOT_UID } from "../utils/constants.js";
 import {
 	logEventCreated,
 	logEventDeleted,
@@ -72,7 +72,7 @@ export default {
 					console.log("Miembro actualizado: <@" + entry.targetId + ">\n" + diffConsole(entry.changes));
 					break;
 				case AuditLogEvent.MemberRoleUpdate:
-					if (entry.executorId !== process.env.CLIENT_ID) {
+					if (entry.executorId !== process.env.CLIENT_ID && entry.executorId !== SLASHBOT_UID) {
 						console.log(
 							"Roles de <@" + entry.targetId + "> actualizados por <@" + entry.executorId + ">:\n" + diffConsole(entry.changes)
 						);
