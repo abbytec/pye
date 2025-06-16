@@ -210,7 +210,8 @@ export function fmt(key: string, v: any) {
 		}
 		if (!Number.isNaN(ms)) return `<t:${Math.floor(ms / 1000)}:F>`;
 	}
-	if (key === "color" && typeof v === "number") return `0x${v.toString(16).padStart(6, "0")}`;
+	if ((key === "color" || key === "primary_color" || key === "secondary_color" || key === "tertiary_color") && typeof v === "number")
+		return `0x${v.toString(16).padStart(6, "0")}`;
 	if (typeof v === "string" || typeof v === "number") return `${v}`;
 	else if (typeof v === "object")
 		try {
@@ -222,12 +223,26 @@ export function fmt(key: string, v: any) {
 	return "`null`"; // resto de claves
 }
 export function diff(changes: GuildAuditLogsEntry["changes"] | undefined): string {
-	return (
-		changes
-			?.filter((c) => c.old !== c.new)
-			.map((c) => `• **${c.key}**: ${fmt(c.key, c.old)} → ${fmt(c.key, c.new)}`)
-			.join("\n") ?? "Sin detalles"
-	);
+	if (!changes?.length) return "Sin detalles";
+
+	const lines: string[] = [];
+
+	for (const c of changes) {
+		if (c.old === c.new) continue;
+		if (typeof c.old === "object" && c.old && typeof c.new === "object" && c.new) {
+			const keys = new Set([...Object.keys(c.old as Record<string, unknown>), ...Object.keys(c.new as Record<string, unknown>)]);
+
+			for (const k of keys) {
+				const oldVal = (c.old as Record<string, unknown>)[k];
+				const newVal = (c.new as Record<string, unknown>)[k];
+				if (oldVal !== newVal) lines.push(`• **${k}**: ${fmt(k, oldVal)} → ${fmt(k, newVal)}`);
+			}
+		} else {
+			lines.push(`• **${c.key}**: ${fmt(c.key, c.old)} → ${fmt(c.key, c.new)}`);
+		}
+	}
+
+	return lines.join("\n") || "Sin detalles";
 }
 
 // Selector de color por clave
