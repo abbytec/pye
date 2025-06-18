@@ -108,7 +108,7 @@ export async function handleTicketCreation(interaction: Interaction, ticketType:
 	}
 
 	await ticketChannel.send({
-		content: `<@&${getRoleFromEnv("staff")}>, <@&${getRoleFromEnv("moderadorChats")}>`,
+		content: `<@&${getRoleFromEnv("staff")}>, <@&${getRoleFromEnv("moderadorChats")}>, <@${member.id}>`,
 		embeds,
 		components: [row],
 	});
