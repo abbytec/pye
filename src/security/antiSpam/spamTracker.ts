@@ -50,6 +50,21 @@ export class SpamTracker {
 			}
 			setTimeout(() => punishingUser.delete(message.author.id), 10_000);
 		}
+		(guild?.channels.cache.get(getChannelFromEnv("logMessages")) as TextChannel | undefined)?.send({
+			embeds: [
+				{
+					title: "Spam Filter",
+					description: `Se eliminó un mensaje de <@${message.author.id}> (${message.author.id}). Razón ${getTimeoutReason(type)}`,
+					color: COLORS.errRed,
+					fields: [
+						{
+							name: "Contenido (recortado a 150 caracteres)",
+							value: message.content.slice(0, 150),
+						},
+					],
+				},
+			],
+		});
 	}
 }
 
