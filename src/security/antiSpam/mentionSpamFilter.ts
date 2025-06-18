@@ -3,6 +3,7 @@ import { ExtendedClient } from "../../client.js";
 import { SpamTracker } from "./spamTracker.js";
 const mentionTracker = new SpamTracker(5_000, 3);
 export async function checkMentionSpam(message: Message<boolean>, client: ExtendedClient) {
+	const mentionedOnThisMessage = new Set<string>();
 	const mentions = new Collection<string, Role | User>([...message.mentions.users, ...message.mentions.roles]);
 	if (message.reference?.messageId) {
 		const ref = await message.channel.messages.fetch(message.reference.messageId).catch(() => null);
@@ -11,6 +12,8 @@ export async function checkMentionSpam(message: Message<boolean>, client: Extend
 
 	for (const mentioned of mentions.values()) {
 		const key = `${message.author.id}-${mentioned.id}`;
+		if (mentionedOnThisMessage.has(key)) continue;
+		mentionedOnThisMessage.add(key);
 		if (mentionTracker.increment(key)) {
 			await mentionTracker.punish(
 				message,
