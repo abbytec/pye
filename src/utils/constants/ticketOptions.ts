@@ -2,7 +2,7 @@ import { COLORS } from "../constants.js";
 
 export interface TicketOption {
 	button: string;
-	type: string;
+	type: TicketTypes;
 	description: string;
 	emoji: string;
 	embedData: {
@@ -11,6 +11,9 @@ export interface TicketOption {
 		color: number;
 	};
 }
+
+export const ticketTypes: TicketTypes[] = ["reporte", "aviso", "taller", "alianza", "general", "experto"];
+export type TicketTypes = "reporte" | "aviso" | "taller" | "alianza" | "general" | "experto";
 
 export const ticketOptions: TicketOption[] = [
 	{

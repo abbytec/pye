@@ -13,6 +13,7 @@ import {
 	logSeriesInstanceReset,
 	logSeriesInstanceUpdate,
 } from "./guildAuditLogEntryCreate/handleEventChange.js";
+import { ticketTypes } from "../utils/constants/ticketOptions.js";
 
 export default {
 	name: Events.GuildAuditLogEntryCreate,
@@ -22,13 +23,16 @@ export default {
 			switch (entry.action as number) {
 				// --- CHANNEL ---
 				case AuditLogEvent.ChannelCreate:
-					if (entry.target && "name" in entry.target && "type" in entry.target)
+					if (entry.target && "name" in entry.target && "type" in entry.target) {
+						const channelName = entry.target.name as string;
+						if (entry.executorId === process.env.CLIENT_ID && ticketTypes.some((type) => channelName.includes(type))) break;
 						ExtendedClient.auditLog(
 							"Canal creado : " + entry.target.name,
 							"success",
 							entry.executor?.username ?? undefined,
 							entry.target.type === ChannelType.GuildVoice ? "voiceLogs" : "logs"
 						);
+					}
 					break;
 				case AuditLogEvent.ChannelUpdate:
 					if (entry.target && "type" in entry.target)
@@ -40,13 +44,16 @@ export default {
 						);
 					break;
 				case AuditLogEvent.ChannelDelete:
-					if (entry.target && "name" in entry.target && "type" in entry.target)
+					if (entry.target && "name" in entry.target && "type" in entry.target) {
+						const channelName = entry.target.name as string;
+						if (entry.executorId === process.env.CLIENT_ID && ticketTypes.some((type) => channelName.includes(type))) break;
 						ExtendedClient.auditLog(
 							"Canal eliminado: " + entry.target.name,
 							"error",
 							entry.executor?.username ?? undefined,
 							entry.target.type === ChannelType.GuildVoice ? "voiceLogs" : "logs"
 						);
+					}
 					break;
 				case AuditLogEvent.ChannelOverwriteCreate:
 					if (entry.executorId !== process.env.CLIENT_ID) {
