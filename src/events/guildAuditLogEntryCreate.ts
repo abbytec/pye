@@ -14,6 +14,7 @@ import {
 	logSeriesInstanceUpdate,
 } from "./guildAuditLogEntryCreate/handleEventChange.js";
 import { ticketTypes } from "../utils/constants/ticketOptions.js";
+import { logThreadCreate, logThreadDelete, logThreadUpdate } from "./guildAuditLogEntryCreate/handleThreadAction.js";
 
 export default {
 	name: Events.GuildAuditLogEntryCreate,
@@ -199,25 +200,13 @@ export default {
 
 				// --- THREAD ---
 				case AuditLogEvent.ThreadCreate:
-					if (entry.executorId !== process.env.CLIENT_ID) {
-						console.log(
-							ANSI_COLOR.GREEN + "Hilo creado: <#" + entry.targetId + ">\n" + ANSI_COLOR.RESET + diffConsole(entry.changes)
-						);
-					}
+					logThreadCreate(entry);
 					break;
 				case AuditLogEvent.ThreadUpdate:
-					if (entry.executorId !== process.env.CLIENT_ID) {
-						console.log(
-							ANSI_COLOR.YELLOW + "Hilo actualizado: <#" + entry.targetId + ">\n" + ANSI_COLOR.RESET + diffConsole(entry.changes)
-						);
-					}
+					logThreadUpdate(entry);
 					break;
 				case AuditLogEvent.ThreadDelete:
-					if (entry.executorId !== process.env.CLIENT_ID) {
-						console.log(
-							ANSI_COLOR.RED + "Hilo borrado: <#" + entry.targetId + ">\n" + ANSI_COLOR.RESET + diffConsole(entry.changes)
-						);
-					}
+					logThreadDelete(entry);
 					break;
 
 				// --- AUTOMOD ---
@@ -329,7 +318,7 @@ function getColor(key: string): string {
 	}
 }
 
-function diffConsole(changes: GuildAuditLogsEntry["changes"] | undefined): string {
+export function diffConsole(changes: GuildAuditLogsEntry["changes"] | undefined): string {
 	if (!changes?.length) return "Sin detalles";
 	return changes
 		.map((c, i) => {
