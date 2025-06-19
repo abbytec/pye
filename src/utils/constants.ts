@@ -298,11 +298,11 @@ export function getRoles(...roles: Roles[]): string[] {
 	return roles.map((role) => getRoleFromEnv(role));
 }
 
-export function getInitialRoles(customRole: (keyof typeof ROLES)[]): string[] {
+export function getInitialRoles(customRoleNames: (keyof typeof ROLES)[]): string[] {
 	let roles = isDevelopment ? DEV_ROLES : ROLES;
 	let roleList = [roles.perfil, roles.medallas, roles.intereses, roles.lenguajes];
-	customRole.forEach((role) => {
-		roleList.push(roles[role]);
+	customRoleNames.forEach((roleName) => {
+		roleList.push(roles[roleName]);
 	});
 	return roleList;
 }
@@ -358,6 +358,9 @@ export const DISBOARD_UID = "302050872383242240";
 export const VOICEMASTER_UID = "442619973374967809";
 // El que pone los roles
 export const SLASHBOT_UID = "788814313930096662";
+export const YAGPDB_XYZ_UID = "204255221017214977";
+export const CIRCLE_UID = "497196352866877441";
+export const DYNO_UID = "155149108183695360";
 
 export const pyecoin = "<a:PyEcoin:908088648245850142>";
 

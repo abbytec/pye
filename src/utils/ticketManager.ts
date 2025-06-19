@@ -10,6 +10,7 @@ import {
 	AttachmentBuilder,
 	Guild,
 	User,
+	Message,
 } from "discord.js";
 import { ticketOptions } from "./constants/ticketOptions.js";
 import { COLORS, getChannelFromEnv, getRoleFromEnv } from "./constants.js";
@@ -21,6 +22,7 @@ let lastTicketDate: Date = new Date();
 
 export async function handleTicketCreation(interaction: Interaction, ticketType: string, reason: string | null) {
 	if (!interaction.guild || !interaction.isRepliable()) return;
+	await interaction.deferReply({ ephemeral: true });
 	const guild = interaction.guild;
 	const member = interaction.member as GuildMember;
 
@@ -30,28 +32,19 @@ export async function handleTicketCreation(interaction: Interaction, ticketType:
 		lastTicketDate = new Date();
 	} else {
 		return interaction
-			.reply({
+			.editReply({
 				content: "Se han creado otros tickets muy recientemente. Por favor, espera unos segundos.",
-				ephemeral: true,
 			})
-			.then((msg) => {
-				setTimeout(() => {
-					msg.delete().catch(() => null);
-				}, 8000);
-			});
+			.then((msg) => autodeleteMsg(msg));
 	}
 
 	if (ExtendedClient.openTickets.has(ticketKey)) {
-		return interaction.reply({ content: `Ya tienes un ticket de ${ticketType} abierto.`, ephemeral: true }).then((msg) => {
-			setTimeout(() => {
-				msg.delete().catch(() => null);
-			}, 8000);
-		});
+		return interaction.editReply({ content: `Ya tienes un ticket de ${ticketType} abierto.` }).then((msg) => autodeleteMsg(msg));
 	}
 
 	// Busca la configuración del ticket según el tipo seleccionado
 	const option = ticketOptions.find((opt) => opt.type === ticketType);
-	if (!option) return interaction.reply({ content: "Tipo de ticket no válido.", ephemeral: true });
+	if (!option) return interaction.editReply({ content: "Tipo de ticket no válido." });
 
 	// Crea el canal del ticket
 	const ticketChannel = await guild.channels.create({
@@ -113,8 +106,14 @@ export async function handleTicketCreation(interaction: Interaction, ticketType:
 		components: [row],
 	});
 	ExtendedClient.openTickets.add(ticketKey);
-	await interaction.reply({ content: `Ticket creado: ${ticketChannel}`, ephemeral: true });
+	await interaction.editReply({ content: `Ticket creado: ${ticketChannel}` });
 	await logTicketEvent(guild, "CREADO", member.user, ticketChannel, ticketType);
+}
+
+export function autodeleteMsg(msg: Message) {
+	setTimeout(async () => {
+		await msg.delete().catch(() => null);
+	}, 8000);
 }
 
 export async function handleTicketButtonInteraction(interaction: Interaction, action: "close" | "escalate" | "save" | "reopen") {

@@ -4,7 +4,7 @@ import { Evento } from "../types/event.js";
 import { ExtendedClient } from "../client.js";
 import { handleBanAdd } from "./guildAuditLogEntryCreate/handleBanAdd.js";
 import { handleBanRemove } from "./guildAuditLogEntryCreate/handleBanRemove.js";
-import { ANSI_COLOR, SLASHBOT_UID, VOICEMASTER_UID } from "../utils/constants.js";
+import { ANSI_COLOR, DYNO_UID, SLASHBOT_UID, VOICEMASTER_UID, YAGPDB_XYZ_UID, CIRCLE_UID } from "../utils/constants.js";
 import {
 	logEventCreated,
 	logEventDeleted,
@@ -91,7 +91,7 @@ export default {
 					console.log("Miembro actualizado: <@" + entry.targetId + ">\n" + diffConsole(entry.changes));
 					break;
 				case AuditLogEvent.MemberRoleUpdate:
-					if (entry.executorId !== process.env.CLIENT_ID && entry.executorId !== SLASHBOT_UID) {
+					if (![process.env.CLIENT_ID ?? "bot", SLASHBOT_UID, YAGPDB_XYZ_UID, CIRCLE_UID, DYNO_UID].includes(entry.executorId ?? "")) {
 						console.log(
 							"Roles de <@" + entry.targetId + "> actualizados por <@" + entry.executorId + ">:\n" + diffConsole(entry.changes)
 						);
@@ -111,6 +111,18 @@ export default {
 					break;
 				case AuditLogEvent.MemberDisconnect:
 					console.log("Miembro desconectado de <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					break;
+				case AuditLogEvent.BotAdd:
+					console.log(
+						ANSI_COLOR.ORANGE +
+							"Bot agregado: <@" +
+							entry.targetId +
+							">, por <@" +
+							entry.executorId +
+							">\n" +
+							ANSI_COLOR.RESET +
+							diffConsole(entry.changes)
+					);
 					break;
 
 				// --- ROLE ---
@@ -135,6 +147,44 @@ export default {
 				case AuditLogEvent.MessageDelete:
 					console.log("Mensaje borrado: <#" + entry.targetId + ">");
 					break;
+				case AuditLogEvent.MessageBulkDelete: {
+					let count = "Varios";
+					if (entry.extra && "count" in entry.extra) count = entry.extra.count.toString();
+					ExtendedClient.auditLog(
+						`${count} mensajes borrados: <#" + entry.targetId + " >`,
+						"error",
+						entry.executor?.username ?? undefined,
+						"logMessages"
+					);
+					break;
+				}
+
+				// --- INTEGRATION ---
+				case AuditLogEvent.IntegrationCreate: {
+					const integrationId = entry.targetId ?? "";
+					let msg: string;
+
+					try {
+						// requiere el intent GuildIntegrations
+						const integration = (await guild.fetchIntegrations()).get(integrationId);
+						if (!integration) break;
+
+						msg =
+							`Integración creada: **${integration.name}** (${integration.type})\n` +
+							`• Aplicación: ${integration.application?.name ?? "—"}\n` +
+							`• Cuenta: ${integration.account?.name ?? "—"}\n` +
+							`• Rol gestionado: ${integration.role?.name ?? "—"}\n` +
+							`• Subscriptores: ${integration.subscriberCount ?? "—"}\n` +
+							`• Sync: ${integration.syncing ? "activo" : "inactivo"}\n` +
+							`• Expira en: ${integration.expireGracePeriod ?? "—"} días`;
+					} catch {
+						// si ya fue borrada o falta intent, usa los cambios mínimos
+						msg = `Integración creada (ID ${integrationId}). Cambios: ${diff(entry.changes)}`;
+					}
+
+					console.log(msg);
+					break;
+				}
 
 				// --- SCHEDULED EVENT ---
 				case AuditLogEvent.GuildScheduledEventCreate:
@@ -168,6 +218,18 @@ export default {
 							ANSI_COLOR.RED + "Hilo borrado: <#" + entry.targetId + ">\n" + ANSI_COLOR.RESET + diffConsole(entry.changes)
 						);
 					}
+					break;
+
+				// --- AUTOMOD ---
+				case AuditLogEvent.AutoModerationBlockMessage:
+					console.log(
+						ANSI_COLOR.ORANGE +
+							"Mensaje bloqueado por automod: <#" +
+							entry.targetId +
+							">\n" +
+							ANSI_COLOR.RESET +
+							diffConsole(entry.changes)
+					);
 					break;
 
 				// --- VOICE STATUS ---
