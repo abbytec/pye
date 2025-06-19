@@ -258,13 +258,11 @@ export default {
 } as Evento;
 export function fmt(key: string, v: any) {
 	if (key === "scheduled_start_time" || key === "scheduled_end_time" || key === "scheduledStartTimestamp") {
-		let ms: number;
+		let ms: number = NaN;
 		if (typeof v === "string") {
 			ms = Date.parse(v);
 		} else if (typeof v === "number") {
 			ms = v;
-		} else {
-			ms = NaN;
 		}
 		if (!Number.isNaN(ms)) return `<t:${Math.floor(ms / 1000)}:F>`;
 	}
