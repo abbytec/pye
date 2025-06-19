@@ -146,7 +146,7 @@ export default {
 
 				// --- MESSAGE ---
 				case AuditLogEvent.MessageDelete:
-					console.log("Mensaje borrado: <#" + entry.targetId + ">");
+					console.log(ANSI_COLOR.RED + "Mensaje borrado: <#" + entry.targetId + ">" + ANSI_COLOR.RESET);
 					break;
 				case AuditLogEvent.MessageBulkDelete: {
 					let count = "Varios";
