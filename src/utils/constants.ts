@@ -238,6 +238,7 @@ const ROLES = {
 
 	// sanciones
 	restringido: "984278721055830047",
+	restringido_foros: "1385798023485063369",
 	silenced: "1307455233814823014",
 
 	// categorías
@@ -282,6 +283,7 @@ const DEV_ROLES: Record<Roles, string> = {
 	// sanciones
 	restringido: "1296190630678233109",
 	silenced: "1307456987147141231",
+	restringido_foros: "",
 
 	// categorías
 	perfil: "1296190630631837825",

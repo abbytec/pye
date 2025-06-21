@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, GuildMember, PermissionFlagsBits } from "discord.js";
+import { SlashCommandBuilder, ChatInputCommandInteraction, GuildMember, PermissionFlagsBits } from "discord.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { verifyHasRoles } from "../../composables/middlewares/verifyHasRoles.js";
@@ -13,27 +13,20 @@ import { ModLogs } from "../../Models/ModLogs.js";
 export default {
 	group: "⚙️ - Administración y Moderación",
 	data: new SlashCommandBuilder()
-		.setName("restrict")
-		.setDescription("Restringir a un miembro.")
-		.addUserOption((opt) => opt.setName("miembro").setDescription("Miembro a restringir").setRequired(true))
+		.setName("unrestrict")
+		.setDescription("Quitar la restricción a un miembro.")
+		.addUserOption((opt) => opt.setName("miembro").setDescription("Miembro a desrestringir").setRequired(true))
 		.addStringOption((opt) =>
-			opt
-				.setName("type")
-				.setDescription("Tipo de restricción")
-				.setRequired(true)
-				.addChoices([
-					{ name: "Empleo", value: "empleo" },
-					{ name: "Foros", value: "foros" },
-				])
+			opt.setName("type").setDescription("Tipo de restricción aplicada").setRequired(true).addChoices({ name: "Foros", value: "foros" })
 		)
-		.addStringOption((opt) => opt.setName("motivo").setDescription("Motivo de la restricción").setRequired(false))
+		.addStringOption((opt) => opt.setName("motivo").setDescription("Motivo de la desrestricción").setRequired(false))
 		.setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
 
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyHasRoles("staff"), deferInteraction()],
 		async (interaction: IPrefixChatInputCommand) => {
 			const user = await interaction.options.getUser("miembro", true);
-			const type = interaction.options.getString("type", true);
+			const type = interaction.options.getString("type", true); // "foros", etc.
 			const reason = interaction.options.getString("motivo") ?? "Ninguno";
 
 			if (!user) return replyError(interaction, "Miembro no encontrado.");
@@ -44,25 +37,22 @@ export default {
 			if (type === "empleo") roleId = getRoleFromEnv(`restringido`);
 			else if (type === "foros") roleId = getRoleFromEnv(`restringido_foros`);
 			else return replyError(interaction, "Tipo de restricción no reconocido.");
-
+			if (!roleId) return replyError(interaction, "Rol de restricción no configurado.");
 			const role = interaction.guild!.roles.cache.get(roleId);
 			if (!role) return replyError(interaction, "Rol de restricción inexistente.");
 
-			if (member.roles.cache.has(roleId)) return replyError(interaction, "El miembro ya está restringido.");
+			if (!member.roles.cache.has(roleId)) return replyError(interaction, "El miembro no está restringido.");
 
-			await member.roles.add(role, `${reason} - Restringido por ${interaction.user.tag}`);
+			await member.roles.remove(role, `${reason} - Desrestringido por ${interaction.user.tag}`);
 
-			await ModLogs.create({
-				id: member.id,
-				moderator: interaction.user.tag,
-				reason,
-				date: new Date(),
-				type: "Restrict",
-			});
+			await ModLogs.findOneAndUpdate(
+				{ id: member.id, type: "Restrict", hiddenCase: { $ne: true } },
+				{
+					$set: { hiddenCase: true, reasonUnpenalized: reason },
+				}
+			);
 
-			const msg =
-				`Se ha restringido a **${member.user.tag}**. ` +
-				(type === "foros" ? "En foros, sus puntos reiniciaron a 0." : "En canales de empleo");
+			const msg = `Se ha desrestringido a **${member.user.tag}**.`;
 
 			await replyWarning(interaction, msg, undefined, undefined, undefined, undefined, false);
 
