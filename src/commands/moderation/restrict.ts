@@ -44,7 +44,8 @@ export default {
 			if (type === "empleo") roleId = getRoleFromEnv(`restringido`);
 			else if (type === "foros") {
 				roleId = getRoleFromEnv(`restringido_foros`);
-				await HelperPoint.findOneAndDelete({ _id: user.id });
+				let points = await HelperPoint.findOne({ _id: user.id });
+				points?.updateOne({ $set: { points: Math.floor(points.points * 0.1) } });
 			} else return replyError(interaction, "Tipo de restricción no reconocido.");
 
 			const role = interaction.guild!.roles.cache.get(roleId);
