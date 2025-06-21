@@ -68,7 +68,7 @@ export default {
 
 			const msg =
 				`Se ha restringido a **${member.user.tag}**. ` +
-				(type === "foros" ? "En foros, sus puntos reiniciaron a 0." : "En canales de empleo");
+				(type === "foros" ? "En foros, se restó el 90% de sus puntos." : "En canales de empleo");
 
 			await replyWarning(interaction, msg, undefined, undefined, undefined, undefined, false);
 
