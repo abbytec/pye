@@ -9,6 +9,8 @@ import { getChannelFromEnv, getRoleFromEnv } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { logMessages } from "../../composables/finalwares/logMessages.js";
 import { ModLogs } from "../../Models/ModLogs.js";
+import { updateRepRoles } from "../../composables/finalwares/updateRepRoles.js";
+import { HelperPoint } from "../../Models/HelperPoint.js";
 
 export default {
 	group: "⚙️ - Administración y Moderación",
@@ -37,16 +39,19 @@ export default {
 			const reason = interaction.options.getString("motivo") ?? "Ninguno";
 
 			if (!user) return replyError(interaction, "Miembro no encontrado.");
-			const member = await interaction.guild!.members.fetch(user.id).catch(() => null);
-			if (!member) return replyError(interaction, "Miembro no encontrado.");
 
 			let roleId;
 			if (type === "empleo") roleId = getRoleFromEnv(`restringido`);
-			else if (type === "foros") roleId = getRoleFromEnv(`restringido_foros`);
-			else return replyError(interaction, "Tipo de restricción no reconocido.");
+			else if (type === "foros") {
+				roleId = getRoleFromEnv(`restringido_foros`);
+				await HelperPoint.findOneAndDelete({ _id: user.id });
+			} else return replyError(interaction, "Tipo de restricción no reconocido.");
 
 			const role = interaction.guild!.roles.cache.get(roleId);
 			if (!role) return replyError(interaction, "Rol de restricción inexistente.");
+
+			const member = await interaction.guild!.members.fetch(user.id).catch(() => null);
+			if (!member) return replyError(interaction, "Miembro no encontrado.");
 
 			if (member.roles.cache.has(roleId)) return replyError(interaction, "El miembro ya está restringido.");
 
@@ -83,6 +88,6 @@ export default {
 					],
 				};
 		},
-		[logMessages]
+		[updateRepRoles, logMessages]
 	),
 } as Command;
