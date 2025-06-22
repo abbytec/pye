@@ -25,7 +25,7 @@ async function formatEventFromEntry(entry: GuildAuditLogsEntry, guild: Guild): P
 		}
 
 		if (key === "scheduled_start_time" || key === "scheduledStartTimestamp") {
-			start = fmt(key, raw);
+			start = fmt(key, raw, entry.targetType);
 		}
 	}
 
@@ -74,7 +74,7 @@ export async function logEventUpdated(entry: GuildAuditLogsEntry, guild: Guild) 
 		COLORS.pyeLightBlue,
 		entry.executor?.tag ?? "¿desconocido?",
 		await formatEventFromEntry(entry, guild),
-		[{ name: "Cambios", value: diff(entry.changes) }]
+		[{ name: "Cambios", value: diff(entry.changes, entry.targetType) }]
 	);
 	await logChan.send({ embeds: [embed] });
 }
@@ -120,7 +120,7 @@ export async function logSeriesInstanceCreate(entry: GuildAuditLogsEntry, guild:
 		COLORS.pyeLightBlue,
 		entry.executor?.tag ?? entry.executorId ?? "¿desconocido?",
 		await formatEventFromEntry(entry, guild),
-		[{ name: "Cambios", value: diff(entry.changes) }]
+		[{ name: "Cambios", value: diff(entry.changes, entry.targetType) }]
 	);
 	await chan.send({ embeds: [embed] });
 }
@@ -135,7 +135,7 @@ export async function logSeriesInstanceUpdate(entry: GuildAuditLogsEntry, guild:
 		COLORS.pyeLightBlue,
 		entry.executor?.tag ?? entry.executorId ?? "¿desconocido?",
 		await formatEventFromEntry(entry, guild),
-		[{ name: "Cambios", value: diff(entry.changes) }]
+		[{ name: "Cambios", value: diff(entry.changes, entry.targetType) }]
 	);
 	await chan.send({ embeds: [embed] });
 }
@@ -150,7 +150,7 @@ export async function logSeriesInstanceReset(entry: GuildAuditLogsEntry, guild: 
 		COLORS.warnOrange,
 		entry.executor?.tag ?? entry.executorId ?? "¿desconocido?",
 		await formatEventFromEntry(entry, guild),
-		[{ name: "Cambios", value: diff(entry.changes) }]
+		[{ name: "Cambios", value: diff(entry.changes, entry.targetType) }]
 	);
 	await chan.send({ embeds: [embed] });
 }

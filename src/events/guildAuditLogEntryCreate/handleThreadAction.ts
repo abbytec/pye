@@ -11,7 +11,9 @@ export function logThreadCreate(entry: GuildAuditLogsEntry) {
 
 export function logThreadUpdate(entry: GuildAuditLogsEntry) {
 	if (entry.executorId !== process.env.CLIENT_ID) {
-		console.log(ANSI_COLOR.YELLOW + "Hilo actualizado: <#" + entry.targetId + ">\n" + ANSI_COLOR.RESET + diffConsole(entry.changes));
+		console.log(
+			ANSI_COLOR.YELLOW + "Hilo actualizado: <#" + entry.targetId + ">\n" + ANSI_COLOR.RESET + diffConsole(entry.changes, entry.targetType)
+		);
 	}
 }
 

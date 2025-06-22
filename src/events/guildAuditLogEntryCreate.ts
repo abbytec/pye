@@ -1,5 +1,5 @@
 // src/events/guildAuditLogEntryCreate.ts
-import { AuditLogEvent, Channel, ChannelType, Events, Guild, GuildAuditLogsEntry, GuildChannel } from "discord.js";
+import { AuditLogEvent, Channel, ChannelType, Events, Guild, GuildAuditLogsEntry, GuildChannel, GuildScheduledEventStatus } from "discord.js";
 import { Evento } from "../types/event.js";
 import { ExtendedClient } from "../client.js";
 import { handleBanAdd } from "./guildAuditLogEntryCreate/handleBanAdd.js";
@@ -38,7 +38,7 @@ export default {
 				case AuditLogEvent.ChannelUpdate:
 					if (entry.target && "type" in entry.target)
 						ExtendedClient.auditLog(
-							"Canal Actualizado <#" + entry.targetId + ">\n Cambios:\n" + diff(entry.changes),
+							"Canal Actualizado <#" + entry.targetId + ">\n Cambios:\n" + diff(entry.changes, entry.targetType),
 							"info",
 							entry.executor?.username ?? undefined,
 							entry.target.type === ChannelType.GuildVoice ? "voiceLogs" : "logs"
@@ -64,7 +64,7 @@ export default {
 								entry.targetId +
 								">\n" +
 								ANSI_COLOR.RESET +
-								diffConsole(entry.changes)
+								diffConsole(entry.changes, entry.targetType)
 						);
 					}
 					break;
@@ -76,7 +76,7 @@ export default {
 								entry.targetId +
 								">\n" +
 								ANSI_COLOR.RESET +
-								diffConsole(entry.changes)
+								diffConsole(entry.changes, entry.targetType)
 						);
 					}
 					break;
@@ -89,12 +89,17 @@ export default {
 					await handleBanRemove(entry, guild);
 					break;
 				case AuditLogEvent.MemberUpdate:
-					console.log("Miembro actualizado: <@" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					console.log("Miembro actualizado: <@" + entry.targetId + ">\n" + diffConsole(entry.changes, entry.targetType));
 					break;
 				case AuditLogEvent.MemberRoleUpdate:
 					if (![process.env.CLIENT_ID ?? "bot", SLASHBOT_UID, YAGPDB_XYZ_UID, CIRCLE_UID, DYNO_UID].includes(entry.executorId ?? "")) {
 						console.log(
-							"Roles de <@" + entry.targetId + "> actualizados por <@" + entry.executorId + ">:\n" + diffConsole(entry.changes)
+							"Roles de <@" +
+								entry.targetId +
+								"> actualizados por <@" +
+								entry.executorId +
+								">:\n" +
+								diffConsole(entry.changes, entry.targetType)
 						);
 					}
 					break;
@@ -111,7 +116,7 @@ export default {
 						);
 					break;
 				case AuditLogEvent.MemberDisconnect:
-					console.log("Miembro desconectado de <#" + entry.targetId + ">\n" + diffConsole(entry.changes));
+					console.log("Miembro desconectado de <#" + entry.targetId + ">\n" + diffConsole(entry.changes, entry.targetType));
 					break;
 				case AuditLogEvent.BotAdd:
 					console.log(
@@ -122,7 +127,7 @@ export default {
 							entry.executorId +
 							">\n" +
 							ANSI_COLOR.RESET +
-							diffConsole(entry.changes)
+							diffConsole(entry.changes, entry.targetType)
 					);
 					break;
 
@@ -132,7 +137,7 @@ export default {
 					if (!newName && entry.target && "name" in entry.target) newName = entry.target?.name as string;
 					newName ??= "<nombre desconocido>";
 					ExtendedClient.auditLog(
-						"Rol actualizado: " + newName + "\n" + diff(entry.changes),
+						"Rol actualizado: " + newName + "\n" + diff(entry.changes, entry.targetType),
 						"info",
 						entry.executor?.username ?? undefined
 					);
@@ -180,10 +185,42 @@ export default {
 							`• Expira en: ${integration.expireGracePeriod ?? "—"} días`;
 					} catch {
 						// si ya fue borrada o falta intent, usa los cambios mínimos
-						msg = `Integración creada (ID ${integrationId}). Cambios: ${diff(entry.changes)}`;
+						msg = `Integración creada (ID ${integrationId}). Cambios: ${diff(entry.changes, entry.targetType)}`;
 					}
 
 					console.log(msg);
+					break;
+				}
+
+				// --- STAGE INSTANCE ---
+				case AuditLogEvent.StageInstanceCreate: {
+					const channel = entry.extra && "channel" in entry.extra ? "<#" + entry.extra.channel.id + ">" : "Canal desconocido";
+					ExtendedClient.auditLog(
+						"Escenario iniciado: " + channel + "\n Tema: " + (entry.changes.find((c) => c.key === "topic")?.new ?? "Desconocido"),
+						"success",
+						entry.executor?.username ?? undefined,
+						"voiceLogs"
+					);
+					break;
+				}
+				case AuditLogEvent.StageInstanceUpdate: {
+					const channel = entry.extra && "channel" in entry.extra ? "<#" + entry.extra.channel.id + ">" : "Canal desconocido";
+					ExtendedClient.auditLog(
+						"Escenario actualizado: " + channel + "\n" + diff(entry.changes, entry.targetType),
+						"info",
+						entry.executor?.username ?? undefined,
+						"voiceLogs"
+					);
+					break;
+				}
+				case AuditLogEvent.StageInstanceDelete: {
+					const channel = entry.extra && "channel" in entry.extra ? "<#" + entry.extra.channel.id + ">" : "Canal desconocido";
+					ExtendedClient.auditLog(
+						"Escenario finalizado:  " + channel + "\n Tema: " + (entry.changes.find((c) => c.key === "topic")?.old ?? "Desconocido"),
+						"error",
+						entry.executor?.username ?? undefined,
+						"voiceLogs"
+					);
 					break;
 				}
 
@@ -217,14 +254,14 @@ export default {
 							entry.targetId +
 							">\n" +
 							ANSI_COLOR.RESET +
-							diffConsole(entry.changes)
+							diffConsole(entry.changes, entry.targetType)
 					);
 					break;
 
 				// --- VOICE STATUS ---
 				case 192:
 				case 193:
-					console.log("Estado de voz cambiado: " + diffConsole(entry.changes));
+					console.log("Estado de voz cambiado: " + diffConsole(entry.changes, entry.targetType));
 					break;
 
 				// --- SCHEDULED EVENT INSTANCE ---
@@ -241,7 +278,7 @@ export default {
 				// --- UNKNOWN ---
 				case 211:
 					ExtendedClient.auditLog(
-						"Server Tag (¿actualizado?):\n" + diff(entry.changes) + ")",
+						"Server Tag (¿actualizado?):\n" + diff(entry.changes, entry.targetType) + ")",
 						"info",
 						entry.executor?.username ?? undefined
 					);
@@ -256,7 +293,7 @@ export default {
 		}
 	},
 } as Evento;
-export function fmt(key: string, v: any) {
+export function fmt(key: string, v: any, type: GuildAuditLogsEntry["targetType"]) {
 	if (key === "scheduled_start_time" || key === "scheduled_end_time" || key === "scheduledStartTimestamp") {
 		let ms: number = NaN;
 		if (typeof v === "string") {
@@ -268,6 +305,20 @@ export function fmt(key: string, v: any) {
 	}
 	if ((key === "color" || key === "primary_color" || key === "secondary_color" || key === "tertiary_color") && typeof v === "number")
 		return `0x${v.toString(16).padStart(6, "0")}`;
+	if (type === "GuildScheduledEvent" && key === "status") {
+		switch (v) {
+			case GuildScheduledEventStatus.Active:
+				return "Iniciado";
+			case GuildScheduledEventStatus.Canceled:
+				return "Cancelado";
+			case GuildScheduledEventStatus.Completed:
+				return "Completado";
+			case GuildScheduledEventStatus.Scheduled:
+				return "Programado";
+			default:
+				return "Desconocido";
+		}
+	}
 	if (typeof v === "string" || typeof v === "number") return `${v}`;
 	else if (typeof v === "object")
 		try {
@@ -278,7 +329,7 @@ export function fmt(key: string, v: any) {
 	else if (typeof v === "boolean") return getColor(v ? "$add" : "$remove") + `${v}` + ANSI_COLOR.RESET;
 	return "`null`"; // resto de claves
 }
-export function diff(changes: GuildAuditLogsEntry["changes"] | undefined): string {
+export function diff(changes: GuildAuditLogsEntry["changes"] | undefined, type: GuildAuditLogsEntry["targetType"]): string {
 	if (!changes?.length) return "Sin detalles";
 
 	const lines: string[] = [];
@@ -291,10 +342,10 @@ export function diff(changes: GuildAuditLogsEntry["changes"] | undefined): strin
 			for (const k of keys) {
 				const oldVal = (c.old as Record<string, unknown>)[k];
 				const newVal = (c.new as Record<string, unknown>)[k];
-				if (oldVal !== newVal) lines.push(`• **${k}**: ${fmt(k, oldVal)} → ${fmt(k, newVal)}`);
+				if (oldVal !== newVal) lines.push(`• **${k}**: ${fmt(k, oldVal, type)} → ${fmt(k, newVal, type)}`);
 			}
 		} else {
-			lines.push(`• **${c.key}**: ${fmt(c.key, c.old)} → ${fmt(c.key, c.new)}`);
+			lines.push(`• **${c.key}**: ${fmt(c.key, c.old, type)} → ${fmt(c.key, c.new, type)}`);
 		}
 	}
 
@@ -316,16 +367,17 @@ function getColor(key: string): string {
 	}
 }
 
-export function diffConsole(changes: GuildAuditLogsEntry["changes"] | undefined): string {
+export function diffConsole(changes: GuildAuditLogsEntry["changes"] | undefined, type: GuildAuditLogsEntry["targetType"]): string {
 	if (!changes?.length) return "Sin detalles";
 	return changes
 		.map((c, i) => {
 			const isLast = i === changes.length - 1;
 			const bullet = isLast ? "└" : "├";
 			const color = getColor(c.key);
-			return `${ANSI_COLOR.GRAY}${bullet}${ANSI_COLOR.RESET} ${color}${c.key}${ANSI_COLOR.RESET}: ${fmt(c.key, c.old)} → ${fmt(
+			return `${ANSI_COLOR.GRAY}${bullet}${ANSI_COLOR.RESET} ${color}${c.key}${ANSI_COLOR.RESET}: ${fmt(c.key, c.old, type)} → ${fmt(
 				c.key,
-				c.new
+				c.new,
+				type
 			)}`;
 		})
 		.join("\n");
