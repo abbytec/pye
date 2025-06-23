@@ -8,7 +8,7 @@ const urlRegex = /https?:\/\/[^\s]+/g;
 
 const normalizeUrl = (url: string) =>
 	url
-		.replace(removeQueryParamsRegex, "")
+		.replace(/\?.*$/, "") // elimina query params
 		.replace(/^https?:\/\//, "")
 		.replace(/\/$/, "");
 

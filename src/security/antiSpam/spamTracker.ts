@@ -37,8 +37,7 @@ export class SpamTracker {
 			.catch(() => null);
 		await message.delete().catch(() => null);
 		setTimeout(() => warnMsg.delete().catch(() => null), 10_000);
-		if (type === "url") {
-			if (punishingUser.has(message.author.id)) return;
+		if (type === "url" && !punishingUser.has(message.author.id)) {
 			punishingUser.add(message.author.id);
 			if (!!message.member?.joinedAt && Date.now() - message.member.joinedAt.getTime() < 60_000) {
 				deleteAllMessagesFromAndKickUser(message, guild);
