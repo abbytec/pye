@@ -40,7 +40,7 @@ export class SpamTracker {
 		if (type === "url" && !punishingUser.has(message.author.id)) {
 			punishingUser.add(message.author.id);
 			if (!!message.member?.joinedAt && Date.now() - message.member.joinedAt.getTime() < 60_000) {
-				deleteAllMessagesFromAndKickUser(message, guild);
+				deleteAllMessagesFromAndKickUser(message, guild, type);
 				return;
 			} else {
 				(guild?.channels.cache.get(getChannelFromEnv("moderadores")) as TextChannel | undefined)?.send(
@@ -80,7 +80,7 @@ function getTimeoutReason(type: SpamType): string {
 	}
 }
 
-export async function deleteAllMessagesFromAndKickUser(message: Message<boolean>, guild: Guild | null) {
+export async function deleteAllMessagesFromAndKickUser(message: Message<boolean>, guild: Guild | null, type: SpamType) {
 	// 1 — borra mensajes recientes del user en **todos** los canales de texto
 	for (const [, ch] of guild?.channels.cache ?? []) {
 		if (!ch.isTextBased()) continue;
@@ -89,7 +89,14 @@ export async function deleteAllMessagesFromAndKickUser(message: Message<boolean>
 		if (own?.size) await (ch as TextChannel).bulkDelete(own, true).catch(() => null);
 	}
 	// 2 — DM y 3 — kick
-	await message.author.send("Fuiste expulsado por spam de URLs. Si creés que es un error, contactá a un moderador.").catch(() => null);
+	await message.author
+		.send(
+			`Fuiste expulsado por ${getTimeoutReason(
+				type
+			)}. Si creés que es un error, contactá a un moderador.\n Puedes **apelar** en el siguiente enlace:\n` +
+				`👉 [Apela aquí](https://discord.gg/F8QxEMtJ3B)`
+		)
+		.catch(() => null);
 	await message.member
 		?.kick("Spam de URLs (usuario recién unido)")
 		.then(() =>

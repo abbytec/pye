@@ -1,5 +1,5 @@
 // src/events/guildAuditLogEntryCreate.ts
-import { AuditLogEvent, Channel, ChannelType, Events, Guild, GuildAuditLogsEntry, GuildChannel, GuildScheduledEventStatus } from "discord.js";
+import { AuditLogEvent, ChannelType, Events, Guild, GuildAuditLogsEntry, GuildChannel, GuildScheduledEventStatus } from "discord.js";
 import { Evento } from "../types/event.js";
 import { ExtendedClient } from "../client.js";
 import { handleBanAdd } from "./guildAuditLogEntryCreate/handleBanAdd.js";

@@ -16,6 +16,7 @@ import { checkMentionSpam } from "./antiSpam/mentionSpamFilter.js";
 import { spamFilter } from "./spamFilter.js";
 import { checkAttachmentSpam } from "./antiSpam/attachmentSpamFilter.js";
 import { checkUrlSpam } from "./antiSpam/urlSpamFilter.js";
+import { floodBotsFilter } from "./antiSpam/floodBotsFilter.js";
 
 export interface IDeletableContent {
 	id: string;
@@ -41,6 +42,7 @@ export async function messageGuard(message: Message<true>, client: ExtendedClien
 			member = message.member;
 		}
 		if (
+			(await floodBotsFilter(message)) ||
 			(await spamFilter(member, client, message as IDeletableContent, message.content)) ||
 			(await checkMentionSpam(message, client)) ||
 			(await checkUrlSpam(message, client)) ||
