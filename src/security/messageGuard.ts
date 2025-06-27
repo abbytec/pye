@@ -42,7 +42,7 @@ export async function messageGuard(message: Message<true>, client: ExtendedClien
 			member = message.member;
 		}
 		if (
-			(await floodBotsFilter(message)) ||
+			(await floodBotsFilter(message, client)) ||
 			(await spamFilter(member, client, message as IDeletableContent, message.content)) ||
 			(await checkMentionSpam(message, client)) ||
 			(await checkUrlSpam(message, client)) ||

@@ -3,7 +3,7 @@ import { ExtendedClient } from "../../client.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 
 /* spamTracker.ts */
-export type SpamType = "message" | "url" | "attachment" | "mention";
+export type SpamType = "message" | "url" | "attachment" | "mention" | "newFloodMessage";
 const punishingUser = new Set<string>();
 export class SpamTracker {
 	private readonly map = new Map<string, { count: number; timeout: NodeJS.Timeout }>();
@@ -37,7 +37,7 @@ export class SpamTracker {
 			.catch(() => null);
 		await message.delete().catch(() => null);
 		setTimeout(() => warnMsg.delete().catch(() => null), 10_000);
-		if (type === "url" && !punishingUser.has(message.author.id)) {
+		if ((type === "url" || type === "newFloodMessage") && !punishingUser.has(message.author.id)) {
 			punishingUser.add(message.author.id);
 			if (!!message.member?.joinedAt && Date.now() - message.member.joinedAt.getTime() < 60_000) {
 				deleteAllMessagesFromAndKickUser(message, guild, type);
@@ -77,6 +77,8 @@ function getTimeoutReason(type: SpamType): string {
 			return "Spam de archivos";
 		case "mention":
 			return "Spam de menciones";
+		case "newFloodMessage":
+			return "Spam de mensajes";
 	}
 }
 
@@ -98,10 +100,10 @@ export async function deleteAllMessagesFromAndKickUser(message: Message<boolean>
 		)
 		.catch(() => null);
 	await message.member
-		?.kick("Spam de URLs (usuario recién unido)")
+		?.kick(`${getTimeoutReason(type)} (usuario recién unido)`)
 		.then(() =>
 			(guild?.channels.cache.get(getChannelFromEnv("moderadores")) as TextChannel | undefined)?.send({
-				content: `Se kickeo a ${message.author.username} <@${message.author.id}> por entrar al sv a spamear links.\n`,
+				content: `Se kickeo a ${message.author.username} <@${message.author.id}> por entrar al sv y hacer ${getTimeoutReason(type)}.\n`,
 				embeds: [
 					{
 						title: "Contenido del ultimo mensaje",
