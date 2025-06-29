@@ -15,6 +15,7 @@ import {
 } from "./guildAuditLogEntryCreate/handleEventChange.js";
 import { ticketTypes } from "../utils/constants/ticketOptions.js";
 import { logThreadCreate, logThreadDelete, logThreadUpdate } from "./guildAuditLogEntryCreate/handleThreadAction.js";
+import { handleMemberKick } from "./guildAuditLogEntryCreate/handleMemberKick.js";
 
 export default {
 	name: Events.GuildAuditLogEntryCreate,
@@ -82,6 +83,9 @@ export default {
 					break;
 
 				// --- MEMBER ---
+				case AuditLogEvent.MemberKick:
+					await handleMemberKick(entry, guild);
+					break;
 				case AuditLogEvent.MemberBanAdd:
 					await handleBanAdd(entry, guild);
 					break;
@@ -157,7 +161,7 @@ export default {
 					let count = "Varios";
 					if (entry.extra && "count" in entry.extra) count = entry.extra.count.toString();
 					ExtendedClient.auditLog(
-						`${count} mensajes borrados: <#" + entry.targetId + " >`,
+						`${count} mensajes borrados: <#${entry.targetId}>`,
 						"error",
 						entry.executor?.username ?? undefined,
 						"logMessages"
