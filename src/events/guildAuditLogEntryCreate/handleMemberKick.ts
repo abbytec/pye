@@ -1,9 +1,8 @@
 import { EmbedBuilder, Guild, GuildAuditLogsEntry, TextChannel, User } from "discord.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
-import { ModLogs } from "../../Models/ModLogs.js";
 
 export async function handleMemberKick(entry: GuildAuditLogsEntry, guild: Guild) {
-	const { target, executor, createdTimestamp } = entry;
+	const { target, executor } = entry;
 	if (!target || entry.targetType !== "User" || !executor) return;
 	let targetUser = target as User;
 	const memberId = targetUser.id;
