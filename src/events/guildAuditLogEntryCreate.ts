@@ -120,7 +120,12 @@ export default {
 						);
 					break;
 				case AuditLogEvent.MemberDisconnect:
-					console.log("Miembro desconectado de <#" + entry.targetId + ">\n" + diffConsole(entry.changes, entry.targetType));
+					ExtendedClient.auditLog(
+						"Miembro <@" + entry.targetId + "> desconectado por <@" + entry.executorId + ">\n del canal de voz: ",
+						"error",
+						entry.executorId ?? undefined,
+						"voiceLogs"
+					);
 					break;
 				case AuditLogEvent.BotAdd:
 					console.log(
