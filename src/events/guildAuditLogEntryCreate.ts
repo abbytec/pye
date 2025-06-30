@@ -121,7 +121,7 @@ export default {
 					break;
 				case AuditLogEvent.MemberDisconnect:
 					ExtendedClient.auditLog(
-						"Miembro <@" + entry.targetId + "> desconectado por <@" + entry.executorId + ">\n del canal de voz: ",
+						"Desconectaron manualmente a alguien del voice",
 						"error",
 						entry.executorId ?? undefined,
 						"voiceLogs"
