@@ -88,7 +88,7 @@ async function buildLeaderboard(scope: Scope, page: number, user: User, interact
 			positionFinder: (data: any[], id: string) => data.findIndex((u) => u._id === id),
 			descriptionBuilder: async (item: any, index: number, start: number) => {
 				const member = await interaction.guild?.members.fetch(item._id).catch(() => undefined);
-				return `**${start + index + 1}.** [${member?.user.username ?? "Usuario Desconocido"}](https://discord.com/users/${
+				return `**${start + index + 1}.** [${member?.user?.username ?? "Usuario Desconocido"}](https://discord.com/users/${
 					item._id
 				}) • ${item.points.toLocaleString()} pts`;
 			},

@@ -53,7 +53,9 @@ export class SpamTracker {
 			embeds: [
 				{
 					title: "Spam Filter",
-					description: `Se eliminó un mensaje de <@${message.author.id}> (${message.author.id}). Razón ${getTimeoutReason(type)}`,
+					description: `Se eliminó un mensaje de <@${message.author.id}> (${message.author.id}) en <#${
+						message.channel.id
+					}>. Razón ${getTimeoutReason(type)}`,
 					color: COLORS.errRed,
 					fields: [
 						{

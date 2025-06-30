@@ -3,7 +3,6 @@ import { ExtendedClient } from "../../client.js";
 import { SpamTracker } from "./spamTracker.js";
 
 const urlTracker = new SpamTracker(5_000, 3);
-const removeQueryParamsRegex = /\?.*$/;
 const urlRegex = /https?:\/\/[^\s]+/g;
 
 const normalizeUrl = (url: string) =>
@@ -27,10 +26,8 @@ export async function checkUrlSpam(message: Message<boolean>, client: ExtendedCl
 		seen.add(norm);
 
 		const key = `${message.author.id}-${norm}`;
-		if (urlTracker.increment(key)) {
+		if (urlTracker.increment(key))
 			await urlTracker.punish(message, client, "url", "Enviar el mismo enlace repetidamente se considera spam.");
-			return true; // early exit on spam
-		}
 	}
 	return false;
 }
