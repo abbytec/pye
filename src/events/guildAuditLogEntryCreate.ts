@@ -257,6 +257,9 @@ export default {
 							diffConsole(entry.changes, entry.targetType)
 					);
 					break;
+				case AuditLogEvent.AutoModerationFlagToChannel:
+					console.log(ANSI_COLOR.ORANGE + "Mensaje de <@" + entry.targetId + "> reportado por automod: " + entry.reason);
+					break;
 
 				// --- VOICE STATUS ---
 				case 192:
