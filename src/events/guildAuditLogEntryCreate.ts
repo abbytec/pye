@@ -16,6 +16,11 @@ import {
 import { ticketTypes } from "../utils/constants/ticketOptions.js";
 import { logThreadCreate, logThreadDelete, logThreadUpdate } from "./guildAuditLogEntryCreate/handleThreadAction.js";
 import { handleMemberKick } from "./guildAuditLogEntryCreate/handleMemberKick.js";
+import {
+	handleStageInstanceCreate,
+	handleStageInstanceDelete,
+	handleStageInstanceUpdate,
+} from "./guildAuditLogEntryCreate/handleStageChange.js";
 
 export default {
 	name: Events.GuildAuditLogEntryCreate,
@@ -202,36 +207,15 @@ export default {
 				}
 
 				// --- STAGE INSTANCE ---
-				case AuditLogEvent.StageInstanceCreate: {
-					const channel = entry.extra && "channel" in entry.extra ? "<#" + entry.extra.channel.id + ">" : "Canal desconocido";
-					ExtendedClient.auditLog(
-						"Escenario iniciado: " + channel + "\n Tema: " + (entry.changes.find((c) => c.key === "topic")?.new ?? "Desconocido"),
-						"success",
-						entry.executor?.username ?? undefined,
-						"voiceLogs"
-					);
+				case AuditLogEvent.StageInstanceCreate:
+					handleStageInstanceCreate(entry);
 					break;
-				}
-				case AuditLogEvent.StageInstanceUpdate: {
-					const channel = entry.extra && "channel" in entry.extra ? "<#" + entry.extra.channel.id + ">" : "Canal desconocido";
-					ExtendedClient.auditLog(
-						"Escenario actualizado: " + channel + "\n" + diff(entry.changes, entry.targetType),
-						"info",
-						entry.executor?.username ?? undefined,
-						"voiceLogs"
-					);
+				case AuditLogEvent.StageInstanceUpdate:
+					handleStageInstanceUpdate(entry);
 					break;
-				}
-				case AuditLogEvent.StageInstanceDelete: {
-					const channel = entry.extra && "channel" in entry.extra ? "<#" + entry.extra.channel.id + ">" : "Canal desconocido";
-					ExtendedClient.auditLog(
-						"Escenario finalizado:  " + channel + "\n Tema: " + (entry.changes.find((c) => c.key === "topic")?.old ?? "Desconocido"),
-						"error",
-						entry.executor?.username ?? undefined,
-						"voiceLogs"
-					);
+				case AuditLogEvent.StageInstanceDelete:
+					handleStageInstanceDelete(entry);
 					break;
-				}
 
 				// --- SCHEDULED EVENT ---
 				case AuditLogEvent.GuildScheduledEventCreate:
