@@ -259,9 +259,9 @@ export default {
 				case AuditLogEvent.AutoModerationBlockMessage:
 					console.log(
 						ANSI_COLOR.ORANGE +
-							"Mensaje bloqueado por automod: <#" +
-							entry.targetId +
-							">\n" +
+							"Mensaje bloqueado por automod: " +
+							JSON.stringify(entry) +
+							"\n" +
 							ANSI_COLOR.RESET +
 							diffConsole(entry.changes, entry.targetType)
 					);
