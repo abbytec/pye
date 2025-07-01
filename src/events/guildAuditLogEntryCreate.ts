@@ -202,9 +202,16 @@ export default {
 						msg = `Integración creada (ID ${integrationId}). Cambios: ${diff(entry.changes, entry.targetType)}`;
 					}
 
-					console.log(msg);
+					ExtendedClient.auditLog(msg, "info", entry.executor?.username ?? undefined);
 					break;
 				}
+				case AuditLogEvent.IntegrationDelete:
+					ExtendedClient.auditLog(
+						`Integración eliminada (ID ${entry.targetId}). Cambios: ${diff(entry.changes, entry.targetType)}`,
+						"error",
+						entry.executor?.username ?? undefined
+					);
+					break;
 
 				// --- STAGE INSTANCE ---
 				case AuditLogEvent.StageInstanceCreate:
