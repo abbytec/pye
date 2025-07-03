@@ -32,7 +32,11 @@ export default {
 				case AuditLogEvent.ChannelCreate:
 					if (entry.target && "name" in entry.target && "type" in entry.target) {
 						const channelName = entry.target.name as string;
-						if (entry.executorId === process.env.CLIENT_ID && ticketTypes.some((type) => channelName.includes(type))) break;
+						if (
+							entry.executorId === process.env.CLIENT_ID &&
+							(ticketTypes.some((type) => channelName.includes(type)) || channelName.startsWith("warn"))
+						)
+							break;
 						ExtendedClient.auditLog(
 							"Canal creado : " + entry.target.name,
 							"success",
@@ -53,7 +57,11 @@ export default {
 				case AuditLogEvent.ChannelDelete:
 					if (entry.target && "name" in entry.target && "type" in entry.target) {
 						const channelName = entry.target.name as string;
-						if (entry.executorId === process.env.CLIENT_ID && ticketTypes.some((type) => channelName.includes(type))) break;
+						if (
+							entry.executorId === process.env.CLIENT_ID &&
+							(ticketTypes.some((type) => channelName.includes(type)) || channelName.startsWith("warn"))
+						)
+							break;
 						ExtendedClient.auditLog(
 							"Canal eliminado: " + entry.target.name,
 							"error",
@@ -98,7 +106,8 @@ export default {
 					await handleBanRemove(entry, guild);
 					break;
 				case AuditLogEvent.MemberUpdate:
-					console.log("Miembro actualizado: <@" + entry.targetId + ">\n" + diffConsole(entry.changes, entry.targetType));
+					if (entry.executorId !== process.env.CLIENT_ID)
+						console.log("Miembro actualizado: <@" + entry.targetId + ">\n" + diffConsole(entry.changes, entry.targetType));
 					break;
 				case AuditLogEvent.MemberRoleUpdate:
 					if (![process.env.CLIENT_ID ?? "bot", SLASHBOT_UID, YAGPDB_XYZ_UID, CIRCLE_UID, DYNO_UID].includes(entry.executorId ?? "")) {
@@ -251,14 +260,16 @@ export default {
 					console.log(
 						ANSI_COLOR.ORANGE +
 							"Mensaje bloqueado por automod: " +
+							ANSI_COLOR.RESET +
 							JSON.stringify(entry) +
 							"\n" +
-							ANSI_COLOR.RESET +
 							diffConsole(entry.changes, entry.targetType)
 					);
 					break;
 				case AuditLogEvent.AutoModerationFlagToChannel:
-					console.log(ANSI_COLOR.ORANGE + "Mensaje de <@" + entry.targetId + "> reportado por automod: " + entry.reason);
+					console.log(
+						ANSI_COLOR.ORANGE + "Mensaje de <@" + entry.targetId + "> reportado por automod: " + ANSI_COLOR.RESET + entry.reason
+					);
 					break;
 
 				// --- VOICE STATUS ---
