@@ -1,4 +1,4 @@
-import { MessageReaction, User, TextChannel, EmbedBuilder, Events } from "discord.js";
+import { MessageReaction, User, TextChannel, EmbedBuilder, Events, AttachmentBuilder } from "discord.js";
 import { IStarBoardDocument, StarBoard } from "../Models/StarBoard.js";
 import { StarMessage } from "../Models/StarMessage.js";
 import { Evento } from "../types/event.js";
@@ -29,9 +29,21 @@ export default {
 			reaction.emoji.name === "pepedown" &&
 			(fullReaction.count ?? 0) > 4 &&
 			reaction.message.member &&
-			!reaction.message.member.roles.resolve(getRoleFromEnv("iqNegativo"))
+			!reaction.message.member.roles.resolve(getRoleFromEnv("iqNegativo")) &&
+			reaction.message.createdTimestamp >= Date.now() - 1000 * 60 * 60 * 4
 		) {
 			await reaction.message.member.roles.add(getRoleFromEnv("iqNegativo")).catch(() => null);
+			await ((reaction.client as ExtendedClient).channels.resolve(getChannelFromEnv("general")) as TextChannel)
+				?.send({
+					content: `<@${reaction.message.member.id}> recibió IQ negativo.`,
+					files: [
+						new AttachmentBuilder(
+							"https://cdn.discordapp.com/attachments/1282932921203818509/1392590678177087488/image.png?ex=687016a2&is=686ec522&hm=5f91c3a9afd8e6186967090804c53297659ca4072cccc9ba1dd46ba7657d1adc&",
+							{ name: "iq-negativo.png" }
+						),
+					],
+				})
+				.catch(() => null);
 			await UserRole.findOneAndUpdate(
 				{
 					id: reaction.message.member.id,
@@ -40,7 +52,7 @@ export default {
 				},
 				{
 					$setOnInsert: {
-						count: 1000 * 60 * 60 * 3 + Date.now(),
+						count: 1000 * 60 * 60 * 2 + Date.now(),
 					},
 				},
 				{
