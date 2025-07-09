@@ -88,7 +88,9 @@ export async function bumpEmitter(message: Message): Promise<void> {
 				name: member.user.tag,
 				iconURL: member.user.displayAvatarURL(),
 			})
-			.setDescription(`¡ Gracias por ese bump <@${ganadorId}> !\nHas recibido ${pyecoin} **${bumpAmount}** como recompensa.`);
+			.setDescription(
+				`¡ Gracias por ese bump <@${ganadorId}> !\nHas recibido ${pyecoin} **${bumpAmount}** como recompensa.\n En 2 horas avisaré nuevamente cuando sea momento de bumpear!`
+			);
 
 		await (message.channel as TextChannel).send({ embeds: [embed] });
 
@@ -99,6 +101,17 @@ export async function bumpEmitter(message: Message): Promise<void> {
 					embeds: [
 						new EmbedBuilder()
 							.setDescription(`¡ Ya puedes hacer bump de nuevo ! 🎉\n<#${getChannelFromEnv("casinoPye")}>`)
+							.setColor(COLORS.okGreen),
+					],
+				})
+				.catch(() => null);
+			await (message.channel as TextChannel)
+				.send({
+					embeds: [
+						new EmbedBuilder()
+							.setDescription(
+								`¡ Ya se puede bumpear de nuevo ! 🎉\nPuedes hacerlo escribiendo /bump y eligiendo la opción de <@${DISBOARD_UID}> para ganar monedas del servidor.`
+							)
 							.setColor(COLORS.okGreen),
 					],
 				})
