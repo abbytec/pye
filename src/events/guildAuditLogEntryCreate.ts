@@ -155,6 +155,13 @@ export default {
 					break;
 
 				// --- ROLE ---
+				case AuditLogEvent.RoleCreate:
+					ExtendedClient.auditLog(
+						"Rol creado: " + entry.changes.find((c) => c.key === "name")?.new,
+						"success",
+						entry.executor?.username ?? undefined
+					);
+					break;
 				case AuditLogEvent.RoleUpdate: {
 					let newName = entry.changes.find((c) => c.key === "name")?.new;
 					if (!newName && entry.target && "name" in entry.target) newName = entry.target?.name as string;
@@ -166,6 +173,13 @@ export default {
 					);
 					break;
 				}
+				case AuditLogEvent.RoleDelete:
+					ExtendedClient.auditLog(
+						"Rol eliminado: " + entry.changes.find((c) => c.key === "name")?.old,
+						"error",
+						entry.executor?.username ?? undefined
+					);
+					break;
 
 				// --- INVITE ---
 				case AuditLogEvent.InviteCreate:
