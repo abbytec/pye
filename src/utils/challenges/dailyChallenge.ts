@@ -1,7 +1,13 @@
 import { ChannelType, EmbedBuilder, ThreadAutoArchiveDuration } from "discord.js";
 import { ExtendedClient } from "../../client.js";
-import { getChannelFromEnv } from "../constants.js";
+import { COLORS, getChannelFromEnv } from "../constants.js";
 import { htmlToMarkdown } from "../html2mdparser.js";
+
+const colorMap: Record<string, number> = {
+	Easy: COLORS.okGreen, // verde
+	Medium: COLORS.warnOrange, // naranja
+	Hard: COLORS.errRed, // rojo
+};
 
 export async function getDailyChallenge(client: ExtendedClient) {
 	try {
@@ -20,7 +26,8 @@ export async function getDailyChallenge(client: ExtendedClient) {
 				{ name: "Enlace", value: `[Ver en LeetCode](https://leetcode.com/problems/${titleSlug})`, inline: true }
 			)
 			.setDescription((await translateExceptCode(mdContent)).slice(0, 2048))
-			.setFooter({ text: `Reto para ${json.date}` });
+			.setFooter({ text: `Reto para ${json.date}` })
+			.setColor(colorMap[difficulty] ?? COLORS.pyeLightBlue);
 
 		// 3. Enviar al canal de retos
 		const channel = await client.channels.fetch(getChannelFromEnv("retos"));
@@ -31,7 +38,7 @@ export async function getDailyChallenge(client: ExtendedClient) {
 				appliedTags: ["1368739710876258344"],
 				autoArchiveDuration: ThreadAutoArchiveDuration.ThreeDays,
 				reason: "Daily LeetCode Challenge",
-				message: { embeds: [embed], content: "Nuevo reto diario!!!" },
+				message: { embeds: [embed], content: "Nuevo reto!!!" },
 			});
 		}
 	} catch (err) {

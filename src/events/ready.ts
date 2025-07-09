@@ -242,7 +242,8 @@ async function cronEventsProcessor(client: ExtendedClient) {
 		client.services.trending.dailySave().catch((error) => {
 			console.error("Error al guardar el top de tendencias:", error);
 		});
-		if (process.env.NODE_ENV !== "development") await getDailyChallenge(client).catch((error) => console.error(error));
+		if (process.env.NODE_ENV !== "development" && now.getDate() % 3 === 0)
+			await getDailyChallenge(client).catch((error) => console.error(error));
 
 		// Actualiza el top de bumps
 		await redisClient
