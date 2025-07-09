@@ -1,5 +1,14 @@
 // src/events/guildAuditLogEntryCreate.ts
-import { AuditLogEvent, ChannelType, Events, Guild, GuildAuditLogsEntry, GuildChannel, GuildScheduledEventStatus } from "discord.js";
+import {
+	AuditLogEvent,
+	ChannelType,
+	Events,
+	Guild,
+	GuildAuditLogsEntry,
+	GuildAuditLogsEntryExtraField,
+	GuildChannel,
+	GuildScheduledEventStatus,
+} from "discord.js";
 import { Evento } from "../types/event.js";
 import { ExtendedClient } from "../client.js";
 import { handleBanAdd } from "./guildAuditLogEntryCreate/handleBanAdd.js";
@@ -201,6 +210,32 @@ export default {
 					);
 					break;
 				}
+				case AuditLogEvent.MessagePin:
+					ExtendedClient.auditLog(
+						"Mensaje pinneado: https://discord.com/channels/" +
+							process.env.GUILD_ID +
+							"/" +
+							(entry.extra as GuildAuditLogsEntryExtraField[AuditLogEvent.MessagePin])?.channel.id +
+							"/" +
+							(entry.extra as GuildAuditLogsEntryExtraField[AuditLogEvent.MessagePin])?.messageId,
+						"success",
+						entry.executor?.username ?? undefined,
+						"logMessages"
+					);
+					break;
+				case AuditLogEvent.MessageUnpin:
+					ExtendedClient.auditLog(
+						"Mensaje despinneado: https://discord.com/channels/" +
+							process.env.GUILD_ID +
+							"/" +
+							(entry.extra as GuildAuditLogsEntryExtraField[AuditLogEvent.MessageUnpin])?.channel.id +
+							"/" +
+							(entry.extra as GuildAuditLogsEntryExtraField[AuditLogEvent.MessageUnpin])?.messageId,
+						"error",
+						entry.executor?.username ?? undefined,
+						"logMessages"
+					);
+					break;
 
 				// --- INTEGRATION ---
 				case AuditLogEvent.IntegrationCreate: {
