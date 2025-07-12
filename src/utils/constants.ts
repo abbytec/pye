@@ -363,6 +363,10 @@ export const SLASHBOT_UID = "788814313930096662";
 export const YAGPDB_XYZ_UID = "204255221017214977";
 export const CIRCLE_UID = "497196352866877441";
 export const DYNO_UID = "155149108183695360";
+export const MUDAE_UID = "432610292342587392";
+export const INVITE_TRACKER_UID = "720351927581278219";
+export const NOT_SO_BOT_UID = "439205512425504771";
+export const NEKOTINA_UID = "429457053791158281";
 
 export const pyecoin = "<a:PyEcoin:908088648245850142>";
 
@@ -373,10 +377,10 @@ export const AUTHORIZED_BOTS = [
 	"1295616037974311012",
 	// Hook de reglas
 	"926516578315563008",
-	// Mudae
-	"432610292342587392",
-	// InviteTracker
-	"720351927581278219",
+	MUDAE_UID,
+	INVITE_TRACKER_UID,
+	NOT_SO_BOT_UID,
+	NEKOTINA_UID,
 ];
 
 export const messagesProcessingLimiter = new Bottleneck({
