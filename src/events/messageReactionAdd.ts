@@ -8,7 +8,7 @@ import { UserRole } from "../Models/Role.js";
 import { MemeOfTheDay } from "../Models/MemeOfTheDay.js";
 import { getTodayUTC } from "../utils/generic.js";
 import { ExtendedClient } from "../client.js";
-
+import path from "path";
 /**
  * Maneja el evento messageReactionAdd
  * @param {MessageReaction} reaction - La reacción al mensaje
@@ -37,13 +37,12 @@ export default {
 				?.send({
 					content: `<@${reaction.message.member.id}> recibió IQ negativo.`,
 					files: [
-						new AttachmentBuilder(
-							"https://cdn.discordapp.com/attachments/1282932921203818509/1392590678177087488/image.png?ex=687016a2&is=686ec522&hm=5f91c3a9afd8e6186967090804c53297659ca4072cccc9ba1dd46ba7657d1adc&",
-							{ name: "iq-negativo.png" }
-						),
+						new AttachmentBuilder(path.join(process.cwd(), "src", "assets", "Images", "iq-negativo.png"), {
+							name: "iq-negativo.png",
+						}),
 					],
 				})
-				.catch(() => null);
+				.catch((e) => console.error(e));
 			await UserRole.findOneAndUpdate(
 				{
 					id: reaction.message.member.id,
