@@ -195,6 +195,16 @@ export default {
 					console.log("Invitación creada: " + entry.changes.find((c) => c.key === "code")?.new);
 					break;
 
+				case AuditLogEvent.WebhookCreate:
+					console.log(ANSI_COLOR.BLUE + "Webhook creado: " + ANSI_COLOR.RESET + diffConsole(entry.changes, entry.targetType));
+					break;
+				case AuditLogEvent.WebhookUpdate:
+					console.log(ANSI_COLOR.BLUE + "Webhook actualizado: " + ANSI_COLOR.RESET + diffConsole(entry.changes, entry.targetType));
+					break;
+				case AuditLogEvent.WebhookDelete:
+					console.log(ANSI_COLOR.RED + "Webhook eliminado: " + ANSI_COLOR.RESET + diffConsole(entry.changes, entry.targetType));
+					break;
+
 				// --- MESSAGE ---
 				case AuditLogEvent.MessageDelete:
 					console.log(ANSI_COLOR.RED + "Mensaje borrado: <#" + entry.targetId + ">" + ANSI_COLOR.RESET);
