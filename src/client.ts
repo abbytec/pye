@@ -108,7 +108,8 @@ export class ExtendedClient extends CoreClient {
 		action: string,
 		type: "error" | "warning" | "info" | "success" = "error",
 		executor = "Desconocido",
-		logChannel: ChannelKeys = "logs"
+		logChannel: ChannelKeys = "logs",
+		isResent: boolean = false
 	) {
 		let textChannel = ExtendedClient.guild?.channels.resolve(getChannelFromEnv(logChannel));
 		if (!textChannel) return console.error("No se pudo encontrar el canal de logs");
@@ -148,6 +149,7 @@ export class ExtendedClient extends CoreClient {
 
 		(textChannel as TextChannel | undefined)
 			?.send({
+				content: isResent ? "Ocurrió un error al intentar loguear esto..." : undefined,
 				embeds: [
 					{
 						color,
@@ -156,7 +158,13 @@ export class ExtendedClient extends CoreClient {
 				],
 				flags: MessageFlags.SuppressNotifications,
 			})
-			.catch((e) => console.error(e));
+			.catch((e) => {
+				if (logChannel !== "logs") {
+					ExtendedClient.auditLog(action, type, executor, "logs", true);
+				} else {
+					console.error(e);
+				}
+			});
 	}
 	private globalErrorHandlerInitializer() {
 		process.on("unhandledRejection", (reason, promise) => {
