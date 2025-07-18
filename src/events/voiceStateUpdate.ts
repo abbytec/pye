@@ -14,6 +14,8 @@ export default {
 		if (!userId || isBot) return;
 		let logChannel = (client.channels.cache.get(getChannelFromEnv("voiceLogs")) ??
 			client.channels.resolve(getChannelFromEnv("voiceLogs"))) as TextChannel;
+		let errorLogChannel = (client.channels.cache.get(getChannelFromEnv("logs")) ??
+			client.channels.resolve(getChannelFromEnv("logs"))) as TextChannel;
 
 		let embed = new EmbedBuilder().setTimestamp();
 
@@ -65,7 +67,10 @@ export default {
 		// mute o silence manuales
 		const deafChange = oldState.serverDeaf !== newState.serverDeaf;
 		const silenceChange = oldState.serverMute !== newState.serverMute;
-		if (embed.data.description) await logChannel.send({ embeds: [embed] });
+		if (embed.data.description)
+			await logChannel
+				.send({ embeds: [embed] })
+				.catch(() => errorLogChannel.send("Error al intentar loguear eventos de canales de voz.").catch(() => null));
 
 		if (deafChange || silenceChange) {
 			logChannel = (client.channels.cache.get(getChannelFromEnv("bansanciones")) ??
@@ -100,7 +105,9 @@ export default {
 				const executor = auditEntry.executor;
 				desc = desc + (executor ? `\n Por: **${executor.tag}**` : "");
 				embed.setDescription(desc);
-				await logChannel.send({ embeds: [embed] });
+				await logChannel
+					.send({ embeds: [embed] })
+					.catch(() => errorLogChannel.send("Error al intentar loguear eventos de canales de voz.").catch(() => null));
 			}
 		}
 	},
