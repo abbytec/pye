@@ -70,7 +70,9 @@ export default {
 		if (embed.data.description)
 			await logChannel
 				.send({ embeds: [embed] })
-				.catch(() => errorLogChannel.send("Error al intentar loguear eventos de canales de voz.").catch(() => null));
+				.catch(() =>
+					errorLogChannel.send({ content: "Error al intentar loguear eventos de canales de voz.", embeds: [embed] }).catch(() => null)
+				);
 
 		if (deafChange || silenceChange) {
 			logChannel = (client.channels.cache.get(getChannelFromEnv("bansanciones")) ??
@@ -107,7 +109,11 @@ export default {
 				embed.setDescription(desc);
 				await logChannel
 					.send({ embeds: [embed] })
-					.catch(() => errorLogChannel.send("Error al intentar loguear eventos de canales de voz.").catch(() => null));
+					.catch(() =>
+						errorLogChannel
+							.send({ content: "Error al intentar loguear eventos de canales de voz.", embeds: [embed] })
+							.catch(() => null)
+					);
 			}
 		}
 	},
