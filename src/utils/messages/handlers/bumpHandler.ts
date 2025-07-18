@@ -92,7 +92,7 @@ export async function bumpEmitter(message: Message): Promise<void> {
 				`¡ Gracias por ese bump <@${ganadorId}> !\nHas recibido ${pyecoin} **${bumpAmount}** como recompensa.\n En 2 horas avisaré nuevamente cuando sea momento de bumpear!`
 			);
 
-		await (message.channel as TextChannel).send({ embeds: [embed] });
+		await (message.channel as TextChannel | undefined)?.send({ embeds: [embed] });
 
 		// Notificar al usuario que puede hacer bump nuevamente después de 2 horas
 		setTimeout(async () => {
@@ -105,8 +105,8 @@ export async function bumpEmitter(message: Message): Promise<void> {
 					],
 				})
 				.catch(() => null);
-			await (message.channel as TextChannel)
-				.send({
+			await (message.channel as TextChannel | undefined)
+				?.send({
 					embeds: [
 						new EmbedBuilder()
 							.setDescription(
