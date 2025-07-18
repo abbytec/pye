@@ -110,7 +110,8 @@ export class ExtendedClient extends CoreClient {
 		executor = "Desconocido",
 		logChannel: ChannelKeys = "logs"
 	) {
-		let textChannel = ExtendedClient.guild?.channels.resolve(getChannelFromEnv(logChannel)) as TextChannel;
+		let textChannel = ExtendedClient.guild?.channels.resolve(getChannelFromEnv(logChannel));
+		if (!textChannel) return console.error("No se pudo encontrar el canal de logs");
 		let color;
 		if (type === "error") {
 			color = COLORS.errRed;
@@ -145,7 +146,7 @@ export class ExtendedClient extends CoreClient {
 			});
 		}
 
-		textChannel
+		(textChannel as TextChannel | undefined)
 			?.send({
 				embeds: [
 					{
@@ -160,7 +161,7 @@ export class ExtendedClient extends CoreClient {
 	private globalErrorHandlerInitializer() {
 		process.on("unhandledRejection", (reason, promise) => {
 			console.error("Unhandled Rejection at:", promise, "reason:", reason);
-			(ExtendedClient.guild?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({
+			(ExtendedClient.guild?.channels.resolve(getChannelFromEnv("logs")) as TextChannel | undefined)?.send({
 				content: `${
 					process.env.NODE_ENV === "development" ? `@here` : "<@220683580467052544>"
 				}Error en promesa no capturado, razon: ${reason}. Promesa: \`\`\`js\n${inspect(promise)}\`\`\``,
@@ -171,7 +172,7 @@ export class ExtendedClient extends CoreClient {
 		// Manejar excepciones no capturadas
 		process.on("uncaughtException", (error) => {
 			console.error("Uncaught Exception:", error);
-			(ExtendedClient.guild?.channels.resolve(getChannelFromEnv("logs")) as TextChannel).send({
+			(ExtendedClient.guild?.channels.resolve(getChannelFromEnv("logs")) as TextChannel | undefined)?.send({
 				content: `${process.env.NODE_ENV === "development" ? `@here` : "<@220683580467052544>"}Error no capturado (${
 					error.message
 				}):\n \`\`\`js\n${error.stack}\`\`\``,
