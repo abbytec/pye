@@ -121,7 +121,7 @@ async function logDeletion(
 				},
 			],
 		})
-		.catch(() => null);
+		.catch(() => console.error("No se pudo enviar el log de mensajes"));
 
 	return msg?.url ?? null;
 }

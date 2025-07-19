@@ -56,20 +56,22 @@ export async function messageGuard(message: Message<true>, client: ExtendedClien
 	return false;
 }
 function logCommand(message: MessageInteraction, botDisplayName: String) {
-	(ExtendedClient.guild?.channels.cache.get(getChannelFromEnv("logMessages")) as TextChannel | undefined)?.send({
-		embeds: [
-			new EmbedBuilder().setColor(COLORS.pyeLightBlue).setFields([
-				{
-					name: "Autor",
-					value: `\`${message.user.username}>\` (${message.user.id})`,
-					inline: true,
-				},
-				{
-					name: "Comando",
-					value: `${botDisplayName} /${message.commandName}`,
-					inline: true,
-				},
-			]),
-		],
-	});
+	(ExtendedClient.guild?.channels.cache.get(getChannelFromEnv("logMessages")) as TextChannel | undefined)
+		?.send({
+			embeds: [
+				new EmbedBuilder().setColor(COLORS.pyeLightBlue).setFields([
+					{
+						name: "Autor",
+						value: `\`${message.user.username}>\` (${message.user.id})`,
+						inline: true,
+					},
+					{
+						name: "Comando",
+						value: `${botDisplayName} /${message.commandName}`,
+						inline: true,
+					},
+				]),
+			],
+		})
+		.catch(() => console.error("No se pudo enviar el log de mensajes"));
 }

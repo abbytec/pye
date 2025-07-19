@@ -33,7 +33,7 @@ export default {
 						throw new Error("Archivo no encontrado");
 					}
 					const attachment = new AttachmentBuilder(filePath);
-					await (message.guild.channels.cache.get(getChannelFromEnv("logMessages")) as TextChannel)
+					await (message.guild.channels.resolve(getChannelFromEnv("logMessages")) as TextChannel)
 						?.send({
 							embeds: [
 								new EmbedBuilder()
@@ -44,13 +44,14 @@ export default {
 							],
 							files: [attachment],
 						})
+						.catch(() => console.error("No se pudo enviar el log de mensajes"))
 						.then(
 							async () =>
 								await thread
 									.delete()
 									.then(() => console.log(`Hilo ${thread?.name} eliminado porque su mensaje principal fue borrado.`))
 						)
-						.catch(null)
+						.catch(() => null)
 						.finally(() => fs.unlinkSync(filePath));
 				} catch (error) {
 					console.error("Error al guardar la transcripción:", error);

@@ -32,9 +32,11 @@ export async function checkCooldownComparte(msg: Message<boolean>, client: Exten
 						);
 					cooldownPost ??= post.date.getTime() + 1000 * 60 * 60 * 24 * 7 - Date.now();
 					const msgExtension = msg.channel.id == post.messageId ? "" : `, en el canal <#${msg.channel.id}>`;
-					await logMessagesChannel.send({
-						content: `Se eliminó un post duplicado, copia de ${oldMessageLink}${msgExtension}`,
-					});
+					await logMessagesChannel
+						.send({
+							content: `Se eliminó un post duplicado, copia de ${oldMessageLink}${msgExtension}`,
+						})
+						.catch(() => console.error("No se pudo enviar el log de mensajes"));
 				} else if (distance > 0.75) {
 					const moderatorChannel = (client.channels.cache.get(getChannelFromEnv("notificaciones")) ??
 						client.channels.resolve(getChannelFromEnv("notificaciones"))) as TextChannel;
