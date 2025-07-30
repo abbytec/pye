@@ -1,6 +1,14 @@
 // src/commands/General/help.ts
 
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember } from "discord.js";
+import {
+        SlashCommandBuilder,
+        EmbedBuilder,
+        GuildMember,
+        ActionRowBuilder,
+        StringSelectMenuBuilder,
+        ComponentType,
+        MessageActionRowComponentBuilder,
+} from "discord.js";
 
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
@@ -15,70 +23,86 @@ import CommandService from "../../core/services/CommandService.js";
 
 export default {
 	group: "📜 - Ayuda",
-	data: new SlashCommandBuilder()
-		.setName("help")
-		.setDescription("Muestra la lista de comandos disponibles agrupados por grupo.")
-		.addStringOption((option) => option.setName("grupo").setDescription("Nombre del grupo para filtrar").setRequired(false)),
-	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("help", 6e4), deferInteraction()],
-		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
-			const client = interaction.client;
-			const member = interaction.member as GuildMember;
+        data: new SlashCommandBuilder()
+                .setName("help")
+                .setDescription("Muestra la lista de comandos disponibles agrupados por grupo.")
+                .addStringOption((option) => option.setName("grupo").setDescription("Nombre del grupo para filtrar").setRequired(false)),
+        execute: composeMiddlewares(
+                [verifyIsGuild(process.env.GUILD_ID ?? ""), verifyCooldown("help", 6e4), deferInteraction()],
+                async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
+                        const member = interaction.member as GuildMember;
 
-			const staffStatus = member.roles.cache.some((role) => getRoles("staff", "moderadorChats").includes(role.id));
+                        const staffStatus = member.roles.cache.some((role) => getRoles("staff", "moderadorChats").includes(role.id));
 
-			const groupFilter = interaction.options.getString("grupo")?.toLowerCase();
+                        // Agrupar los comandos por grupo
+                        const groups: Record<string, Array<{ name: string; description: string }>> = {};
 
-			// Agrupar los comandos por grupo
-			const groups: Record<string, Array<{ name: string; description: string }>> = {};
+                        CommandService.commands.forEach((command) => {
+                                if (command.group) {
+                                        if (command.group.toLowerCase().includes("admin") && !staffStatus) return;
+                                        if (!groups[command.group]) groups[command.group] = [];
+                                        groups[command.group].push({
+                                                name: `/${command.data.name}`,
+                                                description: command.data.description,
+                                        });
+                                } else {
+                                        if (!groups["😊 - General"]) groups["😊 - General"] = [];
+                                        groups["😊 - General"].push({
+                                                name: `/${command.data.name}`,
+                                                description: command.data.description,
+                                        });
+                                }
+                        });
 
-			CommandService.commands.forEach((command) => {
-				// Si el grupo contiene 'admin' y el usuario no es staff, omitir este grupo
-				if (command.group) {
-					if (command.group.toLowerCase().includes("admin") && !staffStatus) return;
+                        if (Object.keys(groups).length === 0) {
+                                return replyError(interaction, "No se encontraron comandos para mostrar.");
+                        }
 
-					if (groupFilter && !command.group.toLowerCase().includes(groupFilter)) return;
+                        const selectMenu = new StringSelectMenuBuilder()
+                                .setCustomId("help_category")
+                                .setPlaceholder("Selecciona una categoría")
+                                .addOptions(Object.keys(groups).map((g) => ({ label: g, value: g })));
 
-					if (!groups[command.group]) groups[command.group] = [];
+                        const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
 
-					groups[command.group].push({
-						name: `/${command.data.name}`,
-						description: command.data.description,
-					});
-				} else {
-					if (groupFilter && !"😊 - General".includes(groupFilter)) return;
+                        const welcomeEmbed = new EmbedBuilder()
+                                .setTitle("📜 Ayuda")
+                                .setDescription("¡Bienvenido al menú de ayuda! Elige una categoría en el menú desplegable para ver sus comandos.")
+                                .setColor(COLORS.pyeLightBlue)
+                                .setTimestamp();
 
-					if (!groups["😊 - General"]) groups["😊 - General"] = [];
-					groups["😊 - General"].push({
-						name: `/${command.data.name}`,
-						description: command.data.description,
-					});
-				}
-			});
+                        await replyOk(interaction, [welcomeEmbed], undefined, [row], undefined, undefined, true);
 
-			if (Object.keys(groups).length === 0) {
-				return replyError(interaction, "No se encontraron comandos para el grupo especificado.");
-			}
+                        const message = await interaction.fetchReply();
 
-			// Crear el embed para listar los comandos
-			const embed = new EmbedBuilder()
-				.setTitle("📜 Lista de Comandos")
-				.setDescription("Aquí tienes una lista de todos los comandos disponibles, agrupados por categoría.")
-				.setColor(COLORS.pyeLightBlue)
-				.setTimestamp();
+                        const collector = message.createMessageComponentCollector<ComponentType.StringSelect>({
+                                componentType: ComponentType.StringSelect,
+                                time: 120000,
+                        });
 
-			// Añadir cada grupo como un campo en el embed
-			for (const [group, commands] of Object.entries(groups)) {
-				const commandList = commands.map((cmd) => `**${cmd.name}**: ${cmd.description}`).join("\n");
+                        collector.on("collect", async (i) => {
+                                if (!i.isStringSelectMenu()) return;
+                                if (i.user.id !== interaction.user.id) return await replyError(i, "No puedes interactuar con este menú.");
 
-				embed.addFields({
-					name: `**${group.charAt(0).toUpperCase() + group.slice(1)}**`,
-					value: commandList,
-					inline: false,
-				});
-			}
+                                const category = i.values[0];
+                                const commands = groups[category];
+                                if (!commands) return await replyError(i, "Categoría no encontrada.");
 
-			return await replyOk(interaction, [embed], undefined, undefined, undefined, undefined, true);
-		}
-	),
+                                const embed = new EmbedBuilder()
+                                        .setTitle(`📜 ${category}`)
+                                        .setDescription(commands.map((cmd) => `**${cmd.name}**: ${cmd.description}`).join("\n"))
+                                        .setColor(COLORS.pyeLightBlue)
+                                        .setTimestamp();
+
+                                await i.update({ embeds: [embed], components: [row] });
+                        });
+
+                        collector.on("end", async () => {
+                                const disabledRow = new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+                                        StringSelectMenuBuilder.from(selectMenu).setDisabled(true)
+                                );
+                                await interaction.editReply({ components: [disabledRow] }).catch(() => null);
+                        });
+                }
+        ),
 } as Command;
