@@ -9,7 +9,8 @@ const normalizeUrl = (url: string) =>
 	url
 		.replace(/\?.*$/, "") // elimina query params
 		.replace(/^https?:\/\//, "")
-		.replace(/\/$/, "");
+		.replace(/\/$/, "")
+		.toLowerCase();
 
 export async function checkUrlSpam(message: Message<boolean>, client: ExtendedClient) {
 	if (!message.content.includes("http")) return false; // early exit
@@ -19,6 +20,7 @@ export async function checkUrlSpam(message: Message<boolean>, client: ExtendedCl
 
 	// Optionally avoid duplicate URLs within a message
 	const seen = new Set<string>();
+	let triggered = false;
 
 	for (const url of matches) {
 		const norm = normalizeUrl(url);
@@ -26,8 +28,10 @@ export async function checkUrlSpam(message: Message<boolean>, client: ExtendedCl
 		seen.add(norm);
 
 		const key = `${message.author.id}-${norm}`;
-		if (urlTracker.increment(key))
+		if (urlTracker.increment(key)) {
+			triggered = true;
 			await urlTracker.punish(message, client, "url", "Enviar el mismo enlace repetidamente se considera spam.");
+		}
 	}
-	return false;
+	return triggered;
 }
