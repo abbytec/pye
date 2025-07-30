@@ -18,8 +18,6 @@ import {
 	AUTHORIZED_BOTS,
 	COLORS,
 	commandProcessingLimiter,
-	DISBOARD_UID,
-	EMOJIS,
 	getChannelFromEnv,
 	getHelpForumsIdsFromEnv,
 	getRoleFromEnv,
@@ -28,19 +26,17 @@ import {
 } from "../utils/constants.js";
 import { Users } from "../Models/User.js";
 import { getCooldown, setCooldown } from "../utils/cooldowns.js";
-import { checkRole, convertMsToUnixTimestamp } from "../utils/generic.js";
+import { checkRole } from "../utils/generic.js";
 import { checkHelp } from "../utils/checkhelp.js";
 import { bumpHandler } from "../utils/messages/handlers/bumpHandler.js";
 
 import { messageGuard } from "../security/messageGuard.js";
-import { hashMessage } from "../security/messageHashing.js";
 import { checkQuestLevel, IQuest } from "../utils/quest.js";
 import { ParameterError } from "../interfaces/IPrefixChatInputCommand.js";
 import { manageAIResponse } from "../utils/ai/aiRequestHandler.js";
 import { checkCooldownComparte } from "../security/checkCooldownComparte.js";
 import AIUsageControlService from "../core/services/AIUsageControlService.js";
 import CommandService from "../core/services/CommandService.js";
-import ForumPostControlService from "../core/services/ForumPostControlService.js";
 import TrendingService from "../core/services/TrendingService.js";
 import { scanFile, ScanResult } from "../utils/scanFile.js";
 
@@ -196,7 +192,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 								],
 								components: [finishEnrollmentsBtn],
 							});
-							
+
 							if (msg.attachments.size > 0) {
 								const scans = new Map<string, ScanResult>();
 
@@ -208,7 +204,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 								);
 
 								const totalFiles = scans.size;
-								const infectedFiles = Array.from(scans.values()).filter(r => r.is_infected).length;
+								const infectedFiles = Array.from(scans.values()).filter((r) => r.is_infected).length;
 								const infectedRatio = infectedFiles / totalFiles;
 
 								let color: "Red" | "Yellow" | "Green" = "Green";
@@ -230,11 +226,10 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 								let description = "";
 
 								scans.forEach((result, url) => {
-									const fileName = decodeURIComponent(new URL(url).pathname.split('/').pop() ?? 'archivo');
+									const fileName = decodeURIComponent(new URL(url).pathname.split("/").pop() ?? "archivo");
 									const estado = result.is_infected ? "⚠️ Infectado" : "✅ Limpio";
-									const virusList = result.is_infected && result.viruses.length
-										? `\n**Virus:** ${result.viruses.join(", ")}`
-										: "";
+									const virusList =
+										result.is_infected && result.viruses.length ? `\n**Virus:** ${result.viruses.join(", ")}` : "";
 
 									description += `**[${fileName}](${url})**\n**Estado:** ${estado}${virusList}\n\n`;
 								});
@@ -348,7 +343,6 @@ async function registerNewTrends(message: Message<boolean>, client: ExtendedClie
 	});
 }
 
-
 export async function checkAttachment(url: string) {
 	try {
 		const response = await fetch(url);
@@ -361,7 +355,7 @@ export async function checkAttachment(url: string) {
 		const buffer = await Buffer.from(arrayBuff);
 
 		const upload = {
-			name: url.split('/').pop() || 'file',
+			name: url.split("/").pop() || "file",
 			size: buffer.length,
 			data: buffer,
 		};
@@ -370,7 +364,7 @@ export async function checkAttachment(url: string) {
 		return result;
 	} catch (error) {
 		return {
-			name: url.split('/').pop() || 'file',
+			name: url.split("/").pop() || "file",
 			is_infected: true,
 			viruses: ["No se pudo analizar el archivo"],
 		};
