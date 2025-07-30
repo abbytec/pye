@@ -33,7 +33,7 @@ export default {
 
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario en el servidor.");
 
-			if (member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.maby)
+			if (member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.ldarki || user.id === USERS.abby || user.id === USERS.maby)
 				return await replyError(interaction, "No puedes darle timeout a un miembro del staff.");
 
 			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes darte timeout a ti mismo.");

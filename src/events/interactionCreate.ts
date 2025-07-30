@@ -85,12 +85,6 @@ export default {
 			} else if (customId.startsWith("session_pagination")) {
 				return handleGameSessionPagination(interaction);
 			} else if (/^(point-)\d{17,19}$/.test(customId)) {
-				if (userId === USERS.maby) {
-					await interaction.reply({
-						content: "Tranquila, tenés un equipo hermoso que tambien se podría encargar de esto! :D",
-						ephemeral: true,
-					});
-				}
 				return helpPoint(interaction, customId.slice(6));
 			}
 		}

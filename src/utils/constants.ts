@@ -72,42 +72,42 @@ const CHANNELS = {
 export type ChannelKeys = keyof typeof CHANNELS;
 
 const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
-	recursos: "1400230505277816865",
-	general: "1400230504925757462",
-	reglas: "1400230504636223556",
-	roles: "1400230504636223557",
-	filosofiaPolitica: "1400230504925757464",
-	chatProgramadores: "1400230504925757463",
-	ofreceServicios: "1400230505277816862",
-	proyectosNoPagos: "1400230505277816863",
-	ofertasDeEmpleos: "1400230504925757469",
-	openSource: "1400230505277816866",
-	sugerencias: "1400230504636223560",
-	casinoPye: "1400230504925757467",
+	recursos: "1296190631269372055",
+	general: "1296190631269372046",
+	reglas: "1296190630724370503",
+	roles: "1296190631026233345",
+	filosofiaPolitica: "1296190631269372048",
+	chatProgramadores: "1296190631269372047",
+	ofreceServicios: "1296190631269372051",
+	proyectosNoPagos: "1296190631269372052",
+	ofertasDeEmpleos: "1296190631269372050",
+	openSource: "1296190631269372053",
+	sugerencias: "1296190631026233348",
+	casinoPye: "1296190631533608961",
 	"html-css": "1300952181171818536",
-	starboard: "1400230504636223559",
-	tickets: "1400230504636223558",
-	ticketsLogs: "1400230506049835038",
+	starboard: "1296190631026233347",
+	tickets: "1296190631026233346",
+	ticketsLogs: "1296190632792031232",
 	retos: "1309615377235312681",
 	anuncios: "1310011599003586600",
-	invitaciones: "1400230505831727129",
-	memes: "1400230504925757466",
-	gruposDeEstudio: "1400230505277816867",
+	invitaciones: "1296190632317943908",
+	memes: "1296190631533608960",
+	gruposDeEstudio: "1296190631269372054",
 
 	// staff
-	notificaciones: "1400230506049835037",
-	logPuntos: "1400230506049835039",
-	logMessages: "1400230505831727128",
-	bansanciones: "1400230505831727130",
-	logs: "1400230505831727124",
-	voiceLogs: "1400230505831727133",
-	staff: "1400230505831727125",
-	moderadores: "1400230505831727126",
+	notificaciones: "1296190632317943913",
+	logPuntos: "1296190632317943914",
+	logMessages: "1296190632020414603",
+	bansanciones: "1296190632317943909",
+	logs: "1296190632020414594",
+	voiceLogs: "1296190632317943912",
+	staff: "1296190632020414595",
+	moderadores: "1296190632020414596",
 
 	// categorias
-	categoryStaff: "1400230505630273544",
-	categoryComunidad: "1400230504925757461",
-	categoryForos: "1290372079279145092",
+	categoryStaff: "1296190631810568283",
+	categoryComunidad: "1296190631026233354",
+	categoryForos: "1296190631533608965",
 };
 
 const isDevelopment = process.env.NODE_ENV === "development";
@@ -203,6 +203,8 @@ export async function getChannel(
 
 export const USERS = {
 	disboard: "302050872383242240",
+	ldarki: "407570755673522176",
+	abby: "220683580467052544",
 	maby: "602240617862660096",
 };
 
@@ -371,17 +373,7 @@ export const NEKOTINA_UID = "429457053791158281";
 export const pyecoin = "<a:PyEcoin:908088648245850142>";
 
 // Bots autorizados a enviar enlaces de discord
-export const AUTHORIZED_BOTS = [
-	process.env.CLIENT_ID ?? "",
-	// Auxilio me sancionaron (el webhook de #tickets donde figura el server de apelaciones)
-	"1295616037974311012",
-	// Hook de reglas
-	"926516578315563008",
-	MUDAE_UID,
-	INVITE_TRACKER_UID,
-	NOT_SO_BOT_UID,
-	NEKOTINA_UID,
-];
+export const AUTHORIZED_BOTS = [process.env.CLIENT_ID ?? "", MUDAE_UID, INVITE_TRACKER_UID, NOT_SO_BOT_UID, NEKOTINA_UID];
 
 export const messagesProcessingLimiter = new Bottleneck({
 	maxConcurrent: 35, // Máximo de mensajes a procesar en paralelo
