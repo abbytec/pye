@@ -270,6 +270,14 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 			break;
 		}
 		case getChannelFromEnv("memes"):
+			if (msg.attachments.size === 0) {
+				await msg.delete().catch(() => null);
+				await (msg.channel as TextChannel)
+					.send({
+						content: `🚫 <@${msg.author.id}>, este canal es únicamente para enviar memes.`,
+					})
+					.then((aviso) => setTimeout(() => aviso.delete().catch(() => null), 10000));
+			}
 			msg.react("💤").catch(() => null);
 			msg.react("♻️").catch(() => null);
 			msg.react("<:xdlol:922955890200576001>").catch(() => null);
