@@ -56,7 +56,7 @@ export const spamFilterList: IFilter[] = [
 
 const validInvites: string[] = [
 	"1324546600533626951", // pyecraft
-	"1292897627431763999", // Server de apelaciónes
+	"1399938376442052691", // Server de apelaciónes
 	process.env.GUILD_ID ?? "",
 ];
 
