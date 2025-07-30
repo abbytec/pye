@@ -69,7 +69,7 @@ export default {
 									.setDescription(
 										`Actualmente, **no soportamos comandos** a través de **mensajes directos**.\n\n` +
 											`Si te encuentras **baneado** o **silenciado** en nuestro servidor, puedes **apelar** en el siguiente enlace:\n` +
-											`👉 [Apela aquí](https://discord.gg/F8QxEMtJ3B)\n\n` +
+											`👉 [Apela aquí](https://discord.gg/CsjZVuWK84)\n\n` +
 											`Si deseas chatear con la IA debes tener \`.gg/programación\` en tu estado de discord.`
 									)
 									.setThumbnail(client.user?.displayAvatarURL() ?? "")

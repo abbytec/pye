@@ -71,7 +71,7 @@ export default {
 									iconURL: interaction.guild?.iconURL() ?? undefined,
 								})
 								.setDescription(
-									"Has sido baneado del servidor de **PyE**. \nPuedes intentar apelar a tu desbaneo en este servidor:\nhttps://discord.gg/F8QxEMtJ3B"
+									"Has sido baneado del servidor de **PyE**. \nPuedes intentar apelar a tu desbaneo en este servidor:\nhttps://discord.gg/CsjZVuWK84"
 								)
 								.addFields([{ name: "Razón", value: reason }])
 								.setThumbnail(interaction.guild?.iconURL({ extension: "gif" }) ?? null)

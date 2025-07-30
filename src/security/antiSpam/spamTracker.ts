@@ -100,7 +100,7 @@ export async function deleteAllMessagesFromAndKickUser(message: Message<boolean>
 			`Fuiste expulsado por ${getTimeoutReason(
 				type
 			)}. Si creés que es un error, contactá a un moderador.\n Puedes **apelar** en el siguiente enlace:\n` +
-				`👉 [Apela aquí](https://discord.gg/F8QxEMtJ3B)`
+				`👉 [Apela aquí](https://discord.gg/CsjZVuWK84)`
 		)
 		.catch(() => null);
 	await message.member

@@ -3,6 +3,20 @@ import { Role } from "discord.js";
 import { getRoleName } from "../constants.js";
 import cardRoles from "../constants/card-roles.js";
 
+type CanvasTextAlign = "start" | "end" | "left" | "right" | "center";
+type CanvasTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
+
+interface DrawTextOptions {
+	font?: string;
+	textColor?: string;
+	boxColor?: string;
+	paddingX?: number;
+	paddingY?: number;
+	radius?: number;
+	textAlign?: CanvasTextAlign;
+	textBaseline?: CanvasTextBaseline;
+}
+
 function formatNumber(numStr: string) {
 	let num = parseFloat(numStr.replace(/,/g, ""));
 
@@ -41,7 +55,9 @@ function drawTextWithBox(
 	text: string,
 	x: number,
 	y: number,
-	{
+	options: DrawTextOptions = {}
+) {
+	const {
 		font = "bold 30px Rajdhani",
 		textColor = "#FFFFFF",
 		boxColor = "rgba(0, 0, 0, 0.5)",
@@ -50,8 +66,8 @@ function drawTextWithBox(
 		radius = 10,
 		textAlign = "center",
 		textBaseline = "middle",
-	}
-) {
+	} = options;
+
 	ctx.save();
 	ctx.font = font;
 	ctx.textAlign = textAlign;

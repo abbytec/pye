@@ -103,7 +103,7 @@ export async function applyTimeout(
 						.setDescription(
 							`Has sido aislado en el servidor de **PyE**.\nPodrás interactuar en los canales una vez tu sanción haya terminado. Recuerda leer <#${getChannelFromEnv(
 								"reglas"
-							)}> para evitar que vuelva a pasar y conocer las sanciones. \nTambién puedes intentar apelar a tu des-aislamiento desde este otro servidor:\nhttps://discord.gg/F8QxEMtJ3B`
+							)}> para evitar que vuelva a pasar y conocer las sanciones. \nTambién puedes intentar apelar a tu des-aislamiento desde este otro servidor:\nhttps://discord.gg/CsjZVuWK84`
 						)
 						.addFields([
 							{ name: "Tiempo", value: `\`${ms(duration, { long: true })}\``, inline: true },
