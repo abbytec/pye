@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"prepare": "husky install",
-		"dev": "cross-env NODE_ENV=development node --loader ts-node/esm src/index.ts --transpile-only",
+		"dev": "cross-env NODE_ENV=development tsx src/index.ts",
 		"build": "rimraf dist && tsc && cp -R src/assets dist",
 		"start": "node dist/index.js",
 		"deploy-slash-commands-dev": "cross-env NODE_ENV=development node --loader ts-node/esm src/deploy-commands.ts",
@@ -20,6 +20,7 @@
 		"@napi-rs/canvas": "^0.1.55",
 		"agenda": "^5.0.0",
 		"bottleneck": "^2.19.5",
+		"clamscan": "^2.4.0",
 		"discord.js": "^14.19.3",
 		"dotenv": "^16.4.7",
 		"gif-encoder": "^0.7.2",
@@ -45,6 +46,7 @@
 		"cross-env": "^7.0.3",
 		"husky": "^9.1.7",
 		"ts-node": "^10.9.2",
-		"ts-node-dev": "^2.0.0"
+		"ts-node-dev": "^2.0.0",
+		"tsx": "^4.20.3"
 	}
 }

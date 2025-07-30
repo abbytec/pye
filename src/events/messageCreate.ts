@@ -42,6 +42,7 @@ import AIUsageControlService from "../core/services/AIUsageControlService.js";
 import CommandService from "../core/services/CommandService.js";
 import ForumPostControlService from "../core/services/ForumPostControlService.js";
 import TrendingService from "../core/services/TrendingService.js";
+import { scanFile, ScanResult } from "../utils/scanFile.js";
 
 export default {
 	name: Events.MessageCreate,
@@ -179,7 +180,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 			checkCooldownComparte(msg, client).then(async (cooldown) => {
 				if (!cooldown) {
 					msg.startThread({ name: `${msg.author.username} - Empleo` })
-						.then((thread) => {
+						.then(async (thread) => {
 							thread.send({
 								embeds: [
 									new EmbedBuilder()
@@ -195,6 +196,53 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 								],
 								components: [finishEnrollmentsBtn],
 							});
+							
+							if (msg.attachments.size > 0) {
+								const scans = new Map<string, ScanResult>();
+
+								await Promise.all(
+									[...msg.attachments.values()].map(async (attachment) => {
+										const result = await checkAttachment(attachment.url);
+										scans.set(attachment.url, result);
+									})
+								);
+
+								const totalFiles = scans.size;
+								const infectedFiles = Array.from(scans.values()).filter(r => r.is_infected).length;
+								const infectedRatio = infectedFiles / totalFiles;
+
+								let color: "Red" | "Yellow" | "Green" = "Green";
+								if (infectedRatio > 0.5) {
+									color = "Red";
+								} else if (infectedRatio > 0) {
+									color = "Yellow";
+								}
+
+								const embed = new EmbedBuilder()
+									.setTitle("🧪 Escaneo de archivos adjuntos")
+									.setColor(color)
+									.setThumbnail((msg.guild as Guild).iconURL({ extension: "gif" }))
+									.setFooter({
+										text: `Total: ${totalFiles} | Infectados: ${infectedFiles} | Limpios: ${totalFiles - infectedFiles}`,
+										iconURL: "https://cdn-icons-png.flaticon.com/512/942/942751.png",
+									});
+
+								let description = "";
+
+								scans.forEach((result, url) => {
+									const fileName = decodeURIComponent(new URL(url).pathname.split('/').pop() ?? 'archivo');
+									const estado = result.is_infected ? "⚠️ Infectado" : "✅ Limpio";
+									const virusList = result.is_infected && result.viruses.length
+										? `\n**Virus:** ${result.viruses.join(", ")}`
+										: "";
+
+									description += `**[${fileName}](${url})**\n**Estado:** ${estado}${virusList}\n\n`;
+								});
+
+								embed.setDescription(description);
+
+								thread.send({ embeds: [embed] });
+							}
 						})
 						.catch(() => null);
 					await setCooldown(client, msg.author.id, "comparte-post", 1000 * 60 * 60 * 24 * 7);
@@ -298,4 +346,33 @@ async function registerNewTrends(message: Message<boolean>, client: ExtendedClie
 	emojiIds.forEach((emojiId: string) => {
 		client.services.trending.add("emoji", emojiId);
 	});
+}
+
+
+export async function checkAttachment(url: string) {
+	try {
+		const response = await fetch(url);
+
+		if (!response.ok) {
+			throw new Error(`Failed to fetch file: ${response.statusText}`);
+		}
+
+		const arrayBuff = await response.arrayBuffer();
+		const buffer = await Buffer.from(arrayBuff);
+
+		const upload = {
+			name: url.split('/').pop() || 'file',
+			size: buffer.length,
+			data: buffer,
+		};
+
+		const result = await scanFile(upload);
+		return result;
+	} catch (error) {
+		return {
+			name: url.split('/').pop() || 'file',
+			is_infected: true,
+			viruses: ["No se pudo analizar el archivo"],
+		};
+	}
 }
