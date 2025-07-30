@@ -206,7 +206,7 @@ async function generateRedisLeaderboard(type: LeaderboardType, page: number, use
 
 				let rankIcon = `${start + index + 1}`;
 				if (start + index + 1 === 1) {
-					rankIcon = type === "caps" ? "<:policebadge:1313338489290489897>" : "<:server_owner:1313337498893815858>";
+					rankIcon = type === "caps" ? "<:policebadge:1313338489290489897>" : "<:king_cheems:796227338316415007>";
 				}
 
 				return `**${rankIcon}.** [${

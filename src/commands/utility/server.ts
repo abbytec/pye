@@ -131,7 +131,7 @@ export default {
 					.addFields(
 						{
 							name: "• Propietario",
-							value: `<:server_owner:1313337498893815858> ${owner.username}`,
+							value: `<:king_cheems:796227338316415007> ${owner.username}`,
 						},
 						{
 							name: "Descripción",
