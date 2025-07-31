@@ -18,6 +18,7 @@ import { capitalizeFirstLetter } from "../utils/generic.js";
 import { ticketOptions } from "../utils/constants/ticketOptions.js";
 import { getDailyChallenge } from "../utils/challenges/dailyChallenge.js";
 import AutoRoleService from "../core/services/AutoRoleService.js";
+import { createPyechanEmbed, PYECHAN_AUTHOR, PYECHAN_THUMBNAIL } from "../utils/messages/createPyechanEmbed.js";
 
 export default {
 	name: Events.ClientReady,
@@ -125,21 +126,31 @@ async function cronEventsProcessor(client: ExtendedClient) {
 	});
 
 	// Define el trabajo para enviar mensajes cron
-	ExtendedClient.agenda.define("send cron message", async (job: Job) => {
-		const { channelId, content, embed, cronMessageId } = job.attrs.data;
-		const channel = (client.channels.cache.get(channelId) ?? client.channels.resolve(channelId)) as TextChannel;
-		if (channel) {
-			const embedObject = embed ? new EmbedBuilder(embed) : null;
-			await channel
-				.send({
-					content: content ?? undefined,
-					embeds: embedObject ? [embedObject] : [],
-				})
-				.then(() => console.log(`Mensaje cron enviado al canal ${channelId}`))
-				.then(async () => (job.attrs.nextRunAt ? await CronMessage.deleteOne({ _id: cronMessageId }).exec() : null))
-				.catch((error) => console.error(`Error al enviar mensaje cron al canal ${channelId}:`, error));
-		}
-	});
+        ExtendedClient.agenda.define("send cron message", async (job: Job) => {
+                const { channelId, content, embed, cronMessageId } = job.attrs.data;
+                const channel = (client.channels.cache.get(channelId) ?? client.channels.resolve(channelId)) as TextChannel;
+                if (channel) {
+                        let embedObject: EmbedBuilder;
+                        if (embed) {
+                                embedObject = new EmbedBuilder(embed);
+                                if (!embedObject.data.author)
+                                        embedObject.setAuthor(PYECHAN_AUTHOR);
+                                if (!embedObject.data.thumbnail)
+                                        embedObject.setThumbnail(PYECHAN_THUMBNAIL);
+                        } else {
+                                embedObject = createPyechanEmbed(content ?? "");
+                        }
+
+                        await channel
+                                .send({
+                                        content: embed ? content ?? undefined : undefined,
+                                        embeds: [embedObject],
+                                })
+                                .then(() => console.log(`Mensaje cron enviado al canal ${channelId}`))
+                                .then(async () => (job.attrs.nextRunAt ? await CronMessage.deleteOne({ _id: cronMessageId }).exec() : null))
+                                .catch((error) => console.error(`Error al enviar mensaje cron al canal ${channelId}:`, error));
+                }
+        });
 
 	ExtendedClient.agenda.define("daily update client data", async (job: Job) => {
 		await client.updateClientData().catch((error) => console.error(error));
