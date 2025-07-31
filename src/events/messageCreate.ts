@@ -66,7 +66,10 @@ export default {
 										`Actualmente, **no soportamos comandos** a través de **mensajes directos**.\n\n` +
 											`Si te encuentras **baneado** o **silenciado** en nuestro servidor, puedes **apelar** en el siguiente enlace:\n` +
 											`👉 [Apela aquí](https://discord.gg/CsjZVuWK84)\n\n` +
-											`Si deseas chatear con la IA debes tener \`.gg/programación\` en tu estado de discord.`
+											`Si deseas chatear con la IA debes tener \`.gg/programación\` en tu estado de discord.\n` +
+											`Puedes comunicarte con la administración del servidor mediante un ticket en <#${getChannelFromEnv(
+												"tickets"
+											)}>.`
 									)
 									.setThumbnail(client.user?.displayAvatarURL() ?? "")
 									.setTimestamp()

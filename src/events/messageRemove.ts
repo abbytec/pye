@@ -10,22 +10,19 @@ import fs from "fs";
 export default {
 	name: Events.MessageDelete,
 	once: false,
-        async execute(message: Message | PartialMessage) {
-                if (!message.guild) return;
+	async execute(message: Message | PartialMessage) {
+		if (!message.guild) return;
 
-                if (message.partial) {
-                        try {
-                                await message.fetch();
-                        } catch {
-                                return;
-                        }
-                }
+		if (message.partial) {
+			try {
+				await message.fetch();
+			} catch {
+				return;
+			}
+		}
 
-                const hasLeak = await checkCredentialLeak(
-                        message as Message<true>,
-                        message.client as ExtendedClient,
-                );
-                if (hasLeak) return;
+		const hasLeak = await checkCredentialLeak(message as Message<true>, message.client as ExtendedClient);
+		if (hasLeak) return;
 
 		const logChannel = message.guild.channels.resolve(getChannelFromEnv("logMessages")) as TextChannel | null;
 		const author = (message as Message).author;

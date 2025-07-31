@@ -23,14 +23,11 @@ export default {
 		const logChannel = newMessage.guild.channels.resolve(getChannelFromEnv("logMessages")) as TextChannel | null;
 		if (!logChannel) return;
 
-                const author = newMessage.author ?? (oldMessage as Message).author;
-                if (!author) return;
+		const author = newMessage.author ?? (oldMessage as Message).author;
+		if (!author) return;
 
-                const hasLeak = await checkCredentialLeak(
-                        newMessage as Message<true>,
-                        newMessage.client as ExtendedClient,
-                );
-                if (hasLeak) return;
+		const hasLeak = await checkCredentialLeak(newMessage as Message<true>, newMessage.client as ExtendedClient);
+		if (hasLeak) return;
 
 		const before = oldMessage.content?.slice(0, 300) || "—";
 		const after = newMessage.content?.slice(0, 300) || "—";
