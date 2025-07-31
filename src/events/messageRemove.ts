@@ -1,4 +1,12 @@
-import { AttachmentBuilder, EmbedBuilder, Events, Message, TextChannel } from "discord.js";
+import {
+    AttachmentBuilder,
+    AuditLogEvent,
+    EmbedBuilder,
+    Events,
+    Message,
+    PartialMessage,
+    TextChannel,
+} from "discord.js";
 
 import { COLORS, getChannelFromEnv } from "../utils/constants.js";
 import { saveTranscript } from "../utils/generic.js";
@@ -6,21 +14,99 @@ import { saveTranscript } from "../utils/generic.js";
 import fs from "fs";
 
 export default {
-	name: Events.MessageDelete,
-	once: false,
-	async execute(message: Message) {
-		if (!message.guild) return;
-		if (
-			![
-				getChannelFromEnv("recursos"),
-				getChannelFromEnv("ofreceServicios"),
-				getChannelFromEnv("proyectosNoPagos"),
-				getChannelFromEnv("ofertasDeEmpleos"),
-				getChannelFromEnv("linkedin"),
-				getChannelFromEnv("gruposDeEstudio"),
-			].includes(message.channelId)
-		)
-			return;
+        name: Events.MessageDelete,
+        once: false,
+        async execute(message: Message | PartialMessage) {
+                if (!message.guild) return;
+
+                if (message.partial) {
+                        try {
+                                await message.fetch();
+                        } catch {
+                                return;
+                        }
+                }
+
+                const logChannel = message.guild.channels.resolve(
+                        getChannelFromEnv("logMessages")
+                ) as TextChannel | null;
+                const author = (message as Message).author;
+
+                if (logChannel && author) {
+                        const embed = new EmbedBuilder()
+                                .setColor(COLORS.errRed)
+                                .setAuthor({
+                                        name: `${author.tag}`,
+                                        iconURL: author.displayAvatarURL(),
+                                })
+                                .setDescription(
+                                        `Mensaje eliminado en <#${message.channelId}>`
+                                )
+                                .addFields(
+                                        {
+                                                name: "Contenido",
+                                                value: message.content
+                                                        ? `\`\`\`\n${message.content.slice(0, 300)}\n\`\`\``
+                                                        : "—",
+                                        },
+                                        {
+                                                name: "Ir al mensaje",
+                                                value: message.url ? `[Link](${message.url})` : "—",
+                                        }
+                                )
+                                .setTimestamp();
+
+                        try {
+                                const fetched = await message.guild.fetchAuditLogs({
+                                        type: AuditLogEvent.MessageDelete,
+                                        limit: 1,
+                                });
+                                const deletionLog = fetched.entries.first();
+                                if (deletionLog) {
+                                        const { executor, target, extra, createdTimestamp } =
+                                                deletionLog;
+                                        const sameChannel =
+                                                extra &&
+                                                typeof extra === "object" &&
+                                                "channel" in extra &&
+                                                (extra as any).channel.id === message.channelId;
+                                        if (
+                                                executor &&
+                                                sameChannel &&
+                                                target?.id === author.id &&
+                                                Date.now() - createdTimestamp < 5000
+                                        ) {
+                                                embed.addFields({
+                                                        name: "Eliminado por",
+                                                        value: `<@${executor.id}>`,
+                                                });
+                                        }
+                                }
+                        } catch (e) {
+                                console.error(
+                                        "Error obteniendo auditoría de borrado de mensaje:",
+                                        e
+                                );
+                        }
+
+                        logChannel
+                                .send({ embeds: [embed] })
+                                .catch(() =>
+                                        console.error("No se pudo enviar el log de mensajes")
+                                );
+                }
+
+                if (
+                        ![
+                                getChannelFromEnv("recursos"),
+                                getChannelFromEnv("ofreceServicios"),
+                                getChannelFromEnv("proyectosNoPagos"),
+                                getChannelFromEnv("ofertasDeEmpleos"),
+                                getChannelFromEnv("linkedin"),
+                                getChannelFromEnv("gruposDeEstudio"),
+                        ].includes(message.channelId)
+                )
+                        return;
 
 		// Si el mensaje tiene hilos asociados, eliminarlos.
 		if (message.hasThread) {
@@ -33,11 +119,11 @@ export default {
 						throw new Error("Archivo no encontrado");
 					}
 					const attachment = new AttachmentBuilder(filePath);
-					await (message.guild.channels.resolve(getChannelFromEnv("logMessages")) as TextChannel)
-						?.send({
-							embeds: [
-								new EmbedBuilder()
-									.setTitle(`El usuario ${message.author.username} eliminó su hilo. Guardada la transcripción`)
+                                        await (message.guild.channels.resolve(getChannelFromEnv("logMessages")) as TextChannel)
+                                                ?.send({
+                                                        embeds: [
+                                                                new EmbedBuilder()
+                                                                        .setTitle(`El usuario ${author.username} eliminó su hilo. Guardada la transcripción`)
 									.setDescription(`Canal: <#${thread.parent?.id}>`)
 									.setColor(COLORS.pyeLightBlue)
 									.setTimestamp(),
