@@ -2,40 +2,38 @@ import { AuditLogEvent, EmbedBuilder, Events, Message, PartialMessage, TextChann
 import { COLORS, getChannelFromEnv } from "../utils/constants.js";
 
 export default {
-    name: Events.MessageUpdate,
-    once: false,
-    async execute(oldMessage: Message | PartialMessage, newMessage: Message | PartialMessage) {
-        if (!newMessage.guild) return;
+	name: Events.MessageUpdate,
+	once: false,
+	async execute(oldMessage: Message | PartialMessage, newMessage: Message | PartialMessage) {
+		if (!newMessage.guild) return;
 
-        if (oldMessage.partial) {
-            try { await oldMessage.fetch(); } catch {}
-        }
-        if (newMessage.partial) {
-            try { await newMessage.fetch(); } catch {}
-        }
+		if (oldMessage.partial) {
+			try {
+				await oldMessage.fetch();
+			} catch {}
+		}
+		if (newMessage.partial) {
+			try {
+				await newMessage.fetch();
+			} catch {}
+		}
 
-        const logChannel = newMessage.guild.channels.resolve(getChannelFromEnv("logMessages")) as TextChannel | null;
-        if (!logChannel) return;
+		const logChannel = newMessage.guild.channels.resolve(getChannelFromEnv("logMessages")) as TextChannel | null;
+		if (!logChannel) return;
 
-        const author = newMessage.author ?? (oldMessage as Message).author;
-        if (!author) return;
+		const author = newMessage.author ?? (oldMessage as Message).author;
+		if (!author) return;
 
-        const before = oldMessage.content?.slice(0, 300) || "—";
-        const after = newMessage.content?.slice(0, 300) || "—";
+		const before = oldMessage.content?.slice(0, 300) || "—";
+		const after = newMessage.content?.slice(0, 300) || "—";
 
-        const embed = new EmbedBuilder()
-            .setColor(COLORS.pyeLightBlue)
-            .setAuthor({ name: `${author.tag}`, iconURL: author.displayAvatarURL() })
-            .setDescription(`Mensaje editado en <#${newMessage.channelId}>`)
-            .addFields(
-                { name: "Antes", value: `\`\`\`\n${before}\n\`\`\`` },
-                { name: "Después", value: `\`\`\`\n${after}\n\`\`\`` },
-                { name: "Ir al mensaje", value: `[Link](${newMessage.url})` }
-            )
-            .setTimestamp();
+		const embed = new EmbedBuilder()
+			.setColor(COLORS.pyeLightBlue)
+			.setAuthor({ name: `${author.tag}`, iconURL: author.displayAvatarURL() })
+			.setDescription(`[Mensaje editado](${newMessage.url}) en <#${newMessage.channelId}>`)
+			.addFields({ name: "Antes", value: `\`\`\`\n${before}\n\`\`\`` }, { name: "Después", value: `\`\`\`\n${after}\n\`\`\`` })
+			.setTimestamp();
 
-        logChannel
-            .send({ embeds: [embed] })
-            .catch(() => console.error("No se pudo enviar el log de mensajes"));
-    },
+		logChannel.send({ embeds: [embed] }).catch(() => console.error("No se pudo enviar el log de mensajes"));
+	},
 };
