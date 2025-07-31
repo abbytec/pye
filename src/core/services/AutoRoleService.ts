@@ -13,6 +13,9 @@ export default class AutoRoleService implements IService {
 
 	async start() {
 		await this.updateAdaLovelace();
+		setInterval(async () => {
+			await this.borrarRolesTemporales();
+		}, 36e5);
 	}
 
 	async updateAdaLovelace() {
@@ -27,7 +30,7 @@ export default class AutoRoleService implements IService {
 			});
 	}
 
-	public static async borrarRolesTemporales() {
+	private async borrarRolesTemporales() {
 		let arr = await UserRole.find().exec();
 		let guild = ExtendedClient.guild;
 		if (arr.length && guild) {

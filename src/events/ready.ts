@@ -20,10 +20,10 @@ export default {
 		await client.updateClientData(true);
 		ticketProcessor(client);
 		cronEventsProcessor(client);
-		setInterval(async () => {
-			if (process.env.ENABLE_AUTO_WELCOME_MESSAGE) sendWelcomeMessageProcessor(client);
-			await AutoRoleService.borrarRolesTemporales();
-		}, 36e5);
+		if (process.env.ENABLE_AUTO_WELCOME_MESSAGE)
+			setInterval(async () => {
+				sendWelcomeMessageProcessor(client);
+			}, 36e5);
 	},
 };
 

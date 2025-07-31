@@ -363,7 +363,7 @@ export async function checkAttachment(url: string) {
 		}
 
 		const arrayBuff = await response.arrayBuffer();
-		const buffer = await Buffer.from(arrayBuff);
+		const buffer = Buffer.from(arrayBuff);
 
 		const upload = {
 			name: url.split("/").pop() || "file",
@@ -374,6 +374,7 @@ export async function checkAttachment(url: string) {
 		const result = await scanFile(upload);
 		return result;
 	} catch (error) {
+		console.error("Error scanning file:", error);
 		return {
 			name: url.split("/").pop() || "file",
 			is_infected: true,

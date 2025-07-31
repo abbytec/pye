@@ -1,4 +1,4 @@
-import { AuditLogEvent, EmbedBuilder, Events, Message, PartialMessage, TextChannel } from "discord.js";
+import { EmbedBuilder, Events, Message, PartialMessage, TextChannel } from "discord.js";
 import { COLORS, getChannelFromEnv } from "../utils/constants.js";
 import { ExtendedClient } from "../client.js";
 import { messageGuard } from "../security/messageGuard.js";

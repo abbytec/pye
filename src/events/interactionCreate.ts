@@ -57,7 +57,6 @@ export default {
 		}
 		if (interaction.inGuild() && interaction.isButton()) {
 			let customId = interaction.customId;
-			const userId = interaction.user.id;
 
 			const handlers: Record<string, () => Promise<any>> = {
 				close_ticket: () => handleTicketButtonInteraction(interaction, "close"),
