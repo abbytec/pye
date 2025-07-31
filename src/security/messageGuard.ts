@@ -20,11 +20,12 @@ import { floodBotsFilter } from "./antiSpam/floodBotsFilter.js";
 import { checkCredentialLeak } from "./credentialLeakFilter.js";
 
 export interface IDeletableContent {
-	id: string;
-	url: string;
-	guild: Guild; // esto es para que funcione el delete, porque si no el this no me lo permite
-	channel: NewsChannel | TextChannel | ForumChannel | MediaChannel | null;
-	delete: (reason: string) => Promise<any>;
+        id: string;
+        url: string;
+        guild: Guild; // esto es para que funcione el delete, porque si no el this no me lo permite
+        channel: NewsChannel | TextChannel | ForumChannel | MediaChannel | null;
+        delete: (reason: string) => Promise<any>;
+        createdTimestamp: number;
 }
 
 export async function messageGuard(message: Message<true>, client: ExtendedClient) {

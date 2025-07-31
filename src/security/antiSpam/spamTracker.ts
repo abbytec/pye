@@ -6,27 +6,30 @@ import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 export type SpamType = "message" | "url" | "attachment" | "mention" | "newFloodMessage";
 const punishingUser = new Set<string>();
 export class SpamTracker {
-	private readonly map = new Map<string, { count: number; timeout: NodeJS.Timeout }>();
+        private readonly map = new Map<string, { count: number; last: number; timeout: NodeJS.Timeout }>();
 
-	constructor(private readonly windowMs: number, private readonly limit: number) {}
+        constructor(private readonly windowMs: number, private readonly limit: number) {}
 
-	increment(key: string): boolean {
-		const entry = this.map.get(key);
+        increment(key: string, timestamp: number = Date.now()): boolean {
+                const entry = this.map.get(key);
 
-		if (!entry) {
-			this.map.set(key, {
-				count: 1,
-				timeout: setTimeout(() => this.map.delete(key), this.windowMs),
-			});
-			return false; // not yet spam
-		}
+                if (!entry || timestamp - entry.last > this.windowMs) {
+                        if (entry) clearTimeout(entry.timeout);
+                        this.map.set(key, {
+                                count: 1,
+                                last: timestamp,
+                                timeout: setTimeout(() => this.map.delete(key), this.windowMs),
+                        });
+                        return false; // not yet spam
+                }
 
-		entry.count += 1;
-		clearTimeout(entry.timeout); // refresh window
-		entry.timeout = setTimeout(() => this.map.delete(key), this.windowMs);
+                entry.count += 1;
+                entry.last = timestamp;
+                clearTimeout(entry.timeout); // refresh cleanup window
+                entry.timeout = setTimeout(() => this.map.delete(key), this.windowMs);
 
-		return entry.count >= this.limit; // true → spam
-	}
+                return entry.count >= this.limit; // true → spam
+        }
 	async punish(message: Message<boolean>, client: ExtendedClient, type: SpamType, warning: string) {
 		const warnMsg = await (message.channel as TextChannel).send(`<@${message.author.id}> ${warning}`);
 

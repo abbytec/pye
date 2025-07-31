@@ -8,7 +8,7 @@ export async function checkAttachmentSpam(message: Message<boolean>, client: Ext
 		if (hasIMG) break;
 		if (attachment.contentType?.startsWith("image/") || attachment.contentType?.startsWith("video/")) {
 			const key = `${message.author.id}-image`;
-			if (imageTracker.increment(key)) {
+                        if (imageTracker.increment(key, message.createdTimestamp)) {
 				await imageTracker.punish(message, client, "attachment", "Enviar imágenes tantas veces seguidas se considera spam.");
 				return true;
 			}

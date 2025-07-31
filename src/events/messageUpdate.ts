@@ -1,7 +1,7 @@
 import { AuditLogEvent, EmbedBuilder, Events, Message, PartialMessage, TextChannel } from "discord.js";
 import { COLORS, getChannelFromEnv } from "../utils/constants.js";
 import { ExtendedClient } from "../client.js";
-import { checkCredentialLeak } from "../security/credentialLeakFilter.js";
+import { messageGuard } from "../security/messageGuard.js";
 
 export default {
 	name: Events.MessageUpdate,
@@ -20,14 +20,14 @@ export default {
 			} catch {}
 		}
 
-		const logChannel = newMessage.guild.channels.resolve(getChannelFromEnv("logMessages")) as TextChannel | null;
-		if (!logChannel) return;
+                const client = newMessage.client as ExtendedClient;
+                if (await messageGuard(newMessage as Message<true>, client)) return;
 
-		const author = newMessage.author ?? (oldMessage as Message).author;
-		if (!author) return;
+                const logChannel = newMessage.guild.channels.resolve(getChannelFromEnv("logMessages")) as TextChannel | null;
+                if (!logChannel) return;
 
-		const hasLeak = await checkCredentialLeak(newMessage as Message<true>, newMessage.client as ExtendedClient);
-		if (hasLeak) return;
+                const author = newMessage.author ?? (oldMessage as Message).author;
+                if (!author) return;
 
 		const before = oldMessage.content?.slice(0, 300) || "—";
 		const after = newMessage.content?.slice(0, 300) || "—";

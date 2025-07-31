@@ -14,7 +14,7 @@ export async function floodBotsFilter(message: Message<boolean>, client: Extende
 		const safeContent = encodeURIComponent(trimmed);
 		const key = `flood-${message.author.id}-${safeContent}`;
 
-		if (floodTracker.increment(key)) {
+                if (floodTracker.increment(key, message.createdTimestamp)) {
 			await floodTracker.punish(message, client, "newFloodMessage", "Flood de mensajes de bots.");
 			return true;
 		}
