@@ -14,7 +14,7 @@ export async function checkMentionSpam(message: Message<boolean>, client: Extend
 		const key = `${message.author.id}-${mentioned.id}`;
 		if (mentionedOnThisMessage.has(key)) continue;
 		mentionedOnThisMessage.add(key);
-                if (mentionTracker.increment(key, message.createdTimestamp)) {
+		if (mentionTracker.increment(key, message.createdTimestamp)) {
 			await mentionTracker.punish(
 				message,
 				client,

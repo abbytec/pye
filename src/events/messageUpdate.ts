@@ -20,14 +20,14 @@ export default {
 			} catch {}
 		}
 
-                const client = newMessage.client as ExtendedClient;
-                if (await messageGuard(newMessage as Message<true>, client)) return;
+		const client = newMessage.client as ExtendedClient;
+		if (await messageGuard(newMessage as Message<true>, client)) return;
 
-                const logChannel = newMessage.guild.channels.resolve(getChannelFromEnv("logMessages")) as TextChannel | null;
-                if (!logChannel) return;
+		const logChannel = newMessage.guild.channels.resolve(getChannelFromEnv("logMessages")) as TextChannel | null;
+		if (!logChannel) return;
 
-                const author = newMessage.author ?? (oldMessage as Message).author;
-                if (!author) return;
+		const author = newMessage.author ?? (oldMessage as Message).author;
+		if (!author) return;
 
 		const before = oldMessage.content?.slice(0, 300) || "—";
 		const after = newMessage.content?.slice(0, 300) || "—";

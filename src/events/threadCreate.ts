@@ -21,14 +21,14 @@ export default {
 			(await spamFilter(
 				member,
 				thread.client as ExtendedClient,
-                                {
-                                        channel: thread.parent,
-                                        delete: thread.delete,
-                                        id: thread.id,
-                                        guild: thread.guild,
-                                        url: thread.url,
-                                        createdTimestamp: thread.createdTimestamp ?? Date.now(),
-                                },
+				{
+					channel: thread.parent,
+					delete: thread.delete,
+					id: thread.id,
+					guild: thread.guild,
+					url: thread.url,
+					createdTimestamp: thread.createdTimestamp ?? Date.now(),
+				},
 				thread.name
 			)) ||
 			thread.ownerId == process.env.CLIENT_ID

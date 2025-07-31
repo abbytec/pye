@@ -161,7 +161,7 @@ export async function spamFilter(author: GuildMember | null, client: ExtendedCli
 				blocked = true;
 				break;
 			case false:
-                                if (floodTracker.increment(author.id, deletable.createdTimestamp)) {
+				if (floodTracker.increment(author.id, deletable.createdTimestamp)) {
 					await floodTracker.punish(
 						deletable as Message<boolean>, // o adaptá el tipo
 						client,

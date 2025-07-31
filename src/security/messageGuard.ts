@@ -20,12 +20,12 @@ import { floodBotsFilter } from "./antiSpam/floodBotsFilter.js";
 import { checkCredentialLeak } from "./credentialLeakFilter.js";
 
 export interface IDeletableContent {
-        id: string;
-        url: string;
-        guild: Guild; // esto es para que funcione el delete, porque si no el this no me lo permite
-        channel: NewsChannel | TextChannel | ForumChannel | MediaChannel | null;
-        delete: (reason: string) => Promise<any>;
-        createdTimestamp: number;
+	id: string;
+	url: string;
+	guild: Guild; // esto es para que funcione el delete, porque si no el this no me lo permite
+	channel: NewsChannel | TextChannel | ForumChannel | MediaChannel | null;
+	delete: (reason: string) => Promise<any>;
+	createdTimestamp: number;
 }
 
 export async function messageGuard(message: Message<true>, client: ExtendedClient) {
@@ -36,24 +36,24 @@ export async function messageGuard(message: Message<true>, client: ExtendedClien
 			client.staffMembers.includes(message.author.id) ||
 			message.member?.roles.cache.has(getRoleFromEnv("instructorDeTaller"))
 		)
-        ) {
-                let member: GuildMember | User | null = message.interactionMetadata?.user ?? null;
-                if (member) {
-                        member = await message.guild?.members.fetch(member.id).catch(() => message.member);
-                } else {
-                        member = message.member;
-                }
-                if (
-                        (await floodBotsFilter(message, client)) ||
-                        (await spamFilter(member, client, message as IDeletableContent, message.content)) ||
-                        (await checkMentionSpam(message, client)) ||
-                        (await checkUrlSpam(message, client)) ||
-                        (await checkAttachmentSpam(message, client))
-                )
-                        return true;
-        }
+	) {
+		let member: GuildMember | User | null = message.interactionMetadata?.user ?? null;
+		if (member) {
+			member = await message.guild?.members.fetch(member.id).catch(() => message.member);
+		} else {
+			member = message.member;
+		}
+		if (
+			(await floodBotsFilter(message, client)) ||
+			(await spamFilter(member, client, message as IDeletableContent, message.content)) ||
+			(await checkMentionSpam(message, client)) ||
+			(await checkUrlSpam(message, client)) ||
+			(await checkAttachmentSpam(message, client))
+		)
+			return true;
+	}
 
-        await checkCredentialLeak(message, client);
+	await checkCredentialLeak(message, client);
 
 	if (message.author.bot && message.author.id !== process.env.CLIENT_ID && message.interaction)
 		logCommand(message.interaction, message.author.displayName);
