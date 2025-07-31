@@ -26,7 +26,11 @@ export default {
                 const author = newMessage.author ?? (oldMessage as Message).author;
                 if (!author) return;
 
-                await checkCredentialLeak(newMessage as Message<true>, newMessage.client as ExtendedClient);
+                const hasLeak = await checkCredentialLeak(
+                        newMessage as Message<true>,
+                        newMessage.client as ExtendedClient,
+                );
+                if (hasLeak) return;
 
 		const before = oldMessage.content?.slice(0, 300) || "—";
 		const after = newMessage.content?.slice(0, 300) || "—";
