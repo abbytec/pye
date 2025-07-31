@@ -6,6 +6,7 @@ import NewsService from "./services/NewsService.js";
 import AIUsageControlService from "./services/AIUsageControlService.js";
 import ForumPostControlService from "./services/ForumPostControlService.js";
 import AutoRoleService from "./services/AutoRoleService.js";
+import ActivityService from "./services/ActivityService.js";
 
 export interface ServiceInstanceMap {
 	commands: CommandService;
@@ -14,8 +15,9 @@ export interface ServiceInstanceMap {
 	trending: TrendingService;
 	news: NewsService;
 	aiUsage: AIUsageControlService;
-	forumPostControl: ForumPostControlService;
-	autoRole: AutoRoleService;
+        forumPostControl: ForumPostControlService;
+        autoRole: AutoRoleService;
+        activity: ActivityService;
 }
 
 export type ServiceName = keyof ServiceInstanceMap;

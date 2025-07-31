@@ -1,8 +1,7 @@
 import {
-	Events,
-	ActivityType,
-	EmbedBuilder,
-	TextChannel,
+        Events,
+        EmbedBuilder,
+        TextChannel,
 	StringSelectMenuOptionBuilder,
 	StringSelectMenuBuilder,
 	ActionRowBuilder,
@@ -26,10 +25,8 @@ export default {
 	async execute(client: ExtendedClient) {
 		console.log(`Bot Listo como: ${client.user?.tag} ! `);
 		await client.updateClientData(true);
-		ticketProcessor(client);
-		cronEventsProcessor(client);
-		voiceFarmingProcessor(client);
-		activityProcessor(client);
+                ticketProcessor(client);
+                cronEventsProcessor(client);
 		setInterval(async () => {
 			if (process.env.ENABLE_AUTO_WELCOME_MESSAGE) sendWelcomeMessageProcessor(client);
 			await AutoRoleService.borrarRolesTemporales();
@@ -287,52 +284,3 @@ async function cronEventsProcessor(client: ExtendedClient) {
 	}
 }
 
-async function voiceFarmingProcessor(client: ExtendedClient) {
-	setInterval(() => {
-		const now = new Date();
-		const moneyConfig = client.services.economy.getConfig(process.env.CLIENT_ID ?? "");
-		const timeInterval = moneyConfig.voice.time;
-
-		client.services.economy.voiceFarmers.forEach(async (value, userId) => {
-			const timePassed = now.getTime() - value.date.getTime();
-			const cyclesPassed = Math.floor(timePassed / timeInterval);
-
-			let voice = client.guilds.cache.get(process.env.GUILD_ID ?? "")?.members.cache.get(userId)?.voice;
-			if (!voice) {
-				client.services.economy.voiceFarmers.delete(userId);
-				return;
-			}
-
-			if (cyclesPassed > value.count) {
-				const cyclesToIncrement = cyclesPassed - value.count;
-				value.count = cyclesPassed;
-				Users.findOneAndUpdate(
-					{ id: userId.toString() },
-					{ $inc: { cash: moneyConfig.voice.coins * cyclesToIncrement } },
-					{ upsert: true, new: true }
-				).exec();
-				client.services.economy.voiceFarmers.set(userId, value);
-			}
-		});
-	}, 6e4);
-}
-const URL_State = "🔗 discord.gg/programacion";
-async function activityProcessor(client: ExtendedClient) {
-	setInterval(() => {
-		setTimeout(() => client.user?.setActivity("discord.gg/programacion", { type: ActivityType.Watching, state: URL_State }), 1000);
-		setTimeout(() => client.user?.setActivity("ella no te ama, pyechan tampoco", { type: ActivityType.Watching, state: URL_State }), 10000);
-		setTimeout(() => client.user?.setActivity("+20 Millones de comentarios", { type: ActivityType.Watching, state: URL_State }), 20000);
-		setTimeout(
-			() => client.user?.setActivity("PyE coins en el Casino (#comandos)", { type: ActivityType.Competing, state: URL_State }),
-			30000
-		);
-		setTimeout(
-			() =>
-				client.user?.setActivity(`a ${client.guilds.cache.get(process.env.GUILD_ID ?? "")?.memberCount ?? "👀"}`, {
-					type: ActivityType.Watching,
-					state: URL_State,
-				}),
-			40000
-		);
-	}, 50000);
-}
