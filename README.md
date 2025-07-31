@@ -10,3 +10,4 @@ Bot de Discord para el servidor de [Programadores y Estudiantes](https://discord
 🟥    🟦         🟨🟨  🟪
 🟥    🟦🟦🟦  🟨🟨🟪🟪🟪
 ```
+Gracias por contribuir <3
