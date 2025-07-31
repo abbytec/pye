@@ -27,7 +27,7 @@ export default {
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false)],
 		async (interaction: IPrefixChatInputCommand) => {
-			let scope: Scope = (interaction.options.getString("scope") ?? "global") as Scope;
+			const scope: Scope = (interaction.options.getString("scope") ?? "global") as Scope;
 			let page = 1;
 
 			const makeContent = async (disable = false) => {

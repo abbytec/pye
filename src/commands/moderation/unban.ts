@@ -1,5 +1,5 @@
 // src/commands/Staff/unban.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } from "discord.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
@@ -8,7 +8,6 @@ import { deferInteraction } from "../../composables/middlewares/deferInteraction
 import { replyError } from "../../utils/messages/replyError.js";
 import { ModLogs } from "../../Models/ModLogs.js";
 import { logMessages } from "../../composables/finalwares/logMessages.js";
-import { PostHandleable } from "../../types/middleware.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
@@ -33,7 +32,7 @@ export default {
 
 			// Verificar si el usuario está baneado
 			const bannedUsers = await interaction.guild?.bans.fetch().catch(() => undefined);
-			let isBanned = bannedUsers?.has(userId);
+			const isBanned = bannedUsers?.has(userId);
 
 			if (!isBanned) await replyError(interaction, "Este usuario no está baneado.");
 			else

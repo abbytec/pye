@@ -31,12 +31,12 @@ export default class AutoRoleService implements IService {
 	}
 
 	private async borrarRolesTemporales() {
-		let arr = await UserRole.find().exec();
-		let guild = ExtendedClient.guild;
+		const arr = await UserRole.find().exec();
+		const guild = ExtendedClient.guild;
 		if (arr.length && guild) {
 			for (const data of arr) {
 				if (data.count < Date.now()) {
-					let member = guild.members.resolve(data.id);
+					const member = guild.members.resolve(data.id);
 					if (member) member.roles.remove(data.rolId);
 					await data.deleteOne();
 				}

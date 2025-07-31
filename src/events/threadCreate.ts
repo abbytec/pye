@@ -16,7 +16,7 @@ import { createForumEmbed, generateForumResponse, sendLongReply } from "../utils
 export default {
 	name: Events.ThreadCreate,
 	execute: async function (thread: ThreadChannel) {
-		let member = await thread.guild.members.fetch(thread.ownerId ?? "").catch(() => null);
+		const member = await thread.guild.members.fetch(thread.ownerId ?? "").catch(() => null);
 		if (
 			(await spamFilter(
 				member,
@@ -37,7 +37,7 @@ export default {
 		if (thread.parent?.type == ChannelType.GuildForum && getHelpForumsIdsFromEnv().includes(thread.parent.id)) {
 			threadForumProcessingLimiter.schedule(async () => await processHelpForumPost(thread));
 		} else if (thread.parent?.id == getChannelFromEnv("retos")) {
-			let owner = await thread.fetchOwner().catch(() => null);
+			const owner = await thread.fetchOwner().catch(() => null);
 			await addRep(owner?.user ?? null, thread.guild).then(async ({ member }) =>
 				(thread.guild.channels.resolve(getChannelFromEnv("logPuntos")) as TextChannel | null)?.send(
 					`${member.user.username} ha obtenido 1 punto porque creó un reto: ${thread.url}`
@@ -81,11 +81,11 @@ const threadsHelp = async function (tittle: string, starterMessage: Message | nu
 			});
 			const fullMessage = await generateForumResponse(prompt, m.name, getForumTopic(m.parentId ?? ""), attachmentData);
 
-			let embed = createForumEmbed(fullMessage, authorName);
+			const embed = createForumEmbed(fullMessage, authorName);
 			await sendLongReply(starterMessage, embed, fullMessage);
 		} else {
 			const fullMessage = await generateForumResponse(prompt, m.name, getForumTopic(m.parentId ?? ""));
-			let embed = createForumEmbed(fullMessage, authorName);
+			const embed = createForumEmbed(fullMessage, authorName);
 			await sendLongReply(m, embed, fullMessage);
 		}
 	} catch (err: any) {

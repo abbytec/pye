@@ -1,6 +1,6 @@
-// src/commands/General/server.ts
+// src/commands/utility/server.ts
 
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildFeature, Guild, User } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, GuildFeature, Guild, User } from "discord.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";

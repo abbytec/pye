@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, GuildMember } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";

@@ -53,7 +53,7 @@ export default {
 				// Y si lo detecta, quiere decir que lang es el codigo
 
 				if (lang) {
-					let detectedLang = await detectLanguage(lang, null);
+					const detectedLang = await detectLanguage(lang, null);
 
 					if (detectedLang) {
 						detectedLanguage = detectedLang;
@@ -247,7 +247,7 @@ async function getRuntimes(): Promise<ExecutionRuntime[]> {
 
 		cachedRuntimes = data;
 		return data;
-	} catch (error) {
+	} catch {
 		throw new Error("Fallo al buscar los runtimes.");
 	}
 }

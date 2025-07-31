@@ -1,6 +1,6 @@
 // src/commands/Currency/use.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, GuildMember } from "discord.js";
-import { getOrCreateUser, IUserModel, Users } from "../../Models/User.js";
+import { SlashCommandBuilder, GuildMember } from "discord.js";
+import { getOrCreateUser, IUserModel } from "../../Models/User.js";
 import { IShopDocument, Shop } from "../../Models/Shop.js";
 import { UserRole } from "../../Models/Role.js";
 import { Home } from "../../Models/Home.js";
@@ -33,7 +33,7 @@ export default {
 			let itemInput = interaction.options.getString("item", true);
 			if (itemInput.startsWith("0")) itemInput = itemInput.replace(/^0+/, "");
 
-			let userData: IUserModel = await getOrCreateUser(user.id);
+			const userData: IUserModel = await getOrCreateUser(user.id);
 
 			// Buscar el ítem por ID o nombre (incluyendo la propiedad "background" si existe)
 			const itemData =

@@ -40,7 +40,7 @@ export default {
 					filter: (interaction) => interaction.user.id === member.id,
 				});
 				collector.on("collect", async (interaction) => {
-					let embed = new EmbedBuilder()
+					const embed = new EmbedBuilder()
 						.setColor(COLORS.pyeLightBlue)
 						.setFooter({ text: "Esperamos que disfrutes de la comunidad 💙" });
 					if (interaction.customId === "consejos") {

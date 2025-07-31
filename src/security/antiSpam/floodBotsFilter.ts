@@ -1,5 +1,5 @@
 import { Message } from "discord.js";
-import { SpamTracker, deleteAllMessagesFromAndKickUser } from "./spamTracker.js";
+import { SpamTracker } from "./spamTracker.js";
 import { ExtendedClient } from "../../client.js";
 
 const floodTracker = new SpamTracker(6_000, 3);

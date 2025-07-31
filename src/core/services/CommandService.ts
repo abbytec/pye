@@ -11,7 +11,7 @@ export default class CommandService implements IService {
 	public static readonly commands = new Map<string, Command>();
 	public static readonly prefixCommands = new Map<string, PrefixChatInputCommand>();
 	public readonly cooldowns = new Map<string, ICooldown>();
-	private static _lastRobs: Rob[] = new Array();
+	private static _lastRobs: Rob[] = [];
 	private static readonly commandLimits = new Map<string, ICommandLimits>();
 
 	constructor(private readonly client: CoreClient) {}

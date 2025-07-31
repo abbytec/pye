@@ -1,5 +1,5 @@
 // src/commands/Staff/untimeout.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { getChannelFromEnv, getRoleFromEnv, USERS } from "../../utils/constants.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
@@ -41,7 +41,7 @@ export default {
 			return await member
 				.timeout(null, reason)
 				.then(async () => {
-					let latestTimeout = await ModLogs.findOneAndUpdate(
+					const latestTimeout = await ModLogs.findOneAndUpdate(
 						{ id: user.id, type: "Timeout", hiddenCase: { $ne: true } }, // Filtro
 						{
 							$set: { hiddenCase: true, reasonUnpenalized: reason },

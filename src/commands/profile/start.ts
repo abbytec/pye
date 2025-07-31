@@ -171,7 +171,7 @@ async function startProfile(message: InteractionResponse | Message, interaction:
 			undefined,
 			false
 		);
-	} catch (error) {
+	} catch {
 		await replyError(interaction, "Se acabo el tiempo para crear tu perfil, inténtalo de nuevo mas tarde...");
 	} finally {
 		onIt.delete(userId);

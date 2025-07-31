@@ -1,8 +1,7 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, TextChannel, CacheType } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
-import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { ICustomCommand } from "../../interfaces/ICustomCommand.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
@@ -255,7 +254,7 @@ export default {
 			}
 
 			if (faqEntry.embeds) {
-				let embed = faqEntry.embeds.at(0);
+				const embed = faqEntry.embeds.at(0);
 				if (embed?.thumbnail?.url === "banner") embed.thumbnail.url = interaction.guild?.bannerURL() ?? "";
 				if (embed?.thumbnail?.url === "logo") embed.thumbnail.url = interaction.guild?.iconURL() ?? "";
 			}

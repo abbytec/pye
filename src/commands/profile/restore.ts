@@ -1,5 +1,5 @@
-// src/commands/Currency/restore.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, Guild } from "discord.js";
+// src/commands/profile/restore.ts
+import { SlashCommandBuilder, GuildMember, Guild } from "discord.js";
 import { Users } from "../../Models/User.js";
 import { Shop } from "../../Models/Shop.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";

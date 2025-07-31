@@ -59,7 +59,7 @@ export async function messageGuard(message: Message<true>, client: ExtendedClien
 		logCommand(message.interaction, message.author.displayName);
 	return false;
 }
-function logCommand(message: MessageInteraction, botDisplayName: String) {
+function logCommand(message: MessageInteraction, botDisplayName: string) {
 	(ExtendedClient.guild?.channels.cache.get(getChannelFromEnv("logMessages")) as TextChannel | undefined)
 		?.send({
 			embeds: [

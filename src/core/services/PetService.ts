@@ -17,7 +17,7 @@ export default class PetService implements IService {
 		/* 5 h  */ setInterval(() => this.checkShower(), 18000000);
 	}
 	private async checkFood() {
-		let arr = await Pets.find().exec();
+		const arr = await Pets.find().exec();
 		if (!arr.length) return;
 		for (const data of arr) {
 			this.minFeed(data);
@@ -25,7 +25,7 @@ export default class PetService implements IService {
 	}
 
 	private async checkMood() {
-		let arr = await Pets.find().exec();
+		const arr = await Pets.find().exec();
 		if (!arr.length) return;
 		for (const data of arr) {
 			this.minPlay(data);
@@ -33,7 +33,7 @@ export default class PetService implements IService {
 	}
 
 	private async checkShower() {
-		let arr = await Pets.find().exec();
+		const arr = await Pets.find().exec();
 		if (!arr.length) return;
 		for (const data of arr) {
 			this.minClean(data);
@@ -42,7 +42,7 @@ export default class PetService implements IService {
 
 	private async minFeed(petInfo: IPetDocument) {
 		if (!petInfo) return;
-		let total = getRandomNumber(5, 12);
+		const total = getRandomNumber(5, 12);
 		if (petInfo.food - total < 0) petInfo.food = 0;
 		else petInfo.food -= total;
 		return await petInfo.save();
@@ -50,7 +50,7 @@ export default class PetService implements IService {
 
 	private async minClean(petInfo: IPetDocument) {
 		if (!petInfo) return;
-		let total = getRandomNumber(5, 12);
+		const total = getRandomNumber(5, 12);
 		if (petInfo.shower - total < 0) petInfo.shower = 0;
 		else petInfo.shower -= total;
 		return await petInfo.save();
@@ -58,14 +58,14 @@ export default class PetService implements IService {
 
 	private async minPlay(petInfo: IPetDocument) {
 		if (!petInfo) return;
-		let total = getRandomNumber(5, 12);
+		const total = getRandomNumber(5, 12);
 		if (petInfo.mood - total < 0) petInfo.mood = 0;
 		else petInfo.mood -= total;
 		return await petInfo.save();
 	}
 
 	private async checkPets(client: CoreClient) {
-		let arr = await Pets.find().exec();
+		const arr = await Pets.find().exec();
 		let badge = false;
 		if (!arr.length) return;
 		for (const getData of arr) {
@@ -73,7 +73,7 @@ export default class PetService implements IService {
 				if (badge) return;
 				badge = true;
 				setTimeout(async () => {
-					let home = await Home.findOne({ id: getData.id }).exec();
+					const home = await Home.findOne({ id: getData.id }).exec();
 					if (!home) {
 						await getData.deleteOne();
 						return;

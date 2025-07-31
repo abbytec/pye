@@ -25,7 +25,7 @@ export async function replyError(
 	content?: string,
 	ephemeral = true
 ): Promise<void> {
-	let messageToSend: any = { ephemeral: ephemeral };
+	const messageToSend: any = { ephemeral: ephemeral };
 	if (Array.isArray(message)) {
 		messageToSend.embeds = message;
 	} else {
@@ -44,20 +44,20 @@ export async function replyError(
 	if ((interaction.deferred || interaction.replied) && !components) {
 		if (!ephemeral) {
 			if ("_reply" in interaction) {
-				await (await interaction.fetchReply()).delete().catch((e) => null);
+				await (await interaction.fetchReply()).delete().catch(() => null);
 			} else {
-				await interaction.deleteReply().catch((e) => null);
+				await interaction.deleteReply().catch(() => null);
 			}
 			(
 				(interaction.guild?.channels.cache.get(interaction?.channelId ?? "") ??
 					(await interaction.guild?.channels.fetch(interaction?.channelId ?? "").catch(() => undefined))) as TextChannel
 			)
 				?.send(messageToSend)
-				.catch((e) => null);
-		} else await interaction.followUp(messageToSend).catch((e) => null);
+				.catch(() => null);
+		} else await interaction.followUp(messageToSend).catch(() => null);
 	} else if (components && (interaction.replied || interaction.deferred)) {
-		await interaction.editReply(messageToSend).catch((e) => null);
+		await interaction.editReply(messageToSend).catch(() => null);
 	} else {
-		await interaction.reply(messageToSend).catch((e) => null);
+		await interaction.reply(messageToSend).catch(() => null);
 	}
 }

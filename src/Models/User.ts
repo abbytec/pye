@@ -106,7 +106,7 @@ userSchema.post(["save", "findOneAndUpdate"], async function (doc: IUserModel | 
 	});
 });
 
-userSchema.post(["updateOne", "updateMany"], async function (result) {
+userSchema.post(["updateOne", "updateMany"], async function () {
 	// 'this' se refiere a la consulta
 	const filter = this.getFilter();
 	const update = this.getUpdate?.() as Record<string, any>;

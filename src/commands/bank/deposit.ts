@@ -23,7 +23,7 @@ export default {
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
-			let userData: IUserModel = await getOrCreateUser(user.id);
+			const userData: IUserModel = await getOrCreateUser(user.id);
 
 			if (userData.cash <= 0) return await replyWarning(interaction, "No tienes suficientes PyE Coins para guardar en el banco.");
 

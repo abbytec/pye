@@ -1,5 +1,5 @@
-// src/commands/Staff/timeout.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, User, GuildMember } from "discord.js";
+// src/commands/moderation/timeout.ts
+import { SlashCommandBuilder, EmbedBuilder, User, GuildMember } from "discord.js";
 import { getChannelFromEnv, getRoleFromEnv, USERS } from "../../utils/constants.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";

@@ -31,8 +31,8 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 	const textWithoutMentions = message.content.replace(/<@!?\d+>/g, "").trim();
 
 	const isOnlyMentionsText = textWithoutMentions.length === 0;
-	let botIsMentioned = message.mentions.has(process.env.CLIENT_ID ?? "");
-	let botShouldAnswer = botIsMentioned || isDm || message.mentions.repliedUser?.id === process.env.CLIENT_ID;
+	const botIsMentioned = message.mentions.has(process.env.CLIENT_ID ?? "");
+	const botShouldAnswer = botIsMentioned || isDm || message.mentions.repliedUser?.id === process.env.CLIENT_ID;
 
 	if (((!botIsMentioned && message.mentions.users.size > 0) || (botIsMentioned && message.mentions.users.size > 1)) && isOnlyMentionsText)
 		return;
@@ -61,9 +61,8 @@ export async function manageAIResponse(message: Message<boolean>, isForumPost: s
 				const embed = createForumEmbed(fullMessage);
 				await sendLongReply(message, embed, fullMessage);
 			} catch (err: any) {
-				let errorEmbed;
-				let desc = "Error al generar la respuesta. ";
-				errorEmbed = new EmbedBuilder().setColor(0xff0000).setTitle("Error").setFooter({ text: "Por favor, intenta más tarde." });
+				const desc = "Error al generar la respuesta. ";
+				const errorEmbed = new EmbedBuilder().setColor(0xff0000).setTitle("Error").setFooter({ text: "Por favor, intenta más tarde." });
 				if (err instanceof DiscordAPIError && err.message == "Unknown message") {
 					errorEmbed.setDescription(desc + "No se encontró el mensaje original.");
 					if (message.channel.isSendable()) await message.channel.send({ embeds: [errorEmbed] }).catch(() => null);

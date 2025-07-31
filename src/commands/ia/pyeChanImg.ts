@@ -1,4 +1,4 @@
-import { AttachmentBuilder, MessagePayload, MessageReplyOptions, SlashCommandBuilder } from "discord.js";
+import { AttachmentBuilder, SlashCommandBuilder } from "discord.js";
 import loadEnvVariables from "../../utils/environment.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
@@ -9,7 +9,6 @@ import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { createChatEmbed, createImageEmbed, generateImageResponse } from "../../utils/ai/aiResponseService.js";
 import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
-import { getRecursiveRepliedContext } from "../../utils/ai/getRecursiveRepliedContext.js";
 import fs from "fs";
 
 loadEnvVariables();
@@ -27,7 +26,7 @@ export default {
 
 			const response = await generateImageResponse("Dibuja una imagen de " + mensajeInput, interaction.user.id);
 			if (response.image) {
-				let fileName = `generated_image${Date.now()}.png`;
+				const fileName = `generated_image${Date.now()}.png`;
 				fs.writeFileSync(fileName, new Uint8Array(response.image));
 				const attachment = new AttachmentBuilder(fileName, { name: fileName });
 				await interaction

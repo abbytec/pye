@@ -14,7 +14,7 @@ export default {
 		if (!userId || isBot) return;
 		let logChannel = (client.channels.cache.get(getChannelFromEnv("voiceLogs")) ??
 			client.channels.resolve(getChannelFromEnv("voiceLogs"))) as TextChannel;
-		let errorLogChannel = (client.channels.cache.get(getChannelFromEnv("logs")) ??
+		const errorLogChannel = (client.channels.cache.get(getChannelFromEnv("logs")) ??
 			client.channels.resolve(getChannelFromEnv("logs"))) as TextChannel;
 
 		let embed = new EmbedBuilder().setTimestamp();
@@ -22,7 +22,7 @@ export default {
 		// Member joins a voice channel
 		if (!oldState.channelId && newState.channelId) {
 			if ((newState.member?.joinedAt?.getTime() ?? 0) > Date.now() - 600000) {
-				let userMuted = await ModLogs.findOne({ id: userId, type: "Voice-mute", reasonUnpenalized: { $exists: false } });
+				const userMuted = await ModLogs.findOne({ id: userId, type: "Voice-mute", reasonUnpenalized: { $exists: false } });
 				if (userMuted) {
 					await newState.member?.voice.setMute(true).catch(() => null);
 					await newState.member?.roles.add(getRoleFromEnv("silenced")).catch(() => null);

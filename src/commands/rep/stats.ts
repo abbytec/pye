@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, AttachmentBuilder, ChatInputCommandInteraction, TextChannel, GuildMember } from "discord.js";
+import { SlashCommandBuilder, AttachmentBuilder, GuildMember } from "discord.js";
 import { Users } from "../../Models/User.js";
 import { loadImage } from "@napi-rs/canvas";
 import { HelperPoint } from "../../Models/HelperPoint.js";
@@ -34,8 +34,8 @@ export default {
 			if (member.bot) return await replyError(msg, "Los bots no pueden tener puntos de ayuda.");
 
 			// Obtener datos
-			let data: any = (await HelperPoint.findOne({ _id: member.id })) ?? { points: 0 };
-			let people = await HelperPoint.find().sort({ points: -1, _id: -1 });
+			const data: any = (await HelperPoint.findOne({ _id: member.id })) ?? { points: 0 };
+			const people = await HelperPoint.find().sort({ points: -1, _id: -1 });
 
 			const points = data.points.toLocaleString();
 			const userData = await Users.findOne({ id: member.id });

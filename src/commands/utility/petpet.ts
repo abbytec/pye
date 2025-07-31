@@ -1,5 +1,5 @@
 // src/commands/General/petpet.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, AttachmentBuilder, User, UserResolvable } from "discord.js";
+import { SlashCommandBuilder, AttachmentBuilder } from "discord.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
@@ -29,7 +29,7 @@ export default {
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			// Obtener opciones
 			const targetOption = interaction.options.getString("objetivo", true);
-			let fpsOption = interaction.options.getInteger("fps");
+			const fpsOption = interaction.options.getInteger("fps");
 
 			// Validar y ajustar FPS
 			let fps = 16; // Valor por defecto

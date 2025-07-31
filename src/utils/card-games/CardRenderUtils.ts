@@ -1,7 +1,7 @@
 import { PokerSuit, SpanishSuit, UnoSuit } from "./DeckFactory.js";
-import { CardSet, Card } from "./strategies/IGameStrategy.js";
+import { Card } from "./strategies/IGameStrategy.js";
 
-export function ansiCard(card: Card, set: CardSet) {
+export function ansiCard(card: Card) {
 	const reset = "\u001b[0m";
 	const c = (
 		{
@@ -31,9 +31,9 @@ export function ansiCard(card: Card, set: CardSet) {
 	}
 }
 
-function renderCardsAnsi(cards: Card[], set: CardSet) {
+function renderCardsAnsi(cards: Card[]) {
 	if (!cards.length) return "Mesa vacía";
-	return "```ansi\n" + cards.map((c) => ansiCard(c, set)).join(" | ") + "\n```";
+	return "```ansi\n" + cards.map((c) => ansiCard(c)).join(" | ") + "\n```";
 }
 
 export { renderCardsAnsi };

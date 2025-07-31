@@ -15,7 +15,7 @@ import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandCon
 import EconomyService from "../../core/services/EconomyService.js";
 import { ExtendedClient } from "../../client.js";
 
-let data: {
+const data: {
 	fin: number;
 	apuestaMin: number;
 	apuestas: { jugador: string; cantidad: number }[];
@@ -42,8 +42,8 @@ export default {
 			deferInteraction(),
 		],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
-			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
-			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
+			const userData: IUserModel = await getOrCreateUser(interaction.user.id);
+			const amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
 			// Validar datos
 			if (amount <= 100 || amount > EconomyService.getGameMaxCoins() || amount > userData.cash)
 				return replyError(
@@ -55,7 +55,7 @@ export default {
 			// Comenzar el juego
 			if (data.fin == -1) {
 				data.fin = Date.now() + 30e3;
-				let intervalo: NodeJS.Timeout = setTimeout(() => {
+				const intervalo: NodeJS.Timeout = setTimeout(() => {
 					russianRoulette(interaction);
 				}, 30e3);
 				data.intervalo = intervalo;
@@ -109,8 +109,8 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 	const canal = interaction.client.channels.cache.get(getChannelFromEnv("casinoPye")) as TextChannel | undefined;
 	if (!canal) return;
 
-	let userData: IUserModel = await getOrCreateUser(ganador);
-	let pozo = data.apuestas.reduce((a, b) => a + b.cantidad, 0);
+	const userData: IUserModel = await getOrCreateUser(ganador);
+	const pozo = data.apuestas.reduce((a, b) => a + b.cantidad, 0);
 	for (let i = 0; i < data.apuestas.length; i++) {
 		// Calcular resultado de cada jugador
 		if (data.apuestas[i].jugador == process.env.CLIENT_ID) {

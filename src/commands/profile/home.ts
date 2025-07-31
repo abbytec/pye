@@ -1,6 +1,6 @@
 // home.ts
 
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, AttachmentBuilder, GuildMember, User, APIUser } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder, GuildMember } from "discord.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
@@ -115,7 +115,7 @@ async function getHouseImage(data: IHomeDocument): Promise<AttachmentBuilder> {
 	let imagePath = path.join(process.cwd(), "src", "assets", "Pictures", "Profiles", "Casa", data.house.color, `${data.house.level}.png`);
 
 	if (data.pet !== "none") {
-		let petInfo = (await Pets.findOne({ id: data.id })) ?? (await Pets.create({ id: data.id }));
+		const petInfo = (await Pets.findOne({ id: data.id })) ?? (await Pets.create({ id: data.id }));
 
 		const houseDir = path.join(process.cwd(), "src", "assets", "Pictures", "Profiles", "Casa", data.house.color, `${data.house.level}`);
 		const files = await fs.readdir(houseDir);

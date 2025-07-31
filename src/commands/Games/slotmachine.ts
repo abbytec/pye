@@ -32,8 +32,8 @@ export default {
 		],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
-			let initialAmount = amount;
-			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
+			const initialAmount = amount;
+			const userData: IUserModel = await getOrCreateUser(interaction.user.id);
 			if (amount <= 100 || amount > EconomyService.getGameMaxCoins(2.3) || amount > userData.cash)
 				return replyError(
 					interaction,

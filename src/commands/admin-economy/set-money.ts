@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
+import { SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { verifyHasRoles } from "../../composables/middlewares/verifyHasRoles.js";
@@ -103,7 +103,7 @@ export default {
 				await replyOk(interaction, confirmationMessage);
 
 				// Preparar campos para el log
-				let fields = [{ name: "Cantidad PyE Coins", value: `${amount}`, inline: true }];
+				const fields = [{ name: "Cantidad PyE Coins", value: `${amount}`, inline: true }];
 				if (subcommand !== "bump") fields.push({ name: "Tiempo (cooldown)", value: ms(time, { long: true }), inline: true });
 
 				return {

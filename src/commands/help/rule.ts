@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, TextChannel } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";

@@ -37,7 +37,7 @@ export default {
 			);
 
 			if (!data) return replyError(interaction, "No se encontraron puntos para restar.");
-			let repManager = interaction.member as GuildMember;
+			const repManager = interaction.member as GuildMember;
 			const author =
 				repManager.roles.cache.has(getRoleFromEnv("helper")) &&
 				!repManager.roles.cache.has(getRoleFromEnv("moderadorChats")) &&

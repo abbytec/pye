@@ -6,7 +6,7 @@ import { deferInteraction } from "../../composables/middlewares/deferInteraction
 import { PostHandleable } from "../../types/middleware.js";
 import { verifyCooldown } from "../../composables/middlewares/verifyCooldown.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
-import { createChatEmbed, generateChatResponseSearch, generateChatResponseStream } from "../../utils/ai/aiResponseService.js";
+import { createChatEmbed, generateChatResponseSearch } from "../../utils/ai/aiResponseService.js";
 import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import { getRecursiveRepliedContext } from "../../utils/ai/getRecursiveRepliedContext.js";

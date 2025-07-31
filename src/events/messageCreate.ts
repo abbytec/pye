@@ -84,7 +84,7 @@ export default {
 			if (!message.content.startsWith(PREFIX)) {
 				messagesProcessingLimiter.schedule(async () => await processCommonMessage(message, client));
 			} else {
-				commandProcessingLimiter.schedule(async () => await processPrefixCommand(message, client));
+				commandProcessingLimiter.schedule(async () => await processPrefixCommand(message));
 			}
 		}
 	},
@@ -116,7 +116,7 @@ async function processCommonMessage(message: Message, client: ExtendedClient) {
 	}
 }
 
-async function processPrefixCommand(message: Message, client: ExtendedClient) {
+async function processPrefixCommand(message: Message) {
 	const commandBody = message.content.slice(PREFIX.length).trim();
 	const commandName = commandBody.split(/ +/, 1).shift()?.toLowerCase() ?? "";
 
@@ -131,7 +131,7 @@ async function processPrefixCommand(message: Message, client: ExtendedClient) {
 	try {
 		const parsedMessage = await command.parseMessage(message);
 		if (parsedMessage) {
-			let commandFunction = CommandService.commands.get(command.commandName);
+			const commandFunction = CommandService.commands.get(command.commandName);
 			if (commandFunction) {
 				commandFunction.execute(parsedMessage);
 				if (!commandFunction?.group) return;
@@ -314,7 +314,7 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 			if (msg.content.match(redesRegex)) {
 				msg.startThread({ name: `Comentarios sobre mi página` }).catch(() => null);
 			} else {
-				let warn = await (msg.channel as TextChannel).send({
+				const warn = await (msg.channel as TextChannel).send({
 					content: `🚫 <@${msg.author.id}>Por favor, incluye un enlace a tu perfil/portafolio en el mensaje.`,
 				});
 				await msg.delete().catch(() => null);

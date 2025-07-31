@@ -17,7 +17,7 @@ import {
 	ThreadChannel,
 } from "discord.js";
 import { ExtendedClient } from "../client.js";
-import { COLORS, getChannelFromEnv, getRoleFromEnv, USERS } from "../utils/constants.js";
+import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
 import { checkQuestLevel, IQuest } from "../utils/quest.js";
 import { HelperPoint } from "../Models/HelperPoint.js";
 import { updateMemberReputationRoles } from "../composables/finalwares/updateRepRoles.js";
@@ -56,7 +56,7 @@ export default {
 			return;
 		}
 		if (interaction.inGuild() && interaction.isButton()) {
-			let customId = interaction.customId;
+			const customId = interaction.customId;
 
 			const handlers: Record<string, () => Promise<any>> = {
 				close_ticket: () => handleTicketButtonInteraction(interaction, "close"),
@@ -183,7 +183,7 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 		}
 
 		// Buscar o crear el documento de HelperPoint
-		let user = await HelperPoint.findOneAndUpdate({ _id: customId }, { $inc: { points: point } }, { new: true, upsert: true }).exec();
+		const user = await HelperPoint.findOneAndUpdate({ _id: customId }, { $inc: { points: point } }, { new: true, upsert: true }).exec();
 
 		// Responder al usuario que ha otorgado el punto
 		if (interaction.replied)
@@ -267,11 +267,11 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 						const thanksFieldIndex = embed.data.fields?.findIndex((field) => field.name === "# Miembro Ayudado");
 						let userHelpedId: string | null = null;
 						if (thanksFieldIndex !== undefined && thanksFieldIndex !== -1) {
-							let userString = embed.data.fields[thanksFieldIndex].value;
+							const userString = embed.data.fields[thanksFieldIndex].value;
 							const userMatch = RegExp(/<@(\d+)>/).exec(userString);
 							userHelpedId = userMatch ? userMatch[1] : null;
 						}
-						let repMessage: Message | null = await helpchannel?.messages.fetch({ limit: 10 }).then(async (messages) => {
+						const repMessage: Message | null = await helpchannel?.messages.fetch({ limit: 10 }).then(async (messages) => {
 							let repMessageTemp: Message | null = null;
 							for (const msg of messages.values()) {
 								if (msg.reference && msg.author.bot && msg.author.id === process.env.CLIENT_ID) {
@@ -309,7 +309,7 @@ async function helpPoint(interaction: ButtonInteraction, customId: string): Prom
 			message += ` (Canal: <#${getChannelFromEnv("notificaciones")}>) - (Razón: <#${postId}>) \n> *Puntos anteriores: ${
 				user.points - point
 			}. Puntos actuales: ${user.points}*`;
-			interaction.message.embeds.at(0)?.description && (message += `\n${interaction.message.embeds.at(0)?.description}`);
+			if (interaction.message.embeds.at(0)?.description) message += `\n${interaction.message.embeds.at(0)?.description}`;
 			await notificationChannel.send(message);
 		}
 

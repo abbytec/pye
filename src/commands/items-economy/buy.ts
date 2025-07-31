@@ -1,5 +1,5 @@
-// src/commands/Currency/buy.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, GuildMember } from "discord.js";
+// src/commands/items-economy/buy.ts
+import { SlashCommandBuilder, GuildMember } from "discord.js";
 import { getOrCreateUser, Users } from "../../Models/User.js";
 import { Shop } from "../../Models/Shop.js";
 import { UserRole } from "../../Models/Role.js";
@@ -44,7 +44,7 @@ export default {
 			}
 
 			try {
-				let userData = await getOrCreateUser(user.id);
+				const userData = await getOrCreateUser(user.id);
 
 				// Buscar el ítem en la tienda por ID o nombre (case-insensitive)
 				const itemData =

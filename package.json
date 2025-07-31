@@ -9,7 +9,9 @@
 		"build": "rimraf dist && tsc && cp -R src/assets dist",
 		"start": "node dist/index.js",
 		"deploy-slash-commands-dev": "cross-env NODE_ENV=development tsx src/deploy-commands.ts",
-		"deploy-slash-commands": "tsx src/deploy-commands.ts"
+		"deploy-slash-commands": "tsx src/deploy-commands.ts",
+		"lint": "eslint 'src/**/*.{ts,js}'",
+		"lint-fix": "eslint 'src/**/*.{ts,js}' --fix"
 	},
 	"keywords": [],
 	"author": "Abbytec <gpsmurfs@gmail.com>",
@@ -37,6 +39,7 @@
 		"winston": "^3.17.0"
 	},
 	"devDependencies": {
+		"@eslint/js": "^9.32.0",
 		"@types/gif-encoder": "^0.7.4",
 		"@types/jaro-winkler": "^0.2.3",
 		"@types/luxon": "^3.4.2",
@@ -44,9 +47,12 @@
 		"@types/sharp": "^0.32.0",
 		"@types/twemoji-parser": "^13.1.4",
 		"cross-env": "^7.0.3",
+		"eslint": "^9.32.0",
 		"husky": "^9.1.7",
 		"ts-node": "^10.9.2",
 		"ts-node-dev": "^2.0.0",
-		"tsx": "^4.20.3"
+		"tsx": "^4.20.3",
+		"typescript": "^5.8.3",
+		"typescript-eslint": "^8.38.0"
 	}
 }

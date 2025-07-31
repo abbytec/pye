@@ -31,7 +31,7 @@ export const composeMiddlewares = (
 				await middleware(interaction, () => dispatch(i + 1));
 			} else {
 				// Si no hay más middlewares, llama al handler
-				let result =
+				const result =
 					(await finalHandler(interaction).catch((e) => {
 						if (e instanceof Error && e.name === "ParameterError") {
 							replyError(interaction, e.message);

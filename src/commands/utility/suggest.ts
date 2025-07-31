@@ -15,7 +15,7 @@ const data = new SlashCommandBuilder()
 async function sugerir(sugerencia: string | null, interaction: IPrefixChatInputCommand) {
 	const canal = (await getChannel(interaction, "sugerencias", true)) as TextChannel | null;
 
-	let suggest = new EmbedBuilder()
+	const suggest = new EmbedBuilder()
 		.setColor(COLORS.pyeLightBlue)
 		.setTitle("Nueva sugerencia !")
 		.setDescription(sugerencia)

@@ -18,9 +18,9 @@ export default {
 	name: Events.MessageReactionAdd,
 	async execute(reaction: MessageReaction, user: User) {
 		if (!reaction || !user || user.bot || !reaction.message?.guild) return;
-		let fullReaction = await fetchStructure(reaction);
+		const fullReaction = await fetchStructure(reaction);
 		const textChannel = reaction.message.channel as TextChannel;
-		let category = textChannel.parentId;
+		const category = textChannel.parentId;
 		if (reaction.emoji.name === "⭐" && category !== getChannelFromEnv("categoryStaff") && !textChannel.nsfw) {
 			const data = await StarBoard.findOne({ id: process.env.GUILD_ID });
 			if (!data) return;

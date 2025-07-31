@@ -87,7 +87,7 @@ export class ExtendedClient extends CoreClient {
 		return this.agendaElement;
 	}
 	public static logError(errorMessage: string, stackTrace?: string, userId?: string) {
-		let textChannel = ExtendedClient.guild?.channels.resolve(getChannelFromEnv("logs")) as TextChannel;
+		const textChannel = ExtendedClient.guild?.channels.resolve(getChannelFromEnv("logs")) as TextChannel;
 		let content = "Log de error. ";
 		if (userId) content += "Usuario: <@" + (userId ?? "desconocido") + ">\n";
 		content += errorMessage;
@@ -111,7 +111,7 @@ export class ExtendedClient extends CoreClient {
 		logChannel: ChannelKeys = "logs",
 		isResent: boolean = false
 	) {
-		let textChannel = ExtendedClient.guild?.channels.resolve(getChannelFromEnv(logChannel));
+		const textChannel = ExtendedClient.guild?.channels.resolve(getChannelFromEnv(logChannel));
 		if (!textChannel) return console.error("No se pudo encontrar el canal de logs");
 		let color;
 		if (type === "error") {
@@ -133,7 +133,7 @@ export class ExtendedClient extends CoreClient {
 			);
 		}
 
-		let fields = [
+		const fields = [
 			{
 				name: "Acción",
 				value: action,

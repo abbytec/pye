@@ -62,7 +62,7 @@ class WarStrategy implements GameStrategy<WarMeta> {
 	}
 
 	publicState(ctx: GameRuntime<WarMeta>) {
-		return renderCardsAnsi(ctx.table, this.cardSet);
+		return renderCardsAnsi(ctx.table);
 	}
 
 	playerChoices(ctx: GameRuntime<WarMeta>, userId: Snowflake) {

@@ -1,5 +1,5 @@
 // types/middleware.ts
-import { APIEmbedField, AttachmentBuilder, ChatInputCommandInteraction, EmbedBuilder, GuildMember, RestOrArray, User } from "discord.js";
+import { APIEmbedField, AttachmentBuilder, GuildMember, User } from "discord.js";
 import { IHelperPointDocument } from "../Models/HelperPoint.js";
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 

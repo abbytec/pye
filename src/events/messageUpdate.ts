@@ -12,12 +12,16 @@ export default {
 		if (oldMessage.partial) {
 			try {
 				await oldMessage.fetch();
-			} catch {}
+			} catch {
+				// Ignore
+			}
 		}
 		if (newMessage.partial) {
 			try {
 				await newMessage.fetch();
-			} catch {}
+			} catch {
+				// Ignore
+			}
 		}
 
 		const client = newMessage.client as ExtendedClient;

@@ -1,6 +1,6 @@
 // src/utils/card-games/TrucoStrategy.ts
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Snowflake } from "discord.js";
-import { GameRuntime, PlayerState } from "../GameRuntime.js";
+import { GameRuntime } from "../GameRuntime.js";
 import { Card, GameStrategy } from "./IGameStrategy.js";
 import { DeckFactory } from "../DeckFactory.js";
 
@@ -68,12 +68,12 @@ function winnerOfPlay(a: Card, b: Card): 0 | 1 | -1 {
 
 /**
  * ────────────────────────────────────────────────────────────────
- *  Truco Strategy (simplificado, 1 punto por mano, sin envites)
+ *  Truco Strategy (simplificado, 1 punto por mano, sin envites)
  * ────────────────────────────────────────────────────────────────
  */
 export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 	readonly name = "Truco";
-	readonly limits = { min: 2, max: 2 } as const; // 1 vs 1 simplificado
+	readonly limits = { min: 2, max: 2 } as const; // 1 vs 1 simplificado
 	readonly cardSet = "spanish";
 	readonly teamBased = false;
 

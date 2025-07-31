@@ -1,11 +1,10 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { getOrCreateUser, IUserModel, Users } from "../../Models/User.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { PostHandleable } from "../../types/middleware.js";
 import { COLORS, pyecoin } from "../../utils/constants.js";
-import { IUser } from "../../interfaces/IUser.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
@@ -24,7 +23,7 @@ export default {
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 
-			let userData: IUserModel = await getOrCreateUser(user.id);
+			const userData: IUserModel = await getOrCreateUser(user.id);
 
 			if (userData.bank <= 0) return await replyWarning(interaction, "No tienes suficientes PyE Coins para sacar del banco.");
 

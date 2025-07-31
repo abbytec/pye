@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, GuildMember, PermissionFlagsBits } from "discord.js";
+import { SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { verifyHasRoles } from "../../composables/middlewares/verifyHasRoles.js";
@@ -44,7 +44,7 @@ export default {
 			if (type === "empleo") roleId = getRoleFromEnv(`restringido`);
 			else if (type === "foros") {
 				roleId = getRoleFromEnv(`restringido_foros`);
-				let points = await HelperPoint.findOne({ _id: user.id });
+				const points = await HelperPoint.findOne({ _id: user.id });
 				await points?.updateOne({ points: Math.floor(points.points * 0.1) });
 			} else return replyError(interaction, "Tipo de restricción no reconocido.");
 

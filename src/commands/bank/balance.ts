@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, GuildMember, AttachmentBuilder, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, GuildMember, AttachmentBuilder, EmbedBuilder } from "discord.js";
 import { getOrCreateUser, IUserModel } from "../../Models/User.js";
 import { Home } from "../../Models/Home.js";
 import redis from "../../redis.js";
@@ -44,7 +44,7 @@ export default {
 			const position = await redis.sendCommand(["ZREVRANK", "top:all", member.id]).then((res) => Number(res?.toString()));
 			const data: IUserModel = await getOrCreateUser(member.id);
 
-			let embed = new EmbedBuilder()
+			const embed = new EmbedBuilder()
 				.setAuthor({ name: member.user.username, iconURL: member.user.displayAvatarURL() })
 				.setDescription(
 					data.profile ? `🛠 **Oficio**: \`${data.profile.job}\`` : `⚠ Aún no te creaste un perfil, crea uno con \`/start\`.`

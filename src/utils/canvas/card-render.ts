@@ -18,7 +18,7 @@ interface DrawTextOptions {
 }
 
 function formatNumber(numStr: string) {
-	let num = parseFloat(numStr.replace(/,/g, ""));
+	const num = parseFloat(numStr.replace(/,/g, ""));
 
 	if (isNaN(num)) {
 		return "-";

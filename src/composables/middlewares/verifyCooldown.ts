@@ -33,7 +33,7 @@ export const verifyCooldown = (
 
 		if (remainingCooldown > 0) {
 			const timeLeft = formatTime(remainingCooldown);
-			let message = await interaction.reply({
+			const message = await interaction.reply({
 				content: `❌ - Debes esperar **${
 					timeLeft ?? (remainingCooldown / 1000).toFixed(2) + "segundos"
 				}** antes de usar el comando **${commandName}** de nuevo.`,

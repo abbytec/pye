@@ -118,14 +118,14 @@ function getDiskUsage(): { total: string; used: string; percent: string } {
 
 		const output = execSync("df -k /").toString();
 		const lines = output.trim().split("\n");
-		const [_, totalBlocks, usedBlocks] = lines[1].split(/\s+/).map(Number);
+		const [, totalBlocks, usedBlocks] = lines[1].split(/\s+/).map(Number);
 
 		total = totalBlocks * 1024; // Convert KB to Bytes
 		used = usedBlocks * 1024;
 
 		percent = ((used / total) * 100).toFixed(2) + "%";
 		return { total: formatBytes(total), used: formatBytes(used), percent };
-	} catch (error) {
+	} catch {
 		return { total: "Desconocido", used: "Desconocido", percent: "N/A" };
 	}
 }

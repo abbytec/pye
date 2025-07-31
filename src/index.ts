@@ -48,7 +48,7 @@ const loadCommands = async () => {
 						console.log(`Cargando comando: ${command.data.name}`);
 						CommandService.commands.set(command.data.name, command);
 						if (command.prefixResolver) {
-							let instance = command.prefixResolver(client);
+							const instance = command.prefixResolver(client);
 							command.prefixResolverInstance = instance;
 							CommandService.prefixCommands.set(instance.commandName, instance);
 							command.prefixResolverInstance.aliases.forEach((alias) => CommandService.prefixCommands.set(alias, instance));

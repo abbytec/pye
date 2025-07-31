@@ -8,7 +8,7 @@ export const logMessages: Finalware = async (postHandleableInteraction, result) 
 				?.send(message.content)
 				.catch(() => console.error("Error al enviar el mensaje de log"));
 		} else if ("user" in message) {
-			let embed = new EmbedBuilder()
+			const embed = new EmbedBuilder()
 				.setAuthor({ name: message.user.tag, iconURL: message.user.displayAvatarURL() })
 				.setDescription(message.description)
 				.addFields(message.fields)

@@ -4,7 +4,7 @@ import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 export async function handleMemberKick(entry: GuildAuditLogsEntry, guild: Guild) {
 	const { target, executor } = entry;
 	if (!target || entry.targetType !== "User" || !executor) return;
-	let targetUser = target as User;
+	const targetUser = target as User;
 	const memberId = targetUser.id;
 	const channel = guild.channels.resolve(getChannelFromEnv("bansanciones")) as TextChannel | null;
 

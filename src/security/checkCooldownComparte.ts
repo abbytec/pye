@@ -7,7 +7,7 @@ import ForumPostControlService from "../core/services/ForumPostControlService.js
 import { convertMsToUnixTimestamp } from "../utils/generic.js";
 
 export async function checkCooldownComparte(msg: Message<boolean>, client: ExtendedClient): Promise<number | undefined> {
-	let lastPosts = ForumPostControlService.ultimosCompartePosts
+	const lastPosts = ForumPostControlService.ultimosCompartePosts
 		.get(msg.author.id)
 		?.filter((post) => post.date.getTime() + 1000 * 60 * 60 * 24 * 7 >= Date.now());
 
@@ -18,7 +18,7 @@ export async function checkCooldownComparte(msg: Message<boolean>, client: Exten
 		await channel.messages
 			.fetch(post.messageId)
 			.then(async (message) => {
-				let distance = natural.JaroWinklerDistance(message.content, msg.content, { ignoreCase: true });
+				const distance = natural.JaroWinklerDistance(message.content, msg.content, { ignoreCase: true });
 
 				const oldMessageLink = `https://discord.com/channels/${process.env.GUILD_ID}/${post.channelId}/${post.messageId}`;
 				if (distance > 0.9) {
@@ -61,7 +61,7 @@ export async function checkCooldownComparte(msg: Message<boolean>, client: Exten
 		ForumPostControlService.agregarCompartePost(msg.author.id, msg.channel.id, msg.id, hashMessage(msg.content));
 		return;
 	}
-	let warn = await (msg.channel as TextChannel).send({
+	const warn = await (msg.channel as TextChannel).send({
 		content: `🚫 <@${
 			msg.author.id
 		}>Por favor, espera 1 semana entre publicaciónes similares en los canales de compartir. (Tiempo restante: <t:${convertMsToUnixTimestamp(

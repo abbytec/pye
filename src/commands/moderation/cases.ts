@@ -1,5 +1,4 @@
 import {
-	ChatInputCommandInteraction,
 	SlashCommandBuilder,
 	EmbedBuilder,
 	ActionRowBuilder,

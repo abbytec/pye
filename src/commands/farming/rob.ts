@@ -42,7 +42,7 @@ const failureTexts: Array<(profit: string, user: string) => string> = [
 
 async function cooldownFunction(interaction: IPrefixChatInputCommand) {
 	const user = interaction.user;
-	let userData: Partial<IUser> = await getOrCreateUser(user.id);
+	const userData: Partial<IUser> = await getOrCreateUser(user.id);
 
 	return cooldownCalculation(["Ladron", "Ladrona"].includes(userData.profile?.job ?? ""));
 }
@@ -73,7 +73,7 @@ export default {
 			const user = interaction.user;
 
 			// Obtener datos del usuario
-			let userData: Partial<IUser> = await getOrCreateUser(user.id);
+			const userData: Partial<IUser> = await getOrCreateUser(user.id);
 
 			const negativeCash = (userData.cash ?? 0) < 0;
 
@@ -91,7 +91,7 @@ export default {
 			if (targetUser.bot) return await replyError(interaction, "Los bots no pueden tener monedas.");
 
 			// Obtener datos del usuario objetivo
-			let targetUserData: IUserModel = await getOrCreateUser(targetUser.id);
+			const targetUserData: IUserModel = await getOrCreateUser(targetUser.id);
 
 			// Verificar si el usuario objetivo tiene dinero en efectivo
 			if ((targetUserData.cash ?? 0) < 1) return await replyError(interaction, "No puedes robarle a alguien que no tiene dinero.");
@@ -109,7 +109,7 @@ export default {
 			if (["Ladron", "Ladrona"].includes(userData.profile?.job ?? "")) lose = false;
 
 			// Calcular ganancia o pérdida
-			let profit = Math.floor((1 - probability) * targetUserData.cash);
+			const profit = Math.floor((1 - probability) * targetUserData.cash);
 
 			// Si la ganancia es menor a 1, informar fracaso
 			if (profit < 1)

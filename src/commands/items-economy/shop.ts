@@ -1,6 +1,5 @@
 // src/commands/Currency/shop.ts
 import {
-	ChatInputCommandInteraction,
 	SlashCommandBuilder,
 	EmbedBuilder,
 	ActionRowBuilder,

@@ -66,7 +66,7 @@ export class PrefixChatInputCommand {
 				this.argsMap.set(def.name, value);
 			}
 		}
-		let returnObj = {
+		const returnObj = {
 			client: this.client,
 			commandName: this.commandName,
 			guild: message.guild,
@@ -201,7 +201,7 @@ export class PrefixChatInputCommand {
 			}
 
 			return attachments?.first() ?? null;
-		} catch (error) {
+		} catch {
 			if (required) {
 				throw new ParameterError(`El archivo adjunto requerido "${name}" no fue proporcionado correctamente.`);
 			}
@@ -336,6 +336,7 @@ export class PrefixChatInputCommand {
 			}
 			return await reply.edit(content as any);
 		} catch (error) {
+			console.error(error);
 			throw new ParameterError("No hay una respuesta previa para editar.");
 		}
 	}

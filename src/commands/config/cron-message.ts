@@ -1,5 +1,5 @@
 // commands/admin/cron-message.ts
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder, ChannelType } from "discord.js";
+import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ChannelType } from "discord.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
@@ -88,7 +88,7 @@ export default {
 				if (embedJson) {
 					try {
 						embedData = JSON.parse(embedJson);
-					} catch (error) {
+					} catch {
 						return replyError(interaction, "El embed proporcionado no es un JSON válido.");
 					}
 				}

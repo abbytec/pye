@@ -32,7 +32,7 @@ export default {
 			const user = interaction.user;
 
 			// Obtener datos del usuario
-			let userData: IUserModel = await getOrCreateUser(user.id);
+			const userData: IUserModel = await getOrCreateUser(user.id);
 
 			// Verificar que el usuario tenga perfil y trabajo adecuado
 			if (!userData.profile || !["Militar", "Policia"].includes(userData.profile.job))
@@ -59,7 +59,7 @@ export default {
 
 			if (!member) return await replyError(interaction, "El último usuario en robar ya no se encuentra en el servidor.");
 
-			let robberData: IUser | null = await Users.findOne({ id: robberId });
+			const robberData: IUser | null = await Users.findOne({ id: robberId });
 			if (!robberData) return await replyError(interaction, "No se pudo encontrar la información del usuario que robó.");
 
 			// Aplicar cooldown

@@ -1,4 +1,4 @@
-import { EmbedBuilder, Events, Invite, TextChannel, GuildMember } from "discord.js";
+import { EmbedBuilder, Events, Invite, TextChannel } from "discord.js";
 import { ExtendedClient } from "../client.js";
 import { Evento } from "../types/event.js";
 import { COLORS, getChannelFromEnv } from "../utils/constants.js";
@@ -60,7 +60,7 @@ export default {
 						await member
 							?.timeout(60000, "Creación muy rápida de invitaciones")
 							.then(async () => {
-								let warnMessage = await channel.send({
+								const warnMessage = await channel.send({
 									content: `<@${inviterId}> has creado varias invitaciones en poco tiempo y por lo que te bloquearemos unos segundos a modo preventivo.`,
 								});
 								setTimeout(() => {

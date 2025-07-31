@@ -94,7 +94,7 @@ export default class TrendingService implements IService {
 
 	// Método para cargar datos desde la base de datos y aceptar listas de IDs
 	async load(emojiIds: string[], stickerIds: string[], channelIds: string[]): Promise<void> {
-		let data = await TrendingModel.findOne();
+		const data = await TrendingModel.findOne();
 		if (data) {
 			data.channels.delete("");
 			data.stickers.delete("");

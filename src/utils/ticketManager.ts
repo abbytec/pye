@@ -88,7 +88,7 @@ export async function handleTicketCreation(interaction: Interaction, ticketType:
 
 	const row = { type: 1, components: [closeButton, escalateButton] };
 
-	let embeds = [embedTicket];
+	const embeds = [embedTicket];
 
 	if (reason) {
 		const embedReason = new EmbedBuilder()
@@ -264,7 +264,7 @@ export async function logTicketEvent(
 			break;
 	}
 
-	let fields = [];
+	const fields = [];
 
 	if (eventType == "CREADO") {
 		fields.push({

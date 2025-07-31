@@ -19,7 +19,6 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import redis from "../../redis.js";
 import { COLORS, getChannelFromEnv, pyecoin } from "../../utils/constants.js";
-import { Bumps } from "../../Models/Bump.js";
 import { generateLeaderboard } from "../../utils/generic.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { ExtendedClient } from "../../client.js";
@@ -175,7 +174,7 @@ async function generateHouseLeaderboard(page: number, user: any, interaction: IP
 		sortFunction: (a: IHomeDocument, b: IHomeDocument) => b.house.level - a.house.level,
 		positionFinder: (data: IHomeDocument[], userId) => data.findIndex((u) => u.id === userId),
 		descriptionBuilder: async (item, index, start) => {
-			let member = await interaction.guild?.members.fetch(item.id).catch(() => undefined);
+			const member = await interaction.guild?.members.fetch(item.id).catch(() => undefined);
 			return `**${start + index + 1}.** [${member?.user.tag ?? "Usuario Desconocido"}](https://discord.com/users/${
 				item.id
 			}) • \`Nivel:\` **${item.house.level}**.\n\`Nombre:\` ${item.name ?? "🏠 Casa de " + (member?.user.tag ?? "Usuario Desconocido")}}`;
@@ -186,7 +185,7 @@ async function generateHouseLeaderboard(page: number, user: any, interaction: IP
 async function generateRedisLeaderboard(type: LeaderboardType, page: number, user: any, interaction: IPrefixChatInputCommand, disable: boolean) {
 	const ITEMS_PER_PAGE = 10;
 	const leaderboardKey = type === "all" ? "all" : type;
-	let totalItems = await redis.zCount(`top:${leaderboardKey}`, "-inf", "+inf");
+	const totalItems = await redis.zCount(`top:${leaderboardKey}`, "-inf", "+inf");
 	const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
 	page = Math.min(page, totalPages);
 
@@ -202,7 +201,7 @@ async function generateRedisLeaderboard(type: LeaderboardType, page: number, use
 			?.filter((_, i) => i % 2 === 0)
 			.map(async (id, index) => {
 				const score = Number(topData[index * 2 + 1]);
-				let member = await interaction.guild?.members.fetch(id.toString()).catch(() => undefined);
+				const member = await interaction.guild?.members.fetch(id.toString()).catch(() => undefined);
 
 				let rankIcon = `${start + index + 1}`;
 				if (start + index + 1 === 1) {

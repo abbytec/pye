@@ -1,6 +1,6 @@
 // src/commands/General/komi.ts
 
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, AttachmentBuilder, Guild } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder, Guild } from "discord.js";
 import Canvas from "@napi-rs/canvas";
 import fetch from "node-fetch"; // Asegúrate de tener instalado node-fetch
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";

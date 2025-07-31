@@ -153,7 +153,7 @@ async function pollScanResults(scanId: string, retries: number, delay: number): 
 			}
 
 			await new Promise((res) => setTimeout(res, delay));
-		} catch (error: any) {
+		} catch {
 			if (attempt === retries - 1) {
 				throw new Error("El análisis no se completó a tiempo. Intente nuevamente más tarde.");
 			}

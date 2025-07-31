@@ -40,9 +40,9 @@ export default {
 			deferInteraction(),
 		],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
-			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
-			let side: string = interaction.options.getString("lado") ?? ["cara", "cruz"][Math.floor(Math.random() * 2)];
-			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
+			const amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
+			const side: string = interaction.options.getString("lado") ?? ["cara", "cruz"][Math.floor(Math.random() * 2)];
+			const userData: IUserModel = await getOrCreateUser(interaction.user.id);
 
 			if (amount < 100 || amount > EconomyService.getGameMaxCoins(2.5) || amount > userData.cash)
 				return await replyError(

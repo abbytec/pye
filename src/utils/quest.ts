@@ -134,7 +134,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 				};
 			};
 			Choose.add(person.id);
-			let m = await (guild?.channels.resolve(channelId) as TextChannel | null)?.send(await contenido());
+			const m = await (guild?.channels.resolve(channelId) as TextChannel | null)?.send(await contenido());
 			m?.createMessageComponentCollector({
 				filter: (i: any) => i.user.id === person.id && ["nextS", "backS"].includes(i.customId),
 				time: 60e3,
@@ -172,7 +172,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 				files: [],
 				components: [],
 			});
-			let next = dateZ && ["Obrero", "Obrera"].includes(dateZ.profile?.job ?? "") ? 3 : 1;
+			const next = dateZ && ["Obrero", "Obrera"].includes(dateZ.profile?.job ?? "") ? 3 : 1;
 			return await levelUpHome(user, next, res.values[0]);
 		} else if (levelConfig.interactiveReward.type === "pet") {
 			if (Choose.has(person.id)) return false;
@@ -228,7 +228,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 				};
 			};
 			Choose.add(person.id);
-			let m = await (guild?.channels.resolve(channelId) as TextChannel | null)?.send(await contenido());
+			const m = await (guild?.channels.resolve(channelId) as TextChannel | null)?.send(await contenido());
 			m?.createMessageComponentCollector({
 				filter: (i: any) => i.user.id === person.id && ["nextS", "backS"].includes(i.customId),
 				time: 60e3,

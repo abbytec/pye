@@ -29,7 +29,7 @@ export default {
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const author = interaction.user;
 			const targetUser = await interaction.options.getUser("usuario", true);
-			let cantidadInput = interaction.options.getString("cantidad", true);
+			const cantidadInput = interaction.options.getString("cantidad", true);
 
 			if (!targetUser) return;
 
@@ -41,7 +41,7 @@ export default {
 
 			// Validar la cantidad
 			let cantidad: number;
-			let authorData: IUser | null = await getOrCreateUser(author.id);
+			const authorData: IUser | null = await getOrCreateUser(author.id);
 
 			if (cantidadInput.toLowerCase() === "all") {
 				cantidad = authorData.cash!;

@@ -15,7 +15,7 @@ import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandCon
 import EconomyService from "../../core/services/EconomyService.js";
 import { ExtendedClient } from "../../client.js";
 
-let data: {
+const data: {
 	fin: number;
 	apuestas: { jugador: string; cantidad: number; apuesta: string }[];
 	intervalo?: NodeJS.Timeout;
@@ -58,9 +58,9 @@ export default {
 			deferInteraction(),
 		],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
-			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
-			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
-			let choice: string = interaction.options.getString("eleccion", true);
+			const userData: IUserModel = await getOrCreateUser(interaction.user.id);
+			const amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
+			const choice: string = interaction.options.getString("eleccion", true);
 			// Validar datos
 			if (amount < 100 || amount > EconomyService.getGameMaxCoins() || amount > userData.cash)
 				return replyError(
@@ -72,9 +72,9 @@ export default {
 			// Comenzar el juego
 			if (data.fin == -1) {
 				data.fin = Date.now() + 30e3;
-				let apuestas: { jugador: string; cantidad: number; apuesta: any }[] = [];
+				const apuestas: { jugador: string; cantidad: number; apuesta: any }[] = [];
 				data.apuestas = apuestas;
-				let intervalo: NodeJS.Timeout = setTimeout(() => {
+				const intervalo: NodeJS.Timeout = setTimeout(() => {
 					roulette(interaction);
 				}, 30e3);
 				data.intervalo = intervalo;
@@ -111,7 +111,7 @@ export default {
 async function roulette(interaction: IPrefixChatInputCommand) {
 	// Reiniciar el estado de la partida.
 	data.fin = -1;
-	let valor = Math.floor(Math.random() * 36); // Aseguramos valores de 0 a 36.
+	const valor = Math.floor(Math.random() * 36); // Aseguramos valores de 0 a 36.
 	let vcolor = colores.green;
 	if (rojos.includes(valor)) {
 		vcolor = colores.red;

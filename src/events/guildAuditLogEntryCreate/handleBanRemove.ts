@@ -5,7 +5,7 @@ import { ModLogs } from "../../Models/ModLogs.js";
 export async function handleBanRemove(entry: GuildAuditLogsEntry, guild: Guild) {
 	const { target, executor } = entry;
 	if (!target || entry.targetType !== "User" || !executor) return;
-	let targetUser = target as User;
+	const targetUser = target as User;
 	const memberId = targetUser.id;
 	const channel = guild.channels.resolve(getChannelFromEnv("bansanciones")) as TextChannel | null;
 

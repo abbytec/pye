@@ -121,7 +121,7 @@ export default {
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), verifyCooldown("blackjack", 1000)],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const amount = interaction.options.getInteger("cantidad", true);
-			let data = await getOrCreateUser(interaction.user.id);
+			const data = await getOrCreateUser(interaction.user.id);
 			if (amount < 0) return replyError(interaction, "Debe ser mayor a 0 claro.");
 			if (data.cash < amount) return replyError(interaction, "No tienes suficiente para apostar.");
 			if (amount > EconomyService.getGameMaxCoins())
@@ -145,14 +145,14 @@ export default {
 			const dealerValue = dealerCards.reduce((a, b) => a + parseRelatable(a, CARDS.get(b) ?? 0), 0);
 			const firstValue = firstCards.reduce((a, b) => a + parseRelatable(a, CARDS.get(b) ?? 0), 0);
 
-			let res = await isBlackJack(firstValue, dealerValue, gameEmbed, data, game, amount, interaction, firstCards, dealerCards);
+			const res = await isBlackJack(firstValue, dealerValue, gameEmbed, data, game, amount, interaction, firstCards, dealerCards);
 			if (res) return;
 
 			// La mano del jugador y la del dealer (inicial) se crean como arrays
-			let gameCardsArr = [...firstCards];
-			let gameDealerCards = [...dealerCards];
-			// Para el juego “normal” (sin split) usaremos un array de manos; en caso de split se tendrá 2
-			let hands = [[...gameCardsArr]];
+			const gameCardsArr = [...firstCards];
+			const gameDealerCards = [...dealerCards];
+			// Para el juego "normal" (sin split) usaremos un array de manos; en caso de split se tendrá 2
+			const hands = [[...gameCardsArr]];
 			// Registra las cartas ya mostradas
 			changeCard(gameCardsArr, gameDealerCards, cardsGame, CARDS);
 			removeCards(gameCardsArr, gameDealerCards, CARDS);
@@ -639,7 +639,7 @@ function changeCard(
 ) {
 	const agregarCartas = (carta: string) => {
 		if (cartas.has(carta)) {
-			let val = cartas.get(carta);
+			const val = cartas.get(carta);
 			cartasJugadas.set(carta, val ?? "");
 		}
 	};
@@ -662,7 +662,7 @@ function parseRelatable(value: number, card: "relatable" | number) {
 
 function orderGame(cards: string[]) {
 	const carta = cards.find((card) => Aces.includes(card));
-	let position = cards.indexOf(carta ?? "");
+	const position = cards.indexOf(carta ?? "");
 	return cardsMove(cards, position, cards.length - 1);
 }
 

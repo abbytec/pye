@@ -1,11 +1,4 @@
-import {
-	ChatInputCommandInteraction,
-	SlashCommandBuilder,
-	EmbedBuilder,
-	PermissionFlagsBits,
-	ActionRowBuilder,
-	ButtonBuilder,
-} from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder } from "discord.js";
 import { getChannelFromEnv, getRoleFromEnv, USERS } from "../../utils/constants.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
@@ -50,7 +43,7 @@ export default {
 				type: "Warn",
 			});
 
-			let data = (await ModLogs.countDocuments({ id: user.id })) ?? [];
+			const data = (await ModLogs.countDocuments({ id: user.id })) ?? [];
 			await replyWarning(
 				interaction,
 				`Se envió una advertencia a **${user.username}**.`,

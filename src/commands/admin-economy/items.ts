@@ -1,7 +1,6 @@
 // src/commands/admin/items.ts
 
 import {
-	ChatInputCommandInteraction,
 	SlashCommandBuilder,
 	PermissionFlagsBits,
 	EmbedBuilder,
@@ -129,7 +128,7 @@ async function visualizarItems(interaction: IPrefixChatInputCommand) {
 
 		const embed = new EmbedBuilder()
 			.setTitle("Lista de Ítems 🛒 (ID - Nombre)")
-			.setDescription(pageItems.map((item, index) => `**${item.itemId}** - \`${item.name}\``).join("\n"))
+			.setDescription(pageItems.map((item) => `**${item.itemId}** - \`${item.name}\``).join("\n"))
 			.setFooter({ text: `Página ${page + 1} de ${totalPages}` });
 
 		const components = [
@@ -160,7 +159,7 @@ async function visualizarItems(interaction: IPrefixChatInputCommand) {
 
 		return { embeds: [embed], components };
 	};
-	let pageContent = getPageContent(page);
+	const pageContent = getPageContent(page);
 	await replyOk(interaction, pageContent.embeds, undefined, pageContent.components);
 
 	const message = await interaction.fetchReply();
@@ -249,7 +248,7 @@ async function añadirItem(interaction: IPrefixChatInputCommand) {
 	if (timeoutStr) {
 		try {
 			timeout = ms(timeoutStr.toLowerCase());
-		} catch (error) {
+		} catch {
 			return await replyError(interaction, "El formato del tiempo es inválido. Ejemplo: 1h, 30m");
 		}
 	}
@@ -385,14 +384,14 @@ async function getUpdatedFields(interaction: IPrefixChatInputCommand, item: ISho
 async function editarItem(interaction: IPrefixChatInputCommand) {
 	const id = interaction.options.getString("id", true);
 
-	let item = await Shop.findOne<IShopDocument>({ itemId: id });
+	const item = await Shop.findOne<IShopDocument>({ itemId: id });
 	if (!item) {
 		return await replyError(interaction, `No se encontró ningún ítem con el id \`${id}\`.`);
 	}
 	let modified = false;
 	try {
 		modified = await getUpdatedFields(interaction, item);
-	} catch (error) {
+	} catch {
 		return await replyError(interaction, "El formato del tiempo es inválido. Ejemplo: 1h, 30m");
 	}
 
@@ -402,7 +401,7 @@ async function editarItem(interaction: IPrefixChatInputCommand) {
 		}
 		const updatedItem = await item.save();
 
-		let fields = [
+		const fields = [
 			{ name: "Nombre", value: item.name, inline: true },
 			{ name: "Descripción", value: updatedItem.description, inline: false },
 			{ name: "Icono", value: updatedItem.icon || "No tiene.", inline: true },

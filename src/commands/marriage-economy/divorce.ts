@@ -34,7 +34,7 @@ export default {
 				return await processDivorce(user.id, targetUser.id);
 			}
 
-			let userData: IUserModel = await getOrCreateUser(user.id);
+			const userData: IUserModel = await getOrCreateUser(user.id);
 
 			if (!userData.couples || userData.couples.length === 0) return await replyError(interaction, "No estás casado.");
 
@@ -99,7 +99,7 @@ export default {
 						components: [],
 					});
 				}
-			} catch (error) {
+			} catch {
 				return await replyError(interaction, "Se acabó el tiempo...");
 			}
 		}

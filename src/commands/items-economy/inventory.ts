@@ -1,6 +1,5 @@
 // src/commands/Currency/inventory.ts
 import {
-	ChatInputCommandInteraction,
 	SlashCommandBuilder,
 	EmbedBuilder,
 	ActionRowBuilder,
@@ -20,7 +19,6 @@ import { replyOk } from "../../utils/messages/replyOk.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { IShopDocument, Shop } from "../../Models/Shop.js";
-import { Types } from "mongoose";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { ExtendedClient } from "../../client.js";
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
@@ -58,7 +56,7 @@ export default {
 			let page = pageOption && pageOption > 0 ? pageOption : 1;
 
 			// Obtener los datos del usuario
-			let userData: IUserModel = await getOrCreateUser(member.id);
+			const userData: IUserModel = await getOrCreateUser(member.id);
 
 			// Procesar los ítems del inventario
 			const itemsWithQuantity = await getItems(userData);

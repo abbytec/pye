@@ -54,11 +54,11 @@ export default {
 			const user = interaction.user;
 
 			// Obtener datos del usuario
-			let userData: Partial<IUser> = await getOrCreateUser(user.id);
+			const userData: Partial<IUser> = await getOrCreateUser(user.id);
 
 			const negativeCash = (userData.cash ?? 0) < 0;
 
-			let command = CommandService.getCommandLimit("slut") ?? {
+			const command = CommandService.getCommandLimit("slut") ?? {
 				lowestMoney: 500,
 				highestMoney: 1000,
 				failRate: 55,

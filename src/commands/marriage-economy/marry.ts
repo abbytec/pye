@@ -1,5 +1,5 @@
-// src/commands/Currency/marry.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, User, AttachmentBuilder, Guild } from "discord.js";
+// src/commands/marriage-economy/marry.ts
+import { SlashCommandBuilder, EmbedBuilder, GuildMember, AttachmentBuilder, Guild } from "discord.js";
 import { getOrCreateUser } from "../../Models/User.js";
 import { Shop } from "../../Models/Shop.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
@@ -60,14 +60,14 @@ export default {
 				);
 
 			// Obtener los datos del usuario que envía la propuesta
-			let userData = await getOrCreateUser(user.id);
+			const userData = await getOrCreateUser(user.id);
 
 			// Verificar si el usuario tiene el anillo en su inventario
 			if (!userData.inventory.includes(ringItem._id))
 				return await replyError(interaction, "Necesitas comprar un anillo para poder casarte.");
 
 			// Obtener los datos del usuario objetivo
-			let targetData = await getOrCreateUser(targetUser.id);
+			const targetData = await getOrCreateUser(targetUser.id);
 
 			// Verificar que el usuario objetivo tenga un perfil
 			if (!targetData.profile) return await replyError(interaction, "Este usuario no tiene un perfil.");

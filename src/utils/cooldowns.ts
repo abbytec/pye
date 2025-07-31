@@ -68,7 +68,7 @@ export async function setCooldown(client: ExtendedClient, userId: string, comman
 		client.services.commands.cooldowns.set(`${userId}:${commandName}`, cooldownEntry);
 	} else {
 		// Use database
-		let cooldownEntry = await Cooldowns.findOneAndUpdate(
+		const cooldownEntry = await Cooldowns.findOneAndUpdate(
 			{
 				user: userId,
 				command: commandName,

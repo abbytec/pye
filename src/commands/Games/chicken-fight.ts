@@ -32,8 +32,8 @@ export default {
 			deferInteraction(),
 		],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
-			let amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
-			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
+			const amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
+			const userData: IUserModel = await getOrCreateUser(interaction.user.id);
 
 			// Verificar que el monto sea válido
 			if (amount < 100 || amount > EconomyService.getGameMaxCoins() || amount > userData.cash)

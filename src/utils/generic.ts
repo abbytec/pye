@@ -8,7 +8,6 @@ import {
 	EmbedBuilder,
 	Message,
 	TextChannel,
-	ThreadChannel,
 } from "discord.js";
 import { COLORS } from "./constants.js";
 import { TextMessages } from "../Models/TextMessages.js";
@@ -113,10 +112,10 @@ export async function generateLeaderboard(
 
 export async function checkRole(msg: Message<boolean> | IPrefixChatInputCommand, roleId: string, limit: number, roleName?: string) {
 	if (!msg.guild) return;
-	let member = msg instanceof Message ? msg.member : msg.guild.members.cache.get(msg.user.id);
+	const member = msg instanceof Message ? msg.member : msg.guild.members.cache.get(msg.user.id);
 	if (member?.roles.cache.has(roleId)) return;
-	let autor = msg instanceof Message ? msg.author.id : msg.user.id;
-	let data = await TextMessages.findOneAndUpdate(
+	const autor = msg instanceof Message ? msg.author.id : msg.user.id;
+	const data = await TextMessages.findOneAndUpdate(
 		{ channelId: roleName ?? msg.channel?.id, id: autor },
 		{ $inc: { messages: 1 } },
 		{ new: true, upsert: true }
@@ -250,7 +249,7 @@ export async function getFirstValidAttachment(
 			mimeType: validAttachment.contentType ?? "",
 			base64: buffer.toString("base64"),
 		};
-	} catch (err) {
+	} catch {
 		return undefined;
 	}
 }
@@ -305,7 +304,7 @@ export async function getTextAttachmentsContent(attachments: Collection<string, 
 			const textContent = buffer.toString("utf-8");
 			formattedContent += `// ${attachment.name}\n${textContent}\n\n`;
 			currentSize += attachment.size;
-		} catch (err) {
+		} catch {
 			formattedContent += `// ${attachment.name} - Error al obtener el contenido.\n`;
 		}
 	}

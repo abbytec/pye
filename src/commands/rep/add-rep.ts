@@ -34,7 +34,7 @@ export default {
 					return { member: null, data: null };
 				});
 				if (!member || !data) return;
-				let repManager = interaction.member as GuildMember;
+				const repManager = interaction.member as GuildMember;
 				const author =
 					repManager.roles.cache.has(getRoleFromEnv("helper")) &&
 					!repManager.roles.cache.has(getRoleFromEnv("moderadorChats")) &&

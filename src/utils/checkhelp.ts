@@ -35,7 +35,7 @@ interface FetchResult {
  */
 async function fetchMessagesAndHelpers(gratitudeMessage: Message): Promise<FetchResult> {
 	let helpers: string[] = [];
-	let msges: Message[] = [];
+	const msges: Message[] = [];
 
 	let repliedMessage: Message | null = null;
 	if (gratitudeMessage.reference?.messageId) {

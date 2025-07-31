@@ -16,7 +16,7 @@ export default {
 		if (oldMember.user.bot || newMember.user.bot) return;
 		// Asegúrate de que oldMember tenga información completa
 		if (oldMember.partial) {
-			let oldMemberResolved = await oldMember.fetch().catch((error) => {
+			const oldMemberResolved = await oldMember.fetch().catch((error) => {
 				console.error("Error al obtener información del miembro antiguo:", error);
 				return undefined;
 			});
@@ -72,7 +72,7 @@ async function handleRoleChanges(oldMember: GuildMember | PartialGuildMember, ne
 			.setColor(COLORS.nitroBooster)
 			.setImage("attachment://booster.png")
 			.setFooter({ text: "¡Este lugar del starboard es para ti!" });
-		let boosterImg = new AttachmentBuilder(await generateCanvaBoosterId(newMember), { name: "booster.png" });
+		const boosterImg = new AttachmentBuilder(await generateCanvaBoosterId(newMember), { name: "booster.png" });
 		channel.send({ content: `<@${newMember.id}>`, embeds: [embed], files: [boosterImg] });
 	}
 }

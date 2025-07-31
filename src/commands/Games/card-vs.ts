@@ -159,7 +159,7 @@ export default {
 
 								const btns = strat.playerChoices?.(runtime, i.user.id) ?? [];
 								await i.editReply({
-									content: renderCardsAnsi(player.hand, strat.cardSet),
+									content: renderCardsAnsi(player.hand),
 									components: btns.length ? btns : [],
 								});
 

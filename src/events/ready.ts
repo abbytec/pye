@@ -9,7 +9,6 @@ import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js
 import { capitalizeFirstLetter } from "../utils/generic.js";
 import { ticketOptions } from "../utils/constants/ticketOptions.js";
 import { getDailyChallenge } from "../utils/challenges/dailyChallenge.js";
-import AutoRoleService from "../core/services/AutoRoleService.js";
 import { createPyechanEmbed, PYECHAN_AUTHOR, PYECHAN_THUMBNAIL } from "../utils/messages/createPyechanEmbed.js";
 
 export default {
@@ -33,7 +32,7 @@ async function ticketProcessor(client: ExtendedClient) {
 		(client.channels.resolve(getChannelFromEnv("tickets")) as TextChannel);
 	if (!ticketChannel) return ExtendedClient.logError("Ticket channel not found", "", client.user?.id);
 
-	let ticketMessage = await ticketChannel.messages.fetch({ limit: 2 }).then((m) => {
+	const ticketMessage = await ticketChannel.messages.fetch({ limit: 2 }).then((m) => {
 		const message = m.filter((m) => m.author.id === process.env.CLIENT_ID).first();
 		if (message?.author.id === process.env.CLIENT_ID) return message;
 	});
@@ -155,7 +154,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 		if (job.attrs.data.userReps.month !== currentMonthNumber) {
 			// Actualiza el mes en los datos del trabajo
 
-			let stats = await client.services.trending.getStats(client);
+			const stats = await client.services.trending.getStats(client);
 			(client.channels.resolve(getChannelFromEnv("moderadores")) as TextChannel | null)
 				?.send({
 					embeds: [stats],

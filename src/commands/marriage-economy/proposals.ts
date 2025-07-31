@@ -1,5 +1,5 @@
 // src/commands/Currency/proposals.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, User, Guild } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, GuildMember, User, Guild } from "discord.js";
 import { getOrCreateUser } from "../../Models/User.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
@@ -30,7 +30,7 @@ export default {
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario especificado en este servidor.");
 
 			// Obtener los datos del usuario objetivo
-			let userData = await getOrCreateUser(targetUser.id);
+			const userData = await getOrCreateUser(targetUser.id);
 
 			// Obtener las propuestas de matrimonio
 			const proposals = userData.proposals;

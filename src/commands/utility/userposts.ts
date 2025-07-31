@@ -61,7 +61,7 @@ export const execute = composeMiddlewares(
 				if (channel?.type !== ChannelType.GuildForum) return;
 				const threads = await channel.threads.fetchActive(false).catch(() => null);
 				if (!threads) return;
-				for (const [id, thread] of threads.threads) {
+				for (const [, thread] of threads.threads) {
 					if (thread.ownerId === user.id) {
 						posts.push(`[${thread.name}](https://discord.com/channels/${interaction.guild?.id}/${thread.id})`);
 					}

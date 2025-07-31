@@ -1,5 +1,5 @@
 // src/commands/Currency/marriage.ts
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember, User, CommandInteraction, Guild } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, GuildMember, User, Guild } from "discord.js";
 import { IUserModel, getOrCreateUser } from "../../Models/User.js";
 import { Shop } from "../../Models/Shop.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
@@ -54,16 +54,16 @@ export default {
 			if (!member) return await replyError(interaction, "No se pudo encontrar al usuario especificado en este servidor.");
 
 			// Obtener los datos del usuario que ejecuta el comando
-			let userData: IUserModel = await getOrCreateUser(interaction.user.id);
+			const userData: IUserModel = await getOrCreateUser(interaction.user.id);
 
 			// Obtener los datos del usuario objetivo
-			let targetData: IUserModel = await getOrCreateUser(targetUser.id);
+			const targetData: IUserModel = await getOrCreateUser(targetUser.id);
 
 			switch (subcommand) {
 				case "accept":
-					return handleAcceptMarriage(interaction, userData, targetData, targetUser, member, guild);
+					return handleAcceptMarriage(interaction, userData, targetData, targetUser);
 				case "refuse":
-					return handleRefuseMarriage(interaction, userData, targetData, targetUser, member, guild);
+					return handleRefuseMarriage(interaction, userData, targetUser);
 				default:
 					return await replyError(interaction, "Subcomando no reconocido.");
 			}
@@ -74,14 +74,7 @@ export default {
 /**
  * Maneja la aceptación de una propuesta de matrimonio.
  */
-async function handleAcceptMarriage(
-	interaction: IPrefixChatInputCommand,
-	userData: IUserModel,
-	targetData: IUserModel,
-	targetUser: User,
-	targetMember: GuildMember,
-	guild: any
-) {
+async function handleAcceptMarriage(interaction: IPrefixChatInputCommand, userData: IUserModel, targetData: IUserModel, targetUser: User) {
 	// Verificar si hay una propuesta pendiente de targetUser hacia el usuario que ejecuta el comando
 	if (!userData.proposals.includes(targetUser.id)) {
 		return await replyError(interaction, "No tienes una propuesta de esa persona.");
@@ -142,14 +135,7 @@ async function handleAcceptMarriage(
 /**
  * Maneja el rechazo de una propuesta de matrimonio.
  */
-async function handleRefuseMarriage(
-	interaction: IPrefixChatInputCommand,
-	userData: IUserModel,
-	targetData: IUserModel,
-	targetUser: User,
-	targetMember: GuildMember,
-	guild: any
-) {
+async function handleRefuseMarriage(interaction: IPrefixChatInputCommand, userData: IUserModel, targetUser: User) {
 	// Verificar si hay una propuesta pendiente de targetUser hacia el usuario que ejecuta el comando
 	if (!userData.proposals.includes(targetUser.id)) {
 		return await replyError(interaction, "No tienes una propuesta de esa persona.");

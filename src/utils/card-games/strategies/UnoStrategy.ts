@@ -165,7 +165,7 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 		const effSuit = ctx.meta.needColor && ctx.meta.needColor !== "X" ? ctx.meta.needColor : top.suit;
 		const stack = ctx.meta.stack ? ` (+${ctx.meta.stack})` : "";
 
-		return "**Carta en mesa:**\n```ansi\n" + ansiCard({ suit: effSuit, value: top.value }, "uno") + stack + "\n```";
+		return "**Carta en mesa:**\n```ansi\n" + ansiCard({ suit: effSuit, value: top.value }) + stack + "\n```";
 	}
 
 	playerChoices(ctx: GameRuntime<UnoMeta>, userId: Snowflake) {

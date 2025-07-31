@@ -1,5 +1,5 @@
 // src/commands/General/crianza.ts
-import { SlashCommandBuilder, ChatInputCommandInteraction, AttachmentBuilder, GuildMember } from "discord.js";
+import { SlashCommandBuilder, AttachmentBuilder } from "discord.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { replyError } from "../../utils/messages/replyError.js";

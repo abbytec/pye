@@ -170,7 +170,7 @@ export function getForumTopic(channelId: string): string {
 	else return "generico";
 }
 
-let forumIds: string[] = [];
+const forumIds: string[] = [];
 
 export function getHelpForumsIdsFromEnv(filter?: keyof typeof CHANNELS) {
 	if (forumIds.length) return forumIds;
@@ -303,8 +303,8 @@ export function getRoles(...roles: Roles[]): string[] {
 }
 
 export function getInitialRoles(customRoleNames: (keyof typeof ROLES)[]): string[] {
-	let roles = isDevelopment ? DEV_ROLES : ROLES;
-	let roleList = [roles.perfil, roles.medallas, roles.intereses, roles.lenguajes];
+	const roles = isDevelopment ? DEV_ROLES : ROLES;
+	const roleList = [roles.perfil, roles.medallas, roles.intereses, roles.lenguajes];
 	customRoleNames.forEach((roleName) => {
 		roleList.push(roles[roleName]);
 	});
@@ -312,7 +312,7 @@ export function getInitialRoles(customRoleNames: (keyof typeof ROLES)[]): string
 }
 
 export function getRepRolesByOrder() {
-	let roles = isDevelopment ? DEV_ROLES : ROLES;
+	const roles = isDevelopment ? DEV_ROLES : ROLES;
 	/** if you modify the order it will have impact. */
 	return {
 		novato: roles.novato,

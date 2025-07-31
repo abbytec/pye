@@ -50,7 +50,7 @@ export function getUserMemories(uid: string): string {
 
 setInterval(() => {
 	const now = new Date();
-	USER_MEMORY.forEach((datedMemories, key) => {
+	USER_MEMORY.forEach((datedMemories) => {
 		datedMemories.forEach((memory, index) => {
 			const timePassed = now.getTime() - memory.date.getTime();
 			if (timePassed > 5 * 60 * 1000) {

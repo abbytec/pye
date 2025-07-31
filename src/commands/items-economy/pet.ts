@@ -68,7 +68,7 @@ export default {
 						: "Aún no tiene una mascota.\nPuede obtener una completando las quests.";
 				return await replyError(interaction, mensaje);
 			}
-			let petData =
+			const petData =
 				(await Pets.findOne({ id: member.id })) ??
 				(await Pets.create({ id: member.id, name: "Sin nombre", mood: 100, food: 100, shower: 100 }));
 

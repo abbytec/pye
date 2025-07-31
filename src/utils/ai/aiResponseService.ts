@@ -41,7 +41,7 @@ export async function generateForumResponse(
 	forumTopic: string,
 	image?: { mimeType: string; base64: string }
 ): Promise<string> {
-	let userParts: Part[] = [];
+	const userParts: Part[] = [];
 
 	// Se construye un contexto enriquecido para el foro
 	const forumContext = `Foro: ${forumTopic}\nHilo: ${threadName}\nContexto: ${context}`;
@@ -94,7 +94,7 @@ export async function generateChatResponse(
 	image?: { mimeType: string; base64: string },
 	expertAILevel?: number
 ): Promise<{ text: string; image?: Buffer }> {
-	let userParts: Part[] = [{ text: context }];
+	const userParts: Part[] = [{ text: context }];
 
 	if (image) {
 		userParts.push({
@@ -105,7 +105,7 @@ export async function generateChatResponse(
 		});
 	}
 
-	let request: GenerateContentRequest = {
+	const request: GenerateContentRequest = {
 		contents: [
 			{
 				role: "user",
@@ -151,7 +151,7 @@ export async function generateChatResponseSearch(
 	authorId: string,
 	image?: { mimeType: string; base64: string }
 ): Promise<{ text: string; image?: Buffer }> {
-	let userParts: Part[] = [{ text: context }];
+	const userParts: Part[] = [{ text: context }];
 
 	if (image) {
 		userParts.push({
@@ -162,7 +162,7 @@ export async function generateChatResponseSearch(
 		});
 	}
 
-	let request: GenerateContentRequest = {
+	const request: GenerateContentRequest = {
 		contents: [
 			{
 				role: "user",
@@ -197,7 +197,7 @@ export async function generateChatResponseStream(
 	authorId: string,
 	image?: { mimeType: string; base64: string }
 ): Promise<{ text: string; image?: Buffer }> {
-	let userParts: Part[] = [{ text: context }];
+	const userParts: Part[] = [{ text: context }];
 
 	if (image) {
 		userParts.push({
@@ -237,7 +237,7 @@ export async function generateAudioResponse(
 	authorId: string,
 	audio?: { mimeType: string; base64: string }
 ): Promise<{ text: string; audio?: Buffer }> {
-	let userParts: Part[] = [{ text: context }];
+	const userParts: Part[] = [{ text: context }];
 
 	if (audio) {
 		userParts.push({
@@ -248,7 +248,7 @@ export async function generateAudioResponse(
 		});
 	}
 
-	let request: GenerateContentRequest = {
+	const request: GenerateContentRequest = {
 		contents: [
 			{
 				role: "user",
@@ -283,7 +283,7 @@ export async function generateImageResponse(
 	authorId: string,
 	image?: { mimeType: string; base64: string }
 ): Promise<{ text: string; image?: Buffer }> {
-	let userParts: Part[] = [{ text: context }];
+	const userParts: Part[] = [{ text: context }];
 
 	if (image) {
 		userParts.push({
@@ -294,7 +294,7 @@ export async function generateImageResponse(
 		});
 	}
 
-	let request: GenerateContentRequest = {
+	const request: GenerateContentRequest = {
 		contents: [
 			{
 				role: "user",

@@ -65,7 +65,7 @@ export class GameRuntime<M> {
 		const btns = this.strategy.playerChoices?.(this, userId) ?? [];
 
 		await inter.editReply({
-			content: renderCardsAnsi(player.hand, this.strategy.cardSet),
+			content: renderCardsAnsi(player.hand),
 			components: btns.length ? btns : [],
 		});
 	}

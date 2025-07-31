@@ -10,7 +10,7 @@ export async function getRecursiveRepliedContext(
 	maxDepth: number = 10,
 	initialMessage?: string
 ): Promise<string> {
-	let contextLines: string[] = [];
+	const contextLines: string[] = [];
 	let currentMessage: Message<boolean> | null = message;
 	let depth = 0;
 	const botName = pyeChan ? "PyE chan" : "PyE Bot";

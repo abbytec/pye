@@ -1,6 +1,6 @@
 // src/commands/General/user.ts
 
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, User } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, User } from "discord.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
@@ -45,7 +45,7 @@ export default {
 	execute: composeMiddlewares(
 		[verifyIsGuild(process.env.GUILD_ID ?? ""), deferInteraction(false)],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
-			let targetUser: User = (await interaction.options.getUser("usuario")) ?? interaction.user;
+			const targetUser: User = (await interaction.options.getUser("usuario")) ?? interaction.user;
 			let userWithData: Promise<User> | User = targetUser.fetch(true);
 			const member = await interaction.guild?.members.fetch(targetUser.id).catch(() => null);
 
