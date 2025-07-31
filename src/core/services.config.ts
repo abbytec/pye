@@ -15,9 +15,9 @@ export interface ServiceInstanceMap {
 	trending: TrendingService;
 	news: NewsService;
 	aiUsage: AIUsageControlService;
-        forumPostControl: ForumPostControlService;
-        autoRole: AutoRoleService;
-        activity: ActivityService;
+	forumPostControl: ForumPostControlService;
+	autoRole: AutoRoleService;
+	activity: ActivityService;
 }
 
 export type ServiceName = keyof ServiceInstanceMap;
