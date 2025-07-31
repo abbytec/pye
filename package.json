@@ -1,8 +1,9 @@
 {
-	"name": "pye",
+	"name": "@abbytec/pye",
 	"version": "1.0.0",
 	"main": "src/index.ts",
 	"type": "module",
+	"types": "dist/index.d.ts",
 	"scripts": {
 		"prepare": "husky install",
 		"dev": "cross-env NODE_ENV=development tsx src/index.ts",
@@ -54,5 +55,18 @@
 		"tsx": "^4.20.3",
 		"typescript": "^5.8.3",
 		"typescript-eslint": "^8.38.0"
-	}
+	},
+	"files": [
+		"dist",
+		"src",
+		"docker-compose.yml",
+		".env.template",
+		".gitignore",
+		".prettierrc",
+		"LICENSE.md",
+		"README.md",
+		"eslint.config.js",
+		"tsconfig.json",
+		"globals.d.ts"
+	]
 }
