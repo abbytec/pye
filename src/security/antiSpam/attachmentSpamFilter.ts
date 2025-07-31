@@ -12,6 +12,7 @@ export async function checkAttachmentSpam(message: Message<boolean>, client: Ext
 				await imageTracker.punish(message, client, "attachment", "Enviar imágenes tantas veces seguidas se considera spam.");
 				return true;
 			}
+			hasIMG = true;
 		}
 	}
 	return false;
