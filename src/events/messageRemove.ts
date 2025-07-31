@@ -27,7 +27,7 @@ export default {
 		const logChannel = message.guild.channels.resolve(getChannelFromEnv("logMessages")) as TextChannel | null;
 		const author = (message as Message).author;
 
-		if (logChannel && author) {
+		if (logChannel && author && !author.bot) {
 			const embed = new EmbedBuilder()
 				.setColor(COLORS.errRed)
 				.setAuthor({
