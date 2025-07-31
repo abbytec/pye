@@ -56,19 +56,6 @@
 		"typescript": "^5.8.3",
 		"typescript-eslint": "^8.38.0"
 	},
-	"files": [
-		"dist",
-		"src",
-		"docker-compose.yml",
-		".env.template",
-		".gitignore",
-		".prettierrc",
-		"LICENSE.md",
-		"README.md",
-		"eslint.config.js",
-		"tsconfig.json",
-		"globals.d.ts"
-	],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/abbytec/pye.git"
