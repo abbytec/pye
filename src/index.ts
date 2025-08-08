@@ -9,97 +9,125 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { Evento, EventoConClienteForzado } from "./types/event.js";
 import {} from "../globals.js";
 import CommandService from "./core/services/CommandService.js";
+
 loadEnvVariables();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/bold-font.ttf"), "Manrope");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/regular-font.ttf"), "Manrope");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/OpenSans.ttf"), "Open Sans");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Aaargh.ttf"), "Argh");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/BunnyBear.otf"), "Bunny");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/Green-London.ttf"), "Greeen");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/rajdhani/Rajdhani-Bold.ttf"), "Rajdhani");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/rajdhani/Rajdhani-Light.ttf"), "Rajdhani");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/rajdhani/Rajdhani-Medium.ttf"), "Rajdhani");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/rajdhani/Rajdhani-Regular.ttf"), "Rajdhani");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/rajdhani/Rajdhani-SemiBold.ttf"), "Rajdhani");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/poppins/Poppins-Bold.ttf"), "Poppins");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/poppins/Poppins-Light.ttf"), "Poppins");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/poppins/Poppins-Medium.ttf"), "Poppins");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/poppins/Poppins-Regular.ttf"), "Poppins");
-GlobalFonts.registerFromPath(path.join(__dirname, "./assets/fonts/poppins/Poppins-SemiBold.ttf"), "Poppins");
+
+function registerFonts() {
+	const fontsDir = path.join(__dirname, "assets/fonts");
+
+	function registerRecursively(dir: string) {
+		readdirSync(dir, { withFileTypes: true }).forEach((entry) => {
+			const fullPath = path.join(dir, entry.name);
+			if (entry.isDirectory()) return registerRecursively(fullPath);
+
+			const fontName = path.basename(entry.name, path.extname(entry.name));
+			try {
+				GlobalFonts.registerFromPath(fullPath, fontName);
+			} catch (err) {
+				console.error(`[Error] No se pudo registrar la fuente "${fullPath}":`, err);
+			}
+		});
+	}
+
+	registerRecursively(fontsDir);
+	console.log("Fuentes registradas correctamente.");
+}
+
+registerFonts();
 
 const client = new ExtendedClient();
 await client.loadServices();
+
 const extension = process.env.NODE_ENV === "development" ? ".ts" : ".js";
 
-const loadCommands = async () => {
-	const commandFolders = readdirSync(path.join(__dirname, "commands"));
-	const importPromises = commandFolders.map(async (folder) => {
-		const commandsPath = path.join(__dirname, "commands", folder);
-		const commandFiles = readdirSync(commandsPath).filter((file) => file.endsWith(extension));
 
-		const commandsImportPromises = commandFiles.map(async (file) => {
-			const filePath = path.join(commandsPath, file);
-			await import(pathToFileURL(filePath).href)
-				.then((module) => module.default || module)
-				.then((command: Command) => {
-					if (command.data) {
+async function loadCommands() {
+	const commandFolders = readdirSync(path.join(__dirname, "commands"));
+
+	await Promise.allSettled(
+		commandFolders.map(async (folder) => {
+			const commandsPath = path.join(__dirname, "commands", folder);
+			const commandFiles = readdirSync(commandsPath).filter((file) => file.endsWith(extension));
+
+			await Promise.allSettled(
+				commandFiles.map(async (file) => {
+					const filePath = path.join(commandsPath, file);
+					try {
+						const module = await import(pathToFileURL(filePath).href);
+						const command: Command = module.default || module;
+
+						if (!command?.data) {
+							console.warn(`[ADVERTENCIA] El comando en ${filePath} carece de la propiedad "data".`);
+							return;
+						}
+
 						console.log(`Cargando comando: ${command.data.name}`);
 						CommandService.commands.set(command.data.name, command);
+
 						if (command.prefixResolver) {
 							const instance = command.prefixResolver(client);
 							command.prefixResolverInstance = instance;
 							CommandService.prefixCommands.set(instance.commandName, instance);
-							command.prefixResolverInstance.aliases.forEach((alias) => CommandService.prefixCommands.set(alias, instance));
+							instance.aliases.forEach((alias) => CommandService.prefixCommands.set(alias, instance));
 						}
-					} else {
-						console.log(`[ADVERTENCIA] El comando en ${filePath} carece de la propiedad "data".`);
+					} catch (error) {
+						console.error(`[ERROR] No se pudo cargar el comando ${filePath}:`, error);
 					}
 				})
-				.catch((error) => console.error(`Error al cargar el comando ${filePath}:`, error));
-		});
+			);
+		})
+	);
 
-		await Promise.all(commandsImportPromises);
-	});
+	console.log("Comandos cargados.");
+}
 
-	await Promise.all(importPromises);
-};
 
-const loadEvents = async () => {
+async function loadEvents() {
 	const eventsPath = join(__dirname, "events");
 	const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith(extension));
 
-	const eventsImportPromises = eventFiles.map(async (file) => {
-		const filePath = join(eventsPath, file);
-		await import(pathToFileURL(filePath).href)
-			.then((module) => module.default ?? module)
-			.then((event: Evento | EventoConClienteForzado) => {
+	await Promise.allSettled(
+		eventFiles.map(async (file) => {
+			const filePath = join(eventsPath, file);
+			try {
+				const module = await import(pathToFileURL(filePath).href);
+				const event: Evento | EventoConClienteForzado = module.default ?? module;
+
+				if (!event?.name || typeof event.execute !== "function" && typeof event.executeWithClient !== "function") {
+					console.warn(`[ADVERTENCIA] El evento en ${filePath} no tiene formato válido.`);
+					return;
+				}
+
 				console.log(`Cargando evento: ${event.name}`);
 				client[event.once ? "once" : "on"](event.name, (...args: any[]) =>
 					"executeWithClient" in event ? event.executeWithClient(client, ...args) : event.execute(...args)
 				);
-			})
-			.catch((error) => console.error(`Error al cargar el evento ${filePath}:`, error));
-	});
+			} catch (error) {
+				console.error(`[ERROR] No se pudo cargar el evento ${filePath}:`, error);
+			}
+		})
+	);
 
-	await Promise.all(eventsImportPromises);
-};
+	console.log("Eventos cargados.");
+}
 
-const main = async () => {
-	await connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/", {
-		connectTimeoutMS: 20000,
-	})
-		.then(() => console.log("Conectado a la base de datos."))
-		.then(
-			async () =>
-				await Promise.all([
-					loadCommands().then(() => console.log("Comandos cargados.")),
-					loadEvents().then(() => console.log("Eventos cargados.")),
-				])
-		)
-		.then(async () => await client.login(process.env.TOKEN_BOT))
-		.catch((error) => console.error("Error en la inicialización:", error.message));
-};
+
+async function main() {
+	try {
+		await connect(process.env.MONGO_URI ?? "mongodb://127.0.0.1:27017/", {
+			connectTimeoutMS: 20000,
+		});
+		console.log("Conectado a la base de datos.");
+
+		await Promise.all([loadCommands(), loadEvents()]);
+
+		if (!process.env.TOKEN_BOT) throw new Error("TOKEN_BOT no definido en las variables de entorno.");
+		await client.login(process.env.TOKEN_BOT);
+	} catch (error: any) {
+		console.error("Error en la inicialización:", error?.message || error);
+	}
+}
 
 main();
