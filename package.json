@@ -24,7 +24,7 @@
 		"agenda": "^5.0.0",
 		"bottleneck": "^2.19.5",
 		"clamscan": "^2.4.0",
-		"discord.js": "^14.19.3",
+		"discord.js": "^14.21.0",
 		"dotenv": "^16.6.1",
 		"gif-encoder": "^0.7.2",
 		"html-entities": "^2.6.0",
