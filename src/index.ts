@@ -95,7 +95,11 @@ async function loadEvents() {
 				const module = await import(pathToFileURL(filePath).href);
 				const event: Evento | EventoConClienteForzado = module.default ?? module;
 
-				if (!event?.name || typeof event.execute !== "function" && typeof event.executeWithClient !== "function") {
+				if (
+					!event?.name ||
+					("execute" in event && typeof event.execute !== "function") ||
+					("executeWithClient" in event && typeof event.executeWithClient !== "function")
+				) { 
 					console.warn(`[ADVERTENCIA] El evento en ${filePath} no tiene formato válido.`);
 					return;
 				}
