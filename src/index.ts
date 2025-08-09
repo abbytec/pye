@@ -1,5 +1,5 @@
 import loadEnvVariables from "./utils/environment.js";
-import { readdirSync } from "node:fs";
+import fs, { readdirSync } from "node:fs";
 import { GlobalFonts } from "@napi-rs/canvas";
 import path, { dirname, join } from "node:path";
 import { ExtendedClient } from "./client.js";
@@ -14,25 +14,28 @@ loadEnvVariables();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 
-function registerFonts() {
+export function registerFonts() {
 	const fontsDir = path.join(__dirname, "assets/fonts");
+	const exts = [".ttf", ".otf", ".ttc", ".woff", ".woff2"];
 
-	function registerRecursively(dir: string) {
-		readdirSync(dir, { withFileTypes: true }).forEach((entry) => {
-			const fullPath = path.join(dir, entry.name);
-			if (entry.isDirectory()) return registerRecursively(fullPath);
-
-			const fontName = path.basename(entry.name, path.extname(entry.name));
-			try {
-				GlobalFonts.registerFromPath(fullPath, fontName);
-			} catch (err) {
-				console.error(`[Error] No se pudo registrar la fuente "${fullPath}":`, err);
-			}
-		});
+	if (!fs.existsSync(fontsDir)) {
+		fs.mkdirSync(fontsDir, { recursive: true });
+		console.warn(`[fonts] Carpeta creada sin fuentes: ${fontsDir}`);
+		return;
 	}
 
-	registerRecursively(fontsDir);
-	console.log("Fuentes registradas correctamente.");
+	for (const entry of fs.readdirSync(fontsDir, { withFileTypes: true })) {
+		if (entry.isDirectory()) continue;
+		const ext = path.extname(entry.name).toLowerCase();
+		if (!exts.includes(ext)) continue;
+
+		try {
+			const fontName = path.basename(entry.name, ext);
+			GlobalFonts.registerFromPath(path.join(fontsDir, entry.name), fontName);
+		} catch (err) {
+			console.warn(`[fonts] No se pudo registrar ${entry.name}:`, err);
+		}
+	}
 }
 
 registerFonts();
