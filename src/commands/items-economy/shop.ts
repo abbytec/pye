@@ -185,8 +185,6 @@ export default {
 					const disabledActionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(disabledBackButton, disabledNextButton);
 					await message.edit({ components: [disabledActionRow] }).catch(() => null);
 				});
-
-				return;
 			}
 
 			// ----------------------------

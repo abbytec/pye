@@ -64,7 +64,7 @@ export default {
 					} else {
 						// Verificar si el objetivo es una URL de imagen
 						const urlPattern =
-							/^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()!@:%_+.~#?&//=]*)$/gm;
+							/^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()!@:%_+.~#?&/=]*)$/gm;
 						if (urlPattern.test(targetOption)) {
 							source = targetOption;
 						} else {

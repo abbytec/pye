@@ -29,5 +29,3 @@ const schemaMessages = new Schema(
 );
 
 export const TextMessages = model("TextMessages", schemaMessages);
-
-// function incrementTextMessages(userId, channelId, limit: number) {}

@@ -82,13 +82,18 @@ export default {
 
 				profit = Math.floor(profit);
 
-				try {
-					increaseHomeMonthlyIncome(user.id, profit);
-					checkQuestLevel({ msg: interaction, money: profit, userId: user.id } as IQuest);
-				} catch (error) {
-					console.error("Error actualizando la quest:", error);
-					await replyError(interaction, "Hubo un error al actualizar los datos de quest.");
-				}
+				Promise.allSettled([
+					increaseHomeMonthlyIncome(user.id, profit),
+					checkQuestLevel({ msg: interaction, money: profit, userId: user.id } as IQuest),
+				]).then(async (results) => {
+					const errors = results.filter((r): r is PromiseRejectedResult => r.status === "rejected");
+					if (errors.length) {
+						errors.forEach((e: any) => {
+							console.error("Error en tarea:", e.reason)
+							ExtendedClient.logError("Hubo un error al actualizar los datos de la quest:"+e.reason,e.stack,interaction.user.id)
+						});
+					}
+				})
 			}
 
 			// Actualizar el usuario en la base de datos

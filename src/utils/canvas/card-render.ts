@@ -75,7 +75,7 @@ function drawTextWithBox(
 
 	const metrics = ctx.measureText(text);
 	const textWidth = metrics.width;
-	let textHeight = parseInt(font.match(/\d+/)?.[0] ?? "30", 10);
+	let textHeight = parseInt(RegExp(/\d+/).exec(font)?.[0] ?? "30", 10);
 
 	// Si se soportan las métricas reales, usarlas para ajustar la altura del recuadro.
 	if (metrics.actualBoundingBoxAscent !== undefined && metrics.actualBoundingBoxDescent !== undefined) {

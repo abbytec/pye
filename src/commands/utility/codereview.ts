@@ -68,7 +68,7 @@ export default {
 
 			const initialReply = await interaction.reply({ embeds: [embed] });
 
-			let code = await interaction.options.getString("codigo", false);
+			let code = interaction.options.getString("codigo", false);
 			const file = await interaction.options.getAttachment("archivo", false);
 
 			try {

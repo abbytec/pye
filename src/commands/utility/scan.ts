@@ -130,7 +130,7 @@ async function pollScanResults(scanId: string, retries: number, delay: number): 
 		try {
 			const scanResult = await fetchScanResults(scanId);
 
-			if (!scanResult || !scanResult.data || !scanResult.data.attributes) {
+			if (!scanResult?.data?.attributes) {
 				throw new Error("Invalid response from VirusTotal API.");
 			}
 
