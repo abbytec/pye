@@ -1,12 +1,12 @@
 import client from "../redis.js";
 
-const KEY = "memeOfTheDay";
+const key = "memeOfTheDay";
 const analyzeMemeOfTheDay = async (url: string, username: string, messageUrl: string, reactions: number): Promise<void> => {
-	const existing = await client.hGetAll(KEY);
+	const existing = await client.hGetAll(key);
 	const currentCount = Number(existing.count) || 0;
 
 	if (reactions > currentCount) {
-		await client.hSet(KEY, {
+		await client.hSet(key, {
 			url,
 			username,
 			messageUrl: messageUrl,
@@ -16,13 +16,13 @@ const analyzeMemeOfTheDay = async (url: string, username: string, messageUrl: st
 };
 
 const resetCount = async () => {
-	await client.hSet(KEY, {
+	await client.hSet(key, {
 		count: "0",
 	});
 };
 
 const getTopReaction = async () => {
-	const data = await client.hGetAll(KEY);
+	const data = await client.hGetAll(key);
 	if (!data.url || !data.count) return null;
 	return {
 		url: data.url,
