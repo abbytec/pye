@@ -19,7 +19,7 @@
 	"license": "ISC",
 	"description": "",
 	"dependencies": {
-		"@google/generative-ai": "^0.24.0",
+		"@google/generative-ai": "^0.24.1",
 		"@napi-rs/canvas": "^0.1.73",
 		"agenda": "^5.0.0",
 		"bottleneck": "^2.19.5",
