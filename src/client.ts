@@ -3,7 +3,6 @@ import { COLORS, ANSI_COLOR, getChannelFromEnv, getRoleFromEnv, ChannelKeys } fr
 import { type Guild, MessageFlags, type TextChannel } from "discord.js";
 import {} from "../globals.js";
 import type { IGameSession } from "./interfaces/IGameSession.js";
-import { Agenda } from "agenda";
 import { inspect } from "util";
 import fs from "node:fs";
 import path, { dirname } from "node:path";

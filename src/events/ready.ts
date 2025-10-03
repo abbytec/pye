@@ -15,9 +15,6 @@ export default {
 		} catch (error) {
 			console.error("Error al obtener las invitaciones:", error);
 		}
-
-		// La lógica de cron ahora está en los servicios: AgendaService, ReminderService, 
-		// ScheduledMessagesService y CommunityRewardsService
 		
 		if (process.env.ENABLE_AUTO_WELCOME_MESSAGE)
 			setInterval(async () => {
