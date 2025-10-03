@@ -203,9 +203,7 @@ export async function getChannel(
 
 export const USERS = {
 	disboard: "302050872383242240",
-	ldarki: "407570755673522176",
 	abby: "220683580467052544",
-	maby: "602240617862660096",
 };
 
 const ROLES = {

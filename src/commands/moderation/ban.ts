@@ -51,7 +51,7 @@ export default {
 			}
 
 			// Comprobamos si el usuario es Staff o si es el mismo que intenta banear
-			if (member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.ldarki || user.id === USERS.abby || user.id === USERS.maby)
+			if (member.roles.cache.has(getRoleFromEnv("staff")) || user.id === USERS.abby)
 				return await replyError(interaction, "No puedes banear a un miembro del staff.");
 
 			if (user.id === interaction.user.id) return await replyError(interaction, "No puedes banearte a ti mismo.");
