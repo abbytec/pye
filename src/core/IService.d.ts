@@ -3,6 +3,7 @@ export interface IService {
 	readonly serviceName: ServiceName;
 	start?(): Promise<void> | void;
 	dailyRepeat?(): Promise<void> | void;
+	monthlyRepeat?(): Promise<void> | void;
 	stop?(): Promise<void> | void;
 }
 

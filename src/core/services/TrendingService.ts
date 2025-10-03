@@ -128,12 +128,19 @@ export default class TrendingService implements IService {
 
 	// Método para guardar datos en la base de datos
 	public async dailySave(): Promise<void> {
-		let data = await TrendingModel.findOne();
-		data ??= await TrendingModel.create({});
+		let data = await TrendingModel.findOne().catch(() => null);
+		if (data === undefined) {
+			data = await TrendingModel.create({}).catch(() => null);
+		}
+		if (data === null) {
+			ExtendedClient.logError("Error al crear los datos diarios de Trending", "dailySave", process.env.CLIENT_ID);
+			return;
+		}
+		
 		if (
-			data.emojis !== this.emojis ||
-			data.channels !== this.forumChannels ||
-			data.stickers !== this.stickers ||
+			data?.emojis !== this.emojis ||
+			data?.channels !== this.forumChannels ||
+			data?.stickers !== this.stickers ||
 			data.month !== this.month
 		) {
 			data.emojis = this.emojis;
@@ -163,6 +170,20 @@ export default class TrendingService implements IService {
 	public async dailyRepeat(): Promise<void> {
 		await this.dailySave();
 		await this.starboardMemeOfTheDay().catch((error) => console.error(error));
+	}
+
+	public async monthlyRepeat(): Promise<void> {
+		const stats = await this.getStats(this.client as ExtendedClient);
+		const channel = guildChannel(this.client, getChannelFromEnv("staff")) as TextChannel | null;
+		await channel
+			?.send({ embeds: [stats] })
+			.catch((error) => {
+				ExtendedClient.logError(
+					"Error al enviar el embed de tendencias: " + error.message,
+					error.stack,
+					process.env.CLIENT_ID
+				);
+			});
 	}
 
 	// Método para agregar uso a un emoji, canal o sticker

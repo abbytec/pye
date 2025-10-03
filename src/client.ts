@@ -32,8 +32,8 @@ export class ExtendedClient extends CoreClient {
 	}
 
 	public async loadServices() {
-		// Inicializar Agenda antes de cargar los servicios
-		await AgendaManager.initialize();
+		// Inicializar Agenda antes de cargar los servicios, pasando el cliente
+		await AgendaManager.initialize(this);
 		
 		const files = fs.readdirSync(servicesDir).filter((f) => f.endsWith(extension));
 
@@ -52,6 +52,9 @@ export class ExtendedClient extends CoreClient {
 				console.error(`❌  ${file}:`, err);
 			}
 		}
+
+		// Programar los jobs de actualización de datos del cliente
+		await AgendaManager.scheduleClientDataJobs();
 	}
 
 	async updateClientData(firstTime = false) {
@@ -72,6 +75,12 @@ export class ExtendedClient extends CoreClient {
 		for (const srv of Object.values(this.services)) {
 			if (firstTime) await srv.start?.();
 			else await srv.dailyRepeat?.();
+		}
+	}
+
+	async updateMonthlyClientData() {
+		for (const srv of Object.values(this.services)) {
+			await srv.monthlyRepeat?.();
 		}
 	}
 
