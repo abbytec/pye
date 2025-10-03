@@ -1,8 +1,8 @@
 import { EmbedBuilder, Events, Invite, TextChannel } from "discord.js";
-import { CoreClient } from "../CoreClient.js";
-import { IService } from "../IService.js";
-import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
-import { ExtendedClient } from "../../client.js";
+import { CoreClient } from "../../CoreClient.js";
+import { IService } from "../../IService.js";
+import { COLORS, getChannelFromEnv } from "../../../utils/constants.js";
+import { ExtendedClient } from "../../../client.js";
 
 export default class InviteWatcherService implements IService {
 	public readonly serviceName = "inviteWatcher";

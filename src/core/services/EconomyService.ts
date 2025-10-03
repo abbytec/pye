@@ -1,7 +1,7 @@
 import { CoreClient } from "../CoreClient.js";
 import { IMoney, Money } from "../../Models/Money.js";
 import { Users } from "../../Models/User.js";
-import { VoiceChannel } from "discord.js";
+import { Events, VoiceChannel, VoiceState } from "discord.js";
 import { ExtendedClient } from "../../client.js";
 import { IService } from "../IService.js";
 
@@ -49,6 +49,9 @@ export default class EconomyService implements IService {
 			}
 		});
 
+		// Escuchar eventos de voz para gestionar el farmeo
+		this.client.on(Events.VoiceStateUpdate, (oldState, newState) => this.onVoiceStateUpdate(oldState, newState));
+
 		setInterval(() => this.processVoiceFarmers(), 60_000);
 
 		await this.dailyRepeat();
@@ -67,6 +70,24 @@ export default class EconomyService implements IService {
 
 	public static getGameMaxCoins(div = 1) {
 		return Math.round(EconomyService.bankAvgCoins / (3 * div));
+	}
+
+	/**
+	 * Maneja los cambios de estado de voz para el sistema de farmeo
+	 */
+	private onVoiceStateUpdate(oldState: VoiceState, newState: VoiceState): void {
+		const userId = newState.member?.user.id ?? oldState.member?.user.id;
+		const isBot = newState.member?.user.bot ?? oldState.member?.user.bot;
+		if (!userId || isBot) return;
+
+		// Usuario se unió a un canal de voz
+		if (!oldState.channelId && newState.channelId) {
+			this.voiceFarmers.set(userId, { date: new Date(), count: 0 });
+		}
+		// Usuario salió de un canal de voz
+		else if (oldState.channelId && !newState.channelId) {
+			this.voiceFarmers.delete(userId);
+		}
 	}
 
 	private processVoiceFarmers() {

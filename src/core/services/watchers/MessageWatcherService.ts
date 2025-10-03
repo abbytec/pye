@@ -1,11 +1,11 @@
 import { AttachmentBuilder, AuditLogEvent, EmbedBuilder, Events, Message, PartialMessage, TextChannel, User } from "discord.js";
-import { CoreClient } from "../CoreClient.js";
-import { IService } from "../IService.js";
-import { checkCredentialLeak } from "../../security/credentialLeakFilter.js";
-import { messageGuard } from "../../security/messageGuard.js";
-import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
-import { saveTranscript } from "../../utils/generic.js";
-import { ExtendedClient } from "../../client.js";
+import { CoreClient } from "../../CoreClient.js";
+import { IService } from "../../IService.js";
+import { checkCredentialLeak } from "../../../security/credentialLeakFilter.js";
+import { messageGuard } from "../../../security/messageGuard.js";
+import { COLORS, getChannelFromEnv } from "../../../utils/constants.js";
+import { saveTranscript } from "../../../utils/generic.js";
+import { ExtendedClient } from "../../../client.js";
 import fs from "fs";
 
 export default class MessageWatcherService implements IService {

@@ -10,14 +10,14 @@ import {
 	PartialGuildMember,
 	TextChannel,
 } from "discord.js";
-import { CoreClient } from "../CoreClient.js";
-import { IService } from "../IService.js";
-import { ExtendedClient } from "../../client.js";
-import { COLORS, getChannelFromEnv, getInitialRoles, getRoleFromEnv } from "../../utils/constants.js";
-import generateCanvaBoosterId from "../../utils/canvas/boostNotice.js";
-import { ruleData } from "../../commands/help/rule.js";
-import { addRep } from "../../commands/rep/add-rep.js";
-import { logHelperPoints } from "../../utils/logHelperPoints.js";
+import { CoreClient } from "../../CoreClient.js";
+import { IService } from "../../IService.js";
+import { ExtendedClient } from "../../../client.js";
+import { COLORS, getChannelFromEnv, getInitialRoles, getRoleFromEnv } from "../../../utils/constants.js";
+import generateCanvaBoosterId from "../../../utils/canvas/boostNotice.js";
+import { ruleData } from "../../../commands/help/rule.js";
+import { addRep } from "../../../commands/rep/add-rep.js";
+import { logHelperPoints } from "../../../utils/logHelperPoints.js";
 
 const urlRegex = /(https?:\/\/[^\s]+)/i;
 

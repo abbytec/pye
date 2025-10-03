@@ -1,9 +1,9 @@
 import { AuditLogEvent, EmbedBuilder, Events, TextChannel, VoiceState } from "discord.js";
-import { CoreClient } from "../CoreClient.js";
-import { IService } from "../IService.js";
-import { ExtendedClient } from "../../client.js";
-import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../../utils/constants.js";
-import { ModLogs } from "../../Models/ModLogs.js";
+import { CoreClient } from "../../CoreClient.js";
+import { IService } from "../../IService.js";
+import { ExtendedClient } from "../../../client.js";
+import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../../../utils/constants.js";
+import { ModLogs } from "../../../Models/ModLogs.js";
 
 export default class VoiceWatcherService implements IService {
 	public readonly serviceName = "voiceWatcher";
@@ -50,7 +50,6 @@ export default class VoiceWatcherService implements IService {
 					{ name: "Canal", value: newState.channel?.name ?? "Desconocido", inline: true },
 					{ name: "Miembros", value: `${newState.channel?.members.size ?? 0}`, inline: true }
 				);
-			client.services.economy.voiceFarmers.set(userId, { date: new Date(), count: 0 });
 		} else if (oldState.channelId && !newState.channelId) {
 			embed
 				.setAuthor({
@@ -63,7 +62,6 @@ export default class VoiceWatcherService implements IService {
 					{ name: "Canal", value: oldState.channel?.name ?? "Desconocido", inline: true },
 					{ name: "Miembros", value: `${oldState.channel?.members.size ?? 0}`, inline: true }
 				);
-			client.services.economy.voiceFarmers.delete(userId);
 		} else if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
 			embed
 				.setColor(COLORS.warnOrange)
