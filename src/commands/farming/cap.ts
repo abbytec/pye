@@ -77,15 +77,11 @@ export default {
 			if (reactionTime > 0) CommandService.lastRobs = entries.filter((rob) => rob.userId !== robberId);
 
 			// Actualizar quest
-			try {
-				checkQuestLevel({
-					msg: interaction,
-					money: amount,
-					userId: user.id,
-				} as IQuest);
-			} catch (error) {
-				console.error("Error actualizando la quest:", error);
-			}
+			checkQuestLevel({
+				msg: interaction,
+				money: amount,
+				userId: user.id,
+			} as IQuest).catch((error) => console.error("Error actualizando la quest:", error));
 
 			// Crear embed de respuesta
 			const embed = new EmbedBuilder()

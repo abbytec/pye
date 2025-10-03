@@ -97,7 +97,7 @@ async function synthesizeTextToAudio(text: string): Promise<string> {
 		}),
 	});
 	const data = (await response.json()) as any;
-	if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.audio) {
+	if (!data.choices?.choices[0]?.message?.audio) {
 		throw new Error("Respuesta inesperada de la API: " + JSON.stringify(data));
 	}
 	return data.choices[0].message.audio.data;

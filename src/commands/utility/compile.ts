@@ -41,8 +41,8 @@ export default {
 
 			const initialReply = await interaction.reply({ embeds: [embed] });
 
-			const lang = await interaction.options.getString("lenguaje", false);
-			const code = await interaction.options.getString("codigo", false);
+			const lang = interaction.options.getString("lenguaje", false);
+			const code = interaction.options.getString("codigo", false);
 			const file = await interaction.options.getAttachment("archivo", false);
 
 			try {
@@ -165,8 +165,8 @@ async function runCode(language: string, code: string): Promise<ExecutionResult>
 		}
 
 		return data;
-	} catch (error) {
-		return Promise.reject(error);
+	} catch (error: any) {
+		return Promise.reject(error as Error);
 	}
 }
 

@@ -11,6 +11,8 @@ export interface IFilter {
 	staffWarn?: string;
 }
 
+const vanity = "programacion";
+
 const linkSospechoso = "Link sospechoso detectado";
 const spamBot = "Spam bot detectado";
 export const spamFilterList: IFilter[] = [
@@ -24,12 +26,9 @@ export const spamFilterList: IFilter[] = [
 	{ filter: /(https?:\/\/)?(t\.me|telegram\.me|wa\.me|whatsapp\.me)\/.+/i, mute: true },
 	{ filter: /(https?:\/\/)?(pornhub|xvideos|xhamster|xnxx|hentaila)(\.\S+)+\//i, mute: true },
 	{
-		filter: /(?!(https?:\/\/)?discord\.gg\/programacion$)(https?:\/\/)?discord\.gg\/\w+/i,
+		filter: new RegExp(`(?!(https?:\\/\\/)?(?:www\\.)?(?:discord\\.gg\\/${vanity}|discord(?:app)?\\.com\\/invite\\/${vanity}))` +
+							  `(https?:\\/\\/)?(?:www\\.)?(?:discord\\.gg\\/[^\\s\\/]+|discord(?:app)?\\.com\\/invite\\/[^\\s\\/]+)`, "i"),
 		mute: "checkinvite",
-	},
-	{
-		filter: /(?!(https?:\/\/)?discord\.com\/invite\/programacion$)(https?:\/\/)?discord\.com\/invite\/.+/i,
-		mute: true,
 	},
 	{
 		filter: /(https?:\/\/)?multiigims.netlify.app/i,

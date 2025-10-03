@@ -1,25 +1,27 @@
 import { EmbedBuilder, Events, Invite, TextChannel } from "discord.js";
-import { ExtendedClient } from "../client.js";
-import { Evento } from "../types/event.js";
-import { COLORS, getChannelFromEnv } from "../utils/constants.js";
+import { CoreClient } from "../CoreClient.js";
+import { IService } from "../IService.js";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
+import { ExtendedClient } from "../../client.js";
 
-// Mapa para rastrear la creación de invitaciones por usuario
-const inviteTracker = new Map<string, { count: number; timeout: NodeJS.Timeout }>();
+export default class InviteWatcherService implements IService {
+	public readonly serviceName = "inviteWatcher";
 
-export default {
-	name: Events.InviteCreate,
-	once: false,
-	async execute(invite: Invite) {
+	private readonly inviteTracker = new Map<string, { count: number; timeout: NodeJS.Timeout }>();
+
+	constructor(private readonly client: CoreClient) {}
+
+	start() {
+		this.client.on(Events.InviteCreate, (invite: Invite) => this.onInviteCreate(invite));
+	}
+
+	private async onInviteCreate(invite: Invite) {
 		const client = invite.client as ExtendedClient;
-
-		// Obtiene el ID del canal desde las variables de entorno
 		const channelId = getChannelFromEnv("invitaciones");
 		const channel = (client.channels.cache.get(channelId) ?? client.channels.resolve(channelId)) as TextChannel | null;
 
-		// Verifica que el canal exista y sea un canal de texto
 		if (!channel?.isTextBased()) return;
 
-		// Intenta obtener el invocador (usuario que creó la invitación)
 		let inviterTag = "Desconocido";
 		let inviterId: string | null = null;
 		try {
@@ -29,27 +31,24 @@ export default {
 				inviterId = inviter.id;
 			}
 		} catch (error) {
-			// Si no se puede obtener el invocador, se mantiene "Desconocido"
 			console.error("No se pudo obtener el invocador de la invitación:", error);
 		}
+
 		if (inviterId) {
 			const userKey = inviterId;
-
-			if (!inviteTracker.has(userKey)) {
-				// Si el usuario no está en el mapa, lo agrega con un conteo de 1
-				inviteTracker.set(userKey, {
+			if (!this.inviteTracker.has(userKey)) {
+				this.inviteTracker.set(userKey, {
 					count: 1,
 					timeout: setTimeout(() => {
-						inviteTracker.delete(userKey);
+						this.inviteTracker.delete(userKey);
 					}, 60000),
 				});
 			} else {
-				const entry = inviteTracker.get(userKey)!;
+				const entry = this.inviteTracker.get(userKey)!;
 				entry.count += 1;
-
 				if (entry.count >= 5) {
 					clearTimeout(entry.timeout);
-					inviteTracker.delete(userKey);
+					this.inviteTracker.delete(userKey);
 
 					try {
 						const member = await client.guilds.cache
@@ -76,31 +75,27 @@ export default {
 				} else {
 					clearTimeout(entry.timeout);
 					entry.timeout = setTimeout(() => {
-						inviteTracker.delete(userKey);
+						this.inviteTracker.delete(userKey);
 					}, 60000);
 				}
 			}
 		}
 
-		// Calcula la expiración de la invitación
 		const expiresIn = (invite.maxAge ?? 0) > 0 ? `${Math.floor((invite.maxAge ?? 0) / 86400)} días` : "Nunca";
-
-		// Determina el número máximo de usos
 		const maxUses = invite.maxUses === 0 || !invite.maxUses ? "∞" : invite.maxUses.toString();
 
-		// Crea el embed con la información de la invitación
 		const embed = new EmbedBuilder()
-			.setTitle("Invite created")
-			.setColor(COLORS.pyeWelcome)
+			.setTitle("Invitación creada")
+			.setColor(COLORS.pyeLightBlue)
 			.setDescription(
-				`**Code:** ${invite.code}\n**Channel:** ${invite.channel?.name} (<#${invite.channel?.id}>)\n**Expires:** ${expiresIn}\n**Max uses:** ${maxUses}`
+				`**Código:** ${invite.code}\n**Canal:** ${invite.channel?.name} (<#${invite.channel?.id}>)\n**Expira:** ${expiresIn}\n**Usos máximos:** ${maxUses}`
 			)
 			.setFooter({ text: `${inviterTag}` })
 			.setTimestamp();
 
-		// Envía el embed al canal especificado
 		channel.send({ embeds: [embed] }).catch((err) => {
 			console.error("Error al enviar el embed de la invitación:", err);
 		});
-	},
-} as Evento;
+	}
+}
+

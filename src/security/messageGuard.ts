@@ -11,7 +11,7 @@ import {
 	MessageInteraction,
 } from "discord.js";
 import { ExtendedClient } from "../client.js";
-import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
+import { AUTHORIZED_BOTS, COLORS, getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
 import { checkMentionSpam } from "./antiSpam/mentionSpamFilter.js";
 import { spamFilter } from "./spamFilter.js";
 import { checkAttachmentSpam } from "./antiSpam/attachmentSpamFilter.js";
@@ -28,13 +28,14 @@ export interface IDeletableContent {
 	createdTimestamp: number;
 }
 
-export async function messageGuard(message: Message<true>, client: ExtendedClient) {
+export async function messageGuard(message: Message<true>, client: ExtendedClient, isEdit = false) {
 	if (
 		!(
 			message.channel.parentId === getChannelFromEnv("categoryStaff") ||
 			message.member?.permissions.has("Administrator") ||
 			client.staffMembers.includes(message.author.id) ||
-			message.member?.roles.cache.has(getRoleFromEnv("instructorDeTaller"))
+			message.member?.roles.cache.has(getRoleFromEnv("instructorDeTaller")) ||
+			AUTHORIZED_BOTS.includes(message.author.id)
 		)
 	) {
 		let member: GuildMember | User | null = message.interactionMetadata?.user ?? null;
@@ -44,11 +45,12 @@ export async function messageGuard(message: Message<true>, client: ExtendedClien
 			member = message.member;
 		}
 		if (
-			(await floodBotsFilter(message, client)) ||
 			(await spamFilter(member, client, message as IDeletableContent, message.content)) ||
-			(await checkMentionSpam(message, client)) ||
-			(await checkUrlSpam(message, client)) ||
-			(await checkAttachmentSpam(message, client))
+			(!isEdit &&
+				((await floodBotsFilter(message, client)) ||
+					(await checkMentionSpam(message, client)) ||
+					(await checkUrlSpam(message, client)) ||
+					(await checkAttachmentSpam(message, client))))
 		)
 			return true;
 	}

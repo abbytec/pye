@@ -1,13 +1,13 @@
 import { CoreClient } from "./core/CoreClient.js";
 import { COLORS, ANSI_COLOR, getChannelFromEnv, getRoleFromEnv, ChannelKeys } from "./utils/constants.js";
-import { Guild, MessageFlags, TextChannel } from "discord.js";
+import { type Guild, MessageFlags, type TextChannel } from "discord.js";
 import {} from "../globals.js";
-import { IGameSession } from "./interfaces/IGameSession.js";
+import type { IGameSession } from "./interfaces/IGameSession.js";
 import { Agenda } from "agenda";
 import { inspect } from "util";
 import fs from "node:fs";
 import path, { dirname } from "node:path";
-import { ServiceInstanceMap, ServiceName } from "./core/services.config.js";
+import type { ServiceInstanceMap, ServiceName } from "./core/services.config.js";
 import { fileURLToPath, pathToFileURL } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const extension = process.env.NODE_ENV === "development" ? ".ts" : ".js";
@@ -20,6 +20,8 @@ export class ExtendedClient extends CoreClient {
 	public static readonly lookingForGame: Map<string, IGameSession> = new Map();
 
 	public static guild: Guild | undefined;
+
+	public invites: Map<string, number> = new Map();
 
 	readonly services = {} as ServiceInstanceMap;
 
