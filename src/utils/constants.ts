@@ -67,6 +67,7 @@ const CHANNELS = {
 	categoryStaff: "837035918187298836",
 	categoryComunidad: "781678453309177877",
 	categoryForos: "1290372079279145092",
+	categoryVoz: "538427518089166893",
 };
 
 export type ChannelKeys = keyof typeof CHANNELS;
@@ -235,6 +236,7 @@ const ROLES = {
 	nitroBooster: "790356204001296394",
 	nitroOldBooster: "853401223939751937",
 	colaborador: "1360019846850416821",
+	vip: "1402525398788739145",
 
 	// sanciones
 	restringido: "984278721055830047",
@@ -279,6 +281,7 @@ const DEV_ROLES: Record<Roles, string> = {
 	nitroBooster: "1296190630665392189",
 	nitroOldBooster: "1296190630665392189",
 	colaborador: "1360020664303489024",
+	vip: "1402525398788739145",
 
 	// sanciones
 	restringido: "1296190630678233109",
