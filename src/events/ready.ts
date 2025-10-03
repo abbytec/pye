@@ -1,15 +1,17 @@
-import { Events, EmbedBuilder, TextChannel, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, ActionRowBuilder } from "discord.js";
+import { Events, EmbedBuilder, TextChannel } from "discord.js";
 import { ExtendedClient } from "../client.js";
 import { Users } from "../Models/User.js";
+import { Bumps } from "../Models/Bump.js";
 import { Agenda, Job } from "agenda";
 import { CronMessage } from "../Models/CronMessage.js";
 import { sendWelcomeMessageProcessor } from "../utils/welcome.js";
 import redisClient from "../redis.js";
-import { COLORS, getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
+import { getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
 import { capitalizeFirstLetter } from "../utils/generic.js";
-import { ticketOptions } from "../utils/constants/ticketOptions.js";
-import { getDailyChallenge } from "../utils/challenges/dailyChallenge.js";
-import { createPyechanEmbed, PYECHAN_AUTHOR, PYECHAN_THUMBNAIL } from "../utils/messages/createPyechanEmbed.js";
+// import { getDailyChallenge } from "../utils/challenges/dailyChallenge.js";
+import { createPyechanEmbed, MASCOT_AUTHOR, MASCOT_THUMBNAIL } from "../utils/messages/createPyechanEmbed.js";
+import { addRep } from "../commands/rep/add-rep.js";
+import { logHelperPoints } from "../utils/logHelperPoints.js";
 
 export default {
 	name: Events.ClientReady,
@@ -17,7 +19,14 @@ export default {
 	async execute(client: ExtendedClient) {
 		console.log(`Bot Listo como: ${client.user?.tag} ! `);
 		await client.updateClientData(true);
-		ticketProcessor(client);
+
+		try {
+			const invites = await ExtendedClient.guild?.invites.fetch();
+			invites?.forEach((inv) => client.invites.set(inv.code, inv.uses ?? 0));
+		} catch (error) {
+			console.error("Error al obtener las invitaciones:", error);
+		}
+
 		cronEventsProcessor(client);
 		if (process.env.ENABLE_AUTO_WELCOME_MESSAGE)
 			setInterval(async () => {
@@ -25,51 +34,6 @@ export default {
 			}, 36e5);
 	},
 };
-
-async function ticketProcessor(client: ExtendedClient) {
-	const ticketChannel =
-		(client.channels.cache.get(getChannelFromEnv("tickets")) as TextChannel) ??
-		(client.channels.resolve(getChannelFromEnv("tickets")) as TextChannel);
-	if (!ticketChannel) return ExtendedClient.logError("Ticket channel not found", "", client.user?.id);
-
-	const ticketMessage = await ticketChannel.messages.fetch({ limit: 2 }).then((m) => {
-		const message = m.filter((m) => m.author.id === process.env.CLIENT_ID).first();
-		if (message?.author.id === process.env.CLIENT_ID) return message;
-	});
-
-	const selectMenu = new StringSelectMenuBuilder().setCustomId("ticket_select").setPlaceholder("Selecciona una opción");
-	ticketOptions.forEach((option) => {
-		selectMenu.addOptions(
-			new StringSelectMenuOptionBuilder()
-				.setLabel(option.button.charAt(0).toUpperCase() + option.button.slice(1))
-				.setDescription(option.description)
-				.setEmoji(option.emoji)
-				.setValue(option.type)
-		);
-	});
-	const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
-
-	const embed = new EmbedBuilder()
-		.setAuthor({ iconURL: client.user?.displayAvatarURL(), name: "Gestión de tickets" })
-		.setThumbnail(client.guilds.cache.get(process.env.GUILD_ID ?? "")?.iconURL() ?? null)
-		.setTitle("Elije el tipo de ticket a abrir")
-		.setDescription(
-			`Abajo puedes elegir el tipo de ticket que deseas abrir para hablar con los administradores.\n\nPara consultas de programación utiliza: \n<#${getChannelFromEnv(
-				"chatProgramadores"
-			)}>`
-		)
-		.setColor(COLORS.pyeLightBlue)
-		.setTimestamp();
-
-	if (ticketMessage) {
-		if (process.env.UPDATE_TICKET_MESSAGE === "true")
-			await ticketChannel.send({ embeds: [embed], components: [row] }).then(async () => {
-				await ticketMessage.delete().catch(() => null);
-			});
-	} else {
-		await ticketChannel.send({ embeds: [embed], components: [row] });
-	}
-}
 
 async function cronEventsProcessor(client: ExtendedClient) {
 	ExtendedClient.agenda = new Agenda(
@@ -122,8 +86,8 @@ async function cronEventsProcessor(client: ExtendedClient) {
 			let embedObject: EmbedBuilder;
 			if (embed) {
 				embedObject = new EmbedBuilder(embed);
-				if (!embedObject.data.author) embedObject.setAuthor(PYECHAN_AUTHOR);
-				if (!embedObject.data.thumbnail) embedObject.setThumbnail(PYECHAN_THUMBNAIL);
+				if (!embedObject.data.author) embedObject.setAuthor(MASCOT_AUTHOR);
+				if (!embedObject.data.thumbnail) embedObject.setThumbnail(MASCOT_THUMBNAIL);
 			} else {
 				embedObject = createPyechanEmbed(content ?? "");
 			}
@@ -137,6 +101,17 @@ async function cronEventsProcessor(client: ExtendedClient) {
 				.then(async () => (job.attrs.nextRunAt ? await CronMessage.deleteOne({ _id: cronMessageId }).exec() : null))
 				.catch((error) => console.error(`Error al enviar mensaje cron al canal ${channelId}:`, error));
 		}
+	});
+
+	ExtendedClient.agenda.define("weekly booster rep", async () => {
+		const guild = client.guilds.cache.get(process.env.GUILD_ID ?? "") ?? (await client.guilds.fetch(process.env.GUILD_ID ?? ""));
+		if (!guild) return;
+		const boosterRole = getRoleFromEnv("nitroBooster");
+		const members = await guild.members.fetch();
+		for (const member of members.filter((m) => m.roles.cache.has(boosterRole)).values())
+			await addRep(member.user, guild, 1).then(({ member: mem }) =>
+				logHelperPoints(guild, `\`${mem.user.username}\` ha obtenido 1 rep por seguir siendo Booster`)
+			);
 	});
 
 	ExtendedClient.agenda.define("daily update client data", async (job: Job) => {
@@ -155,7 +130,7 @@ async function cronEventsProcessor(client: ExtendedClient) {
 			// Actualiza el mes en los datos del trabajo
 
 			const stats = await client.services.trending.getStats(client);
-			(client.channels.resolve(getChannelFromEnv("moderadores")) as TextChannel | null)
+			(client.channels.resolve(getChannelFromEnv("staff")) as TextChannel | null)
 				?.send({
 					embeds: [stats],
 				})
@@ -240,8 +215,8 @@ async function cronEventsProcessor(client: ExtendedClient) {
 		client.services.trending.dailySave().catch((error) => {
 			console.error("Error al guardar el top de tendencias:", error);
 		});
-		if (process.env.NODE_ENV !== "development" && now.getDate() % 3 === 0)
-			await getDailyChallenge(client).catch((error) => console.error(error));
+		/* if (process.env.NODE_ENV !== "development" && now.getDate() % 3 === 0)
+			await getDailyChallenge(client).catch((error) => console.error(error)); */
 
 		// Actualiza el top de bumps
 		await redisClient
@@ -256,20 +231,57 @@ async function cronEventsProcessor(client: ExtendedClient) {
 			.catch((error) => console.error(error));
 	});
 
+	ExtendedClient.agenda.define("bump reminder", async (job: Job) => {
+		const { channelId } = job.attrs.data as { channelId: string };
+		const channel = (client.channels.cache.get(channelId) ?? client.channels.resolve(channelId)) as TextChannel;
+		if (channel) {
+			const casinoId = getChannelFromEnv("casinoPye");
+			await channel
+				.send(
+					"☕✨ Hagamos que nuestro cafecito llegue a más gente ✨☕\nSi tienen un momento, pasen por <#" +
+						casinoId +
+						"> y usen /bump 💬\nCada bump ayuda a que más personas nos encuentren y se unan a compartir charlas, risas y código 💖"
+				)
+				.catch((error) => console.error("Error al enviar recordatorio de bump:", error));
+		}
+		job.schedule(new Date(Date.now() + 36 * 60 * 60 * 1000));
+		await job.save();
+	});
+
 	await ExtendedClient.agenda.start();
 	// Verificar si ya existe un trabajo programado
-	const existingJobs = await ExtendedClient.agenda.jobs({ name: "daily update client data" });
+	const [existingJob] = await ExtendedClient.agenda.jobs({ name: "daily update client data" });
 
-	if (existingJobs.length === 0) {
+	if (!existingJob) {
 		// Programar el trabajo con condición de unicidad
 		await ExtendedClient.agenda.every(
 			"0 0 * * *",
 			"daily update client data",
 			{ userReps: { month: new Date().getMonth() } },
-			{ skipImmediate: true }
+			{ skipImmediate: true, timezone: "UTC" }
 		);
 		console.log('Trabajo "daily update client data" programado.');
 	} else {
 		console.log('Trabajo "daily update client data" ya está programado.');
+	}
+
+	const boosterJobs = await ExtendedClient.agenda.jobs({ name: "weekly booster rep" });
+	if (boosterJobs.length === 0) {
+		await ExtendedClient.agenda.every("0 0 * * 1", "weekly booster rep", undefined, { skipImmediate: true });
+		console.log('Trabajo "weekly booster rep" programado.');
+	} else {
+		console.log('Trabajo "weekly booster rep" ya está programado.');
+	}
+
+	const bumpJobs = await ExtendedClient.agenda.jobs({ name: "bump reminder" });
+	if (bumpJobs.length === 0) {
+		const lastBump = await Bumps.findOne().sort({ fecha: -1 }).exec();
+		const nextRunAt = lastBump ? new Date(lastBump.fecha.getTime() + 36 * 60 * 60 * 1000) : new Date();
+		await ExtendedClient.agenda.schedule(nextRunAt, "bump reminder", {
+			channelId: getChannelFromEnv("general"),
+		});
+		console.log('Trabajo "bump reminder" programado.');
+	} else {
+		console.log('Trabajo "bump reminder" ya está programado.');
 	}
 }
