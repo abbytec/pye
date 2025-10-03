@@ -5,6 +5,10 @@ import { ICommandLimits, CommandLimits } from "../../Models/Command.js";
 import { Rob } from "../../commands/farming/rob.js";
 import { CoreClient } from "../CoreClient.js";
 import { IService } from "../IService.js";
+import { Message } from "discord.js";
+import { ExtendedClient } from "../../client.js";
+import { ParameterError } from "../../interfaces/IPrefixChatInputCommand.js";
+import { PREFIX } from "../../utils/constants.js";
 
 export default class CommandService implements IService {
 	public readonly serviceName = "commands";
@@ -36,5 +40,37 @@ export default class CommandService implements IService {
 	}
 	public static set lastRobs(robs: Rob[]) {
 		CommandService._lastRobs = robs;
+	}
+
+	public async processPrefixCommand(message: Message) {
+		const commandBody = message.content.slice(PREFIX.length).trim();
+		const commandName = commandBody.split(/ +/, 1).shift()?.toLowerCase() ?? "";
+
+		// Verifica si el comando existe en la colección de comandos
+		const command = CommandService.prefixCommands.get(commandName);
+
+		if (!command) {
+			message.reply("Ese comando no existe, quizá se actualizó a Slash Command :point_right: /.\n Prueba escribiendo /help.");
+			return;
+		}
+
+		try {
+			const parsedMessage = await command.parseMessage(message);
+			if (parsedMessage) {
+				const commandFunction = CommandService.commands.get(command.commandName);
+				if (commandFunction) {
+					commandFunction.execute(parsedMessage);
+				} else {
+					ExtendedClient.logError("Comando no encontrado: " + command.commandName, undefined, message.author.id);
+				}
+			} else {
+				message.reply({ content: "Hubo un error ejecutando ese comando.", ephemeral: true } as any).catch(() => null);
+			}
+		} catch (error: any) {
+			if (!(error instanceof ParameterError)) {
+				console.error(`Error ejecutando el comando ${commandName}:`, error);
+			}
+			message.reply({ content: "Hubo un error ejecutando ese comando.\n" + error.message, ephemeral: true } as any).catch(() => null);
+		}
 	}
 }

@@ -17,7 +17,6 @@ import { ExtendedClient } from "../client.js";
 import {
 	AUTHORIZED_BOTS,
 	COLORS,
-	commandProcessingLimiter,
 	getChannelFromEnv,
 	getHelpForumsIdsFromEnv,
 	getRoleFromEnv,
@@ -28,6 +27,9 @@ import { Users } from "../Models/User.js";
 import { getCooldown, setCooldown } from "../utils/cooldowns.js";
 import { checkRole } from "../utils/generic.js";
 import { checkHelp } from "../utils/checkhelp.js";
+import redisClient from "../redis.js";
+import { addRep } from "../commands/rep/add-rep.js";
+import { logHelperPoints } from "../utils/logHelperPoints.js";
 import { bumpHandler } from "../utils/messages/handlers/bumpHandler.js";
 
 import { messageGuard } from "../security/messageGuard.js";
@@ -36,7 +38,7 @@ import { ParameterError } from "../interfaces/IPrefixChatInputCommand.js";
 import { manageAIResponse } from "../utils/ai/aiRequestHandler.js";
 import { checkCooldownComparte } from "../security/checkCooldownComparte.js";
 import AIUsageControlService from "../core/services/AIUsageControlService.js";
-import CommandService from "../core/services/CommandService.js";
+import EconomyService from "../core/services/EconomyService.js";
 import TrendingService from "../core/services/TrendingService.js";
 import { scanFile, ScanResult } from "../utils/scanFile.js";
 
@@ -81,22 +83,26 @@ export default {
 			if (await messageGuard(message, client)) return;
 			if (message.author.bot || message.author.system) return;
 
-			if (!message.content.startsWith(PREFIX)) {
-				messagesProcessingLimiter.schedule(async () => await processCommonMessage(message, client));
-			} else {
-				commandProcessingLimiter.schedule(async () => await processPrefixCommand(message));
-			}
+		if (!message.content.startsWith(PREFIX)) {
+			messagesProcessingLimiter.schedule(async () => await processCommonMessage(message, client));
+		} else {
+			await client.services.commands.processPrefixCommand(message);
+		}
 		}
 	},
 };
 
 async function processCommonMessage(message: Message, client: ExtendedClient) {
 	let checkingChanel;
-	if (![getChannelFromEnv("mudae"), getChannelFromEnv("casinoPye")].includes(message.channel.id)) {
+	if (![getChannelFromEnv("casinoPye")].includes(message.channel.id)) {
 		const moneyConfig = client.services.economy.getConfig(process.env.CLIENT_ID ?? "");
 		getCooldown(client, message.author.id, "farm-text", moneyConfig.text.time).then(async (time) => {
 			if (time > 0) {
-				Users.findOneAndUpdate({ id: message.author.id }, { $inc: { cash: moneyConfig.text.coins } }, { upsert: true, new: true })
+				Users.findOneAndUpdate(
+					{ id: message.author.id },
+					{ $inc: { cash: EconomyService.getInflatedRate(moneyConfig.text.coins) } },
+					{ upsert: true, new: true }
+				)
 					.exec()
 					.then(() => {
 						setCooldown(client, message.author.id, "farm-text", moneyConfig.text.time);
@@ -108,47 +114,17 @@ async function processCommonMessage(message: Message, client: ExtendedClient) {
 
 		await specificChannels(message, client);
 		checkingChanel = checkThanksChannel(message);
-		if (checkingChanel && (await checkUserThanking(message))) {
+		/* if (checkingChanel && (await checkUserThanking(message))) {
 			checkHelp(message);
-		}
+		} */
 		registerNewTrends(message, client);
 		manageAIResponse(message, checkingChanel);
-	}
-}
 
-async function processPrefixCommand(message: Message) {
-	const commandBody = message.content.slice(PREFIX.length).trim();
-	const commandName = commandBody.split(/ +/, 1).shift()?.toLowerCase() ?? "";
-
-	// Verifica si el comando existe en la colección de comandos
-	const command = CommandService.prefixCommands.get(commandName);
-
-	if (!command) {
-		message.reply("Ese comando no existe, quizá se actualizó a Slash Command :point_right: /.\n Prueba escribiendo /help.");
-		return;
-	}
-
-	try {
-		const parsedMessage = await command.parseMessage(message);
-		if (parsedMessage) {
-			const commandFunction = CommandService.commands.get(command.commandName);
-			if (commandFunction) {
-				commandFunction.execute(parsedMessage);
-				if (!commandFunction?.group) return;
-				if (commandFunction.group.toLowerCase().includes("juegos")) {
-					await checkRole(message, getRoleFromEnv("granApostador"), 75, "apostador");
-				}
-			} else {
-				ExtendedClient.logError("Comando no encontrado: " + command.commandName, undefined, message.author.id);
-			}
-		} else {
-			message.reply({ content: "Hubo un error ejecutando ese comando.", ephemeral: true } as any).catch(() => null);
-		}
-	} catch (error: any) {
-		if (!(error instanceof ParameterError)) {
-			console.error(`Error ejecutando el comando ${commandName}:`, error);
-		}
-		message.reply({ content: "Hubo un error ejecutando ese comando.\n" + error.message, ephemeral: true } as any).catch(() => null);
+		const count = await redisClient.incr(`messages:${message.author.id}`);
+		if (count % 5000 === 0)
+			await addRep(message.author, message.guild, 5).then(({ member }) =>
+				logHelperPoints(message.guild, `\`${member.user.username}\` ha obtenido 5 rep por enviar ${count} mensajes`)
+			);
 	}
 }
 

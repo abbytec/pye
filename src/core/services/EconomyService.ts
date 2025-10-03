@@ -89,7 +89,7 @@ export default class EconomyService implements IService {
 				value.count = cyclesPassed;
 				Users.findOneAndUpdate(
 					{ id: userId.toString() },
-					{ $inc: { cash: moneyConfig.voice.coins * cyclesToIncrement } },
+					{ $inc: { cash: EconomyService.getInflatedRate(moneyConfig.voice.coins * cyclesToIncrement) } },
 					{ upsert: true, new: true }
 				).exec();
 				this.voiceFarmers.set(userId, value);
