@@ -31,25 +31,43 @@ export class ExtendedClient extends CoreClient {
 		super();
 	}
 
+	private getServiceFiles(dir: string): string[] {
+		const serviceFiles: string[] = [];
+		const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+		for (const entry of entries) {
+			const fullPath = path.join(dir, entry.name);
+			if (entry.isDirectory()) {
+				// Buscar recursivamente en subdirectorios
+				serviceFiles.push(...this.getServiceFiles(fullPath));
+			} else if (entry.isFile() && entry.name.endsWith(`Service${extension}`)) {
+				serviceFiles.push(fullPath);
+			}
+		}
+
+		return serviceFiles;
+	}
+
 	public async loadServices() {
 		// Inicializar Agenda antes de cargar los servicios, pasando el cliente
 		await AgendaManager.initialize(this);
 		
-		const files = fs.readdirSync(servicesDir).filter((f) => f.endsWith(extension));
+		const serviceFiles = this.getServiceFiles(servicesDir);
 
-		for (const file of files) {
-			const url = pathToFileURL(path.join(servicesDir, file)).href;
+		for (const filePath of serviceFiles) {
+			const url = pathToFileURL(filePath).href;
+			const relativePath = path.relative(servicesDir, filePath);
 
 			try {
-				console.log(`Cargando servicio ${file}`);
+				console.log(`Cargando servicio ${relativePath}`);
 				const mod = await import(url);
 				const Ctor = mod.default ?? mod;
-				if (typeof Ctor !== "function") throw new Error(`${file} no exporta una clase por default`);
+				if (typeof Ctor !== "function") throw new Error(`${relativePath} no exporta una clase por default`);
 				const instance = new Ctor(this);
 				this.services[instance.serviceName as ServiceName] = instance;
-			} catch (err) {
-				ExtendedClient.logError(`Fallo cargando servicio ${file}`, (err as any).stack);
-				console.error(`❌  ${file}:`, err);
+			} catch (err: any) {
+				ExtendedClient.logError(`Fallo cargando servicio ${relativePath}`, err.stack);
+				console.error(`❌  ${relativePath}:`, err);
 			}
 		}
 
