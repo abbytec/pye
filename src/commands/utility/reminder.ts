@@ -7,7 +7,6 @@ import ms from "ms";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { verifyChannel } from "../../composables/middlewares/verifyIsChannel.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
-import { ExtendedClient } from "../../client.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
@@ -32,10 +31,12 @@ export default {
 
 			// Check the current time every second
 			try {
-				await ExtendedClient.agenda.schedule(reminderTime, "send reminder", {
+				await interaction.client.services.reminder.scheduleReminder({
+					userId: interaction.user.id,
 					username: interaction.user.username,
 					message: message,
 					channelId: interaction.channelId,
+					reminderTime: reminderTime,
 				});
 				return replyOk(interaction, "Se creó tu recordatorio.");
 			} catch (error) {

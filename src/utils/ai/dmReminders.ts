@@ -2,6 +2,7 @@ import { FunctionDeclaration, SchemaType } from "@google/generative-ai";
 import { ExtendedClient } from "../../client.js";
 import natural from "natural";
 import { pyeChanPrompt } from "./gemini.js";
+import { AgendaManager } from "../../core/AgendaManager.js";
 
 export async function scheduleDMReminder(reminderDateTime: string, message: string, userId: string) {
 	if (natural.JaroWinklerDistance(message, pyeChanPrompt) > 0.8) {
@@ -12,7 +13,7 @@ export async function scheduleDMReminder(reminderDateTime: string, message: stri
 	if (reminderTime < now || reminderTime > new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)) {
 		return;
 	}
-	await ExtendedClient.agenda.schedule(reminderTime, "send reminder dm", {
+	await AgendaManager.getInstance().schedule(reminderTime, "send reminder dm", {
 		userId,
 		message: message,
 	});

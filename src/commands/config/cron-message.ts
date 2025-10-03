@@ -6,7 +6,6 @@ import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { replyError } from "../../utils/messages/replyError.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { CronMessage } from "../../Models/CronMessage.js";
-import { ExtendedClient } from "../../client.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 import { DateTime } from "luxon";
 import { COLORS } from "../../utils/constants.js";
@@ -155,31 +154,34 @@ export default {
 				await cronMessage
 					.save()
 					.then(async (savedCronMessage) => {
-						const jobData = {
-							channelId: channel.id,
-							content: content,
-							embed: embedData,
-							cronMessageId: savedCronMessage.id,
-						};
-
-						// Programa el trabajo con Agenda
+						// Programa el trabajo usando el servicio
 						if (repeat) {
 							// Trabajo recurrente
-							await ExtendedClient.agenda
-								.every(cronString, "send cron message", jobData, {
+							await interaction.client.services.scheduledMessages
+								.createRecurringMessage({
+									channelId: channel.id,
+									content: content,
+									embed: embedData,
+									cronString: cronString,
 									startDate: startDate,
+									cronMessageId: savedCronMessage.id,
 								})
 								.catch((error) => {
 									console.error("Error al programar el trabajo recurrente:", error);
 								});
 						} else {
 							// Trabajo único
-							const job = ExtendedClient.agenda.create("send cron message", { ...jobData, cronMessageId: savedCronMessage.id });
-							job.unique({ cronMessageId: savedCronMessage.id });
-							job.schedule(startDate);
-							await job.save().catch((error) => {
-								console.error("Error al programar el trabajo de ejecución unica:", error);
-							});
+							await interaction.client.services.scheduledMessages
+								.createOneTimeMessage({
+									channelId: channel.id,
+									content: content,
+									embed: embedData,
+									startDate: startDate,
+									cronMessageId: savedCronMessage.id,
+								})
+								.catch((error) => {
+									console.error("Error al programar el trabajo de ejecución unica:", error);
+								});
 						}
 						return replyOk(interaction, `Mensaje programado con éxito.`, undefined, undefined, undefined, undefined, true);
 					})
@@ -194,8 +196,8 @@ export default {
 				try {
 					await CronMessage.findOneAndDelete({ _id: id });
 
-					// Cancela el trabajo en Agenda
-					await ExtendedClient.agenda.cancel({ "data.cronMessageId": id });
+					// Cancela el trabajo usando el servicio
+					await interaction.client.services.scheduledMessages.removeScheduledMessage(id);
 
 					return replyInfo(
 						interaction,

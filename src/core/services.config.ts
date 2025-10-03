@@ -13,8 +13,14 @@ import MessageWatcherService from "./services/MessageWatcherService.js";
 import VoiceWatcherService from "./services/VoiceWatcherService.js";
 import InviteWatcherService from "./services/InviteWatcherService.js";
 import MemberWatcherService from "./services/MemberWatcherService.js";
+import ReminderService from "./services/ReminderService.js";
+import ScheduledMessagesService from "./services/ScheduledMessagesService.js";
+import CommunityRewardsService from "./services/CommunityRewardsService.js";
 
 export interface ServiceInstanceMap {
+	reminder: ReminderService;
+	scheduledMessages: ScheduledMessagesService;
+	communityRewards: CommunityRewardsService;
 	globalInteraction: GlobalInteractionService;
 	commands: CommandService;
 	economy: EconomyService;

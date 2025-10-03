@@ -9,11 +9,11 @@ import fs from "node:fs";
 import path, { dirname } from "node:path";
 import type { ServiceInstanceMap, ServiceName } from "./core/services.config.js";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { AgendaManager } from "./core/AgendaManager.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const extension = process.env.NODE_ENV === "development" ? ".ts" : ".js";
 const servicesDir = path.resolve(__dirname, "core/services");
 export class ExtendedClient extends CoreClient {
-	private static agendaElement: Agenda;
 
 	public static readonly openTickets: Set<string> = new Set();
 	public static readonly newUsers: Set<string> = new Set();
@@ -33,6 +33,9 @@ export class ExtendedClient extends CoreClient {
 	}
 
 	public async loadServices() {
+		// Inicializar Agenda antes de cargar los servicios
+		await AgendaManager.initialize();
+		
 		const files = fs.readdirSync(servicesDir).filter((f) => f.endsWith(extension));
 
 		for (const file of files) {
@@ -81,13 +84,6 @@ export class ExtendedClient extends CoreClient {
 		return this._modMembers;
 	}
 
-	public static set agenda(agenda: Agenda) {
-		this.agendaElement = agenda;
-	}
-
-	public static get agenda() {
-		return this.agendaElement;
-	}
 	public static logError(errorMessage: string, stackTrace?: string, userId?: string) {
 		const textChannel = ExtendedClient.guild?.channels.resolve(getChannelFromEnv("logs")) as TextChannel;
 		let content = "Log de error. ";
