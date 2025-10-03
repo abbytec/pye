@@ -12,6 +12,7 @@ import { ExtendedClient } from "../client.js";
 import { spamFilter } from "../security/spamFilter.js";
 import { getFirstValidAttachment } from "../utils/generic.js";
 import { createForumEmbed, generateForumResponse, sendLongReply } from "../utils/ai/aiResponseService.js";
+import { logHelperPoints } from "../utils/logHelperPoints.js";
 
 export default {
 	name: Events.ThreadCreate,
@@ -34,16 +35,14 @@ export default {
 			thread.ownerId == process.env.CLIENT_ID
 		)
 			return;
-		if (thread.parent?.type == ChannelType.GuildForum && getHelpForumsIdsFromEnv().includes(thread.parent.id)) {
-			threadForumProcessingLimiter.schedule(async () => await processHelpForumPost(thread));
-		} else if (thread.parent?.id == getChannelFromEnv("retos")) {
-			const owner = await thread.fetchOwner().catch(() => null);
-			await addRep(owner?.user ?? null, thread.guild).then(async ({ member }) =>
-				(thread.guild.channels.resolve(getChannelFromEnv("logPuntos")) as TextChannel | null)?.send(
-					`${member.user.username} ha obtenido 1 punto porque creó un reto: ${thread.url}`
-				)
-			);
-		}
+	if (thread.parent?.type == ChannelType.GuildForum && getHelpForumsIdsFromEnv().includes(thread.parent.id)) {
+		threadForumProcessingLimiter.schedule(async () => await processHelpForumPost(thread));
+	} else if (thread.parent?.id == getChannelFromEnv("retos")) {
+		const owner = await thread.fetchOwner().catch(() => null);
+		await addRep(owner?.user ?? null, thread.guild).then(async ({ member }) =>
+			logHelperPoints(thread.guild, `\`${member.user.username}\` ha obtenido 1 punto porque creó un reto: ${thread.url}`)
+		);
+	}
 	},
 };
 
