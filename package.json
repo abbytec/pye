@@ -31,7 +31,7 @@
 		"is-svg": "^5.1.0",
 		"luxon": "^3.7.1",
 		"mongoose": "^8.6.3",
-		"natural": "^8.0.1",
+		"natural": "^8.1.0",
 		"node-fetch": "^3.3.2",
 		"node-html-parser": "^7.0.1",
 		"redis": "^4.7.1",
