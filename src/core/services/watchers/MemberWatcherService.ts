@@ -63,7 +63,11 @@ export default class MemberWatcherService implements IService {
 					time: 2 * 60 * 1000,
 					filter: (interaction) => interaction.user.id === member.id,
 				});
-				collector.on("collect", async (interaction) => {
+			collector.on("collect", async (interaction) => {
+				try {
+					// Deferir la respuesta inmediatamente para evitar timeout
+					await interaction.deferReply({ ephemeral: true });
+
 					const embed = new EmbedBuilder()
 						.setColor(COLORS.pyeLightBlue)
 						.setFooter({ text: "Esperamos que disfrutes de la comunidad 💙" });
@@ -101,8 +105,11 @@ export default class MemberWatcherService implements IService {
 							}))
 						);
 					}
-					await interaction.reply({ embeds: [embed] });
-				});
+					await interaction.editReply({ embeds: [embed] });
+				} catch (error) {
+					console.error("Error al responder a la interacción de bienvenida:", error);
+				}
+			});
 				collector.on("end", async () => {
 					await welcomeMsg.edit({
 						components: [],
