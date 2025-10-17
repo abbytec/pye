@@ -108,7 +108,7 @@ export default {
 					{
 						name: "🌠 Stats",
 						value: `🎒 **Inventario:** ${userData.inventory.length}\n<:pyestar:1313345160549105774> **Reputación:** ${
-							dataRep?.points ?? 0
+							dataRep?.points.toLocaleString() ?? 0
 						}`,
 						inline: true,
 					},
