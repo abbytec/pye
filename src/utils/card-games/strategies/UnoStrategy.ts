@@ -206,11 +206,49 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 		return ctx.players.map((p) => `• <@${p.id}>: ${p.hand.length} carta(s)`).join("\n");
 	}
 
+	async botDecision(ctx: GameRuntime<UnoMeta>, botUserId: Snowflake): Promise<string | null> {
+		// Si necesita elegir color, elegir el más frecuente en su mano
+		if (ctx.meta.needColor === "X") {
+			const bot = ctx.players.find((p) => p.id === botUserId);
+			if (!bot) return null;
+
+			const colorCount: Record<string, number> = { "🟥": 0, "🟩": 0, "🟦": 0, "🟨": 0 };
+			for (const c of bot.hand) {
+				if (c.suit !== "X") colorCount[c.suit] = (colorCount[c.suit] || 0) + 1;
+			}
+
+			const mostCommon = Object.entries(colorCount).sort((a, b) => b[1] - a[1])[0][0];
+			return `color_${mostCommon}`;
+		}
+
+		const bot = ctx.players.find((p) => p.id === botUserId);
+		if (!bot) return null;
+
+		const playable = this.validPlays(ctx, bot);
+
+		// Si tiene cartas jugables, jugar la primera no-wild, o wild si es la única
+		if (playable.length > 0) {
+			// Priorizar cartas especiales y de acción
+			const nonWild = playable.find((p) => p.card.suit !== "X");
+			const toPlay = nonWild || playable[0];
+			return `play_${toPlay.idx}`;
+		}
+
+		// Si no puede jugar y ya robó, pasar
+		if (ctx.meta.drew) {
+			return "pass";
+		}
+
+		// Si no puede jugar, robar
+		return "draw";
+	}
+
 	/* ------------------------------------------------------------
 	 * Utilidades privadas
 	 * ---------------------------------------------------------- */
 	private async advanceTurn(ctx: GameRuntime<UnoMeta>) {
 		const prevId = ctx.current.id; // ← jugador que terminó su turno
+		await new Promise((resolve) => setTimeout(resolve, 1500));
 
 		/* — robos acumulados — */
 		if (ctx.meta.stack) {
