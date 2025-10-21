@@ -25,7 +25,7 @@ export default {
 		.addStringOption((option) => option.setName("item").setDescription("Nombre o ID del ítem que deseas utilizar.").setRequired(true)),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction(false)],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casino")), deferInteraction(false)],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 			const member = interaction.member as GuildMember;

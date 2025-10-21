@@ -77,6 +77,11 @@ class WarStrategy implements GameStrategy<WarMeta> {
 		return ctx.players.map((p) => `<@${p.id}> **${scores[p.id] ?? 0}**`).join(" • ");
 	}
 
+	async botDecision(ctx: GameRuntime<WarMeta>, botUserId: Snowflake): Promise<string | null> {
+		// El bot simplemente juega su carta (decisión automática)
+		return `play-${botUserId}`;
+	}
+
 	private static decideWinner(table: Card[], players: PlayerState[]) {
 		// Asumimos que table[0] pertenece a players[0] y table[1] a players[1]
 		const rank = (c: Card) => DeckFactory.POKER_RANK.indexOf(c.value as PokerValue);

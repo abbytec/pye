@@ -100,7 +100,7 @@ export async function bumpEmitter(message: Message): Promise<void> {
 				.send({
 					embeds: [
 						new EmbedBuilder()
-							.setDescription(`¡ Ya puedes hacer bump de nuevo ! 🎉\n<#${getChannelFromEnv("casinoPye")}>`)
+							.setDescription(`¡ Ya puedes hacer bump de nuevo ! 🎉\n<#${getChannelFromEnv("casino")}>`)
 							.setColor(COLORS.okGreen),
 					],
 				})

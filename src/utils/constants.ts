@@ -7,7 +7,7 @@ loadEnvVariables();
 
 const CHANNELS = {
 	ayuda: "916353103534632964",
-	casinoPye: "875535411924062279",
+	casino: "875535411924062279",
 	recursos: "924436818718494740",
 	general: "768329192131526686",
 	filosofiaPolitica: "847920994156806194",
@@ -84,7 +84,7 @@ const CHANNELS_DEV: Partial<Record<keyof typeof CHANNELS, string>> = {
 	ofertasDeEmpleos: "1400230504925757469",
 	openSource: "1400230505277816866",
 	sugerencias: "1400230504636223560",
-	casinoPye: "1400230504925757467",
+	casino: "1400230504925757467",
 	"html-css": "1300952181171818536",
 	starboard: "1400230504636223559",
 	tickets: "1400230504636223558",

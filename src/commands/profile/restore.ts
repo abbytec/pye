@@ -20,7 +20,7 @@ export default {
 		.addStringOption((option) => option.setName("ítem").setDescription("Nombre o ID del ítem a restaurar.").setRequired(true)),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casino")), deferInteraction()],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 			const guild = interaction.guild as Guild;

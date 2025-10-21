@@ -80,7 +80,7 @@ export default class PetService implements IService {
 					}
 					await home.updateOne({ text: 0, pet: "none", level: 12, house: { level: 12, color: "Naranja" }, active: false }).exec();
 					await getData.deleteOne();
-					(client.channels.resolve(getChannelFromEnv("casinoPye")) as TextChannel)?.send(
+					(client.channels.resolve(getChannelFromEnv("casino")) as TextChannel)?.send(
 						`<:petgone:1008539448637665300> - La mascota de <@${getData.id}> se ha escapado debido a que no fue un buen dueño...\nPuedes volver a completar la ultima quest para tener otra mascota, cuidala mejor esta vez!`
 					);
 				}, 7200000);

@@ -50,7 +50,7 @@ export default {
 	execute: composeMiddlewares(
 		[
 			verifyIsGuild(process.env.GUILD_ID ?? ""),
-			verifyChannel(getChannelFromEnv("casinoPye")),
+			verifyChannel(getChannelFromEnv("casino")),
 			verifyCooldown("crime", 18e5),
 			deferInteraction(),
 		],
@@ -126,7 +126,7 @@ export default {
 				return {
 					logMessages: [
 						{
-							channel: getChannelFromEnv("casinoPye"),
+							channel: getChannelFromEnv("casino"),
 							content: `Por favor **${user.username}**, recuerde que su saldo anterior era negativo. Puede compensarlo extrayendo dinero del banco mediante el comando /withdraw.`,
 						},
 					],

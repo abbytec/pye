@@ -53,7 +53,7 @@ export default {
 	execute: composeMiddlewares(
 		[
 			verifyIsGuild(process.env.GUILD_ID ?? ""),
-			verifyChannel(getChannelFromEnv("casinoPye")),
+			verifyChannel(getChannelFromEnv("casino")),
 			verifyCooldown("roulette", 1000),
 			deferInteraction(),
 		],
@@ -186,7 +186,7 @@ async function roulette(interaction: IPrefixChatInputCommand) {
 	}
 
 	// Enviar mensaje al terminar los 30s
-	(interaction.client.channels.cache.get(getChannelFromEnv("casinoPye")) as TextChannel | undefined)?.send({
+	(interaction.client.channels.cache.get(getChannelFromEnv("casino")) as TextChannel | undefined)?.send({
 		embeds: [
 			new EmbedBuilder()
 				.setAuthor({

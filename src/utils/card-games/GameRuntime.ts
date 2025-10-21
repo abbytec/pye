@@ -43,11 +43,22 @@ export class GameRuntime<M> {
 		if (this.tableMessage) {
 			const title = winnerName == null ? "No hay ganador, tiempo de espera finalizado" : `🏆 ¡Ganó ${winnerName}!`; // 👈 usa el displayName
 			if (winnerId) {
-				await Users.updateOne({ id: winnerId }, { $inc: { cash: this.bet * this.players.length } });
-				await Users.updateMany(
-					{ id: { $in: this.players.filter((p) => p.id !== winnerId).map((p) => p.id) } },
-					{ $inc: { cash: -this.bet } }
-				);
+				const botId = this.interaction.client.user?.id;
+				// Solo actualizar dinero de jugadores humanos
+				const humanPlayers = this.players.filter((p) => p.id !== botId);
+				const humanWinner = winnerId !== botId;
+
+				if (humanWinner) {
+					// Si ganó un humano, darle el premio (solo de jugadores humanos)
+					await Users.updateOne({ id: winnerId }, { $inc: { cash: this.bet * humanPlayers.length } });
+					await Users.updateMany(
+						{ id: { $in: humanPlayers.filter((p) => p.id !== winnerId).map((p) => p.id) } },
+						{ $inc: { cash: -this.bet } }
+					);
+				} else {
+					// Si ganó el bot, todos los humanos pierden su apuesta (el bot no cobra)
+					await Users.updateMany({ id: { $in: humanPlayers.map((p) => p.id) } }, { $inc: { cash: -this.bet } });
+				}
 			}
 			const embed = new EmbedBuilder().setColor(COLORS.okGreen).setTitle(title).setFooter({ text: "Este hilo se eliminará en 40 s…" });
 			this.tableMessage.edit({ embeds: [embed], components: [] });
@@ -65,7 +76,7 @@ export class GameRuntime<M> {
 		const btns = this.strategy.playerChoices?.(this, userId) ?? [];
 
 		await inter.editReply({
-			content: renderCardsAnsi(player.hand),
+			content: `**Tus cartas:**\n${renderCardsAnsi(player.hand)}`,
 			components: btns.length ? btns : [],
 		});
 	}

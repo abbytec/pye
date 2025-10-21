@@ -56,7 +56,7 @@ export default {
 	data: new SlashCommandBuilder().setName("start").setDescription("Comienza a crear tu perfil en la economía."),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye"))],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casino"))],
 		async (interaction: IPrefixChatInputCommand): Promise<void> => {
 			const userId = interaction.user.id;
 

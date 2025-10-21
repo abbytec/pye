@@ -43,7 +43,7 @@ export default class CommunityRewardsService implements IService {
 				this.client.channels.resolve(channelId)) as TextChannel;
 			
 			if (channel) {
-				const casinoId = getChannelFromEnv("casinoPye");
+				const casinoId = getChannelFromEnv("casino");
 				await channel
 					.send(
 						"☕✨ Hagamos que nuestro cafecito llegue a más gente ✨☕\nSi tienen un momento, pasen por <#" +

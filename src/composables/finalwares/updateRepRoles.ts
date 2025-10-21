@@ -114,7 +114,7 @@ async function sendAnnoucement(member: GuildMember, roleId: string, client: Exte
 	// Dibujá la imagen centrada, del tamaño indicado
 	ctx.drawImage(avatar, circlePosX - circleRadius, circlePosY - circleRadius, circleRadius * 2, circleRadius * 2);
 
-	const channelToSend = veterano ? getChannelFromEnv("chatProgramadores") : getChannelFromEnv("casinoPye");
+	const channelToSend = veterano ? getChannelFromEnv("chatProgramadores") : getChannelFromEnv("casino");
 
 	const channel = client.channels.resolve(channelToSend) as TextChannel;
 	if (!channel) return;

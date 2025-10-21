@@ -20,7 +20,7 @@ export default {
 			option.setName("tiempo").setDescription("Cantidad de tiempo para recordarte (10min, 1h. Max 24h)").setRequired(true).setMaxLength(10)
 		),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction()],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casino")), deferInteraction()],
 		async (interaction: IPrefixChatInputCommand) => {
 			const message = interaction.options.getString("mensaje", true);
 			const time = interaction.options.getString("tiempo", true);

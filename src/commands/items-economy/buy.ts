@@ -25,7 +25,7 @@ export default {
 		.addIntegerOption((option) => option.setName("cantidad").setDescription("Cantidad de ítems que deseas comprar.").setRequired(false)),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction(false)],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casino")), deferInteraction(false)],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const user = interaction.user;
 

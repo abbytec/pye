@@ -35,7 +35,7 @@ export default {
 	execute: composeMiddlewares(
 		[
 			verifyIsGuild(process.env.GUILD_ID ?? ""),
-			verifyChannel(getChannelFromEnv("casinoPye")),
+			verifyChannel(getChannelFromEnv("casino")),
 			verifyCooldown("flipcoin", 1000),
 			deferInteraction(),
 		],

@@ -35,4 +35,6 @@ export interface GameStrategy<StrategyMeta> {
 	playerChoices?(ctx: GameRuntime<StrategyMeta>, userId: Snowflake): ActionRowBuilder<any>[];
 	/** Texto con el histórico/score actual (opcional) */
 	scoreboard?(ctx: GameRuntime<StrategyMeta>): string;
+	/** Toma automática de decisión para el bot (cuando es su turno). Retorna el customId del botón que presionaría */
+	botDecision?(ctx: GameRuntime<StrategyMeta>, botUserId: Snowflake): Promise<string | null>;
 }

@@ -36,7 +36,7 @@ export default {
 	execute: composeMiddlewares(
 		[
 			verifyIsGuild(process.env.GUILD_ID ?? ""),
-			verifyChannel(getChannelFromEnv("casinoPye")), // Asegúrate de definir esta función o eliminar si no es necesaria
+			verifyChannel(getChannelFromEnv("casino")), // Asegúrate de definir esta función o eliminar si no es necesaria
 			deferInteraction(false),
 		],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {

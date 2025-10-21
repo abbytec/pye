@@ -78,8 +78,8 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 
 	// Si existe recompensa interactiva, se activa el proceso correspondiente
 	if (levelConfig.interactiveReward) {
-		if (channelId !== getChannelFromEnv("general") || channelId !== getChannelFromEnv("casinoPye"))
-			channelId = getChannelFromEnv("casinoPye");
+		if (channelId !== getChannelFromEnv("general") || channelId !== getChannelFromEnv("casino"))
+			channelId = getChannelFromEnv("casino");
 		if (levelConfig.interactiveReward.type === "color") {
 			if (Choose.has(person.id)) return;
 			const casas = readdirSync(path.join(__dirname, "../assets/Pictures/Profiles/Casa"));

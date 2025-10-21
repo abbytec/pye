@@ -48,7 +48,7 @@ export default {
 		.addStringOption((option) => option.setName("nombre").setDescription("Establece el nombre de tu casa").setRequired(false)),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction(false)],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casino")), deferInteraction(false)],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const option = await interaction.options.getUser("usuario");
 			const nameOption = interaction.options.getString("nombre");

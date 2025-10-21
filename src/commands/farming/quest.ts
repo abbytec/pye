@@ -25,7 +25,7 @@ export default {
 		.addSubcommand((subcommand) => subcommand.setName("start").setDescription("Inicia una nueva tarea de quest.")),
 
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), deferInteraction(false)],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casino")), deferInteraction(false)],
 		async (interaction: IPrefixChatInputCommand): Promise<void> => {
 			const subcommand = interaction.options.getSubcommand();
 

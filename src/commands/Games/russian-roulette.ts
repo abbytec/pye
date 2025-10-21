@@ -37,7 +37,7 @@ export default {
 	execute: composeMiddlewares(
 		[
 			verifyIsGuild(process.env.GUILD_ID ?? ""),
-			verifyChannel(getChannelFromEnv("casinoPye")),
+			verifyChannel(getChannelFromEnv("casino")),
 			verifyCooldown("russian-roulette", 1000),
 			deferInteraction(),
 		],
@@ -106,7 +106,7 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 		data.apuestas.push({ jugador: process.env.CLIENT_ID ?? "", cantidad: data.apuestas[0].cantidad });
 	}
 	const ganador: string = data.apuestas[Math.floor(Math.random() * data.apuestas.length)].jugador;
-	const canal = interaction.client.channels.cache.get(getChannelFromEnv("casinoPye")) as TextChannel | undefined;
+	const canal = interaction.client.channels.cache.get(getChannelFromEnv("casino")) as TextChannel | undefined;
 	if (!canal) return;
 
 	const userData: IUserModel = await getOrCreateUser(ganador);

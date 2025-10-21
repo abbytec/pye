@@ -94,7 +94,7 @@ export default {
 
 async function processCommonMessage(message: Message, client: ExtendedClient) {
 	let checkingChanel;
-	if (![getChannelFromEnv("casinoPye")].includes(message.channel.id)) {
+	if (![getChannelFromEnv("casino")].includes(message.channel.id)) {
 		const moneyConfig = client.services.economy.getConfig(process.env.CLIENT_ID ?? "");
 		getCooldown(client, message.author.id, "farm-text", moneyConfig.text.time).then(async (time) => {
 			if (time > 0) {

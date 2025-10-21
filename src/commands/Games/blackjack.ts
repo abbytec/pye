@@ -118,7 +118,7 @@ export default {
 		.setDescription("Juega a las cartas con el bot, quien llegue a estar más cerca sin pasarse u obtenga 21, gana.")
 		.addIntegerOption((option) => option.setName("cantidad").setDescription("la cantidad que quieres apostar").setRequired(true)),
 	execute: composeMiddlewares(
-		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casinoPye")), verifyCooldown("blackjack", 1000)],
+		[verifyIsGuild(process.env.GUILD_ID ?? ""), verifyChannel(getChannelFromEnv("casino")), verifyCooldown("blackjack", 1000)],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const amount = interaction.options.getInteger("cantidad", true);
 			const data = await getOrCreateUser(interaction.user.id);
