@@ -200,23 +200,24 @@ export default {
 		const gameCollector = thread.createMessageComponentCollector({ componentType: ComponentType.Button, idle: 120_000 });
 		gameCollector.on("collect", async (i) => {
 			try {
-				// Responder inmediatamente para evitar timeout del interaction
-				if (!i.deferred && !i.replied) {
-					await i.deferReply({ ephemeral: true }).catch(() => {});
-				}
-
 				if (i.customId === "show-hand") {
 					const player = runtime.players.find((p) => p.id === i.user.id);
-					if (!player) return i.editReply({ content: "No formas parte del juego" });
+					if (!player) return i.reply({ content: "No formas parte del juego", ephemeral: true });
 
 					const btns = strat.playerChoices?.(runtime, i.user.id) ?? [];
-					await i.editReply({
+					await i.reply({
 						content: `**Tus cartas:**\n${renderCardsAnsi(player.hand)}`,
 						components: btns.length ? btns : [],
+						ephemeral: true,
 					});
 
 					runtime.handInts.set(i.user.id, i);
 					return;
+				}
+
+				// Para el resto de acciones, defer inmediatamente
+				if (!i.deferred && !i.replied) {
+					await i.deferUpdate().catch(() => {});
 				}
 
 				// Permitir respuestas a envites/eventos (botones con prefijo respond_) aunque no sea tu turno
@@ -248,7 +249,7 @@ export default {
 		selectCollector.on("collect", async (i) => {
 			try {
 				if (!i.deferred && !i.replied) {
-					await i.deferReply({ ephemeral: true }).catch(() => {});
+					await i.deferUpdate().catch(() => {});
 				}
 
 				await strat.handleAction(runtime, i.user.id, i);

@@ -49,6 +49,8 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 	 *            color_R|G|B|Y  (tras un wild)
 	 * ---------------------------------------------------------- */
 	async handleAction(ctx: GameRuntime<UnoMeta>, uid: string, i: ButtonInteraction): Promise<void> {
+		await i.deferUpdate().catch(() => {});
+		
 		const pid = ctx.players.findIndex((p) => p.id === uid);
 		if (pid === -1) {
 			await i.reply({ content: "No juegas en esta partida.", ephemeral: true });
@@ -59,7 +61,6 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 		if (i.customId.startsWith("color_")) {
 			const color = i.customId.split("_")[1] as UnoSuit;
 			ctx.meta.needColor = color;
-			await i.update({});
 			await this.advanceTurn(ctx);
 			const next = this.peekNext(ctx);
 			await ctx.refreshHand(next.id);
@@ -70,7 +71,6 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 			ctx.meta.drew = true;
 			const card = ctx.deck.shift() as Card;
 			ctx.players[pid].hand.push(card);
-			await i.deferUpdate();
 			// si robo y NO puede jugar nada, pasa turno
 			if (!this.validPlays(ctx, ctx.players[pid]).length) await this.advanceTurn(ctx);
 			await ctx.refreshHand(uid);
@@ -78,7 +78,6 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 		}
 
 		if (i.customId === "pass") {
-			await i.deferUpdate();
 			await this.advanceTurn(ctx);
 			return ctx.sendTable();
 		}
@@ -105,11 +104,10 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 					if (ctx.players.length > 2) ctx.meta.dir *= -1;
 					else {
 						// en 2 jugadores REV es SKIP
-						await i.deferUpdate();
 						if (!player.hand.length) {
 							await ctx.sendTable();
 							await new Promise((resolve) => setTimeout(resolve, 3000));
-							ctx.finish(`<@${player.id}>`);
+							await ctx.finish(`<@${player.id}>`);
 							return;
 						}
 						await this.skipNext(ctx);
@@ -117,11 +115,10 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 					}
 					break;
 				case "SKIP":
-					await i.deferUpdate();
 					if (!player.hand.length) {
 						await ctx.sendTable();
 						await new Promise((resolve) => setTimeout(resolve, 3000));
-						ctx.finish(`<@${player.id}>`);
+						await ctx.finish(`<@${player.id}>`);
 						return;
 					}
 					await this.skipNext(ctx);
@@ -140,12 +137,11 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 
 			// ¿fin de juego?
 			if (!player.hand.length) {
-				await i.deferUpdate();
 				// Mostrar la última carta antes de finalizar
 				await ctx.sendTable();
 				// Esperar a que se vea la carta antes de mostrar ganador
 				await new Promise((resolve) => setTimeout(resolve, 3000));
-				ctx.finish(player.displayName);
+				await ctx.finish(player.displayName);
 				return;
 			}
 
@@ -154,10 +150,9 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 				const row = ["🟥", "🟩", "🟦", "🟨"].map((c) =>
 					new ButtonBuilder().setCustomId(`color_${c}`).setLabel(c).setStyle(ButtonStyle.Secondary)
 				);
-				await i.update({ components: [{ type: 1, components: row } as any] });
+				await i.editReply({ components: [{ type: 1, components: row } as any] });
 				return; // sendTable se llamará luego de elegir color
 			}
-			await i.deferUpdate();
 			await this.advanceTurn(ctx);
 			return ctx.sendTable();
 		}
@@ -256,7 +251,6 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 	 * ---------------------------------------------------------- */
 	private async advanceTurn(ctx: GameRuntime<UnoMeta>) {
 		const prevId = ctx.current.id; // ← jugador que terminó su turno
-		await new Promise((resolve) => setTimeout(resolve, 1500));
 
 		/* — robos acumulados — */
 		if (ctx.meta.stack) {

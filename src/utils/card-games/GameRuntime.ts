@@ -61,7 +61,7 @@ export class GameRuntime<M> {
 				}
 			}
 			const embed = new EmbedBuilder().setColor(COLORS.okGreen).setTitle(title).setFooter({ text: "Este hilo se eliminará en 40 s…" });
-			this.tableMessage.edit({ embeds: [embed], components: [] });
+			await this.tableMessage.edit({ embeds: [embed], components: [] });
 		}
 		setTimeout(() => this.thread.delete().catch(() => {}), 40_000);
 	}
