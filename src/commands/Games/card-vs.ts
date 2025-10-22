@@ -199,31 +199,48 @@ export default {
 
 			const gameCollector = thread.createMessageComponentCollector({ componentType: ComponentType.Button, idle: 120_000 });
 			gameCollector.on("collect", async (i) => {
-				if (i.customId === "show-hand") {
-					const player = runtime.players.find((p: any) => p.id === i.user.id);
-					if (!player) return i.reply({ content: "No formas parte del juego", flags: 1 << 6 });
-					await i.deferReply({ ephemeral: true });
+				try {
+					// Responder inmediatamente para evitar timeout del interaction
+					if (!i.deferred && !i.replied) {
+						await i.deferReply({ ephemeral: true }).catch(() => {});
+					}
 
-					const btns = strat.playerChoices?.(runtime, i.user.id) ?? [];
-					await i.editReply({
-						content: `**Tus cartas:**\n${renderCardsAnsi(player.hand)}`,
-						components: btns.length ? btns : [],
-					});
+					if (i.customId === "show-hand") {
+						const player = runtime.players.find((p) => p.id === i.user.id);
+						if (!player) return i.editReply({ content: "No formas parte del juego" });
 
-					runtime.handInts.set(i.user.id, i);
-					return;
+						const btns = strat.playerChoices?.(runtime, i.user.id) ?? [];
+						await i.editReply({
+							content: `**Tus cartas:**\n${renderCardsAnsi(player.hand)}`,
+							components: btns.length ? btns : [],
+						});
+
+						runtime.handInts.set(i.user.id, i);
+						return;
+					}
+
+					// Permitir respuestas a envites/eventos (botones con prefijo respond_) aunque no sea tu turno
+					// La validación de quién puede responder es manejada por la estrategia del juego
+					const isResponseAction = i.customId.startsWith("respond_");
+
+					if (!isResponseAction && i.user.id !== runtime.current.id) {
+						await i.editReply({ content: "⏳ No es tu turno; esperá." });
+						setTimeout(() => i.deleteReply().catch(null), 3_000);
+						return;
+					}
+
+					await strat.handleAction(runtime, i.user.id, i);
+
+					// Después de cada acción humana, esperar a que se resuelva el estado
+					setTimeout(() => executeBotTurn(), 3000);
+				} catch (error) {
+					// Silenciar errores de interacciones expiradas
+					if (error instanceof Error && error.message?.includes("Unknown interaction")) {
+						console.warn("Interacción expirada en card-vs:", error.message);
+						return;
+					}
+					console.error("Error en card-vs collector:", error);
 				}
-
-				if (i.user.id !== runtime.current.id) {
-					await i.reply({ content: "⏳ No es tu turno; esperá.", ephemeral: true });
-					setTimeout(() => i.deleteReply().catch(null), 3_000);
-					return;
-				}
-
-				await strat.handleAction(runtime, i.user.id, i);
-
-				// Después de cada acción humana, esperar a que se resuelva el estado
-				setTimeout(() => executeBotTurn(), 3000);
 			});
 			gameCollector.on("end", (_collected, reason) => {
 				if (reason === "idle") {
@@ -250,29 +267,44 @@ export default {
 		const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: 60000 });
 
 		collector.on("collect", async (btn) => {
-			const [, uid] = btn.customId.split("_");
-			if (btn.user.id !== uid) {
-				return btn.reply({ content: "⏳ Ese botón no es para ti.", ephemeral: true });
-			}
-
-			if (!accepted.has(uid)) {
-				accepted.add(uid);
-
-				// actualiza el botón a verde y deshabilitado
-				const newButtons = acceptButtons.map((oldBtn) => {
-					const json = oldBtn.toJSON();
-					if ("custom_id" in json && json.custom_id === btn.customId) {
-						return ButtonBuilder.from(oldBtn).setStyle(ButtonStyle.Success).setDisabled(true);
-					}
-					return oldBtn;
-				});
-				await btn.update({ components: [new ActionRowBuilder<ButtonBuilder>().addComponents(newButtons)] });
-
-				// si todos aceptaron, lanzamos automáticamente
-				if (accepted.size === playerIds.size) {
-					collector.stop();
-					await startGame();
+			try {
+				// Responder inmediatamente para evitar timeout
+				if (!btn.deferred && !btn.replied) {
+					await btn.deferUpdate().catch(() => {});
 				}
+
+				const [, uid] = btn.customId.split("_");
+				if (btn.user.id !== uid) {
+					await btn.followUp({ content: "⏳ Ese botón no es para ti.", ephemeral: true }).catch(() => {});
+					return;
+				}
+
+				if (!accepted.has(uid)) {
+					accepted.add(uid);
+
+					// actualiza el botón a verde y deshabilitado
+					const newButtons = acceptButtons.map((oldBtn) => {
+						const json = oldBtn.toJSON();
+						if ("custom_id" in json && json.custom_id === btn.customId) {
+							return ButtonBuilder.from(oldBtn).setStyle(ButtonStyle.Success).setDisabled(true);
+						}
+						return oldBtn;
+					});
+					await btn.editReply({ components: [new ActionRowBuilder<ButtonBuilder>().addComponents(newButtons)] });
+
+					// si todos aceptaron, lanzamos automáticamente
+					if (accepted.size === playerIds.size) {
+						collector.stop();
+						await startGame();
+					}
+				}
+			} catch (error) {
+				// Silenciar errores de interacciones expiradas
+				if (error instanceof Error && error.message?.includes("Unknown interaction")) {
+					console.warn("Interacción expirada en collector de aceptación:", error.message);
+					return;
+				}
+				console.error("Error en collector de aceptación:", error);
 			}
 		});
 		collector.on("end", async (_collected, reason) => {
