@@ -107,6 +107,8 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 						// en 2 jugadores REV es SKIP
 						await i.deferUpdate();
 						if (!player.hand.length) {
+							await ctx.sendTable();
+							await new Promise((resolve) => setTimeout(resolve, 3000));
 							ctx.finish(`<@${player.id}>`);
 							return;
 						}
@@ -117,6 +119,8 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 				case "SKIP":
 					await i.deferUpdate();
 					if (!player.hand.length) {
+						await ctx.sendTable();
+						await new Promise((resolve) => setTimeout(resolve, 3000));
 						ctx.finish(`<@${player.id}>`);
 						return;
 					}
@@ -137,7 +141,11 @@ export default class UnoStrategy implements GameStrategy<UnoMeta> {
 			// ¿fin de juego?
 			if (!player.hand.length) {
 				await i.deferUpdate();
-				ctx.finish(player.displayName); // 👈
+				// Mostrar la última carta antes de finalizar
+				await ctx.sendTable();
+				// Esperar a que se vea la carta antes de mostrar ganador
+				await new Promise((resolve) => setTimeout(resolve, 3000));
+				ctx.finish(player.displayName);
 				return;
 			}
 
