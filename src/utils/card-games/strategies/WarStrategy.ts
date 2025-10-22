@@ -6,6 +6,7 @@ import { DeckFactory, PokerValue } from "../DeckFactory.js";
 
 interface WarMeta {
 	scores: Record<Snowflake, number>;
+	isProcessing?: boolean;
 }
 
 /* ------------------------------------------------------------------
@@ -25,10 +26,19 @@ class WarStrategy implements GameStrategy<WarMeta> {
 
 	async handleAction(ctx: GameRuntime<WarMeta>, userId: Snowflake, interaction: ButtonInteraction) {
 		await interaction.deferUpdate();
+		
+		// Prevenir acciones simultáneas (doble-click, etc)
+		if (ctx.meta.isProcessing) {
+			await interaction.followUp({ content: "⏳ Acción en progreso, esperá.", ephemeral: true });
+			return;
+		}
+		
 		if (userId !== ctx.current.id) {
 			await interaction.followUp({ content: "⏳ No es tu turno.", ephemeral: true });
 			return;
 		}
+
+		ctx.meta.isProcessing = true;
 
 		const player = ctx.current;
 		const card = player.hand.shift();
@@ -44,6 +54,7 @@ class WarStrategy implements GameStrategy<WarMeta> {
 				ctx.nextTurn();
 				if (!winner) {
 					ctx.table = [];
+					ctx.meta.isProcessing = false;
 					return ctx.sendTable();
 				}
 
@@ -53,10 +64,12 @@ class WarStrategy implements GameStrategy<WarMeta> {
 				if (scores[winner.id] === 5) return ctx.finish(winner.displayName);
 
 				ctx.table = [];
+				ctx.meta.isProcessing = false;
 				await ctx.sendTable();
 			}, 2500);
 		} else {
 			ctx.nextTurn();
+			ctx.meta.isProcessing = false;
 			await ctx.sendTable();
 		}
 	}
