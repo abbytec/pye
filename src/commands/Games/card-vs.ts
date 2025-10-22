@@ -7,13 +7,13 @@ import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { verifyChannel } from "../../composables/middlewares/verifyIsChannel.js";
 import { verifyCooldown } from "../../composables/middlewares/verifyCooldown.js";
-import { WarStrategy, UnoStrategy, TrucoStrategy } from "../../utils/card-games/strategies/index.js";
+import { WarStrategy, UnoStrategy, TrucoStrategy, PokerStrategy } from "../../utils/card-games/strategies/index.js";
 import { GameStrategy } from "../../utils/card-games/strategies/IGameStrategy.js";
 import { renderCardsAnsi } from "../../utils/card-games/CardRenderUtils.js";
 import { GameRuntime, PlayerState } from "../../utils/card-games/GameRuntime.js";
 import { Users } from "../../Models/User.js";
 
-export const games: GameStrategy<any>[] = [new WarStrategy(), new UnoStrategy(), new TrucoStrategy()];
+export const games: GameStrategy<any>[] = [new WarStrategy(), new UnoStrategy(), new TrucoStrategy(), new PokerStrategy()];
 export const getGame = (name: string) => games.find((g) => g.name === name);
 export const listGames = () => games.map((g) => g.name);
 
@@ -197,51 +197,72 @@ export default {
 				}, 3000);
 			};
 
-			const gameCollector = thread.createMessageComponentCollector({ componentType: ComponentType.Button, idle: 120_000 });
-			gameCollector.on("collect", async (i) => {
-				try {
-					// Responder inmediatamente para evitar timeout del interaction
-					if (!i.deferred && !i.replied) {
-						await i.deferReply({ ephemeral: true }).catch(() => {});
-					}
-
-					if (i.customId === "show-hand") {
-						const player = runtime.players.find((p) => p.id === i.user.id);
-						if (!player) return i.editReply({ content: "No formas parte del juego" });
-
-						const btns = strat.playerChoices?.(runtime, i.user.id) ?? [];
-						await i.editReply({
-							content: `**Tus cartas:**\n${renderCardsAnsi(player.hand)}`,
-							components: btns.length ? btns : [],
-						});
-
-						runtime.handInts.set(i.user.id, i);
-						return;
-					}
-
-					// Permitir respuestas a envites/eventos (botones con prefijo respond_) aunque no sea tu turno
-					// La validación de quién puede responder es manejada por la estrategia del juego
-					const isResponseAction = i.customId.startsWith("respond_");
-
-					if (!isResponseAction && i.user.id !== runtime.current.id) {
-						await i.editReply({ content: "⏳ No es tu turno; esperá." });
-						setTimeout(() => i.deleteReply().catch(null), 3_000);
-						return;
-					}
-
-					await strat.handleAction(runtime, i.user.id, i);
-
-					// Después de cada acción humana, esperar a que se resuelva el estado
-					setTimeout(() => executeBotTurn(), 3000);
-				} catch (error) {
-					// Silenciar errores de interacciones expiradas
-					if (error instanceof Error && error.message?.includes("Unknown interaction")) {
-						console.warn("Interacción expirada en card-vs:", error.message);
-						return;
-					}
-					console.error("Error en card-vs collector:", error);
+		const gameCollector = thread.createMessageComponentCollector({ componentType: ComponentType.Button, idle: 120_000 });
+		gameCollector.on("collect", async (i) => {
+			try {
+				// Responder inmediatamente para evitar timeout del interaction
+				if (!i.deferred && !i.replied) {
+					await i.deferReply({ ephemeral: true }).catch(() => {});
 				}
-			});
+
+				if (i.customId === "show-hand") {
+					const player = runtime.players.find((p) => p.id === i.user.id);
+					if (!player) return i.editReply({ content: "No formas parte del juego" });
+
+					const btns = strat.playerChoices?.(runtime, i.user.id) ?? [];
+					await i.editReply({
+						content: `**Tus cartas:**\n${renderCardsAnsi(player.hand)}`,
+						components: btns.length ? btns : [],
+					});
+
+					runtime.handInts.set(i.user.id, i);
+					return;
+				}
+
+				// Permitir respuestas a envites/eventos (botones con prefijo respond_) aunque no sea tu turno
+				// La validación de quién puede responder es manejada por la estrategia del juego
+				const isResponseAction = i.customId.startsWith("respond_");
+
+				if (!isResponseAction && i.user.id !== runtime.current.id) {
+					await i.editReply({ content: "⏳ No es tu turno; esperá." });
+					setTimeout(() => i.deleteReply().catch(null), 3_000);
+					return;
+				}
+
+				await strat.handleAction(runtime, i.user.id, i);
+
+				// Después de cada acción humana, esperar a que se resuelva el estado
+				setTimeout(() => executeBotTurn(), 3000);
+			} catch (error) {
+				// Silenciar errores de interacciones expiradas
+				if (error instanceof Error && error.message?.includes("Unknown interaction")) {
+					console.warn("Interacción expirada en card-vs:", error.message);
+					return;
+				}
+				console.error("Error en card-vs collector:", error);
+			}
+		});
+
+		// Collector para StringSelectMenu (ej: tienda de fichas)
+		const selectCollector = thread.createMessageComponentCollector({ componentType: ComponentType.StringSelect, idle: 120_000 });
+		selectCollector.on("collect", async (i) => {
+			try {
+				if (!i.deferred && !i.replied) {
+					await i.deferReply({ ephemeral: true }).catch(() => {});
+				}
+
+				await strat.handleAction(runtime, i.user.id, i);
+
+				// Después de cada acción humana, esperar a que se resuelva el estado
+				setTimeout(() => executeBotTurn(), 3000);
+			} catch (error) {
+				if (error instanceof Error && error.message?.includes("Unknown interaction")) {
+					console.warn("Interacción expirada en select collector:", error.message);
+					return;
+				}
+				console.error("Error en select collector:", error);
+			}
+		});
 			gameCollector.on("end", (_collected, reason) => {
 				if (reason === "idle") {
 					runtime.finish();

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonInteraction, Snowflake } from "discord.js";
+import { ActionRowBuilder, ButtonInteraction, Snowflake, StringSelectMenuInteraction } from "discord.js";
 import { IPrefixChatInputCommand } from "../../../interfaces/IPrefixChatInputCommand.js";
 import { GameRuntime } from "../GameRuntime.js";
 import { PokerSuit, PokerValue, SpanishSuit, SpanishValue, UnoSuit, UnoValue } from "../DeckFactory.js";
@@ -36,7 +36,7 @@ export interface GameStrategy<StrategyMeta> {
 	 * - "play_"   : Acciones normales que sí requieren ser el turno actual
 	 * - Otros     : Acciones normales que requieren ser el turno actual
 	 */
-	handleAction(ctx: GameRuntime<StrategyMeta>, userId: Snowflake, interaction: IPrefixChatInputCommand | ButtonInteraction): Promise<void>;
+	handleAction(ctx: GameRuntime<StrategyMeta>, userId: Snowflake, interaction: IPrefixChatInputCommand | ButtonInteraction | StringSelectMenuInteraction): Promise<void>;
 	/** ANSI representation of public table state */
 	publicState(ctx: GameRuntime<StrategyMeta>): string;
 	/** Optional extra buttons that only the user can see when it's their turn */
