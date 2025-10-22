@@ -16,20 +16,13 @@ interface PokerMeta {
 	isProcessing?: boolean;
 	round: number;
 	ante: number;
-	potChips: Record<Snowflake, number>;
-}
-
-interface PlayerWithHand extends PlayerState {
-	bestHand?: Card[];
-	handRank?: HandRank;
-	rankValue?: number;
+	totalPot: number; // Total del pot acumulado
 }
 
 /**
  * Texas Hold'em simplificado para 2-6 jugadores
- * - Cada jugador comienza con chips
- * - Rondas de apuestas en preflop, flop, turn, river
- * - Al showdown, se evalúan las manos (mejor mano de 5 cartas)
+ * - Múltiples rondas hasta que jugadores decidan salir
+ * - Sistema de chips con compra durante el juego
  * - Prevención de race conditions
  */
 class PokerStrategy implements GameStrategy<PokerMeta> {
@@ -54,11 +47,9 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 
 		const startingChips = 500; // Chips iniciales
 		const chips: Record<Snowflake, number> = {};
-		const potChips: Record<Snowflake, number> = {};
 		
 		ctx.players.forEach((p) => {
 			chips[p.id] = startingChips;
-			potChips[p.id] = ctx.bet; // La apuesta es el ante inicial
 			p.hand = [];
 		});
 
@@ -70,8 +61,15 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 			phase: "preflop",
 			round: 1,
 			ante: ctx.bet,
-			potChips,
+			totalPot: 0, // Pot comienza en 0 cada ronda
 		};
+
+		// Pedir ante a cada jugador
+		ctx.players.forEach((p) => {
+			ctx.meta.chips[p.id] -= ctx.bet;
+			ctx.meta.bets[p.id] = ctx.bet;
+			ctx.meta.totalPot += ctx.bet;
+		});
 
 		// Repartir 2 cartas a cada jugador
 		for (let i = 0; i < 2; i++) {
@@ -94,6 +92,20 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 			if (handled) return;
 		}
 
+		// Manejo de salida
+		if (interaction.customId === "leave-game") {
+			ctx.meta.chips[userId] = 0; // Marcar al jugador como sin fichas (abandonó)
+			await interaction.followUp({ content: "👋 Abandonaste la mesa.", ephemeral: true });
+			
+			// Verificar si quedan jugadores
+			const remaining = ctx.players.filter((p) => ctx.meta.chips[p.id] > 0);
+			if (remaining.length <= 1) {
+				const winner = remaining[0] || ctx.players[0];
+				await ctx.finish(winner.displayName, winner.id);
+			}
+			return;
+		}
+
 		// Prevenir race conditions
 		if (ctx.meta.isProcessing) {
 			await interaction.followUp({ content: "⏳ Acción en progreso, esperá.", ephemeral: true });
@@ -111,13 +123,12 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 				const remaining = ctx.players.filter((p) => !ctx.meta.fold.has(p.id)).length;
 
 				if (remaining === 1) {
-					// Solo queda un jugador, termina
+					// Solo queda un jugador, gana el pot
 					const winner = ctx.players.find((p) => !ctx.meta.fold.has(p.id))!;
+					ctx.meta.chips[winner.id] += ctx.meta.totalPot;
 					await ctx.sendTable();
-					setTimeout(() => {
-						ctx.finish(winner.displayName, winner.id);
-					}, 1500);
-					return;
+					await new Promise((resolve) => setTimeout(resolve, 1500));
+					return this.offerNewRound(ctx);
 				}
 
 				await ctx.sendTable();
@@ -139,6 +150,7 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 
 				ctx.meta.chips[userId] -= amountToCall;
 				ctx.meta.bets[userId] = (ctx.meta.bets[userId] ?? 0) + amountToCall;
+				ctx.meta.totalPot += amountToCall; // Aumentar el pot total
 
 				await this.advanceToNextPlayer(ctx);
 				if (this.isRoundComplete(ctx)) {
@@ -158,6 +170,7 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 				ctx.meta.chips[userId] -= raiseAmount;
 				ctx.meta.bets[userId] = (ctx.meta.bets[userId] ?? 0) + raiseAmount;
 				ctx.meta.currentBet = Math.max(ctx.meta.currentBet, ctx.meta.bets[userId]);
+				ctx.meta.totalPot += raiseAmount; // Aumentar el pot total
 
 				await this.advanceToNextPlayer(ctx);
 				await ctx.sendTable();
@@ -181,6 +194,10 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 		);
 
 		ctx.turnIndex = nextIdx;
+		
+		// ✅ Mostrar automáticamente las cartas al nuevo jugador
+		const currentPlayer = ctx.players[nextIdx];
+		await ctx.refreshHand(currentPlayer.id);
 	}
 
 	private isRoundComplete(ctx: GameRuntime<PokerMeta>): boolean {
@@ -217,27 +234,38 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 			}
 		}
 
-		// Reset bets para nueva ronda
+		// Reset bets para nueva ronda DE APUESTAS (pero NO el pot total)
 		ctx.meta.currentBet = 0;
 		ctx.players.forEach((p) => {
 			if (!ctx.meta.fold.has(p.id)) {
 				ctx.meta.bets[p.id] = 0;
 			}
 		});
+		// ❌ NO resetear totalPot - es acumulado de la mano completa
+		
+		// ✅ Actualizar cartas de todos los jugadores para que vean las nuevas cartas comunitarias
+		for (const player of ctx.players) {
+			await ctx.refreshHand(player.id);
+		}
 	}
 
 	private async performShowdown(ctx: GameRuntime<PokerMeta>) {
 		const activePlayers = ctx.players.filter((p) => !ctx.meta.fold.has(p.id));
 
 		if (activePlayers.length === 0) {
-			ctx.finish(null);
+			await ctx.finish(null);
 			return;
 		}
 
 		if (activePlayers.length === 1) {
 			const winner = activePlayers[0];
-			ctx.finish(winner.displayName, winner.id);
-			return;
+			// El único jugador restante gana el pot
+			ctx.meta.chips[winner.id] += ctx.meta.totalPot;
+			await ctx.sendTable();
+			await new Promise((resolve) => setTimeout(resolve, 2000));
+			
+			// Ofrecer nueva ronda o salir
+			return this.offerNewRound(ctx);
 		}
 
 		// Evaluar manos
@@ -252,10 +280,67 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 		});
 
 		const winner = evaluated[0].player;
+		
+		// Distribuir el pot al ganador
+		ctx.meta.chips[winner.id] += ctx.meta.totalPot;
+		
 		await ctx.sendTable();
-		setTimeout(() => {
-			ctx.finish(winner.displayName, winner.id);
-		}, 2000);
+		await new Promise((resolve) => setTimeout(resolve, 2000));
+
+		// Ofrecer nueva ronda o salir
+		return this.offerNewRound(ctx);
+	}
+
+	private async offerNewRound(ctx: GameRuntime<PokerMeta>) {
+		// Verificar si alguien se fue (0 chips)
+		const remaining = ctx.players.filter((p) => ctx.meta.chips[p.id] > 0);
+		
+		if (remaining.length <= 1) {
+			// Solo 1 jugador con fichas, acabó el juego
+			const winner = remaining[0] || ctx.players[0];
+			await ctx.finish(winner.displayName, winner.id);
+			return;
+		}
+
+		// Reiniciar para nueva ronda
+		ctx.meta.round++;
+		ctx.meta.phase = "preflop";
+		ctx.meta.fold.clear();
+		ctx.meta.bets = {};
+		ctx.meta.currentBet = 0;
+		ctx.meta.totalPot = 0; // Resetear el pot para la nueva mano
+
+		// Limpiar mano de cada jugador
+		ctx.players.forEach((p) => (p.hand = []));
+		
+		// ✅ LIMPIAR LA MESA - esto evita que se acumulen cartas
+		ctx.table = [];
+		
+		ctx.deck = DeckFactory.standard();
+
+		// Pasar el turno al siguiente (dealer button)
+		ctx.nextTurn();
+
+		// Pedir ante a cada jugador que tenga fichas
+		ctx.players.forEach((p) => {
+			if (ctx.meta.chips[p.id] > 0) {
+				const anteAmount = Math.min(ctx.meta.ante, ctx.meta.chips[p.id]);
+				ctx.meta.chips[p.id] -= anteAmount;
+				ctx.meta.bets[p.id] = anteAmount;
+				ctx.meta.totalPot += anteAmount;
+			}
+		});
+
+		// Repartir nuevas cartas
+		for (let i = 0; i < 2; i++) {
+			ctx.players.forEach((p) => {
+				if (ctx.deck.length > 0) {
+					p.hand.push(ctx.deck.shift() as Card);
+				}
+			});
+		}
+
+		await ctx.sendTable();
 	}
 
 	private findBestHand(hole: Card[], community: Card[]): Card[] {
@@ -385,7 +470,7 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 	}
 
 	publicState(ctx: GameRuntime<PokerMeta>): string {
-		const potTotal = Object.values(ctx.meta.potChips).reduce((a, b) => a + b, 0);
+		const potTotal = ctx.meta.totalPot;
 		const state = [
 			`**Fase:** ${ctx.meta.phase.toUpperCase()}`,
 			`**Apuesta actual:** ${ctx.meta.currentBet} fichas`,
@@ -397,9 +482,8 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 			.map((p) => {
 				const status = ctx.meta.fold.has(p.id) ? "❌ FOLD" : `💰 ${ctx.meta.chips[p.id]}`;
 				const betStr = ctx.meta.bets[p.id] ? ` (apuestó ${ctx.meta.bets[p.id]})` : "";
-				const potStr = ctx.meta.potChips[p.id] ? ` [Pot: ${ctx.meta.potChips[p.id]}]` : "";
 				const turn = p.id === ctx.current.id && !ctx.meta.fold.has(p.id) ? " ⏳" : "";
-				return `${p.displayName}: ${status}${betStr}${potStr}${turn}`;
+				return `${p.displayName}: ${status}${betStr}${turn}`;
 			})
 			.join("\n");
 
@@ -409,14 +493,28 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 	playerChoices(ctx: GameRuntime<PokerMeta>, userId: Snowflake): ActionRowBuilder<any>[] {
 		const rows: ActionRowBuilder<any>[] = [];
 
-		// Si no es su turno o está en fold, solo mostrar botón de tienda
+		// Si es showdown, no mostrar botones de juego, solo de salir
+		if (ctx.meta.phase === "showdown") {
+			const leaveButton = new ButtonBuilder()
+				.setCustomId("leave-game")
+				.setLabel("Salir de la mesa")
+				.setStyle(ButtonStyle.Danger);
+			return [new ActionRowBuilder<ButtonBuilder>().addComponents(leaveButton)];
+		}
+
+		// Si no es su turno o está en fold, solo mostrar botón de tienda y salida
 		if (userId !== ctx.current.id || ctx.meta.fold.has(userId)) {
+			const leaveButton = new ButtonBuilder()
+				.setCustomId("leave-game")
+				.setLabel("Salir de la mesa")
+				.setStyle(ButtonStyle.Danger);
+			rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(leaveButton));
 			return ChipsShopModule.addShopButtonToRows(rows);
 		}
 
 		const userBet = ctx.meta.bets[userId] ?? 0;
 		const userChips = ctx.meta.chips[userId];
-		const amountToCall = ctx.meta.currentBet - userBet;
+		const amountToCall = Math.max(0, ctx.meta.currentBet - userBet);
 
 		const buttons: ButtonBuilder[] = [];
 
@@ -424,7 +522,7 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 		buttons.push(
 			new ButtonBuilder()
 				.setCustomId("fold")
-				.setLabel("Fold")
+				.setLabel("Retirarse")
 				.setStyle(ButtonStyle.Danger)
 		);
 
@@ -433,7 +531,7 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 			buttons.push(
 				new ButtonBuilder()
 					.setCustomId("check")
-					.setLabel("Check")
+					.setLabel("Ver")
 					.setStyle(ButtonStyle.Primary)
 			);
 		} else {
@@ -441,7 +539,7 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 			buttons.push(
 				new ButtonBuilder()
 					.setCustomId("call")
-					.setLabel(`Call (${amountToCall})`)
+					.setLabel(`Igualar (${amountToCall})`)
 					.setStyle(ButtonStyle.Success)
 			);
 		}
@@ -457,10 +555,17 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 			buttons.push(
 				new ButtonBuilder()
 					.setCustomId(`raise_${amount}`)
-					.setLabel(`Raise +${amount}`)
+					.setLabel(`Apostar +${amount}`)
 					.setStyle(ButtonStyle.Secondary)
 			);
 		});
+
+		// Botón Salir (siempre visible para quien está jugando)
+		const leaveButton = new ButtonBuilder()
+			.setCustomId("leave-game")
+			.setLabel("Salir")
+			.setStyle(ButtonStyle.Secondary);
+		buttons.push(leaveButton);
 
 		rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(buttons.slice(0, 5)));
 		return ChipsShopModule.addShopButtonToRows(rows);
@@ -481,7 +586,7 @@ class PokerStrategy implements GameStrategy<PokerMeta> {
 		const costToCall = currentBet - botBet;
 		
 		// Calcular tamaño del pot
-		const potSize = Object.values(ctx.meta.bets).reduce((a, b) => a + b, 0);
+		const potSize = ctx.meta.totalPot;
 		
 		// Contar jugadores activos
 		const activePlayers = ctx.players.filter((p) => !ctx.meta.fold.has(p.id)).length;
