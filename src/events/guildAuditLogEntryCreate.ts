@@ -17,6 +17,7 @@ import { automoderationHandlers } from "./guildAuditLogEntryCreate/automoderatio
 import { voiceStatusHandlers } from "./guildAuditLogEntryCreate/voiceStatusHandlers.js";
 import { scheduledEventInstanceHandlers } from "./guildAuditLogEntryCreate/scheduledEventInstanceHandlers.js";
 import { serverHandlers } from "./guildAuditLogEntryCreate/serverHandlers.js";
+import { emojiHandlers } from "./guildAuditLogEntryCreate/emojiHandlers.js";
 
 const handlers: AuditLogHandlers = {
 	...channelHandlers,
@@ -24,6 +25,7 @@ const handlers: AuditLogHandlers = {
 	...roleHandlers,
 	...inviteHandlers,
 	...webhookHandlers,
+	...emojiHandlers,
 	...messageHandlers,
 	...integrationHandlers,
 	...commandHandlers,
