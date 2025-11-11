@@ -71,7 +71,7 @@ export default {
 						earn
 					)} PyE Coins.`
 				)
-				.setColor(win ? COLORS.errRed : COLORS.okGreen)
+				.setColor(win ? COLORS.okGreen : COLORS.errRed)
 				.setTimestamp();
 
 			await replyOk(interaction, [embed]);
