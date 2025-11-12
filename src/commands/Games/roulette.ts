@@ -14,6 +14,7 @@ import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputComman
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import EconomyService from "../../core/services/EconomyService.js";
 import { ExtendedClient } from "../../client.js";
+import { generateRandomNumber } from "../../security/randomNumberGeneration.js";
 
 const data: {
 	fin: number;
@@ -111,7 +112,7 @@ export default {
 async function roulette(interaction: IPrefixChatInputCommand) {
 	// Reiniciar el estado de la partida.
 	data.fin = -1;
-	const valor = Math.floor(Math.random() * 36); // Aseguramos valores de 0 a 36.
+	const valor = Math.floor(generateRandomNumber() * 36); // Aseguramos valores de 0 a 36.
 	let vcolor = colores.green;
 	if (rojos.includes(valor)) {
 		vcolor = colores.red;

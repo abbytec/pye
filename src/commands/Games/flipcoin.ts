@@ -14,6 +14,7 @@ import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputComman
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import EconomyService from "../../core/services/EconomyService.js";
 import { ExtendedClient } from "../../client.js";
+import { generateRandomBinary } from "../../security/randomNumberGeneration.js";
 
 export default {
 	group: "🎮 - Juegos",
@@ -41,7 +42,7 @@ export default {
 		],
 		async (interaction: IPrefixChatInputCommand): Promise<PostHandleable | void> => {
 			const amount: number = Math.floor(interaction.options.getInteger("cantidad", true));
-			const side: string = interaction.options.getString("lado") ?? ["cara", "cruz"][Math.floor(Math.random() * 2)];
+			const side: string = interaction.options.getString("lado") ?? ["cara", "cruz"][generateRandomBinary()];
 			const userData: IUserModel = await getOrCreateUser(interaction.user.id);
 
 			if (amount < 100 || amount > EconomyService.getGameMaxCoins(2.5) || amount > userData.cash)
@@ -52,7 +53,7 @@ export default {
 					} o no tienes suficiente dinero`
 				);
 
-			const flipcoin = ["cara", "cruz"][Math.floor(Math.random() * 2)];
+			const flipcoin = ["cara", "cruz"][generateRandomBinary()];
 			const earn = flipcoin == side ? calculateJobMultiplier(userData.profile?.job, amount, userData.couples || []) : -amount;
 			await betDone(interaction, interaction.user.id, amount, earn);
 

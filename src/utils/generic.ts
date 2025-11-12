@@ -13,10 +13,10 @@ import { COLORS } from "./constants.js";
 import { TextMessages } from "../Models/TextMessages.js";
 import { ICouple } from "../interfaces/IUser.js";
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
-import path from "path";
-import fs from "fs";
+import path from "node:path";
+import fs from "node:fs";
 
-export const getRandomNumber = (min = 0, max = 1) => (Math.random() * (max - min) + min) | 0;
+export const getRandomNumber = (min = 0, max = 1) => Math.trunc(Math.random() * (max - min) + min);
 
 /**
  * Formats a time duration in milliseconds to a human-readable string.
