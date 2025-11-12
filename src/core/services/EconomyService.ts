@@ -22,8 +22,8 @@ export default class EconomyService implements IService {
 		return (
 			this.moneyConfigs.get(clientId) ?? {
 				_id: clientId,
-				bump: 2000,
-				voice: { time: 60000, coins: 100 },
+				bump: 1500,
+				voice: { time: 60000, coins: 75 },
 				text: { time: 3000, coins: 10 },
 			}
 		);
@@ -53,14 +53,30 @@ export default class EconomyService implements IService {
 		this.client.on(Events.VoiceStateUpdate, (oldState, newState) => this.onVoiceStateUpdate(oldState, newState));
 
 		setInterval(() => this.processVoiceFarmers(), 60_000);
+		setInterval(() => this.economyUpdate(), 300_000);
 
-		await this.dailyRepeat();
+		await this.economyUpdate();
 	}
 
-	async dailyRepeat() {
-		const avg = await Users.aggregate([{ $match: { bank: { $ne: 0 } } }, { $group: { _id: null, average: { $avg: "$bank" } } }]).catch(
-			() => []
-		);
+	async economyUpdate() {
+		const avg = await Users.aggregate([
+			{
+				$match: {
+					bank: { $ne: 0 },
+					cash: { $ne: 0 },
+				},
+			},
+			{
+				$group: {
+					_id: null,
+					average: {
+						$avg: {
+							$add: [{ $ifNull: ["$bank", 0] }, { $ifNull: ["$cash", 0] }],
+						},
+					},
+				},
+			},
+		]).catch(() => []);
 		EconomyService.bankAvgCoins = avg[0]?.average ?? EconomyService.bankAvgCoins;
 	}
 
