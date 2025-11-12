@@ -19,6 +19,11 @@ import { checkUrlSpam } from "./antiSpam/urlSpamFilter.js";
 import { floodBotsFilter } from "./antiSpam/floodBotsFilter.js";
 import { checkCredentialLeak } from "./credentialLeakFilter.js";
 
+// Cache de IDs para evitar llamadas repetidas
+const CATEGORY_STAFF_ID = getChannelFromEnv("categoryStaff");
+const INSTRUCTOR_ROLE_ID = getRoleFromEnv("instructorDeTaller");
+const LOG_MESSAGES_CHANNEL_ID = getChannelFromEnv("logMessages");
+
 export interface IDeletableContent {
 	id: string;
 	url: string;
@@ -29,46 +34,63 @@ export interface IDeletableContent {
 }
 
 export async function messageGuard(message: Message<true>, client: ExtendedClient, isEdit = false) {
-	if (
-		!(
-			message.channel.parentId === getChannelFromEnv("categoryStaff") ||
-			message.member?.permissions.has("Administrator") ||
-			client.staffMembers.includes(message.author.id) ||
-			message.member?.roles.cache.has(getRoleFromEnv("instructorDeTaller")) ||
-			AUTHORIZED_BOTS.includes(message.author.id)
-		)
-	) {
-		let member: GuildMember | User | null = message.interactionMetadata?.user ?? null;
-		if (member) {
-			member = await message.guild?.members.fetch(member.id).catch(() => message.member);
-		} else {
-			member = message.member;
+	// Retorno temprano para bots autorizados
+	if (message.author.bot && AUTHORIZED_BOTS.includes(message.author.id)) {
+		if (message.author.id !== process.env.CLIENT_ID && message.interaction) {
+			logCommand(message.interaction, message.author.displayName);
 		}
-		if (
-			(await spamFilter(member, client, message as IDeletableContent, message.content)) ||
-			(!isEdit &&
-				((await floodBotsFilter(message, client)) ||
-					(await checkMentionSpam(message, client)) ||
-					(await checkUrlSpam(message, client)) ||
-					(await checkAttachmentSpam(message, client))))
-		)
-			return true;
+		return false;
 	}
 
-	await checkCredentialLeak(message, client);
+	// Retorno temprano para usuarios privilegiados (más rápido, evita verificaciones innecesarias)
+	const isStaffCategory = message.channel.parentId === CATEGORY_STAFF_ID;
+	const isAdmin = message.member?.permissions.has("Administrator");
+	const isStaffMember = client.staffMembers.includes(message.author.id);
+	const hasInstructorRole = message.member?.roles.cache.has(INSTRUCTOR_ROLE_ID);
 
-	if (message.author.bot && message.author.id !== process.env.CLIENT_ID && message.interaction)
-		logCommand(message.interaction, message.author.displayName);
+	const isPrivilegedUser = isStaffCategory || isAdmin || isStaffMember || hasInstructorRole;
+
+	if (!isPrivilegedUser) {
+		let member: GuildMember | User | null = message.member;
+		if (message.interactionMetadata?.user && !member) {
+			member = await message.guild?.members.fetch(message.interactionMetadata.user.id).catch(() => message.member);
+		}
+
+		const [isSpam, isURLSpam] = await Promise.all([
+			spamFilter(member, client, message as IDeletableContent, message.content),
+			checkUrlSpam(message, client),
+		]);
+		if (isSpam || isURLSpam) return true;
+
+		if (!isEdit) {
+			const [isFloodBot, isMentionSpam, isAttachmentSpam] = await Promise.all([
+				floodBotsFilter(message, client),
+				checkMentionSpam(message, client),
+				checkAttachmentSpam(message, client),
+			]);
+
+			if (isFloodBot || isMentionSpam || isAttachmentSpam) {
+				return true;
+			}
+		}
+	}
+
+	checkCredentialLeak(message, client).catch(() => {});
+
 	return false;
 }
 function logCommand(message: MessageInteraction, botDisplayName: string) {
-	(ExtendedClient.guild?.channels.cache.get(getChannelFromEnv("logMessages")) as TextChannel | undefined)
-		?.send({
+	const logChannel = ExtendedClient.guild?.channels.cache.get(LOG_MESSAGES_CHANNEL_ID) as TextChannel | undefined;
+
+	if (!logChannel) return;
+
+	logChannel
+		.send({
 			embeds: [
 				new EmbedBuilder().setColor(COLORS.pyeLightBlue).setFields([
 					{
 						name: "Autor",
-						value: `\`${message.user.username}>\` (${message.user.id})`,
+						value: `\`${message.user.username}\` (${message.user.id})`,
 						inline: true,
 					},
 					{
@@ -79,5 +101,5 @@ function logCommand(message: MessageInteraction, botDisplayName: string) {
 				]),
 			],
 		})
-		.catch(() => console.error("No se pudo enviar el log de mensajes"));
+		.catch(() => {});
 }

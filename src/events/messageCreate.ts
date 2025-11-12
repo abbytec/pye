@@ -45,12 +45,24 @@ import { scanFile, ScanResult } from "../utils/scanFile.js";
 export default {
 	name: Events.MessageCreate,
 	async execute(message: Message) {
-		if (AUTHORIZED_BOTS.includes(message.author.id)) return;
-		if (bumpHandler(message)) return;
+		const isBot = message.author.bot || message.author.system;
+		if (isBot) {
+			if (!AUTHORIZED_BOTS.includes(message.author.id)) return;
+			if (bumpHandler(message)) return;
+		}
 
 		const client = message.client as ExtendedClient;
 
-		if (!message.inGuild()) {
+		if (message.inGuild()) {
+			if (await messageGuard(message, client)) return;
+			if (isBot) return;
+
+			if (message.content.startsWith(PREFIX)) {
+				await client.services.commands.processPrefixCommand(message);
+			} else {
+				messagesProcessingLimiter.schedule(async () => await processCommonMessage(message, client));
+			}
+		} else {
 			client.guilds.cache
 				.get(process.env.GUILD_ID ?? "")
 				?.members.fetch(message.author.id)
@@ -79,53 +91,51 @@ export default {
 							],
 						});
 				});
-		} else {
-			if (await messageGuard(message, client)) return;
-			if (message.author.bot || message.author.system) return;
-
-		if (!message.content.startsWith(PREFIX)) {
-			messagesProcessingLimiter.schedule(async () => await processCommonMessage(message, client));
-		} else {
-			await client.services.commands.processPrefixCommand(message);
-		}
 		}
 	},
 };
 
+const casinoChannel = getChannelFromEnv("casino");
 async function processCommonMessage(message: Message, client: ExtendedClient) {
 	let checkingChanel;
-	if (![getChannelFromEnv("casino")].includes(message.channel.id)) {
-		const moneyConfig = client.services.economy.getConfig(process.env.CLIENT_ID ?? "");
-		getCooldown(client, message.author.id, "farm-text", moneyConfig.text.time).then(async (time) => {
-			if (time > 0) {
-				Users.findOneAndUpdate(
-					{ id: message.author.id },
-					{ $inc: { cash: EconomyService.getInflatedRate(moneyConfig.text.coins) } },
-					{ upsert: true, new: true }
-				)
-					.exec()
-					.then(() => {
-						setCooldown(client, message.author.id, "farm-text", moneyConfig.text.time);
-					});
-			}
-		});
+	if (message.channel.id === casinoChannel) return;
 
-		checkQuestLevel({ msg: message, text: 1, userId: message.author.id } as IQuest);
+	const moneyConfig = client.services.economy.getConfig(process.env.CLIENT_ID ?? "");
 
-		await specificChannels(message, client);
-		checkingChanel = checkThanksChannel(message);
-		/* if (checkingChanel && (await checkUserThanking(message))) {
-			checkHelp(message);
-		} */
-		registerNewTrends(message, client);
-		manageAIResponse(message, checkingChanel);
+	const [cooldownTime] = await Promise.all([
+		getCooldown(client, message.author.id, "farm-text", moneyConfig.text.time),
+		Promise.resolve().then(() => {
+			checkQuestLevel({ msg: message, text: 1, userId: message.author.id } as IQuest);
+			specificChannels(message, client);
+			checkingChanel = checkThanksChannel(message);
+			registerNewTrends(message, client);
+			manageAIResponse(message, checkingChanel);
+		}),
+	]);
 
-		const count = await redisClient.incr(`messages:${message.author.id}`);
-		if (count % 5000 === 0)
-			await addRep(message.author, message.guild, 5).then(({ member }) =>
-				logHelperPoints(message.guild, `\`${member.user.username}\` ha obtenido 5 rep por enviar ${count} mensajes`)
-			);
+	if (cooldownTime > 0) {
+		Users.findOneAndUpdate(
+			{ id: message.author.id },
+			{ $inc: { cash: EconomyService.getInflatedRate(moneyConfig.text.coins) } },
+			{ upsert: true, new: false, lean: true }
+		)
+			.exec()
+			.then(() => {
+				setCooldown(client, message.author.id, "farm-text", moneyConfig.text.time);
+			})
+			.catch(() => {});
 	}
+
+	redisClient
+		.incr(`messages:${message.author.id}`)
+		.then(async (count) => {
+			if (count % 5000 === 0) {
+				await addRep(message.author, message.guild, 5).then(({ member }) =>
+					logHelperPoints(message.guild, `\`${member.user.username}\` ha obtenido 5 rep por enviar ${count} mensajes`)
+				);
+			}
+		})
+		.catch(() => {});
 }
 
 const employmentsDescription =
