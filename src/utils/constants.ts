@@ -374,7 +374,7 @@ export const NEKOTINA_UID = "429457053791158281";
 export const pyecoin = "<a:PyEcoin:908088648245850142>";
 
 // Bots autorizados a enviar enlaces de discord
-export const AUTHORIZED_BOTS = [process.env.CLIENT_ID ?? "", MUDAE_UID, INVITE_TRACKER_UID, NOT_SO_BOT_UID, NEKOTINA_UID];
+export const AUTHORIZED_BOTS = [process.env.CLIENT_ID ?? "", MUDAE_UID, INVITE_TRACKER_UID, NOT_SO_BOT_UID, NEKOTINA_UID, DISBOARD_UID];
 
 export const messagesProcessingLimiter = new Bottleneck({
 	maxConcurrent: 35, // Máximo de mensajes a procesar en paralelo

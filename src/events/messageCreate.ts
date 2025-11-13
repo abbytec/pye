@@ -45,18 +45,15 @@ import { scanFile, ScanResult } from "../utils/scanFile.js";
 export default {
 	name: Events.MessageCreate,
 	async execute(message: Message) {
-		const isBot = message.author.bot || message.author.system;
-		if (isBot) {
-			if (!AUTHORIZED_BOTS.includes(message.author.id)) return;
-			if (bumpHandler(message)) return;
-		}
-
 		const client = message.client as ExtendedClient;
+		if (message.author.bot || message.author.system) {
+			if (AUTHORIZED_BOTS.includes(message.author.id)) bumpHandler(message);
+			else if (message.inGuild()) messageGuard(message, client);
+			return;
+		}
 
 		if (message.inGuild()) {
 			if (await messageGuard(message, client)) return;
-			if (isBot) return;
-
 			if (message.content.startsWith(PREFIX)) {
 				await client.services.commands.processPrefixCommand(message);
 			} else {

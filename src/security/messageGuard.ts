@@ -56,20 +56,17 @@ export async function messageGuard(message: Message<true>, client: ExtendedClien
 			member = await message.guild?.members.fetch(message.interactionMetadata.user.id).catch(() => message.member);
 		}
 
-		const [isSpam, isURLSpam] = await Promise.all([
-			spamFilter(member, client, message as IDeletableContent, message.content),
-			checkUrlSpam(message, client),
-		]);
-		if (isSpam || isURLSpam) return true;
+		if (await spamFilter(member, client, message as IDeletableContent, message.content)) return true;
 
 		if (!isEdit) {
-			const [isFloodBot, isMentionSpam, isAttachmentSpam] = await Promise.all([
+			const [isFloodBot, isMentionSpam, isURLSpam, isAttachmentSpam] = await Promise.all([
 				floodBotsFilter(message, client),
 				checkMentionSpam(message, client),
+				checkUrlSpam(message, client),
 				checkAttachmentSpam(message, client),
 			]);
 
-			if (isFloodBot || isMentionSpam || isAttachmentSpam) {
+			if (isFloodBot || isMentionSpam || isURLSpam || isAttachmentSpam) {
 				return true;
 			}
 		}
