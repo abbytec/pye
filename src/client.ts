@@ -13,7 +13,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const extension = process.env.NODE_ENV === "development" ? ".ts" : ".js";
 const servicesDir = path.resolve(__dirname, "core/services");
 export class ExtendedClient extends CoreClient {
-
 	public static readonly openTickets: Set<string> = new Set();
 	public static readonly newUsers: Set<string> = new Set();
 	public static readonly lookingForGame: Map<string, IGameSession> = new Map();
@@ -51,7 +50,7 @@ export class ExtendedClient extends CoreClient {
 	public async loadServices() {
 		// Inicializar Agenda antes de cargar los servicios, pasando el cliente
 		await AgendaManager.initialize(this);
-		
+
 		const serviceFiles = this.getServiceFiles(servicesDir);
 
 		for (const filePath of serviceFiles) {
@@ -77,23 +76,22 @@ export class ExtendedClient extends CoreClient {
 
 	async updateClientData(firstTime = false) {
 		ExtendedClient.guild = this.guilds.cache.get(process.env.GUILD_ID ?? "") ?? (this.guilds.resolve(process.env.GUILD_ID ?? "") as Guild);
-
+		const members = await ExtendedClient.guild?.members.fetch().catch(() => undefined);
 		this._staffMembers =
-			(await ExtendedClient.guild?.members.fetch().catch(() => undefined))
+			members
 				?.filter((member) => member.roles.cache.some((role) => [getRoleFromEnv("staff")].includes(role.id)))
 				.map((member) => member.user.id) || this._staffMembers;
 
 		this._modMembers =
-			(await ExtendedClient.guild?.members.fetch().catch(() => undefined))
+			members
 				?.filter((member) => member.roles.cache.some((role) => [getRoleFromEnv("moderadorChats")].includes(role.id)))
 				.map((member) => member.user.id) || this._modMembers;
 		if (firstTime && process.env.NODE_ENV !== "development") {
 			this.globalErrorHandlerInitializer();
 		}
-		for (const srv of Object.values(this.services)) {
-			if (firstTime) await srv.start?.();
-			else await srv.dailyRepeat?.();
-		}
+		const action = firstTime ? "start" : "dailyRepeat";
+
+		await Promise.all(Object.values(this.services).map((srv) => srv[action]?.()));
 	}
 
 	async updateMonthlyClientData() {
