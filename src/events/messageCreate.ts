@@ -23,22 +23,14 @@ import {
 	messagesProcessingLimiter,
 	PREFIX,
 } from "../utils/constants.js";
-import { Users } from "../Models/User.js";
-import { getCooldown, setCooldown } from "../utils/cooldowns.js";
+import { setCooldown } from "../utils/cooldowns.js";
 import { checkRole } from "../utils/generic.js";
-import { checkHelp } from "../utils/checkhelp.js";
-import redisClient from "../redis.js";
-import { addRep } from "../commands/rep/add-rep.js";
-import { logHelperPoints } from "../utils/logHelperPoints.js";
 import { bumpHandler } from "../utils/messages/handlers/bumpHandler.js";
 
 import { messageGuard } from "../security/messageGuard.js";
-import { checkQuestLevel, IQuest } from "../utils/quest.js";
-import { ParameterError } from "../interfaces/IPrefixChatInputCommand.js";
 import { manageAIResponse } from "../utils/ai/aiRequestHandler.js";
 import { checkCooldownComparte } from "../security/checkCooldownComparte.js";
 import AIUsageControlService from "../core/services/AIUsageControlService.js";
-import EconomyService from "../core/services/EconomyService.js";
 import TrendingService from "../core/services/TrendingService.js";
 import { scanFile, ScanResult } from "../utils/scanFile.js";
 
@@ -54,10 +46,12 @@ export default {
 
 		if (message.inGuild()) {
 			if (await messageGuard(message, client)) return;
-			if (message.content.startsWith(PREFIX)) {
-				await client.services.commands.processPrefixCommand(message);
-			} else {
-				messagesProcessingLimiter.schedule(async () => await processCommonMessage(message, client));
+			if (!message.content.startsWith(PREFIX) && message.channel.id !== getChannelFromEnv("casino")) {
+				messagesProcessingLimiter.schedule(async () => {
+					specificChannels(message, client);
+					registerNewTrends(message, client);
+					manageAIResponse(message, checkThanksChannel(message));
+				});
 			}
 		} else {
 			client.guilds.cache
@@ -91,49 +85,6 @@ export default {
 		}
 	},
 };
-
-const casinoChannel = getChannelFromEnv("casino");
-async function processCommonMessage(message: Message, client: ExtendedClient) {
-	let checkingChanel;
-	if (message.channel.id === casinoChannel) return;
-
-	const moneyConfig = client.services.economy.getConfig(process.env.CLIENT_ID ?? "");
-
-	const [cooldownTime] = await Promise.all([
-		getCooldown(client, message.author.id, "farm-text", moneyConfig.text.time),
-		Promise.resolve().then(() => {
-			checkQuestLevel({ msg: message, text: 1, userId: message.author.id } as IQuest);
-			specificChannels(message, client);
-			checkingChanel = checkThanksChannel(message);
-			registerNewTrends(message, client);
-			manageAIResponse(message, checkingChanel);
-		}),
-	]);
-
-	if (cooldownTime > 0) {
-		Users.findOneAndUpdate(
-			{ id: message.author.id },
-			{ $inc: { cash: EconomyService.getInflatedRate(moneyConfig.text.coins) } },
-			{ upsert: true, new: false, lean: true }
-		)
-			.exec()
-			.then(() => {
-				setCooldown(client, message.author.id, "farm-text", moneyConfig.text.time);
-			})
-			.catch(() => {});
-	}
-
-	redisClient
-		.incr(`messages:${message.author.id}`)
-		.then(async (count) => {
-			if (count % 5000 === 0) {
-				await addRep(message.author, message.guild, 5).then(({ member }) =>
-					logHelperPoints(message.guild, `\`${member.user.username}\` ha obtenido 5 rep por enviar ${count} mensajes`)
-				);
-			}
-		})
-		.catch(() => {});
-}
 
 const employmentsDescription =
 	"• No pagues ni entregues ningún trabajo y/o servicio en su totalidad hasta estar completamente seguro que la otra persona es confiable.\n" +
@@ -308,12 +259,12 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 }
 
 /** Check user to trigger Point Helper system */
-async function checkUserThanking(msg: Message<boolean>) {
+/* async function checkUserThanking(msg: Message<boolean>) {
 	if (msg.channel.type === ChannelType.PublicThread) {
 		const threadAuthor = await (msg.channel as PublicThreadChannel).fetchOwner().catch(() => null);
 		return threadAuthor?.id === msg.author.id;
 	} else return msg.reference;
-}
+} */
 
 /** Check channels to trigger Point Helper system */
 function checkThanksChannel(msg: Message<boolean>) {

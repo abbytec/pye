@@ -1,9 +1,15 @@
 import { CoreClient } from "../CoreClient.js";
 import { IMoney, Money } from "../../Models/Money.js";
 import { Users } from "../../Models/User.js";
-import { Events, VoiceChannel, VoiceState } from "discord.js";
+import { Events, Message, VoiceChannel, VoiceState } from "discord.js";
 import { ExtendedClient } from "../../client.js";
 import { IService } from "../IService.js";
+import { PREFIX, getChannelFromEnv } from "../../utils/constants.js";
+import { addRep } from "../../commands/rep/add-rep.js";
+import { getCooldown, setCooldown } from "../../utils/cooldowns.js";
+import { logHelperPoints } from "../../utils/logHelperPoints.js";
+import { checkQuestLevel, IQuest } from "../../utils/quest.js";
+import redisClient from "../../redis.js";
 
 interface VoiceFarming {
 	date: Date;
@@ -51,6 +57,16 @@ export default class EconomyService implements IService {
 
 		// Escuchar eventos de voz para gestionar el farmeo
 		this.client.on(Events.VoiceStateUpdate, (oldState, newState) => this.onVoiceStateUpdate(oldState, newState));
+		this.client.on(Events.MessageCreate, (message) => {
+			if (
+				message.author.bot ||
+				!message.inGuild() ||
+				message.content.startsWith(PREFIX) ||
+				message.channel.id === getChannelFromEnv("casino")
+			)
+				return;
+			this.processMessageFarming(message);
+		});
 
 		setInterval(() => this.processVoiceFarmers(), 60_000);
 		setInterval(() => this.economyUpdate(), 300_000);
@@ -132,5 +148,36 @@ export default class EconomyService implements IService {
 				this.voiceFarmers.set(userId, value);
 			}
 		});
+	}
+	public async processMessageFarming(message: Message<true>) {
+		const moneyConfig = this.getConfig(process.env.CLIENT_ID ?? "");
+
+		const cooldownTime = await getCooldown(this.client as ExtendedClient, message.author.id, "farm-text", moneyConfig.text.time);
+
+		if (cooldownTime <= 0) {
+			Users.findOneAndUpdate(
+				{ id: message.author.id },
+				{ $inc: { cash: EconomyService.getInflatedRate(moneyConfig.text.coins) } },
+				{ upsert: true, new: false, lean: true }
+			)
+				.exec()
+				.then(() => {
+					setCooldown(this.client as ExtendedClient, message.author.id, "farm-text", moneyConfig.text.time);
+				})
+				.catch(() => {});
+		}
+
+		checkQuestLevel({ msg: message, text: 1, userId: message.author.id } as IQuest);
+
+		redisClient
+			.incr(`messages:${message.author.id}`)
+			.then(async (count) => {
+				if (count > 0 && count % 5000 === 0) {
+					await addRep(message.author, message.guild, 5).then(({ member }) =>
+						logHelperPoints(message.guild, `\`${member.user.username}\` ha obtenido 5 rep por enviar ${count} mensajes`)
+					);
+				}
+			})
+			.catch(() => {});
 	}
 }
