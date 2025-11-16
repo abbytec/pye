@@ -16,8 +16,10 @@ import MemberWatcherService from "./services/watchers/MemberWatcherService.js";
 import ReminderService from "./services/ReminderService.js";
 import ScheduledMessagesService from "./services/ScheduledMessagesService.js";
 import CommunityRewardsService from "./services/CommunityRewardsService.js";
+import MemeProcessingService from "./services/MemeProcessingService.js";
 
 export interface ServiceInstanceMap {
+	memeProcessing: MemeProcessingService;
 	reminder: ReminderService;
 	scheduledMessages: ScheduledMessagesService;
 	communityRewards: CommunityRewardsService;

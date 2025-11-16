@@ -1,6 +1,6 @@
 import { TextChannel } from "discord.js";
 import { CoreClient } from "../CoreClient.js";
-import { getYesterdayUTC } from "../../utils/generic.js";
+import { getYesterdayDate } from "../../utils/generic.js";
 import { createSimpleChatEmbed } from "../../utils/ai/aiResponseService.js";
 import { IService } from "../IService.js";
 import { getChannelFromEnv } from "../../utils/constants.js";
@@ -12,7 +12,7 @@ export default class NewsService implements IService {
 
 	async dailyRepeat() {
 		const channel = ExtendedClient.guild?.channels.resolve(getChannelFromEnv("chatProgramadores")) as TextChannel;
-		const start = getYesterdayUTC().toISOString();
+		const start = getYesterdayDate().toISOString();
 		const apiKey = process.env.CURRENTS_API_KEY;
 		if (!apiKey) {
 			console.log("No se encontró la API key de CurrentsAPI.");

@@ -5,8 +5,6 @@ import { Evento } from "../types/event.js";
 import { getChannelFromEnv, getRoleFromEnv } from "../utils/constants.js";
 import { addRep } from "../commands/rep/add-rep.js";
 import { UserRole } from "../Models/Role.js";
-import { MemeOfTheDay } from "../Models/MemeOfTheDay.js";
-import { getYesterdayUTC } from "../utils/generic.js";
 import { ExtendedClient } from "../client.js";
 import { logHelperPoints } from "../utils/logHelperPoints.js";
 import path from "path";
@@ -21,63 +19,49 @@ export default {
 		if (!reaction || !user || user.bot || !reaction.message?.guild) return;
 		const fullReaction = await fetchStructure(reaction);
 		const textChannel = reaction.message.channel as TextChannel;
-	const category = textChannel.parentId;
-	if (reaction.emoji.name === "⭐" && category !== getChannelFromEnv("categoryStaff") && !textChannel.nsfw) {
-		const data = await StarBoard.findOne({ id: process.env.GUILD_ID });
-		if (!data) {
-			console.error("No se encontró la configuración de la StarBoard.");
-			return;
-		}
-		await checkReactions(fullReaction, data).catch((error: any) => console.error("Error al procesar la reacción:", error));
-	} else if (
-		reaction.emoji.name === "pepedown" &&
-		(fullReaction.count ?? 0) > 4 &&
-		reaction.message.member &&
-		!reaction.message.member.roles.resolve(getRoleFromEnv("iqNegativo")) &&
-		reaction.message.createdTimestamp >= Date.now() - 1000 * 60 * 60 * 4
-	) {
-		await reaction.message.member.roles.add(getRoleFromEnv("iqNegativo")).catch(() => null);
-		await ((reaction.client as ExtendedClient).channels.resolve(getChannelFromEnv("general")) as TextChannel)
-			?.send({
-				content: `<@${reaction.message.member.id}> recibió IQ negativo.`,
-				files: [
-					new AttachmentBuilder(path.join(process.cwd(), "src", "assets", "Images", "iq-negativo.png"), {
-						name: "iq-negativo.png",
-					}),
-				],
-			})
-			.catch((e) => console.error(e));
-		await UserRole.findOneAndUpdate(
-			{
-				id: reaction.message.member.id,
-				rolId: getRoleFromEnv("iqNegativo"),
-				guildId: process.env.GUILD_ID ?? "",
-			},
-			{
-				$setOnInsert: {
-					count: 1000 * 60 * 60 * 2 + Date.now(),
-				},
-			},
-			{
-				upsert: true,
-				new: true,
+		const category = textChannel.parentId;
+		if (reaction.emoji.name === "⭐" && category !== getChannelFromEnv("categoryStaff") && !textChannel.nsfw) {
+			const data = await StarBoard.findOne({ id: process.env.GUILD_ID });
+			if (!data) {
+				console.error("No se encontró la configuración de la StarBoard.");
+				return;
 			}
-		);
-	}
-	if (reaction.message.channelId === getChannelFromEnv("memes")) {
-		if (reaction.partial) await reaction.fetch();
-		const message = reaction.message;
-		// Obtener imagen adjunta (primer adjunto que sea imagen)
-		const imageAttachment = message.attachments.find((att) => att.contentType?.startsWith("image/"))?.url;
-
-		if (imageAttachment && message.createdAt >= getYesterdayUTC())
-			await MemeOfTheDay.analyzeMemeOfTheDay(
-				imageAttachment,
-				message.author?.tag ?? "Autor desconocido",
-				message.url,
-				message.reactions.cache.reduce((acc, r) => acc + (r.count || 0), 0)
+			await checkReactions(fullReaction, data).catch((error: any) => console.error("Error al procesar la reacción:", error));
+		} else if (
+			reaction.emoji.name === "pepedown" &&
+			(fullReaction.count ?? 0) > 4 &&
+			reaction.message.member &&
+			!reaction.message.member.roles.resolve(getRoleFromEnv("iqNegativo")) &&
+			reaction.message.createdTimestamp >= Date.now() - 1000 * 60 * 60 * 4
+		) {
+			await reaction.message.member.roles.add(getRoleFromEnv("iqNegativo")).catch(() => null);
+			await ((reaction.client as ExtendedClient).channels.resolve(getChannelFromEnv("general")) as TextChannel)
+				?.send({
+					content: `<@${reaction.message.member.id}> recibió IQ negativo.`,
+					files: [
+						new AttachmentBuilder(path.join(process.cwd(), "src", "assets", "Images", "iq-negativo.png"), {
+							name: "iq-negativo.png",
+						}),
+					],
+				})
+				.catch((e) => console.error(e));
+			await UserRole.findOneAndUpdate(
+				{
+					id: reaction.message.member.id,
+					rolId: getRoleFromEnv("iqNegativo"),
+					guildId: process.env.GUILD_ID ?? "",
+				},
+				{
+					$setOnInsert: {
+						count: 1000 * 60 * 60 * 2 + Date.now(),
+					},
+				},
+				{
+					upsert: true,
+					new: true,
+				}
 			);
-	}
+		}
 		if (fullReaction.emoji.id)
 			(reaction.client as ExtendedClient).services.trending.add("emoji", (fullReaction.emoji.name ?? "") + ":" + fullReaction.emoji.id);
 	},
@@ -162,16 +146,16 @@ async function checkReactions(reaction: MessageReaction, starboard: IStarBoardDo
 				content: `**${reaction.count}** ⭐ ${msg.channel.toString()}`,
 				embeds: [embed],
 			})
-		.then(async (starboardMessage) => await StarMessage.create({ msgId: msg.id, responseId: starboardMessage.id }))
-		.then(
-			async () =>
-				await addRep(reaction.message.author, reaction.message.guild, 0.1).then(({ member }) =>
-					logHelperPoints(
-						reaction.message.guild,
-						`\`${member.user.username}\` ha obtenido 0.1 rep porque su mensaje ${msg.url} llegó a la starboard`
+			.then(async (starboardMessage) => await StarMessage.create({ msgId: msg.id, responseId: starboardMessage.id }))
+			.then(
+				async () =>
+					await addRep(reaction.message.author, reaction.message.guild, 0.1).then(({ member }) =>
+						logHelperPoints(
+							reaction.message.guild,
+							`\`${member.user.username}\` ha obtenido 0.1 rep porque su mensaje ${msg.url} llegó a la starboard`
+						)
 					)
-				)
-		)
-		.catch(() => null);
+			)
+			.catch(() => null);
 	}
 }

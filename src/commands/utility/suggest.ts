@@ -2,7 +2,7 @@ import { SlashCommandBuilder, EmbedBuilder, TextChannel, GuildMember } from "dis
 import { COLORS, getChannel } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
-import { getTodayUTC } from "../../utils/generic.js";
+import { getOneMonthAgoDate } from "../../utils/generic.js";
 import { replyWarning } from "../../utils/messages/replyWarning.js";
 
 const data = new SlashCommandBuilder()
@@ -43,9 +43,8 @@ async function sugerir(sugerencia: string | null, interaction: IPrefixChatInputC
 async function execute(interaction: IPrefixChatInputCommand) {
 	const args = interaction.options.getString("sugerencia");
 	const member = interaction.member as GuildMember;
-	const today = getTodayUTC();
-	today.setMonth(today.getMonth() - 1);
-	if ((member.joinedAt ?? new Date()) < today) await sugerir(args, interaction);
+	const oneMonthAgo = getOneMonthAgoDate();
+	if ((member.joinedAt ?? new Date()) < oneMonthAgo) await sugerir(args, interaction);
 	else await replyWarning(interaction, "Para poder realizar una sugerencia debes haber estado en el servidor por al menos un mes.");
 }
 

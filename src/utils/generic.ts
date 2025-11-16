@@ -392,13 +392,17 @@ export async function saveTranscript(channel: TextChannel | AnyThreadChannel, ti
 	return filePath;
 }
 
-export function getYesterdayUTC(): Date {
-	const now = new Date();
-	now.setDate(now.getDate() - 1);
-	return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
-}
-
 export function getTodayUTC() {
 	const now = new Date();
 	return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
+}
+
+export function getYesterdayDate() {
+	return new Date(Date.now() - 24 * 60 * 60 * 1000);
+}
+
+export function getOneMonthAgoDate() {
+	const d = new Date();
+	d.setMonth(d.getMonth() - 1);
+	return d;
 }

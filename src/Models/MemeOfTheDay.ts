@@ -1,6 +1,7 @@
 import client from "../redis.js";
 
 const key = "memeOfTheDay";
+export const MEME_REACTIONS = ["💤", "♻️", "<:XD:1402166423429709869>", "<:KEKW:1402166209566478439>"];
 const analyzeMemeOfTheDay = async (url: string, username: string, messageUrl: string, reactions: number): Promise<void> => {
 	const existing = await client.hGetAll(key);
 	const currentCount = Number(existing.count) || 0;

@@ -206,21 +206,6 @@ async function specificChannels(msg: Message<boolean>, client: ExtendedClient) {
 			});
 			break;
 		}
-		case getChannelFromEnv("memes"):
-			if (msg.attachments.size === 0) {
-				await msg.delete().catch(() => null);
-				await (msg.channel as TextChannel)
-					.send({
-						content: `🚫 <@${msg.author.id}>, este canal es únicamente para enviar memes.`,
-					})
-					.then((aviso) => setTimeout(() => aviso.delete().catch(() => null), 10000));
-			}
-			msg.react("💤").catch(() => null);
-			msg.react("♻️").catch(() => null);
-			msg.react("<:xdlol:922955890200576001>").catch(() => null);
-			msg.react("<:KEKW:796227219591921704>").catch(() => null);
-			checkRole(msg, getRoleFromEnv("especialistaEnMemes"), 75);
-			break;
 		case getChannelFromEnv("filosofiaPolitica"):
 			checkRole(msg, getRoleFromEnv("granDebatidor"), 500);
 			break;
