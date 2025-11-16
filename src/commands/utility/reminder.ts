@@ -32,9 +32,7 @@ export default {
 			// Check the current time every second
 			try {
 				await interaction.client.services.reminder.scheduleReminder({
-					userId: interaction.user.id,
-					username: interaction.user.username,
-					message: message,
+					message: `⏰ **<@${interaction.user.id}>  Recordatorio:** ` + message,
 					channelId: interaction.channelId,
 					reminderTime: reminderTime,
 				});

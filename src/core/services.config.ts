@@ -17,8 +17,10 @@ import ReminderService from "./services/ReminderService.js";
 import ScheduledMessagesService from "./services/ScheduledMessagesService.js";
 import CommunityRewardsService from "./services/CommunityRewardsService.js";
 import MemeProcessingService from "./services/MemeProcessingService.js";
+import BumpService from "./services/BumpService.js";
 
 export interface ServiceInstanceMap {
+	bump: BumpService;
 	memeProcessing: MemeProcessingService;
 	reminder: ReminderService;
 	scheduledMessages: ScheduledMessagesService;

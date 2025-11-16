@@ -25,7 +25,6 @@ import {
 } from "../utils/constants.js";
 import { setCooldown } from "../utils/cooldowns.js";
 import { checkRole } from "../utils/generic.js";
-import { bumpHandler } from "../utils/messages/handlers/bumpHandler.js";
 
 import { messageGuard } from "../security/messageGuard.js";
 import { manageAIResponse } from "../utils/ai/aiRequestHandler.js";
@@ -39,8 +38,7 @@ export default {
 	async execute(message: Message) {
 		const client = message.client as ExtendedClient;
 		if (message.author.bot || message.author.system) {
-			if (AUTHORIZED_BOTS.includes(message.author.id)) bumpHandler(message);
-			else if (message.inGuild()) messageGuard(message, client);
+			if (message.inGuild() && !AUTHORIZED_BOTS.includes(message.author.id)) messageGuard(message, client);
 			return;
 		}
 

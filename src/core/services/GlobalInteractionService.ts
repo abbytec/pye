@@ -13,7 +13,28 @@ export default class GlobalInteractionService implements IService {
 
 	async start() {
 		this.client.on(Events.InteractionCreate, (interaction) => this.dispatch(interaction));
-		this.registerDefaultHandlers();
+	}
+
+	async firstRun() {
+		this.register("finish_enrollments", (i) => handleFinishEnrollmentsButton(i as ButtonInteraction));
+		this.register("close_warn", (i) => deleteChannel(i as ButtonInteraction));
+		this.registerStartsWith("create_session_button", async (i) => {
+			if (!i.isButton()) return;
+			const parts = i.customId.split("/");
+			const juego = parts[2];
+			const tiempoLimite = parseInt(parts[3], 10);
+			if (isNaN(tiempoLimite)) return;
+			const modal = createGameSessionModal(i, juego, tiempoLimite);
+			await i.showModal?.(modal);
+		});
+		this.registerStartsWith("session_pagination", async (i) => {
+			if (!i.isButton()) return;
+			await handleGameSessionPagination(i);
+		});
+		this.registerStartsWith("create_session_modal", async (i) => {
+			if (!i.isModalSubmit()) return;
+			await handleCreateSessionModal(i);
+		});
 	}
 
 	public register(customId: string, handler: (interaction: Interaction) => Promise<any>) {
@@ -38,28 +59,6 @@ export default class GlobalInteractionService implements IService {
 				return;
 			}
 		}
-	}
-
-	private registerDefaultHandlers() {
-		this.register("finish_enrollments", (i) => handleFinishEnrollmentsButton(i as ButtonInteraction));
-		this.register("close_warn", (i) => deleteChannel(i as ButtonInteraction));
-		this.registerStartsWith("create_session_button", async (i) => {
-			if (!i.isButton()) return;
-			const parts = i.customId.split("/");
-			const juego = parts[2];
-			const tiempoLimite = parseInt(parts[3], 10);
-			if (isNaN(tiempoLimite)) return;
-			const modal = createGameSessionModal(i, juego, tiempoLimite);
-			await i.showModal?.(modal);
-		});
-		this.registerStartsWith("session_pagination", async (i) => {
-			if (!i.isButton()) return;
-			await handleGameSessionPagination(i);
-		});
-		this.registerStartsWith("create_session_modal", async (i) => {
-			if (!i.isModalSubmit()) return;
-			await handleCreateSessionModal(i);
-		});
 	}
 }
 
@@ -94,4 +93,3 @@ async function handleFinishEnrollmentsButton(interaction: ButtonInteraction) {
 		await interaction.editReply({ content: "✅ Hilo cerrado y renombrado exitosamente." });
 	}
 }
-

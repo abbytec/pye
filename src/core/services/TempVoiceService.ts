@@ -33,9 +33,17 @@ export default class TempVoiceService implements IService {
 		this.client.on(Events.VoiceStateUpdate, (oldState, newState) => this.handleVoiceStateUpdate(oldState, newState));
 		await this.ensureCreatorChannel();
 		await this.loadExistingChannels();
+	}
+
+	async firstRun() {
 		const interactions = this.client.services.globalInteraction;
+		if (!interactions) {
+			console.warn("GlobalInteractionService no está disponible para TempVoiceService.");
+			return;
+		}
 		interactions.register("tempvoice-menu", (i) => this.handleMenu(i as StringSelectMenuInteraction));
 		interactions.register("tempvoice-rename", (i) => this.handleRename(i as ModalSubmitInteraction));
+		// interactions.register("tempvoice-status", (i) => this.handleStatus(i as ModalSubmitInteraction));
 		interactions.registerStartsWith("tempvoice-block:", (i) => this.handleBlock(i as UserSelectMenuInteraction));
 		interactions.registerStartsWith("tempvoice-allow:", (i) => this.handleAllow(i as UserSelectMenuInteraction));
 	}
@@ -283,4 +291,3 @@ export default class TempVoiceService implements IService {
 		await interaction.update({ content: `Usuario <@${userId}> permitido.`, components: [] });
 	}
 }
-

@@ -92,6 +92,11 @@ export class ExtendedClient extends CoreClient {
 		const action = firstTime ? "start" : "dailyRepeat";
 
 		await Promise.all(Object.values(this.services).map((srv) => srv[action]?.()));
+
+		if (firstTime) {
+			console.log("Ejecutando firstRun para los servicios...");
+			await Promise.all(Object.values(this.services).map(async (srv) => await srv.firstRun?.()));
+		}
 	}
 
 	async updateMonthlyClientData() {
