@@ -24,7 +24,9 @@ export default class BumpService implements IService {
 	}
 
 	public firstRun() {
-		this.client.services.globalInteraction?.registerStartsWith("remind-me-too-bump", (interaction) => this.addReminderRecipient(interaction));
+		this.client.services.globalInteraction?.registerStartsWith("remind-me-too-bump", (interaction) =>
+			this.addReminderRecipient(interaction)
+		);
 	}
 
 	public async handleBump(message: Message) {
@@ -73,10 +75,13 @@ export default class BumpService implements IService {
 
 			// Schedule channel reminder
 			await reminderService.scheduleReminder({
-				message: `¡Ya se puede bumpear de nuevo! 🎉\nPuedes hacerlo escribiendo /bump y eligiendo la opción de <@${DISBOARD_UID}> para continuar apoyando al servidor.`,
 				channelId: message.channel.id,
 				reminderTime,
-				embed: undefined,
+				embed: new EmbedBuilder()
+					.setColor(COLORS.okGreen)
+					.setDescription(
+						`¡Ya se puede bumpear de nuevo! 🎉\nPuedes hacerlo escribiendo \`/bump\` y eligiendo la opción de <@${DISBOARD_UID}> para continuar apoyando al servidor.`
+					),
 			});
 
 			// Schedule DM reminder
