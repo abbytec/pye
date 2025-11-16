@@ -60,7 +60,7 @@ export default class ReminderService implements IService {
 		await agenda.schedule(data.reminderTime, "send reminder", {
 			message: data.message,
 			channelId: data.channelId,
-			embed: data.embed,
+			embed: data.embed?.toJSON(),
 		});
 	}
 
@@ -72,7 +72,7 @@ export default class ReminderService implements IService {
 		return await agenda.schedule(data.reminderTime, "send reminder dm", {
 			userIds: data.userIds,
 			message: data.message,
-			embed: data.embed,
+			embed: data.embed?.toJSON(),
 		});
 	}
 }
