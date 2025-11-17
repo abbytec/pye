@@ -160,7 +160,6 @@ export default class BumpService implements IService {
 				targetGuild.roles.cache.get(this.bumpReminderRoleId) ??
 				(await targetGuild.roles.fetch(this.bumpReminderRoleId).catch(() => null));
 			if (existingRole) {
-				await this.ensureRoleIsMentionable(existingRole);
 				return existingRole;
 			}
 			this.bumpReminderRoleId = undefined;
@@ -172,30 +171,20 @@ export default class BumpService implements IService {
 
 		if (role) {
 			this.bumpReminderRoleId = role.id;
-			await this.ensureRoleIsMentionable(role);
 			return role;
 		}
 
 		try {
 			const newRole = await targetGuild.roles.create({
 				name: this.bumpReminderRoleName,
-				mentionable: true,
 				reason: "Rol para los recordatorios de bump",
+				permissions: [],
 			});
 			this.bumpReminderRoleId = newRole.id;
 			return newRole;
 		} catch (error) {
 			console.error("No se pudo crear el rol de bump reminder:", error);
 			return undefined;
-		}
-	}
-
-	private async ensureRoleIsMentionable(role: Role): Promise<void> {
-		if (role.mentionable) return;
-		try {
-			await role.setMentionable(true, "Se requiere mencionar a quienes reciben recordatorios de bump");
-		} catch (error) {
-			console.error("No se pudo actualizar la mención del rol de bump reminder:", error);
 		}
 	}
 
