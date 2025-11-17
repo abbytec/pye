@@ -1,4 +1,17 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Events, Interaction, Message, TextChannel } from "discord.js";
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	EmbedBuilder,
+	Events,
+	Guild,
+	Interaction,
+	Message,
+	MessageFlags,
+	Role,
+	TextChannel,
+} from "discord.js";
 import { Bumps } from "../../Models/Bump.js";
 import { ExtendedClient } from "../../client.js";
 import { addRep } from "../../commands/rep/add-rep.js";
@@ -11,12 +24,15 @@ import ReminderService from "./ReminderService.js";
 export default class BumpService implements IService {
 	public readonly serviceName = "bump";
 	private client: ExtendedClient;
+	private readonly bumpReminderRoleName = "Recuerdame bumpear";
+	private bumpReminderRoleId?: string;
 
 	constructor(client: ExtendedClient) {
 		this.client = client;
 	}
 
 	public start() {
+		void this.ensureBumpReminderRole();
 		this.client.on(Events.MessageCreate, (message) => {
 			if (message.author.id !== DISBOARD_UID || !message.inGuild()) return;
 			void this.handleBump(message);
@@ -24,8 +40,8 @@ export default class BumpService implements IService {
 	}
 
 	public firstRun() {
-		this.client.services.globalInteraction?.registerStartsWith("remind-me-too-bump", (interaction) =>
-			this.addReminderRecipient(interaction)
+		this.client.services.globalInteraction?.register("remind-me-too-bump", (interaction) =>
+			this.addReminderRecipient(interaction as ButtonInteraction)
 		);
 	}
 
@@ -44,6 +60,7 @@ export default class BumpService implements IService {
 
 			const bumperId = message.interactionMetadata.user.id;
 			const bumper = await message.guild.members.fetch(bumperId);
+			const bumpReminderRole = await this.ensureBumpReminderRole(message.guild);
 
 			await Bumps.create({ user: bumperId, fecha: new Date() });
 
@@ -53,10 +70,7 @@ export default class BumpService implements IService {
 			const reminderTime = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours
 
 			const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-				new ButtonBuilder()
-					.setCustomId(`remind-me-too-bump:${bumperId}`)
-					.setLabel("¡Recuérdamelo a mí también!")
-					.setStyle(ButtonStyle.Primary)
+				new ButtonBuilder().setCustomId("remind-me-too-bump").setLabel("¡Recuérdamelo a mí también!").setStyle(ButtonStyle.Primary)
 			);
 
 			const embed = new EmbedBuilder()
@@ -66,7 +80,7 @@ export default class BumpService implements IService {
 					iconURL: bumper.user.displayAvatarURL(),
 				})
 				.setDescription(
-					`¡Gracias por ese bump, <@${bumperId}>!\nHas apoyado a nuestra querida comunidad y siento orgullo de ti.\nEn 2 horas avisaré cuando sea nuevamente momento de bumpear.`
+					`¡Gracias por ese bump, <@${bumperId}>!\nHas apoyado a nuestra querida comunidad y siento orgullo de ti.\nEn 2 horas avisaré cuando sea nuevamente momento de bumpear.\n Tambien puedes bumpear ADC [aquí](https://disboard.org/es/server/538427518089166890).`
 				);
 
 			await (message.channel as TextChannel)?.send({ embeds: [embed], components: [row] });
@@ -80,72 +94,134 @@ export default class BumpService implements IService {
 				})
 				.catch(() => null);
 
+			await this.resetBumpReminderRoleMembers(bumpReminderRole, bumperId);
+
 			const reminderService = this.client.services.reminder as ReminderService;
 
 			// Schedule channel reminder
 			await reminderService.scheduleReminder({
 				channelId: message.channel.id,
 				reminderTime,
+				message: bumpReminderRole ? `<@&${bumpReminderRole.id}>` : undefined,
 				embed: new EmbedBuilder()
 					.setColor(COLORS.okGreen)
 					.setDescription(
 						`¡Ya se puede bumpear de nuevo! 🎉\nPuedes hacerlo escribiendo \`/bump\` y eligiendo la opción de <@${DISBOARD_UID}> para continuar apoyando al servidor.`
 					),
 			});
-
-			// Schedule DM reminder
-			const job = await reminderService.scheduleReminderDM({
-				userIds: [bumperId],
-				message: ``, // Empty message as embed is provided
-				reminderTime,
-				embed: new EmbedBuilder()
-					.setDescription(`¡Ya puedes hacer bump de nuevo! 🎉\n<#${getChannelFromEnv("casino")}>`)
-					.setColor(COLORS.okGreen),
-			});
-
-			if (job) {
-				job.attrs.data.originalBumperId = bumperId;
-				await job.save();
-			}
 		} catch (error: any) {
 			console.error("Error al manejar el bump:", error);
 			ExtendedClient.logError("Error al manejar el bump: " + error.message, error.stack, process.env.CLIENT_ID);
 		}
 	}
 
-	public async addReminderRecipient(interaction: Interaction) {
-		if (!interaction.isButton() || !interaction.customId.startsWith("remind-me-too-bump")) return;
-
-		const bumperId = interaction.customId.split(":")[1];
-		if (!bumperId) {
+	public async addReminderRecipient(interaction: ButtonInteraction) {
+		const guild = interaction.guild ?? ExtendedClient.guild;
+		if (!guild) {
 			await interaction.reply({
-				content: "No pude identificar al usuario que hizo el bump original. Espera al próximo bump e intenta de nuevo.",
-				ephemeral: true,
+				content: "No pude identificar el servidor para agregar el recordatorio. Intenta más tarde.",
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
 
 		try {
-			const agenda = AgendaManager.getInstance();
-			const jobs = await agenda.jobs({ name: "send reminder dm" });
+			const role = await this.ensureBumpReminderRole(guild);
+			if (!role) {
+				await interaction.reply({
+					content: "No se pudo preparar el rol de recordatorios. Intenta más tarde.",
+					flags: MessageFlags.Ephemeral,
+				});
+				return;
+			}
 
-			const relatedJob = jobs.find((job) => job.attrs.data.originalBumperId === bumperId);
-
-			if (relatedJob) {
-				const data = relatedJob.attrs.data;
-				if (!data.userIds.includes(interaction.user.id)) {
-					data.userIds.push(interaction.user.id);
-					await relatedJob.save();
-					await interaction.reply({ content: "¡Listo! Te recordaré también.", ephemeral: true });
-				} else {
-					await interaction.reply({ content: "Ya estabas en la lista de recordatorios.", ephemeral: true });
-				}
+			const wasAdded = await this.addUserToBumpReminderRole(role, interaction.user.id);
+			if (wasAdded) {
+				await interaction.reply({ content: "¡Listo! Te agregaré al próximo recordatorio.", flags: MessageFlags.Ephemeral });
 			} else {
-				await interaction.reply({ content: "No se encontró el recordatorio de bump original.", ephemeral: true });
+				await interaction.reply({ content: "Ya estabas en la lista de recordatorios.", flags: MessageFlags.Ephemeral });
 			}
 		} catch (error) {
 			console.error("Error adding reminder recipient:", error);
-			await interaction.reply({ content: "Hubo un error al agregarte al recordatorio.", ephemeral: true });
+			await interaction.reply({ content: "Hubo un error al agregarte al recordatorio.", flags: MessageFlags.Ephemeral });
+		}
+	}
+
+	private async ensureBumpReminderRole(guild?: Guild): Promise<Role | undefined> {
+		const targetGuild =
+			guild ??
+			ExtendedClient.guild ??
+			((await this.client.guilds.fetch(process.env.GUILD_ID ?? "").catch(() => undefined)) as Guild | undefined);
+
+		if (!targetGuild) return undefined;
+
+		if (this.bumpReminderRoleId) {
+			const existingRole =
+				targetGuild.roles.cache.get(this.bumpReminderRoleId) ??
+				(await targetGuild.roles.fetch(this.bumpReminderRoleId).catch(() => null));
+			if (existingRole) {
+				await this.ensureRoleIsMentionable(existingRole);
+				return existingRole;
+			}
+			this.bumpReminderRoleId = undefined;
+		}
+
+		await targetGuild.roles.fetch();
+		const normalized = this.bumpReminderRoleName.toLowerCase();
+		const role = targetGuild.roles.cache.find((r) => r.name.toLowerCase() === normalized);
+
+		if (role) {
+			this.bumpReminderRoleId = role.id;
+			await this.ensureRoleIsMentionable(role);
+			return role;
+		}
+
+		try {
+			const newRole = await targetGuild.roles.create({
+				name: this.bumpReminderRoleName,
+				mentionable: true,
+				reason: "Rol para los recordatorios de bump",
+			});
+			this.bumpReminderRoleId = newRole.id;
+			return newRole;
+		} catch (error) {
+			console.error("No se pudo crear el rol de bump reminder:", error);
+			return undefined;
+		}
+	}
+
+	private async ensureRoleIsMentionable(role: Role): Promise<void> {
+		if (role.mentionable) return;
+		try {
+			await role.setMentionable(true, "Se requiere mencionar a quienes reciben recordatorios de bump");
+		} catch (error) {
+			console.error("No se pudo actualizar la mención del rol de bump reminder:", error);
+		}
+	}
+
+	private async resetBumpReminderRoleMembers(role: Role | undefined, userId: string): Promise<void> {
+		if (!role) return;
+		try {
+			await role.guild.members.fetch();
+			const removalPromises = role.members.map((member) => member.roles.remove(role).catch(() => null));
+			await Promise.all(removalPromises);
+			await this.addUserToBumpReminderRole(role, userId);
+		} catch (error) {
+			console.error("Error al reiniciar los miembros del rol de bump reminder:", error);
+		}
+	}
+
+	private async addUserToBumpReminderRole(role: Role | undefined, userId: string): Promise<boolean> {
+		if (!role) return false;
+		try {
+			const member = role.guild.members.cache.get(userId) ?? (await role.guild.members.fetch(userId).catch(() => null));
+			if (!member) return false;
+			if (member.roles.cache.has(role.id)) return false;
+			await member.roles.add(role).catch(() => null);
+			return true;
+		} catch (error) {
+			console.error("Error al agregar usuario al rol de bump reminder:", error);
+			return false;
 		}
 	}
 }
