@@ -3,8 +3,8 @@ import { CoreClient } from "../CoreClient.js";
 import { IService } from "../IService.js";
 
 /** Controla los contadores de uso de IA (DM y global) */
-export default class AIUsageControlService implements IService {
-	public readonly serviceName = "aiUsage";
+export default class AIManagerService implements IService {
+	public readonly serviceName = "aiManager";
 	static readonly dailyAIUsageDM = new Map<string, number>();
 	public static readonly dailyAIUsage = new Map<string, number>();
 
@@ -14,21 +14,21 @@ export default class AIUsageControlService implements IService {
 	async start() {
 		console.log("loading AI usages");
 		const data = await getAllDataFromRedisCounter("dailyAIUsage").catch(() => new Map());
-		data.forEach((value, key) => AIUsageControlService.dailyAIUsage.set(key, value));
+		data.forEach((value, key) => AIManagerService.dailyAIUsage.set(key, value));
 	}
 
 	/** Vacía los contadores (llámalo cada 24 h). */
 	async dailyRepeat() {
-		AIUsageControlService.dailyAIUsage.clear();
-		AIUsageControlService.dailyAIUsageDM.clear();
+		AIManagerService.dailyAIUsage.clear();
+		AIManagerService.dailyAIUsageDM.clear();
 		clearAllRedisCounter("dailyAIUsage").catch(() => null);
 	}
 
 	/** Devuelve `false` si el usuario superó 10 usos DM en el día. */
 	public static checkDailyAIUsageDM(userId: string): boolean {
-		const used = AIUsageControlService.dailyAIUsageDM.get(userId) ?? 0;
+		const used = AIManagerService.dailyAIUsageDM.get(userId) ?? 0;
 		if (used >= 10) return false;
-		AIUsageControlService.dailyAIUsageDM.set(userId, used + 1);
+		AIManagerService.dailyAIUsageDM.set(userId, used + 1);
 		return true;
 	}
 }

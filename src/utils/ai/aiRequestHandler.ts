@@ -24,7 +24,7 @@ import {
 } from "./aiResponseService.js";
 import { getRecursiveRepliedContext } from "./getRecursiveRepliedContext.js";
 import fs from "fs";
-import AIUsageControlService from "../../core/services/AIUsageControlService.js";
+import AIManagerService from "../../core/services/AIManagerService.js";
 
 export async function manageAIResponse(message: Message<boolean>, isForumPost: string | undefined, isDm: boolean = false) {
 	if (message.mentions.everyone) return;
@@ -159,7 +159,7 @@ export async function checkReachedAIRateLimits(message: Message<boolean>) {
 		member?.roles.cache.has(getRoleFromEnv("staff")) ||
 		member?.roles.cache.has(getRoleFromEnv("moderadorChats")) ||
 		member?.roles.cache.has(getRoleFromEnv("moderadorVoz"));
-	const used = AIUsageControlService.dailyAIUsage.get(message.author.id) ?? 0;
+	const used = AIManagerService.dailyAIUsage.get(message.author.id) ?? 0;
 	if (!isPrivileged) {
 		if (used >= 30) {
 			const embed = new EmbedBuilder()
@@ -186,7 +186,7 @@ export async function checkReachedAIRateLimits(message: Message<boolean>) {
 		await message.reply({ embeds: [embed] }).catch(() => null);
 		return true;
 	}
-	AIUsageControlService.dailyAIUsage.set(message.author.id, used + 1);
+	AIManagerService.dailyAIUsage.set(message.author.id, used + 1);
 	incrRedisCounter("dailyAIUsage", message.author.id, 1).catch(() => null);
 	return false;
 }

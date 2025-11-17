@@ -29,7 +29,7 @@ import { checkRole } from "../utils/generic.js";
 import { messageGuard } from "../security/messageGuard.js";
 import { manageAIResponse } from "../utils/ai/aiRequestHandler.js";
 import { checkCooldownComparte } from "../security/checkCooldownComparte.js";
-import AIUsageControlService from "../core/services/AIUsageControlService.js";
+import AIManagerService from "../core/services/AIManagerService.js";
 import TrendingService from "../core/services/TrendingService.js";
 import { scanFile, ScanResult } from "../utils/scanFile.js";
 
@@ -57,7 +57,7 @@ export default {
 				?.members.fetch(message.author.id)
 				.then(async (member) => {
 					if (member.roles.cache.has(getRoleFromEnv("colaborador"))) {
-						if (AIUsageControlService.checkDailyAIUsageDM(message.author.id)) await manageAIResponse(message, undefined, true);
+						if (AIManagerService.checkDailyAIUsageDM(message.author.id)) await manageAIResponse(message, undefined, true);
 						else member.user.send("Has alcanzado el límite de uso diario de la IA. Por favor espera hasta mañana 💙");
 					} else
 						await (message.channel as DMChannel).send({
