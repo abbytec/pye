@@ -71,6 +71,15 @@ export default class BumpService implements IService {
 
 			await (message.channel as TextChannel)?.send({ embeds: [embed], components: [row] });
 
+			await AgendaManager.getInstance()
+				.cancel({ name: "bump reminder" })
+				.catch(() => null);
+			await AgendaManager.getInstance()
+				.schedule(new Date(Date.now() + 24 * 60 * 60 * 1000), "bump reminder", {
+					channelId: getChannelFromEnv("general"),
+				})
+				.catch(() => null);
+
 			const reminderService = this.client.services.reminder as ReminderService;
 
 			// Schedule channel reminder
