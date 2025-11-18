@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
@@ -6,7 +6,7 @@ import { replyError } from "../../utils/messages/replyError.js";
 import ms from "ms";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { verifyChannel } from "../../composables/middlewares/verifyIsChannel.js";
-import { getChannelFromEnv } from "../../utils/constants.js";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 export default {
@@ -32,7 +32,8 @@ export default {
 			// Check the current time every second
 			try {
 				await interaction.client.services.reminder.scheduleReminder({
-					message: `⏰ **<@${interaction.user.id}>  Recordatorio:** ` + message,
+					message: `⏰ **<@${interaction.user.id}>** `,
+					embed: new EmbedBuilder().setTitle("Recordatorio:").setDescription(message).setColor(COLORS.pyeLightBlue),
 					channelId: interaction.channelId,
 					reminderTime: reminderTime,
 				});
