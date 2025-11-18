@@ -72,7 +72,7 @@ export default class MemeProcessingService implements IService {
 	}
 
 	private async onMessageCreate(message: Message) {
-		if (message.channel.id === MemeProcessingService.memesChannel) {
+		if (message.channel.id === MemeProcessingService.memesChannel && !message.author.bot) {
 			if (message.attachments.size === 0) {
 				await message.delete().catch(() => null);
 				await (message.channel as TextChannel)
