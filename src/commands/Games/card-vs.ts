@@ -215,18 +215,20 @@ export default {
 					return;
 				}
 
-				// Para el resto de acciones, defer inmediatamente
-				if (!i.deferred && !i.replied) {
-					await i.deferUpdate().catch(() => {});
-				}
-
-				// Permitir respuestas a envites/eventos (botones con prefijo respond_) aunque no sea tu turno
-				// La validación de quién puede responder es manejada por la estrategia del juego
+				// Sistema de prefijos para acciones que no requieren turno:
+				// - "respond_*": respuestas a envites (quiero/no quiero)
+				// - "no_turn_*": acciones que no dependen del turno de carta (envido, truco, retruco, etc.)
+				// La estrategia del juego valida internamente quién puede realizar cada acción.
 				const isResponseAction = i.customId.startsWith("respond_");
+				const isNoTurnAction = i.customId.startsWith("no_turn_");
 
-				if (!isResponseAction && i.user.id !== runtime.current.id) {
+				if (!isResponseAction && !isNoTurnAction && i.user.id !== runtime.current.id) {
+					// Defer antes de editar la respuesta
+					if (!i.deferred && !i.replied) {
+						await i.deferUpdate().catch(() => {});
+					}
 					await i.editReply({ content: "⏳ No es tu turno; esperá." });
-					setTimeout(() => i.deleteReply().catch(null), 3_000);
+					setTimeout(() => i.deleteReply().catch(() => {}), 3_000);
 					return;
 				}
 

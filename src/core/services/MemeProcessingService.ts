@@ -1,7 +1,6 @@
 import {
 	EmbedBuilder,
 	Events,
-	Guild,
 	Message,
 	MessageReaction,
 	MessageReactionEventDetails,

@@ -162,7 +162,7 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 	async handleAction(ctx: GameRuntime<TrucoMeta>, uid: string, interaction: ButtonInteraction): Promise<void> {
 		const pid = ctx.players.findIndex((p) => p.id === uid);
 		if (pid === -1) {
-			await interaction.reply({ content: "No formas parte de la partida", ephemeral: true });
+			await interaction.editReply({ content: "No formas parte de la partida" });
 			return;
 		}
 
@@ -170,31 +170,42 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 
 		// Verificar si el jugador se fue al mazo
 		if (ctx.meta.foldedPlayers.has(pid)) {
-			await interaction.reply({ content: "Ya te fuiste al mazo", ephemeral: true });
+			await interaction.editReply({ content: "Ya te fuiste al mazo" });
 			return;
+		}
+		// Defer la interacción una sola vez
+		if (!interaction.deferred && !interaction.replied) {
+			await interaction.deferUpdate();
+		}
+
+
+		// Extraer el action real (quitando prefijos de control de turno)
+		let realAction = action;
+		if (action.startsWith("no_turn_")) {
+			realAction = action.substring(8); // quitar "no_turn_"
 		}
 
 		// === RESPUESTAS A ENVITES ===
-		if (action === "respond_yes" || action === "respond_no") {
-			await this.#handleEnviteResponse(ctx, pid, interaction, action === "respond_yes");
+		if (realAction === "respond_yes" || realAction === "respond_no") {
+			await this.#handleEnviteResponse(ctx, pid, interaction, realAction === "respond_yes");
 			return;
 		}
 
 		// === IRSE AL MAZO ===
-		if (action === "mazo") {
+		if (realAction === "mazo") {
 			await this.#handleMazo(ctx, pid, interaction);
 			return;
 		}
 
 		// === CANTAR ENVIDO ===
-		if (action === "envido" || action === "real-envido" || action === "falta-envido") {
-			await this.#handleEnvidoCant(ctx, pid, interaction, action as EnviteType);
+		if (realAction === "envido" || realAction === "real-envido" || realAction === "falta-envido") {
+			await this.#handleEnvidoCant(ctx, pid, interaction, realAction as EnviteType);
 			return;
 		}
 
 		// === CANTAR TRUCO ===
-		if (action === "truco" || action === "retruco" || action === "vale4") {
-			await this.#handleTrucoCant(ctx, pid, interaction, action as EnviteType);
+		if (realAction === "truco" || realAction === "retruco" || realAction === "vale4") {
+			await this.#handleTrucoCant(ctx, pid, interaction, realAction as EnviteType);
 			return;
 		}
 
@@ -204,7 +215,7 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 			return;
 		}
 
-		await interaction.reply({ content: "Acción desconocida", ephemeral: true });
+		await interaction.editReply({ content: "Acción desconocida" });
 	}
 
 	/* ------------------------------------------------------------
@@ -214,13 +225,13 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 	async #handlePlayCard(ctx: GameRuntime<TrucoMeta>, pid: number, interaction: ButtonInteraction) {
 		// Solo puede jugar el turno actual
 		if (ctx.current.id !== ctx.players[pid].id) {
-			await interaction.reply({ content: "⏳ Espera tu turno", ephemeral: true });
+			await interaction.editReply({ content: "⏳ Espera tu turno" });
 			return;
 		}
 
 		// No se puede jugar si hay un envite pendiente
 		if (ctx.meta.waitingResponse) {
-			await interaction.reply({ content: "⏳ Esperando respuesta al envite", ephemeral: true });
+			await interaction.editReply({ content: "⏳ Esperando respuesta al envite" });
 			return;
 		}
 
@@ -228,7 +239,7 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 		const player = ctx.players[pid];
 		const card = player.hand[idxInHand];
 		if (!card) {
-			await interaction.reply({ content: "Carta inválida", ephemeral: true });
+			await interaction.editReply({ content: "Carta inválida" });
 			return;
 		}
 
@@ -242,7 +253,6 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 		ctx.meta.plays.push({ idx: pid, card });
 		ctx.meta.messages.push(`<@${player.id}> juega **${card.value} ${card.suit}**`);
 
-		await interaction.deferUpdate();
 
 		// Verificar si todos los jugadores activos jugaron
 		const activePlayers = ctx.players.filter((_, i) => !ctx.meta.foldedPlayers.has(i));
@@ -265,20 +275,26 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 
 		// Verificar que se puede cantar envido
 		if (!ctx.meta.canSingEnvido) {
-			await interaction.reply({ content: "Ya no se puede cantar envido (se jugaron 2 cartas)", ephemeral: true });
+			await interaction.editReply({ content: "Ya no se puede cantar envido (se jugaron 2 cartas)" });
 			return;
 		}
 
 		if (ctx.meta.envidoResolved) {
-			await interaction.reply({ content: "El envido ya fue resuelto en esta mano", ephemeral: true });
+			await interaction.editReply({ content: "El envido ya fue resuelto en esta mano" });
 			return;
 		}
 
-		// Regla del Truco Argentino: No se puede cantar envido si hay truco pendiente
-		// EXCEPTO si ya hay un envido pendiente (pisada)
-		if (ctx.meta.trucoState === "pending" && (!ctx.meta.waitingResponse || ctx.meta.pendingResponseType !== "envido")) {
-			await interaction.reply({ content: "No se puede cantar envido cuando hay un truco pendiente de respuesta", ephemeral: true });
-			return;
+		// Si hay un TRUCO pendiente:
+		//  - Permitimos que el jugador que debe responder al truco diga
+		//    "primero está el envido" (abre envido aunque haya truco pendiente).
+		//  - Cualquier otro jugador no puede abrir envido hasta que se resuelva.
+		if (ctx.meta.trucoState === "pending" && ctx.meta.pendingResponseType === "truco") {
+			const noHayEnvidoCantado = ctx.meta.envidoChain.length === 0;
+			if (noHayEnvidoCantado && ctx.meta.pendingRespondent !== pid) {
+				await interaction.editReply({ content: "Primero debe responderse el truco" });
+				return;
+			}
+			// Si es el pendingRespondent o ya hay envido en curso, dejamos continuar.
 		}
 
 		// Si NO hay envido pendiente, cualquier jugador puede cantar
@@ -290,30 +306,29 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 			const envidoTeam = ctx.players[ctx.meta.envidoInitiator!].team ?? ctx.meta.envidoInitiator!;
 			
 			if (playerTeam === envidoTeam) {
-				await interaction.reply({ content: "Tu equipo ya cantó envido, espera la respuesta", ephemeral: true });
+				await interaction.editReply({ content: "Tu equipo ya cantó envido, espera la respuesta" });
 				return;
 			}
 			
 			// El otro equipo está "pisando" con envido (esto es permitido)
 		}
 
-		await interaction.deferUpdate();
 
 		// Agregar a la cadena de envidos
 		ctx.meta.envidoChain.push(type);
 		ctx.meta.envidoInitiator = pid;
 
-		// Calcular valor acumulado
-		let addedValue = 0;
-		if (type === "envido") addedValue = 2;
-		else if (type === "real-envido") addedValue = 3;
-		else if (type === "falta-envido") {
+		// Calcular valor del envido
+		if (type === "envido") {
+			ctx.meta.envidoValue += 2;
+		} else if (type === "real-envido") {
+			ctx.meta.envidoValue += 3;
+		} else if (type === "falta-envido") {
 			// Falta envido: vale los puntos que le faltan al que va ganando para llegar a 30
 			const maxScore = Math.max(...ctx.meta.scores);
-			addedValue = MAX_SCORE - maxScore;
+			ctx.meta.envidoValue = MAX_SCORE - maxScore;
 		}
 
-		ctx.meta.envidoValue += addedValue;
 		ctx.meta.messages.push(`<@${ctx.players[pid].id}> canta **${type.toUpperCase()}**! (${ctx.meta.envidoValue} pts en juego)`);
 
 		// Marcar que se espera respuesta del oponente
@@ -328,38 +343,48 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 		ctx.meta.pendingRespondent = opponent ? ctx.players.indexOf(opponent) : null;
 
 		await ctx.sendTable();
+		// Actualizar botones del jugador que cantó envido
+		await ctx.refreshHand(ctx.players[pid].id);
+		// Actualizar botones del jugador que debe responder
+		if (opponent) {
+			await ctx.refreshHand(opponent.id);
+		}
 	}
 
 	async #handleTrucoCant(ctx: GameRuntime<TrucoMeta>, pid: number, interaction: ButtonInteraction, type: EnviteType) {
 		// Verificar lógica de quién puede cantar qué
 		if (type === "truco" && ctx.meta.trucoLevel !== null) {
-			await interaction.reply({ content: "El truco ya fue cantado", ephemeral: true });
+			await interaction.editReply({ content: "El truco ya fue cantado" });
 			return;
 		}
 
 		if (type === "retruco" && ctx.meta.trucoLevel !== "truco") {
-			await interaction.reply({ content: "Primero debe cantarse truco", ephemeral: true });
+			await interaction.editReply({ content: "Primero debe cantarse truco" });
 			return;
 		}
 
 		if (type === "vale4" && ctx.meta.trucoLevel !== "retruco") {
-			await interaction.reply({ content: "Primero debe cantarse retruco", ephemeral: true });
+			await interaction.editReply({ content: "Primero debe cantarse retruco" });
 			return;
 		}
 
-		// Si hay un envite pendiente, solo puede responder quien debe responder
-		if (ctx.meta.waitingResponse && ctx.meta.pendingRespondent !== pid) {
-			await interaction.reply({ content: "No es tu turno de responder", ephemeral: true });
+		const playerTeam = ctx.players[pid].team ?? pid;
+		const trucoTeam =
+			ctx.meta.trucoInitiator !== null
+				? ctx.players[ctx.meta.trucoInitiator].team ?? ctx.meta.trucoInitiator
+				: null;
+
+		// Si hay un envite de TRUCO pendiente, solo puede redoblar quien debe responder
+		if (ctx.meta.waitingResponse && ctx.meta.pendingResponseType === "truco" && ctx.meta.pendingRespondent !== pid) {
+			await interaction.editReply({ content: "No es tu turno de responder" });
 			return;
 		}
 
-		// Si no hay envite pendiente, solo puede cantar el que tiene el turno
-		if (!ctx.meta.waitingResponse && ctx.current.id !== ctx.players[pid].id) {
-			await interaction.reply({ content: "Solo puedes cantar truco en tu turno", ephemeral: true });
+		// Nadie puede redoblar su propio truco (retruco / vale4 siempre vienen del otro equipo)
+		if (type !== "truco" && trucoTeam !== null && playerTeam === trucoTeam) {
+			await interaction.editReply({ content: "Tu equipo no puede redoblar su propio truco" });
 			return;
 		}
-
-		await interaction.deferUpdate();
 
 		ctx.meta.trucoLevel = type === "truco" ? "truco" : type === "retruco" ? "retruco" : "vale4";
 		ctx.meta.trucoInitiator = pid;
@@ -383,20 +408,25 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 		ctx.meta.pendingRespondent = opponent ? ctx.players.indexOf(opponent) : null;
 
 		await ctx.sendTable();
+		// Actualizar botones del jugador que cantó truco
+		await ctx.refreshHand(ctx.players[pid].id);
+		// Actualizar botones del jugador que debe responder
+		if (opponent) {
+			await ctx.refreshHand(opponent.id);
+		}
 	}
 
 	async #handleEnviteResponse(ctx: GameRuntime<TrucoMeta>, pid: number, interaction: ButtonInteraction, accepts: boolean) {
 		if (!ctx.meta.waitingResponse) {
-			await interaction.reply({ content: "No hay envite pendiente", ephemeral: true });
+			await interaction.editReply({ content: "No hay envite pendiente" });
 			return;
 		}
 
 		if (ctx.meta.pendingRespondent !== pid) {
-			await interaction.reply({ content: "No es tu turno de responder", ephemeral: true });
+			await interaction.editReply({ content: "No es tu turno de responder" });
 			return;
 		}
 
-		await interaction.deferUpdate();
 
 		if (ctx.meta.pendingResponseType === "envido") {
 			if (accepts) {
@@ -413,9 +443,29 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 				ctx.meta.messages.push(`Equipo ${initiatorTeam + 1} gana **1 punto** por el envido rechazado`);
 				ctx.meta.envidoResolved = true;
 			}
-			ctx.meta.waitingResponse = false;
-			ctx.meta.pendingResponseType = null;
-			ctx.meta.pendingRespondent = null;
+
+			// El envido ya se resolvió; comprobar si había un TRUCO pendiente
+			// que quedó "en pausa" por el envido ("primero está el envido").
+			if (ctx.meta.trucoState === "pending" && ctx.meta.trucoLevel !== null) {
+				// Volvemos a pedir respuesta por el truco
+				const trucoTeam = ctx.players[ctx.meta.trucoInitiator!].team ?? ctx.meta.trucoInitiator!;
+				const opponentTeam = trucoTeam === 0 ? 1 : 0;
+				const opponent = ctx.players.find(
+					(p, i) => (p.team ?? i) === opponentTeam && !ctx.meta.foldedPlayers.has(i)
+				);
+
+				ctx.meta.waitingResponse = true;
+				ctx.meta.pendingResponseType = "truco";
+				ctx.meta.pendingRespondent = opponent ? ctx.players.indexOf(opponent) : null;
+			} else {
+				// No hay truco pendiente: limpiamos estado de espera
+				ctx.meta.waitingResponse = false;
+				ctx.meta.pendingResponseType = null;
+				ctx.meta.pendingRespondent = null;
+			}
+
+			// Refrescar manos tras resolver el envido (especialmente en "no quiero")
+			await Promise.all(ctx.players.map((p) => ctx.refreshHand(p.id)));
 		} else if (ctx.meta.pendingResponseType === "truco") {
 			if (accepts) {
 				ctx.meta.messages.push(`<@${ctx.players[pid].id}> dice **QUIERO!**`);
@@ -443,13 +493,14 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 				await ctx.sendTable();
 				return;
 			}
+			// Tras cualquier respuesta al truco, refrescar manos (botones de truco/envido/mazo)
+			await Promise.all(ctx.players.map((p) => ctx.refreshHand(p.id)));
 		}
 
 		await ctx.sendTable();
 	}
 
 	async #handleMazo(ctx: GameRuntime<TrucoMeta>, pid: number, interaction: ButtonInteraction) {
-		await interaction.deferUpdate();
 
 		ctx.meta.foldedPlayers.add(pid);
 		ctx.meta.messages.push(`<@${ctx.players[pid].id}> se va al **MAZO**`);
@@ -712,30 +763,72 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 
 			// Puede redoblar el envite
 			if (ctx.meta.pendingResponseType === "envido") {
-				const canRealEnvido = !ctx.meta.envidoChain.includes("real-envido");
-				const canFaltaEnvido = !ctx.meta.envidoChain.includes("falta-envido");
+				const envidoCount = ctx.meta.envidoChain.filter((e) => e === "envido").length;
+				const hasRealEnvido = ctx.meta.envidoChain.includes("real-envido");
+				const hasFaltaEnvido = ctx.meta.envidoChain.includes("falta-envido");
 
-				if (canRealEnvido || canFaltaEnvido) {
+				const canEnvidoEnvido = envidoCount === 1 && !hasRealEnvido && !hasFaltaEnvido;
+				const canRealEnvido = !hasRealEnvido;
+				const canFaltaEnvido = !hasFaltaEnvido;
+
+				if (canEnvidoEnvido || canRealEnvido || canFaltaEnvido) {
 					const row2 = new ActionRowBuilder<ButtonBuilder>();
+
+					// "Envido, envido" (segundo envido como pisada)
+					if (canEnvidoEnvido) {
+						row2.addComponents(
+							new ButtonBuilder()
+								.setCustomId("no_turn_envido")
+								.setLabel("Envido Envido")
+								.setStyle(ButtonStyle.Primary)
+						);
+					}
+
 					if (canRealEnvido) {
-						row2.addComponents(new ButtonBuilder().setCustomId("real-envido").setLabel("Real Envido").setStyle(ButtonStyle.Primary));
+						row2.addComponents(
+							new ButtonBuilder()
+								.setCustomId("no_turn_real-envido")
+								.setLabel("Real Envido")
+								.setStyle(ButtonStyle.Primary)
+						);
 					}
 					if (canFaltaEnvido) {
-						row2.addComponents(new ButtonBuilder().setCustomId("falta-envido").setLabel("Falta Envido").setStyle(ButtonStyle.Primary));
+						row2.addComponents(
+							new ButtonBuilder()
+								.setCustomId("no_turn_falta-envido")
+								.setLabel("Falta Envido")
+								.setStyle(ButtonStyle.Primary)
+						);
 					}
+
 					rows.push(row2);
 				}
 			} else if (ctx.meta.pendingResponseType === "truco") {
+				// Opciones de redoble del TRUCO
 				if (ctx.meta.trucoLevel === "truco") {
 					rows.push(
 						new ActionRowBuilder<ButtonBuilder>().addComponents([
-							new ButtonBuilder().setCustomId("retruco").setLabel("Retruco").setStyle(ButtonStyle.Primary),
+							new ButtonBuilder().setCustomId("no_turn_retruco").setLabel("Retruco").setStyle(ButtonStyle.Primary),
 						])
 					);
 				} else if (ctx.meta.trucoLevel === "retruco") {
 					rows.push(
 						new ActionRowBuilder<ButtonBuilder>().addComponents([
-							new ButtonBuilder().setCustomId("vale4").setLabel("Vale Cuatro").setStyle(ButtonStyle.Primary),
+							new ButtonBuilder().setCustomId("no_turn_vale4").setLabel("Vale Cuatro").setStyle(ButtonStyle.Primary),
+						])
+					);
+				}
+
+				// Si aún no se jugó la primera ronda, permitir "primero el envido"
+				const canPrimeroEnvido =
+					ctx.meta.canSingEnvido &&
+					!ctx.meta.envidoResolved &&
+					ctx.meta.envidoChain.length === 0;
+
+				if (canPrimeroEnvido) {
+					rows.push(
+						new ActionRowBuilder<ButtonBuilder>().addComponents([
+							new ButtonBuilder().setCustomId("no_turn_envido").setLabel("Primero el Envido").setStyle(ButtonStyle.Primary),
 						])
 					);
 				}
@@ -759,13 +852,19 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 			// Si NO hay envido pendiente, este jugador puede cantar
 			if (!ctx.meta.waitingResponse || ctx.meta.pendingResponseType !== "envido") {
 				if (!ctx.meta.envidoChain.includes("envido")) {
-					actionRowEnvidos.addComponents(new ButtonBuilder().setCustomId("envido").setLabel("Envido").setStyle(ButtonStyle.Primary));
+					actionRowEnvidos.addComponents(
+						new ButtonBuilder().setCustomId("no_turn_envido").setLabel("Envido").setStyle(ButtonStyle.Primary)
+					);
 				}
-				if (!ctx.meta.envidoChain.includes("real-envido") && ctx.meta.envidoChain.length > 0) {
-					actionRowEnvidos.addComponents(new ButtonBuilder().setCustomId("real-envido").setLabel("Real Envido").setStyle(ButtonStyle.Primary));
+				if (!ctx.meta.envidoChain.includes("real-envido")) {
+					actionRowEnvidos.addComponents(
+						new ButtonBuilder().setCustomId("no_turn_real-envido").setLabel("Real Envido").setStyle(ButtonStyle.Primary)
+					);
 				}
-				if (!ctx.meta.envidoChain.includes("falta-envido") && ctx.meta.envidoChain.length > 0) {
-					actionRowEnvidos.addComponents(new ButtonBuilder().setCustomId("falta-envido").setLabel("Falta Envido").setStyle(ButtonStyle.Primary));
+				if (!ctx.meta.envidoChain.includes("falta-envido")) {
+					actionRowEnvidos.addComponents(
+						new ButtonBuilder().setCustomId("no_turn_falta-envido").setLabel("Falta Envido").setStyle(ButtonStyle.Primary)
+					);
 				}
 			} else if (ctx.meta.pendingResponseType === "envido") {
 				// Hay envido pendiente: solo el otro equipo puede "pisar"
@@ -774,18 +873,17 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 				if (playerTeam !== envidoTeam) {
 					// Este jugador está en el equipo que puede redoblar
 					if (!ctx.meta.envidoChain.includes("real-envido")) {
-						actionRowEnvidos.addComponents(new ButtonBuilder().setCustomId("real-envido").setLabel("Real Envido").setStyle(ButtonStyle.Primary));
+						actionRowEnvidos.addComponents(new ButtonBuilder().setCustomId("no_turn_real-envido").setLabel("Real Envido").setStyle(ButtonStyle.Primary));
 					}
 					if (!ctx.meta.envidoChain.includes("falta-envido")) {
-						actionRowEnvidos.addComponents(new ButtonBuilder().setCustomId("falta-envido").setLabel("Falta Envido").setStyle(ButtonStyle.Primary));
+						actionRowEnvidos.addComponents(new ButtonBuilder().setCustomId("no_turn_falta-envido").setLabel("Falta Envido").setStyle(ButtonStyle.Primary));
 					}
 				}
 			}
 		}
 
-		// Si es tu turno de jugar, mostrar cartas y opciones adicionales
+		// Botones de cartas (solo si es tu turno de jugar)
 		if (ctx.current.id === userId) {
-			// Botones de cartas
 			const player = ctx.players[pid];
 			const cardButtons = player.hand.map((c, i) =>
 				new ButtonBuilder().setCustomId(`play_${i}`).setLabel(`${c.value} ${c.suit}`).setStyle(ButtonStyle.Secondary)
@@ -794,33 +892,58 @@ export default class TrucoStrategy implements GameStrategy<TrucoMeta> {
 			if (cardButtons.length > 0) {
 				rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(cardButtons));
 			}
+		}
 
-			// Agregar botones de envido si los hay
-			if (actionRowEnvidos.components.length > 0) {
-				rows.push(actionRowEnvidos);
+		// Agregar botones de envido si los hay (se pueden cantar aunque no sea tu turno
+		// mientras la estrategia lo permita).
+		if (actionRowEnvidos.components.length > 0) {
+			rows.push(actionRowEnvidos);
+		}
+
+		// Botones de truco y mazo (con prefijo no_turn_ para permitirlos aunque no sea tu turno)
+		const actionRow = new ActionRowBuilder<ButtonBuilder>();
+
+		if (!ctx.meta.waitingResponse) {
+			const trucoTeam =
+				ctx.meta.trucoInitiator !== null
+					? ctx.players[ctx.meta.trucoInitiator].team ?? ctx.meta.trucoInitiator
+					: null;
+
+			if (ctx.meta.trucoLevel === null) {
+				// Truco inicial: cualquiera puede cantarlo
+				actionRow.addComponents(
+					new ButtonBuilder().setCustomId("no_turn_truco").setLabel("Truco").setStyle(ButtonStyle.Danger)
+				);
+			} else if (
+				ctx.meta.trucoLevel === "truco" &&
+				ctx.meta.trucoState === "accepted" &&
+				trucoTeam !== null &&
+				playerTeam !== trucoTeam
+			) {
+				// Retruco después de que el truco fue aceptado (solo el otro equipo)
+				actionRow.addComponents(
+					new ButtonBuilder().setCustomId("no_turn_retruco").setLabel("Retruco").setStyle(ButtonStyle.Danger)
+				);
+			} else if (
+				ctx.meta.trucoLevel === "retruco" &&
+				ctx.meta.trucoState === "accepted" &&
+				trucoTeam !== null &&
+				playerTeam !== trucoTeam
+			) {
+				// Vale cuatro después de que el retruco fue aceptado
+				actionRow.addComponents(
+					new ButtonBuilder().setCustomId("no_turn_vale4").setLabel("Vale Cuatro").setStyle(ButtonStyle.Danger)
+				);
 			}
+		}
 
-			// Botones de truco y mazo
-			const actionRow = new ActionRowBuilder<ButtonBuilder>();
+		// Mazo siempre disponible para jugadores activos (con prefijo no_turn_)
+		actionRow.addComponents(
+			new ButtonBuilder().setCustomId("no_turn_mazo").setLabel("Irse al Mazo").setStyle(ButtonStyle.Secondary)
+		);
 
-			// Truco
-			if (!ctx.meta.waitingResponse) {
-				if (ctx.meta.trucoLevel === null) {
-					actionRow.addComponents(new ButtonBuilder().setCustomId("truco").setLabel("Truco").setStyle(ButtonStyle.Danger));
-				}
-			}
-
-			// Mazo
-			actionRow.addComponents(new ButtonBuilder().setCustomId("mazo").setLabel("Irse al Mazo").setStyle(ButtonStyle.Secondary));
-
-			if (actionRow.components.length > 0) {
-				rows.push(actionRow);
-			}
-		} else {
-			// Si NO es tu turno, mostrar solo botones de envido si es aplicable
-			if (actionRowEnvidos.components.length > 0) {
-				rows.push(actionRowEnvidos);
-			}
+		if (actionRow.components.length > 0) {
+			rows.push(actionRow);
 		}
 
 		return rows;
