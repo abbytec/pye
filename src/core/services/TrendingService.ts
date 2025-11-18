@@ -55,24 +55,6 @@ export default class TrendingService implements IService {
 		return TrendingService.stickerTypeCache.get(sticker.id)!;
 	}
 
-	async starboardMemeOfTheDay() {
-		const top = await MemeOfTheDay.getTopReaction();
-		if (!top || top.count <= 4) return;
-		const embed = new EmbedBuilder()
-			.setAuthor({
-				name: "Meme del día",
-				iconURL:
-					"https://cdn.discordapp.com/attachments/1115058778736431104/1282790824744321167/vecteezy_heart_1187438.png?ex=66e0a38d&is=66df520d",
-			})
-			.setDescription(`Subido por **${top.username}** [(ir al meme)](${top.messageUrl})`)
-			.setImage(top.url)
-			.setFooter({ text: `💬 ${top.count} reacciones` })
-			.setColor(COLORS.pyeLightBlue);
-
-		const channel = guildChannel(this.client, getChannelFromEnv("starboard"));
-		channel?.send({ embeds: [embed] }).then(() => MemeOfTheDay.resetCount());
-	}
-
 	private filterEmojis(emojis: Map<string, number>, allEmojis: string[]): Map<string, number> {
 		const idMapper = new Map();
 		for (const emoji of allEmojis) {
@@ -136,7 +118,7 @@ export default class TrendingService implements IService {
 			ExtendedClient.logError("Error al crear los datos diarios de Trending", "dailySave", process.env.CLIENT_ID);
 			return;
 		}
-		
+
 		if (
 			data?.emojis !== this.emojis ||
 			data?.channels !== this.forumChannels ||
@@ -169,21 +151,14 @@ export default class TrendingService implements IService {
 
 	public async dailyRepeat(): Promise<void> {
 		await this.dailySave();
-		await this.starboardMemeOfTheDay().catch((error) => console.error(error));
 	}
 
 	public async monthlyRepeat(): Promise<void> {
 		const stats = await this.getStats(this.client as ExtendedClient);
 		const channel = guildChannel(this.client, getChannelFromEnv("staff")) as TextChannel | null;
-		await channel
-			?.send({ embeds: [stats] })
-			.catch((error) => {
-				ExtendedClient.logError(
-					"Error al enviar el embed de tendencias: " + error.message,
-					error.stack,
-					process.env.CLIENT_ID
-				);
-			});
+		await channel?.send({ embeds: [stats] }).catch((error) => {
+			ExtendedClient.logError("Error al enviar el embed de tendencias: " + error.message, error.stack, process.env.CLIENT_ID);
+		});
 	}
 
 	// Método para agregar uso a un emoji, canal o sticker

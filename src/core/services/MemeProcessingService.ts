@@ -1,5 +1,7 @@
 import {
+	EmbedBuilder,
 	Events,
+	Guild,
 	Message,
 	MessageReaction,
 	MessageReactionEventDetails,
@@ -9,14 +11,18 @@ import {
 	User,
 } from "discord.js";
 import { ExtendedClient } from "../../client.js";
-import { getChannelFromEnv } from "../../utils/constants.js";
+import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
 import { getYesterdayDate } from "../../utils/generic.js";
 import { MEME_REACTIONS, MemeOfTheDay } from "../../Models/MemeOfTheDay.js";
 import { IService } from "../IService.js";
+import { logHelperPoints } from "../../utils/logHelperPoints.js";
+import { addRep } from "../../commands/rep/add-rep.js";
 
 export default class MemeProcessingService implements IService {
 	private client: ExtendedClient;
 	public readonly serviceName = "memeProcessing";
+	private static startboardChannel = getChannelFromEnv("starboard");
+	private static memesChannel = getChannelFromEnv("memes");
 
 	constructor(client: ExtendedClient) {
 		this.client = client;
@@ -28,8 +34,46 @@ export default class MemeProcessingService implements IService {
 		console.log("MemeProcessingService started");
 	}
 
+	public async dailyRepeat(): Promise<void> {
+		try {
+			const top = await MemeOfTheDay.getTopReaction();
+			if (!top) return;
+			const embed = new EmbedBuilder()
+				.setAuthor({
+					name: "Meme del día",
+					iconURL:
+						"https://cdn.discordapp.com/attachments/1115058778736431104/1282790824744321167/vecteezy_heart_1187438.png?ex=66e0a38d&is=66df520d",
+				})
+				.setDescription(`Subido por **${top.username}** [(ir al meme)](${top.messageUrl})`)
+				.setImage(top.url)
+				.setFooter({ text: `💬 ${top.count} reacciones` })
+				.setColor(COLORS.pyeLightBlue);
+
+			const channel = (this.client.channels.cache.get(MemeProcessingService.startboardChannel) ??
+				(await this.client.channels.fetch(MemeProcessingService.startboardChannel))) as TextChannel | undefined;
+			channel
+				?.send({ embeds: [embed] })
+				.then(async () => {
+					const match = /\/(\d+)\/(\d+)\/(\d+)$/.exec(top.messageUrl);
+					if (match) {
+						const [, guildId, channelId, messageId] = match;
+						const guild = await this.client.guilds.fetch(guildId).catch(() => null);
+						const ch = guild?.channels.resolve(channelId) as TextChannel | undefined;
+						const msg = await ch?.messages.fetch(messageId).catch(() => null);
+						if (msg)
+							await addRep(msg.author, msg.guild, 0.1).then(({ member }) =>
+								logHelperPoints(msg.guild, `\`${member.user.username}\` ha obtenido 0.1 rep por meme del día`)
+							);
+					}
+				})
+				.then(() => MemeOfTheDay.resetCount());
+		} catch (error) {
+			console.error(error);
+		}
+	}
+
 	private async onMessageCreate(message: Message) {
-		if (message.channel.id === getChannelFromEnv("memes")) {
+		if (message.channel.id === MemeProcessingService.memesChannel) {
 			if (message.attachments.size === 0) {
 				await message.delete().catch(() => null);
 				await (message.channel as TextChannel)
@@ -50,7 +94,7 @@ export default class MemeProcessingService implements IService {
 		user: User | PartialUser,
 		details: MessageReactionEventDetails
 	) {
-		if (reaction.message.channelId === getChannelFromEnv("memes")) {
+		if (reaction.message.channelId === MemeProcessingService.memesChannel) {
 			if (reaction.partial) await reaction.fetch();
 			const message = reaction.message;
 			// Obtener imagen adjunta (primer adjunto que sea imagen)
@@ -61,7 +105,8 @@ export default class MemeProcessingService implements IService {
 					imageAttachment,
 					message.author?.tag ?? "Autor desconocido",
 					message.url,
-					message.reactions.cache.reduce((acc, r) => acc + (r.count || 0), 0)
+					message.reactions.cache.reduce((acc, r) => acc + (r.count || 0), 0),
+					message.createdTimestamp
 				);
 		}
 	}
