@@ -98,7 +98,7 @@ userSchema.post(["save", "findOneAndUpdate"], async function (doc: IUserModel | 
 	pipeline.zAdd("top:all", { score: doc.total || 0, value: doc.id });
 	pipeline.zAdd("top:cash", { score: doc.cash || 0, value: doc.id });
 	pipeline.zAdd("top:rob", { score: doc.rob || 0, value: doc.id });
-	pipeline.zAdd("top:apostador", { score: doc.earnings || 0, value: doc.id });
+	pipeline.zAdd("top:apuestas", { score: doc.earnings || 0, value: doc.id });
 	pipeline.zAdd("top:caps", { score: doc.caps || 0, value: doc.id });
 
 	await pipeline.exec().catch((error) => {
@@ -127,7 +127,7 @@ userSchema.post(["updateOne", "updateMany"], async function () {
 			pipeline.zAdd("top:all", { score: doc.total || 0, value: doc.id });
 			pipeline.zAdd("top:cash", { score: doc.cash || 0, value: doc.id });
 			pipeline.zAdd("top:rob", { score: doc.rob || 0, value: doc.id });
-			pipeline.zAdd("top:apostador", { score: doc.earnings || 0, value: doc.id });
+			pipeline.zAdd("top:apuestas", { score: doc.earnings || 0, value: doc.id });
 			pipeline.zAdd("top:caps", { score: doc.caps || 0, value: doc.id });
 			if (update?.$inc?.dailyBumpTops && doc.dailyBumpTops && (doc.dailyBumpTops + update.$inc?.dailyBumpTops) % 10 === 0)
 				await addRep(doc.id, ExtendedClient.guild ?? null)

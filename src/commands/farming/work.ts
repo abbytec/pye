@@ -71,12 +71,8 @@ export default {
 			profit = Math.floor(profit);
 			const profitFormatted = profit.toLocaleString();
 
-			// Actualizar el dinero del usuario
-			userData.cash = (userData.cash ?? 0) + profit;
-			userData.total = (userData.total ?? 0) + profit;
-
 			try {
-				await Users.updateOne({ id: user.id }, userData);
+				await Users.updateOne({ id: user.id }, { $inc: { cash: profit } });
 			} catch (error) {
 				console.error("Error actualizando el usuario:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");

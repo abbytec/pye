@@ -177,24 +177,23 @@ async function generateHouseLeaderboard(page: number, user: any, interaction: IP
 			const member = await interaction.guild?.members.fetch(item.id).catch(() => undefined);
 			return `**${start + index + 1}.** [${member?.user.tag ?? "Usuario Desconocido"}](https://discord.com/users/${
 				item.id
-			}) • \`Nivel:\` **${item.house.level}**.\n\`Nombre:\` ${item.name ?? "🏠 Casa de " + (member?.user.tag ?? "Usuario Desconocido")}}`;
+			}) • \`Nivel:\` **${item.house.level}**.\n\`Nombre:\` ${item.name ?? "🏠 Casa de " + (member?.user.tag ?? "Usuario Desconocido")}`;
 		},
 	});
 }
 
 async function generateRedisLeaderboard(type: LeaderboardType, page: number, user: any, interaction: IPrefixChatInputCommand, disable: boolean) {
 	const ITEMS_PER_PAGE = 10;
-	const leaderboardKey = type === "all" ? "all" : type;
-	const totalItems = await redis.zCount(`top:${leaderboardKey}`, "-inf", "+inf");
+	const totalItems = await redis.zCount(`top:${type}`, "-inf", "+inf");
 	const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
 	page = Math.min(page, totalPages);
 
-	const userPosition = await redis.zRevRank(`top:${leaderboardKey}`, user.id);
+	const userPosition = await redis.zRevRank(`top:${type}`, user.id);
 	const position = userPosition ?? -1;
 
 	const start = (page - 1) * ITEMS_PER_PAGE;
 	const end = start + ITEMS_PER_PAGE - 1;
-	const topData: string[] = await redis.sendCommand(["ZREVRANGE", `top:${leaderboardKey}`, start.toString(), end.toString(), "WITHSCORES"]);
+	const topData: string[] = await redis.sendCommand(["ZREVRANGE", `top:${type}`, start.toString(), end.toString(), "WITHSCORES"]);
 
 	const descriptions = await Promise.all(
 		topData

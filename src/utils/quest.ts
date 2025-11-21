@@ -38,7 +38,6 @@ export interface IQuest {
 export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: IQuest, game = false) {
 	const user = await Home.findOne({ id: userId, active: true }).catch(() => null);
 	if (!user) return;
-	const dateZ = await Users.findOne({ id: userId }).catch(() => null);
 	const person = msg.client.users.resolve(userId);
 	if (!person) return;
 
@@ -78,8 +77,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 
 	// Si existe recompensa interactiva, se activa el proceso correspondiente
 	if (levelConfig.interactiveReward) {
-		if (channelId !== getChannelFromEnv("general") || channelId !== getChannelFromEnv("casino"))
-			channelId = getChannelFromEnv("casino");
+		if (channelId !== getChannelFromEnv("general") || channelId !== getChannelFromEnv("casino")) channelId = getChannelFromEnv("casino");
 		if (levelConfig.interactiveReward.type === "color") {
 			if (Choose.has(person.id)) return;
 			const casas = readdirSync(path.join(__dirname, "../assets/Pictures/Profiles/Casa"));
@@ -172,6 +170,7 @@ export async function checkQuestLevel({ msg, money, bump, text, rep, userId }: I
 				files: [],
 				components: [],
 			});
+			const dateZ = await Users.findOne({ id: userId }).catch(() => null);
 			const next = dateZ && ["Obrero", "Obrera"].includes(dateZ.profile?.job ?? "") ? 3 : 1;
 			return await levelUpHome(user, next, res.values[0]);
 		} else if (levelConfig.interactiveReward.type === "pet") {

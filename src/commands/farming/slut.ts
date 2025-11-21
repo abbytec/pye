@@ -75,8 +75,12 @@ export default {
 
 			let profitFormatted: string;
 
+			const inc = {
+				cash: 0,
+			};
+
 			if (lose) {
-				userData.cash = (userData.cash ?? 0) - profit;
+				inc.cash = -profit;
 				profitFormatted = profit.toLocaleString();
 			} else {
 				// Ajustar ganancia según el trabajo del usuario y su pareja
@@ -86,7 +90,7 @@ export default {
 				profitFormatted = profit.toLocaleString();
 
 				// Actualizar el dinero del usuario
-				userData.cash = (userData.cash ?? 0) + profit;
+				inc.cash = profit;
 				increaseHomeMonthlyIncome(user.id, profit)
 					.then(async () => await checkQuestLevel({ msg: interaction, money: profit, userId: user.id } as IQuest))
 					.catch((error) => {
@@ -96,7 +100,7 @@ export default {
 			}
 
 			try {
-				await Users.updateOne({ id: user.id }, userData);
+				await Users.updateOne({ id: user.id }, { $inc: { ...inc } });
 			} catch (error) {
 				console.error("Error actualizando el usuario:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
