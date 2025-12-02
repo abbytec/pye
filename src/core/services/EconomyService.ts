@@ -47,7 +47,10 @@ export default class EconomyService implements IService {
 		const voiceChannels = ExtendedClient.guild?.channels.cache.filter((channel) => channel.isVoiceBased());
 		voiceChannels?.forEach((channel) => {
 			const voiceChannel = channel as VoiceChannel;
-			const members = voiceChannel.members.filter((member) => !member.user.bot).map((member) => member);
+			// Filtramos bots Y ahora también usuarios muteados o ensordecidos
+			const members = voiceChannel.members
+				.filter((member) => !member.user.bot && !member.voice.mute && !member.voice.deaf)
+				.map((member) => member);
 			if (members.length > 0) {
 				members.forEach((member) => {
 					this.voiceFarmers.set(member.id, { date: new Date(), count: 0 });
@@ -112,12 +115,15 @@ export default class EconomyService implements IService {
 		const isBot = newState.member?.user.bot ?? oldState.member?.user.bot;
 		if (!userId || isBot) return;
 
-		// Usuario se unió a un canal de voz
-		if (!oldState.channelId && newState.channelId) {
+		const isEligible = newState.channelId !== null && !newState.mute && !newState.deaf;
+		const wasFarming = this.voiceFarmers.has(userId);
+
+		// Caso 1: Se volvió apto (Se unió, o se desmuteó) y no estaba farmeando
+		if (isEligible && !wasFarming) {
 			this.voiceFarmers.set(userId, { date: new Date(), count: 0 });
 		}
-		// Usuario salió de un canal de voz
-		else if (oldState.channelId && !newState.channelId) {
+		// Caso 2: Dejó de ser apto (Se fue, o se muteó/ensordeció) y estaba farmeando
+		else if (!isEligible && wasFarming) {
 			this.voiceFarmers.delete(userId);
 		}
 	}
