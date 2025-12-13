@@ -3,7 +3,7 @@ import client from "../redis.js";
 
 const PREFIX = "counters"; // raíz de todas las colecciones
 
-type DECLARED_COUNTERS = "dailyAIUsage";
+type DECLARED_COUNTERS = "dailyAIUsage" | "chickenFightLevel";
 
 const collKey = (collection: string) => `${PREFIX}:${collection}`;
 
@@ -35,4 +35,11 @@ export async function getAllDataFromRedisCounter(key: DECLARED_COUNTERS): Promis
    ──────────────────────────────────── */
 export async function clearAllRedisCounter(key: DECLARED_COUNTERS): Promise<void> {
 	await client.del(collKey(key)).catch((e) => console.error(e)); // elimina el hash completo
+}
+
+/* ────────────────────────────────────
+   Resetea un contador individual de la colección
+   ──────────────────────────────────── */
+export async function resetSingleRedisCounter(key: DECLARED_COUNTERS, id: string): Promise<void> {
+	await client.hDel(collKey(key), id).catch((e) => console.error(e));
 }

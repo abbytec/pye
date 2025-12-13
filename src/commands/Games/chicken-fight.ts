@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { PostHandleable } from "../../types/middleware.js";
-import { COLORS, getChannelFromEnv } from "../../utils/constants.js";
+import { COLORS, getChannelFromEnv, serverCoinName } from "../../utils/constants.js";
 import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
 import { verifyChannel } from "../../composables/middlewares/verifyIsChannel.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
@@ -15,7 +15,7 @@ import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputComman
 import { PrefixChatInputCommand } from "../../utils/messages/chatInputCommandConverter.js";
 import EconomyService from "../../core/services/EconomyService.js";
 import { ExtendedClient } from "../../client.js";
-const level = new Map();
+import { getSingleDataFromRedisCounter, incrRedisCounter, resetSingleRedisCounter } from "../../utils/redisCounters.js";
 
 export default {
 	group: "🎮 - Juegos",
@@ -56,20 +56,45 @@ export default {
 			if (!userData.inventory.includes(data._id))
 				return await replyError(interaction, "Necesitas comprar un pollo para ponerlo a pelear.");
 
-			// Calcular resultado según el nivel del pollo
-			if (!level.has(interaction.user.id)) level.set(interaction.user.id, 49);
-			const win = Math.random() < level.get(interaction.user.id) / 100 && level.get(interaction.user.id) < 80;
+			// Obtener nivel del pollo desde Redis
+			let chickenLevel = await getSingleDataFromRedisCounter("chickenFightLevel", interaction.user.id);
+			if (chickenLevel === 0) {
+				chickenLevel = 49; // Nivel inicial si no existe
+			}
+
+			const win = Math.random() < chickenLevel / 100;
 			const earn = win ? calculateJobMultiplier(userData.profile?.job, amount, userData.couples || []) : -amount;
+			let retirementMessage: string | null = null;
+
+			if (win) {
+				await incrRedisCounter("chickenFightLevel", interaction.user.id);
+			} else {
+				// Lógica de retiro
+				if (chickenLevel > 80 || chickenLevel < 25) {
+					const chickenIndex = userData.inventory.findIndex((itemId) => itemId.equals(data._id));
+					if (chickenIndex > -1) {
+						userData.inventory.splice(chickenIndex, 1);
+						await userData.save();
+						await resetSingleRedisCounter("chickenFightLevel", interaction.user.id);
+
+						if (chickenLevel > 80) {
+							retirementMessage =
+								"\n\nTu pollo ha luchado valientemente y se ha ganado un merecido descanso. \n\n~ Gracias por todo lo que lograste, fuiste mi mejor pollo. ~";
+						} else {
+							retirementMessage = "\n\nTu pollo ha decidido que las peleas no son para él y se te escapó. Has perdido tu pollo.";
+						}
+					}
+				}
+			}
 			await betDone(interaction, interaction.user.id, amount, earn);
-			if (win) level.set(interaction.user.id, level.get(interaction.user.id) + 1);
 
 			// Crear embed de respuesta
 			const embed = new EmbedBuilder()
 				.setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
 				.setDescription(
-					`Tu pollo 🐔 ha ${win ? "ganado" : "perdido"} la pelea y se te ${win ? "incrementaron" : "quitaron"} ${Math.abs(
-						earn
-					)} PyE Coins.`
+					`Tu pollo 🐔 (Nivel ${win ? chickenLevel + 1 : chickenLevel}) ha ${win ? "ganado" : "perdido"} la pelea y se te ${
+						win ? "incrementaron" : "quitaron"
+					} ${Math.abs(earn)} ${serverCoinName}.${retirementMessage ?? ""}`
 				)
 				.setColor(win ? COLORS.okGreen : COLORS.errRed)
 				.setTimestamp();

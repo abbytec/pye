@@ -372,6 +372,7 @@ export const NOT_SO_BOT_UID = "439205512425504771";
 export const NEKOTINA_UID = "429457053791158281";
 
 export const pyecoin = "<a:PyEcoin:908088648245850142>";
+export const serverCoinName = "Pengu Coins";
 
 // Bots autorizados a enviar enlaces de discord
 export const AUTHORIZED_BOTS = [process.env.CLIENT_ID ?? "", MUDAE_UID, INVITE_TRACKER_UID, NOT_SO_BOT_UID, NEKOTINA_UID, DISBOARD_UID];

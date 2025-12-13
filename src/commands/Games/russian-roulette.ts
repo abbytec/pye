@@ -100,21 +100,43 @@ export default {
 } as Command;
 
 async function russianRoulette(interaction: IPrefixChatInputCommand) {
-	if (!data.apuestas || !Array.isArray(data.apuestas) || data.apuestas.length === 0) return;
-	data.fin = -1;
-	if (data.apuestas.length == 1) {
-		data.apuestas.push({ jugador: process.env.CLIENT_ID ?? "", cantidad: data.apuestas[0].cantidad });
+	// 1. Verificación inicial
+	if (!data.apuestas || !Array.isArray(data.apuestas) || data.apuestas.length === 0) {
+		data.fin = -1;
+		data.intervalo = undefined;
+		return;
 	}
-	const ganador: string = data.apuestas[Math.floor(Math.random() * data.apuestas.length)].jugador;
+
+	// 2. COPIAR EL ESTADO LOCALMENTE (Snapshot del juego actual)
+	const apuestasActuales = [...data.apuestas];
+
+	if (apuestasActuales.length == 1) {
+		apuestasActuales.push({ jugador: process.env.CLIENT_ID ?? "", cantidad: apuestasActuales[0].cantidad });
+	}
+
+	// 3. RESETEAR EL ESTADO GLOBAL INMEDIATAMENTE
+	data.apuestas = [];
+	data.apuestaMin = 0;
+	data.fin = -1;
+	data.intervalo = undefined;
+
+	// Lógica del juego
+	const ganadorInfo = apuestasActuales[Math.floor(Math.random() * apuestasActuales.length)];
+	const ganador = ganadorInfo.jugador;
+
 	const canal = interaction.client.channels.cache.get(getChannelFromEnv("casino")) as TextChannel | undefined;
 	if (!canal) return;
 
+	// Obtener datos (esto puede tardar, pero ya liberamos el estado global)
 	const userData: IUserModel = await getOrCreateUser(ganador);
-	const pozo = data.apuestas.reduce((a, b) => a + b.cantidad, 0);
-	for (let i = 0; i < data.apuestas.length; i++) {
+	const pozo = apuestasActuales.reduce((a, b) => a + b.cantidad, 0);
+
+	for (let i = 0; i < apuestasActuales.length; i++) {
+		const apuestaActual = apuestasActuales[i]; // Usamos la variable local
+
 		// Calcular resultado de cada jugador
-		if (data.apuestas[i].jugador == process.env.CLIENT_ID) {
-			if (ganador == data.apuestas[i].jugador) {
+		if (apuestaActual.jugador == process.env.CLIENT_ID) {
+			if (ganador == apuestaActual.jugador) {
 				await canal.send({
 					embeds: [
 						new EmbedBuilder()
@@ -130,7 +152,7 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 						new EmbedBuilder()
 							.setAuthor({ name: "Un vagabundo", iconURL: (interaction.guild as Guild).iconURL() ?? undefined })
 							.setDescription(
-								`\`Un vagabundo\` tiró del gatillo por ${i + 1}ª vez y no sobrevivió para contarla... <:rip:1313345158301089792>`
+								`\`Un vagabundo\` tiró del gatillo por ${i + 1}ª vez y no sobrevivió para contarla... <:rip:1402158100659703848>`
 							)
 							.setColor(COLORS.errRed)
 							.setThumbnail("https://cdn.discordapp.com/emojis/770482910918082571.png?size=96"),
@@ -139,17 +161,19 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 			}
 			continue;
 		}
+
+		// Lógica de pagos
 		await betDone(
 			interaction,
-			data.apuestas[i].jugador,
-			data.apuestas[i].cantidad,
-			ganador === data.apuestas[i].jugador
-				? calculateJobMultiplier(userData.profile?.job, pozo - data.apuestas[i].cantidad, userData.couples || [])
-				: -data.apuestas[i].cantidad
+			apuestaActual.jugador,
+			apuestaActual.cantidad,
+			ganador === apuestaActual.jugador
+				? calculateJobMultiplier(userData.profile?.job, pozo - apuestaActual.cantidad, userData.couples || [])
+				: -apuestaActual.cantidad
 		);
 
-		// Enviar mensajes de ganadores y perdedores
-		if (ganador === data.apuestas[i].jugador) {
+		// Enviar mensajes (sin bloquear el inicio de un nuevo juego)
+		if (ganador === apuestaActual.jugador) {
 			await canal.send({
 				embeds: [
 					new EmbedBuilder()
@@ -157,7 +181,7 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 							name: interaction.guild?.members.resolve(ganador)?.user.tag || "Anónimo",
 							iconURL: interaction.guild?.members.resolve(ganador)?.user.displayAvatarURL(),
 						})
-						.setDescription(`\`${interaction.guild?.members.resolve(ganador)?.user.tag}\` tiró del gatillo y sobrevivió !`) // Sería absurdo decir el número de disparo, ya que si ya se disparó no tiene sentido seguir intentando
+						.setDescription(`\`${interaction.guild?.members.resolve(ganador)?.user.tag}\` tiró del gatillo y sobrevivió !`)
 						.setColor(COLORS.okGreen)
 						.setThumbnail("https://cdn.discordapp.com/emojis/918275419902464091.png?size=96"),
 				],
@@ -167,13 +191,13 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 				embeds: [
 					new EmbedBuilder()
 						.setAuthor({
-							name: interaction.guild?.members.resolve(data.apuestas[i].jugador)?.user.tag ?? "Anónimo",
-							iconURL: interaction.guild?.members.resolve(data.apuestas[i].jugador)?.user.displayAvatarURL(),
+							name: interaction.guild?.members.resolve(apuestaActual.jugador)?.user.tag ?? "Anónimo",
+							iconURL: interaction.guild?.members.resolve(apuestaActual.jugador)?.user.displayAvatarURL(),
 						})
 						.setDescription(
-							`\`${interaction.guild?.members.resolve(data.apuestas[i].jugador)?.user.tag}\` tiró del gatillo por ${
+							`\`${interaction.guild?.members.resolve(apuestaActual.jugador)?.user.tag}\` tiró del gatillo por ${
 								i + 1
-							}ª vez y no sobrevivió para contarla... <:rip:1313345158301089792>`
+							}ª vez y no sobrevivió para contarla... <:rip:1402158100659703848>`
 						)
 						.setColor(COLORS.errRed)
 						.setThumbnail("https://cdn.discordapp.com/emojis/770482910918082571.png?size=96"),
@@ -181,8 +205,4 @@ async function russianRoulette(interaction: IPrefixChatInputCommand) {
 			});
 		}
 	}
-	data.apuestas = [];
-	data.apuestaMin = 0;
-	clearTimeout(data.intervalo);
-	data.intervalo = undefined;
 }
