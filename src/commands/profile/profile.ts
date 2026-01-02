@@ -2,7 +2,7 @@
 
 import { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } from "discord.js";
 import { getOrCreateUser } from "../../Models/User.js";
-import { HelperPoint, IHelperPointDocument } from "../../Models/HelperPoint.js";
+import { HelperPoint, HelperPointDocument } from "../../Models/HelperPoint.js";
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
@@ -75,7 +75,7 @@ export default {
 				);
 
 			const position = await redisClient.zRevRank("top:all", member.id);
-			const dataRep: IHelperPointDocument | null = await HelperPoint.findOne({ _id: member.id });
+			const dataRep: HelperPointDocument | null = await HelperPoint.findOne({ _id: member.id });
 			const people = await HelperPoint.find().sort({ points: -1 });
 			const img = await getJobImage(userData.profile);
 			const rank = people.findIndex((u) => u._id === member.id) + 1;

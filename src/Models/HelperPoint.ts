@@ -1,4 +1,4 @@
-import { Schema, Document, model } from "mongoose";
+import { Schema, model, HydratedDocument } from "mongoose";
 import client from "../redis.js";
 import { ExtendedClient } from "../client.js";
 
@@ -7,10 +7,8 @@ export interface IHelperPoint {
 	points: number;
 }
 
-export interface IHelperPointDocument extends IHelperPoint, Document {
-	_id: string;
-}
-const helperpointSchema = new Schema<IHelperPointDocument>(
+export type HelperPointDocument = HydratedDocument<IHelperPoint>;
+const helperpointSchema = new Schema<IHelperPoint>(
 	{
 		_id: {
 			type: String,
@@ -40,7 +38,7 @@ helperpointSchema.pre(["save", "findOneAndUpdate"], function (this: any, next: (
 
 helperpointSchema.post(
 	["save", "findOneAndUpdate"],
-	async function (doc: (IHelperPointDocument | null) & { _updateContext: IUpdateOneContext }, next: () => void) {
+	async function (doc: (HelperPointDocument | null) & { _updateContext: IUpdateOneContext }, next: () => void) {
 		const context: IUpdateOneContext = this._updateContext;
 		const { conditions, update } = context;
 		if (update.$inc.points)

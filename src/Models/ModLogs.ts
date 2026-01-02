@@ -1,4 +1,4 @@
-import { Schema, Document, model } from "mongoose";
+import { Schema, Document, model, HydratedDocument } from "mongoose";
 
 interface IModLogs {
 	id: string;
@@ -11,15 +11,14 @@ interface IModLogs {
 	duration?: number;
 }
 
-export interface IModLogsDocument extends IModLogs, Document {
-	id: string;
-}
+export type ModLogsDocument = HydratedDocument<IModLogs>;
 
-const modlogsSchema = new Schema<IModLogsDocument>(
+const modlogsSchema = new Schema<IModLogs>(
 	{
 		id: {
 			type: String,
 			required: true,
+			index: true,
 		},
 		moderator: {
 			type: String,

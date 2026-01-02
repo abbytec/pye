@@ -55,6 +55,10 @@ const features: Record<GuildFeature, string> = {
 	WELCOME_SCREEN_ENABLED: "Pantalla de bienvenida activada.",
 	SOUNDBOARD: "Sonidos de la pantalla de bienvenida.",
 	MORE_SOUNDBOARD: "Más sonidos de la pantalla de bienvenida.",
+	GUILD_TAGS: "Etiquetas de servidor.",
+	ENHANCED_ROLE_COLORS: "Colores de roles mejorados.",
+	GUESTS_ENABLED: "Invitados externos/temporales habilitados.",
+	PIN_PERMISSION_MIGRATION_COMPLETE: "Permisos de pin migrados.",
 };
 
 export default {

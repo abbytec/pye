@@ -1,4 +1,4 @@
-import { Schema, Document, model } from "mongoose";
+import { Schema, Document, model, HydratedDocument } from "mongoose";
 
 interface MoneyConfig {
 	time: number;
@@ -12,11 +12,9 @@ export interface IMoney {
 	text: MoneyConfig;
 }
 
-export interface IMoneyDocument extends IMoney, Document {
-	_id: string;
-}
+export type MoneyDocument = HydratedDocument<IMoney>;
 
-const moneySchema = new Schema<IMoneyDocument>(
+const moneySchema = new Schema<IMoney>(
 	{
 		_id: {
 			type: String,

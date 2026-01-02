@@ -14,7 +14,7 @@ import {
 import { composeMiddlewares } from "../../composables/composeMiddlewares.js";
 import { verifyIsGuild } from "../../composables/middlewares/verifyIsGuild.js";
 import { deferInteraction } from "../../composables/middlewares/deferInteraction.js";
-import { IModLogsDocument, ModLogs } from "../../Models/ModLogs.js";
+import { ModLogsDocument, ModLogs } from "../../Models/ModLogs.js";
 import { replyOk } from "../../utils/messages/replyOk.js";
 import { COLORS, getRoleFromEnv } from "../../utils/constants.js";
 import { ObjectId } from "mongoose";
@@ -22,7 +22,7 @@ import { replyError } from "../../utils/messages/replyError.js";
 import { IPrefixChatInputCommand } from "../../interfaces/IPrefixChatInputCommand.js";
 
 // Función para generar las Action Rows
-const generateActionRows = (page: number, data: IModLogsDocument[], itemsPerPage: number, totalPages: number) => {
+const generateActionRows = (page: number, data: ModLogsDocument[], itemsPerPage: number, totalPages: number) => {
 	const rows = [
 		new ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>().addComponents(
 			new ButtonBuilder()
@@ -49,7 +49,7 @@ const generateActionRows = (page: number, data: IModLogsDocument[], itemsPerPage
 			.addOptions(
 				items.map((caso, index) => ({
 					label: `#${start + index + 1} ${caso.type} ${caso.hiddenCase ? "removido " : ""}`,
-					value: `${(caso._id as ObjectId).toString()}`,
+					value: `${caso._id.toString()}`,
 					emoji: caso.hiddenCase ? "🙈" : "📝",
 				}))
 			);
@@ -66,7 +66,7 @@ const generateActionRows = (page: number, data: IModLogsDocument[], itemsPerPage
 	return rows;
 };
 
-const calculateItemsPerPage = (data: IModLogsDocument[]): number => {
+const calculateItemsPerPage = (data: ModLogsDocument[]): number => {
 	const avgCaseLength = 50;
 	const maxFieldLength = 1024;
 	const maxCasesPerField = Math.floor(maxFieldLength / avgCaseLength);
@@ -83,7 +83,7 @@ const calculateItemsPerPage = (data: IModLogsDocument[]): number => {
 };
 
 const generatePageEmbed = (
-	data: IModLogsDocument[],
+	data: ModLogsDocument[],
 	currentPage: number,
 	itemsPerPage: number,
 	user: User,
@@ -174,7 +174,7 @@ export default {
 					});
 				} else if (i.isStringSelectMenu()) {
 					const caseId = i.values[0];
-					const selectedCase = data.find((c) => (c._id as ObjectId).toString() === caseId);
+					const selectedCase = data.find((c) => c._id.toString() === caseId);
 
 					if (selectedCase) {
 						const fields: EmbedField[] = [
@@ -205,7 +205,7 @@ export default {
 								name: user.tag,
 								iconURL: user.displayAvatarURL(),
 							})
-							.setTitle(`📝 Caso #${data.findIndex((c) => (c._id as ObjectId).toString() === caseId) + 1}`)
+							.setTitle(`📝 Caso #${data.findIndex((c) => c._id.toString() === caseId) + 1}`)
 							.addFields(fields)
 							.setColor(COLORS.warnOrange)
 							.setTimestamp()

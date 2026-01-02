@@ -1,6 +1,6 @@
 // types/middleware.ts
 import { APIEmbedField, AttachmentBuilder, GuildMember, User } from "discord.js";
-import { IHelperPointDocument } from "../Models/HelperPoint.js";
+import { HelperPointDocument } from "../Models/HelperPoint.js";
 import { IPrefixChatInputCommand } from "../interfaces/IPrefixChatInputCommand.js";
 
 export interface CommonMessage {
@@ -17,7 +17,7 @@ export interface EmbedMessage {
 }
 
 export interface PostHandleable {
-	helperPoint?: IHelperPointDocument;
+	helperPoint?: HelperPointDocument;
 	guildMember?: GuildMember;
 	logMessages?: (CommonMessage | EmbedMessage)[];
 	reactOkMessage?: string | null;
