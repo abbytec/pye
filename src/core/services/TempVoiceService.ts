@@ -3,6 +3,7 @@ import {
 	ChannelType,
 	Events,
 	GuildMember,
+	MessageFlags,
 	ModalBuilder,
 	ModalSubmitInteraction,
 	PermissionFlagsBits,
@@ -178,7 +179,7 @@ export default class TempVoiceService implements IService {
 	private async handleMenu(interaction: StringSelectMenuInteraction) {
 		const owner = this.channels.get(interaction.channelId);
 		if (owner !== interaction.user.id) {
-			await interaction.reply({ content: "No eres el dueño del canal.", ephemeral: true });
+			await interaction.reply({ content: "No eres el dueño del canal.", flags: MessageFlags.Ephemeral });
 			return;
 		}
 		const doc = await TempVoiceChannel.findOne({ channelId: interaction.channelId }).exec();
@@ -207,12 +208,12 @@ export default class TempVoiceService implements IService {
 				await channel.permissionOverwrites.edit(everyone, { Connect: false }).catch(() => null);
 				doc.isPublic = false;
 				await doc.save().catch(() => null);
-				await interaction.followUp({ content: "Canal ahora es privado.", ephemeral: true });
+				await interaction.followUp({ content: "Canal ahora es privado.", flags: MessageFlags.Ephemeral });
 			} else {
 				await channel.permissionOverwrites.edit(everyone, { Connect: true }).catch(() => null);
 				doc.isPublic = true;
 				await doc.save().catch(() => null);
-				await interaction.followUp({ content: "Canal ahora es público.", ephemeral: true });
+				await interaction.followUp({ content: "Canal ahora es público.", flags: MessageFlags.Ephemeral });
 			}
 
 			await interaction.editReply({ components: [this.buildMenu(doc.isPublic)] }).catch(() => null);
@@ -226,13 +227,13 @@ export default class TempVoiceService implements IService {
 						new UserSelectMenuBuilder().setCustomId(`tempvoice-block:${interaction.channelId}`).setPlaceholder("Selecciona usuario")
 					),
 				],
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
 		if (choice === "allow") {
-			if (!doc.isPublic) {
-				await interaction.reply({ content: "El canal no es público.", ephemeral: true });
+			if (doc.isPublic) {
+				await interaction.reply({ content: "El canal no es privado.", flags: MessageFlags.Ephemeral });
 				return;
 			}
 			await interaction.reply({
@@ -242,7 +243,7 @@ export default class TempVoiceService implements IService {
 						new UserSelectMenuBuilder().setCustomId(`tempvoice-allow:${interaction.channelId}`).setPlaceholder("Selecciona usuario")
 					),
 				],
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
@@ -253,12 +254,12 @@ export default class TempVoiceService implements IService {
 		if (!channel) return;
 		const owner = this.channels.get(channel.id);
 		if (owner !== interaction.user.id) {
-			await interaction.reply({ content: "No eres el dueño del canal.", ephemeral: true });
+			await interaction.reply({ content: "No eres el dueño del canal.", flags: MessageFlags.Ephemeral });
 			return;
 		}
 		const name = interaction.fields.getTextInputValue("name");
 		await channel.setName(name).catch(() => null);
-		await interaction.reply({ content: "Nombre actualizado.", ephemeral: true });
+		await interaction.reply({ content: "Nombre actualizado.", flags: MessageFlags.Ephemeral });
 	}
 
 	private async handleBlock(interaction: UserSelectMenuInteraction) {
