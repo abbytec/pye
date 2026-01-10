@@ -30,7 +30,7 @@
 		"html-entities": "^2.6.0",
 		"is-svg": "^5.1.0",
 		"luxon": "^3.7.1",
-		"mongoose": "^8.6.3",
+		"mongoose": "^8.20.4",
 		"natural": "^8.0.1",
 		"node-fetch": "^3.3.2",
 		"node-html-parser": "^7.0.1",
