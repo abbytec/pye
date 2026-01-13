@@ -137,6 +137,7 @@ export default class MessageWatcherService implements IService {
 		} else {
 			const client = this.client as ExtendedClient;
 			if (await messageGuard(msg, client, true)) return;
+			if (oldMessage.content === msg.content) return;
 
 			const before = oldMessage.content?.slice(0, 300) || "—";
 			const after = msg.content?.slice(0, 300) || "—";
@@ -152,4 +153,3 @@ export default class MessageWatcherService implements IService {
 		}
 	}
 }
-
