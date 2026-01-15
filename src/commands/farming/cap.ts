@@ -67,7 +67,7 @@ export default {
 
 			try {
 				await Users.updateOne({ id: user.id }, { $inc: { cash: amount, caps: amount } });
-				await Users.updateOne({ id: robberId }, { $inc: (robberData.cash ?? 0) > amount ? { cash: -amount } : { bank: -amount } });
+				await Users.updateOne({ id: robberId }, { $inc: amount > (robberData.cash ?? 0) ? { bank: -amount } : { cash: -amount } });
 			} catch (error) {
 				console.error("Error actualizando los usuarios:", error);
 				return await replyError(interaction, "Hubo un error al procesar tu solicitud. Inténtalo de nuevo más tarde.");
