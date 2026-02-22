@@ -51,7 +51,7 @@ export class PrefixChatInputCommand {
 		for (let i = 0; i < this.argsDefinition.length; i++) {
 			const def = this.argsDefinition[i];
 			if (def.infinite && i == 0) {
-				this.argsMap.set(def.name, withoutPrefix.slice(def.name.length));
+				this.argsMap.set(def.name, withoutPrefix.slice(parsedSubCommand?.length ?? 0).trim());
 				break;
 			}
 			const value = split[i];
