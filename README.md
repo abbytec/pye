@@ -1,4 +1,5 @@
 # Ex PyE-Chan
+> [!NOTE]
 > Aclaración: Actualizo este .md ya que un tal Dylan es muy fan mío, le gusta revisar mis redes y repo, decir que me quiere tumbar el server y vaya a saber los otros morbos que tenga conmigo. Ya me cansé, yo solamente quiero paz y alejarme de todo lo relacionado a PyE. Pero como no lo entiende, y luego de un año sigue hablando de mí (yo ni lo registro, pero me escribe gente por privado para comentarme) no creo que ese chico entienda. **De todas maneras me estoy cansando al punto que si esto sigue así, tomaré acciones legales.**
 
 Bot antiguo del sv de Discord [Programadores y Estudiantes](https://discord.gg/programacion).
