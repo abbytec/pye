@@ -25,10 +25,12 @@ Además de hacer publico eso, yo le pedí que le diera el server a LDarki, ya qu
 
 Sin embargo, maby dijo que estaba a punto de vender el server a un ex mío (t3rry327) y me interpuse (grave error, debí dejar que hicieran lo que quisieran). 
 Le pedí que para eso me lo de a mí debido a que intentó venderselo a un conocido y yo no quise que eso ocurra. Decidí interferir, pero como antes de eso ya había abierto un ticket para darselo a darki, supuestamente no lo pudo cancelar al ticket y terminó teniendo owner el.
+
 LDarki fue muy amable al decir que estaba de acuerdo con darme el servidor a mi ya que fue la ultima petición de maby como ex-dueño y supuestamente darki no tenía nada en contra mío.
-Sin embargo, tuvo dificultades para cumplir su palabra desde el primer día y en lugar de cumplir, decidió comenzar a ignorarme, me negó el acceso a la vpn y empezó a escribir su propio bot. 
-Parter del resto del staff (dylan y difficulting) me comenzó a criticar sin sentido, siendo que yo siempre los guié y ayude en todo (en lo que respecta a moderación, además de que dylan veía series conmigo y a diffi le di opiniones constructivas sobre los temas de musica que hacía).
+Al parecer, tuvo dificultades para cumplir su palabra desde el primer día y en lugar de cumplir, decidió comenzar a ignorarme, me negó el acceso a la vpn y empezó a escribir su propio bot. 
+Parte del resto del staff (dylan y difficulting) me comenzó a criticar sin sentido, siendo que yo siempre los guié y ayude en todo (en lo que respecta a moderación, además de que dylan veía series conmigo y a diffi le di opiniones constructivas sobre los temas de musica que hacía).
 Incluso a ldarki lo había recomendado en mi trabajo (dada que su situación económica no era la mejor).
+
 Luego de todo el drama que montaron, decidí hacer publico el bot, ya que era mi intención desde hacía mucho tiempo.
 Se ve que no les gustó que actuara por mi cuenta (sobre el código que habia trabajado tanto yo misma) asique me echaron del servidor.
 
