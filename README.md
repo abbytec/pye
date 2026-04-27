@@ -5,7 +5,7 @@
 Bot antiguo del sv de Discord [Programadores y Estudiantes](https://discord.gg/programacion).
 Actualmente usado y mantendio en [Abby's Digital Cafe](https://discord.gg/vShXpyWTTq) (**en otro repo privado**, aunque eso está aclarado en un post de mi server desde hace bastante).
 
-A este repo, le hice algo de mantenimiento en paralelo. La idea original era que Pengu sea semi-privado, es decir, que otros usuarios puedan contribuir si así lo deseaban (desde este repo) y yo replicaría los nuevos cambios en el repo actual. No obstante, Pengu ya está muy lejos de lo que era este código actualmente (27-04-2026)
+A este repo, le hice algo de mantenimiento en paralelo. La idea original era que Pengu sea semi-privado, es decir, que otros usuarios puedan contribuir si así lo deseaban (desde este repo) y yo replicaría los nuevos cambios en el repo actual. No obstante, actualmente (27-04-2026), Pengu ya está muy lejos de lo que era en este código.
 
 ### Funciones
 - 80+ comandos (incluidos juegos y sistemas de economía, reputación de usuarios, moderación, y otras utilidades)
