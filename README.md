@@ -23,7 +23,7 @@ Por si les gusta el chisme:
 El dueño anterior de PyE admitió que me mintió durante 6 meses, estafó gente fingiendo ser una mujer (vendiendo contenido que no era suyo). Cuando se hizo público todo esto, todos lo estaban criticando ya que en PyE me llevaba bien con muchos usuarios siendo parte del staff. 
 Además de hacer publico eso, yo le pedí que le diera el server a LDarki, ya que el parecía buen pibe (falso) y aportaba mucho en cuanto a consejos de programación a los usuarios. 
 
-Sin embargo, maby dijo que estaba a punto de vender el server a un ex mío (t3rry327) y me interpuse (grave error, debí dejar que hicieran lo que quisieran). 
+Sin embargo, maby dijo que estaba a punto de vender el server a un ex mío y me interpuse (grave error, debí dejar que hicieran lo que quisieran). 
 Le pedí que para eso me lo de a mí debido a que intentó venderselo a un conocido y yo no quise que eso ocurra. Decidí interferir, pero como antes de eso ya había abierto un ticket para darselo a darki, supuestamente no lo pudo cancelar al ticket y terminó teniendo owner el.
 
 LDarki fue muy amable al decir que estaba de acuerdo con darme el servidor a mi ya que fue la ultima petición de maby como ex-dueño y supuestamente darki no tenía nada en contra mío.
